@@ -214,3 +214,95 @@ export interface ItemPromotion {
    */
   startDate?: string;
 }
+
+/**
+ * This type defines the fields for the create ad request.
+ */
+export interface CreateAdRequest {
+  /**
+   * A unique eBay-assigned identifier for an ad group in a campaign that uses the Cost Per Click (CPC) funding model.
+   */
+  adGroupId?: string;
+  /**
+   * The user-defined bid percentage (also known as the ad rate) sets the level that eBay increases the visibility in search results for the associated listing.
+   */
+  bidPercentage?: string;
+  /**
+   * A unique identifier of an eBay listing.
+   */
+  listingId?: string;
+}
+
+/**
+ * This type defines the fields needed to create ads by inventory reference ID request.
+ */
+export interface CreateAdsByInventoryReferenceRequest {
+  /**
+   * A unique eBay-assigned identifier for an ad group in a campaign that uses the Cost Per Click (CPC) funding model.
+   */
+  adGroupId?: string;
+  /**
+   * The user-defined bid percentage (also known as the ad rate) sets the level that eBay increases the visibility in search results for the associated listing.
+   */
+  bidPercentage?: string;
+  /**
+   * The unique identifier of a single-item listing or a multi-variation listing.
+   */
+  inventoryReferenceId?: string;
+  /**
+   * This enumerated value indicates the type of item the inventoryReferenceId references.
+   */
+  inventoryReferenceType?: string;
+}
+
+/**
+ * This type defines the fields for the clone ad request.
+ */
+export interface CloneAdRequest {
+  /**
+   * The user-defined bid percentage (also known as the ad rate) sets the level that eBay increases the visibility in search results for the associated listing.
+   */
+  bidPercentage?: string;
+}
+
+/**
+ * This type specifies the bid percentage for an ad campaign.
+ */
+export interface UpdateBidPercentageRequest {
+  /**
+   * The updated bid percentage value for the specified ad in the specified campaign.
+   */
+  bidPercentage?: string;
+}
+
+/**
+ * This type defines the fields needed for a clone-campaign request.
+ */
+export interface CloneCampaignRequest {
+  /**
+   * A seller-defined name for the newly-cloned campaign.
+   */
+  campaignName?: string;
+  /**
+   * The date and time the campaign ends, in UTC format (yyyy-MM-ddThh:mm:ssZ).
+   */
+  endDate?: string;
+  /**
+   * This container includes parameters that define an ad campaign funding strategy.
+   */
+  fundingStrategy?: FundingStrategy;
+  /**
+   * The date and time the cloned campaign starts, in UTC format (yyyy-MM-ddThh:mm:ssZ).
+   */
+  startDate?: string;
+}
+
+/**
+ * This type specifies the bid percentage for an ad campaign.
+ */
+export interface UpdateBidPercentageRequest {
+  /**
+   * The updated bid percentage value for the specified ad in the specified campaign.
+   */
+  bidPercentage?: string;
+}

@@ -1,14 +1,9 @@
-/**
- * Marketing API Response Types
- * Based on: docs/sell-apps/markeitng-and-promotions/sell_marketing_v1_oas3.json
- */
-
 import type {
   CampaignBudgetRequest,
-  CampaignCriterion,
   FundingStrategy,
   ItemPromotion,
 } from './marketing-api-types.js';
+import type { Alert } from '../../global/global-ebay-types.js';
 
 /**
  * Error container
@@ -224,4 +219,110 @@ export interface ItemPromotionsPagedCollection {
    * Total number of promotions
    */
   total?: number;
+}
+
+/**
+ * Ad entity
+ */
+export interface Ad {
+  /**
+   * A unique eBay-assigned ID for an ad group in a campaign that uses the Cost Per Click (CPC) funding model.
+   */
+  adGroupId?: string;
+  /**
+   * A unique eBay-assigned ID that is generated when the ad is created.
+   */
+  adId?: string;
+  /**
+   * The current status of the CPC ad.
+   */
+  adStatus?: string;
+  /**
+   * An array containing alert messages for the ad.
+   */
+  alerts?: Alert[];
+  /**
+   * The user-defined bid percentage (also known as the ad rate) sets the level that eBay increases the visibility in search results for the associated listing.
+   */
+  bidPercentage?: string;
+  /**
+   * An ID that identifies a single-item listing or multiple-variation listing that is managed with the Inventory API.
+   */
+  inventoryReferenceId?: string;
+  /**
+   * The enumeration value returned here indicates the type of listing the inventoryReferenceId references.
+   */
+  inventoryReferenceType?: string;
+  /**
+   * A unique eBay-assigned ID that is generated when a listing is created.
+   */
+  listingId?: string;
+}
+
+/**
+ * Paged collection of ads
+ */
+export interface AdPagedCollectionResponse {
+  /**
+   * The list of ads that matched the request criteria.
+   */
+  ads?: Ad[];
+  /**
+   * The URI of the current page of results from the result set.
+   */
+  href?: string;
+  /**
+   * The number of items returned on a single page from the result set.
+   */
+  limit?: number;
+  /**
+   * The call URI that can be used to retrieve the next page in the result set.
+   */
+  next?: string;
+  /**
+   * The number of results skipped in the result set before listing the first result on the current page.
+   */
+  offset?: number;
+  /**
+   * The call URI that can be used to retrieve the previous page in the result set.
+   */
+  prev?: string;
+  /**
+   * The total number of items retrieved in the result set.
+   */
+  total?: number;
+}
+
+/**
+ * This type defines the fields for an ad ID and its associated URL.
+ */
+export interface AdReference {
+  /**
+   * A unique eBay-assigned ID for an ad. This ID is generated when an ad is created.
+   */
+  adId?: string;
+  /**
+   * The getAd URI of an ad. You can use this URI to retrieve the ad.
+   */
+  href?: string;
+}
+
+/**
+ * This type is a container for a list of ad IDs and their associated URIs.
+ */
+export interface AdReferences {
+  /**
+   * A list of ad IDs. An ad ID is generated for each successfully created ad. Only one ad can be created per operation.
+   */
+  ads?: AdReference[];
+}
+
+/**
+ * This type defines the container for an array of ads.
+ */
+export interface Ads {
+  /**
+   * A list of ad IDs. An ad ID is generated for each successfully created ad.
+   */
+  ads?: Ad[];
 }

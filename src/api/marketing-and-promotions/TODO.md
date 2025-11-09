@@ -15,18 +15,18 @@ The following endpoints are defined in the OpenAPI specification but are not yet
 - `POST /ad_campaign/{campaign_id}/bulk_update_ads_bid_by_listing_id`
 - `POST /ad_campaign/{campaign_id}/bulk_update_ads_status`
 - `POST /ad_campaign/{campaign_id}/bulk_update_ads_status_by_listing_id`
-- `GET /ad_campaign/{campaign_id}/ad`
-- `POST /ad_campaign/{campaign_id}/ad`
-- `POST /ad_campaign/{campaign_id}/create_ads_by_inventory_reference`
-- `GET /ad_campaign/{campaign_id}/ad/{ad_id}`
-- `DELETE /ad_campaign/{campaign_id}/ad/{ad_id}`
-- `POST /ad_campaign/{campaign_id}/ad/{ad_id}/clone`
-- `GET /ad_campaign/get_ads_by_inventory_reference`
-- `GET /ad_campaign/get_ads_by_listing_id`
-- `POST /ad_campaign/{campaign_id}/update_bid`
-- `POST /ad_campaign/clone`
-- `POST /ad_campaign/{campaign_id}/end`
-- `GET /ad_campaign_by_name`
+- `GET /ad_campaign/{campaign_id}/ad` - **IMPLEMENTED**
+- `POST /ad_campaign/{campaign_id}/ad` - **IMPLEMENTED**
+- `POST /ad_campaign/{campaign_id}/create_ads_by_inventory_reference` - **IMPLEMENTED**
+- `GET /ad_campaign/{campaign_id}/ad/{ad_id}` - **IMPLEMENTED**
+- `DELETE /ad_campaign/{campaign_id}/ad/{ad_id}` - **IMPLEMENTED**
+- `POST /ad_campaign/{campaign_id}/ad/{ad_id}/clone` - **IMPLEMENTED**
+- `GET /ad_campaign/get_ads_by_inventory_reference` - **IMPLEMENTED**
+- `GET /ad_campaign/get_ads_by_listing_id` - **IMPLEMENTED**
+- `POST /ad_campaign/{campaign_id}/update_bid` - **IMPLEMENTED**
+- `POST /ad_campaign/clone` - **IMPLEMENTED**
+- `POST /ad_campaign/{campaign_id}/end` - **IMPLEMENTED**
+- `GET /ad_campaign_by_name` - **IMPLEMENTED**
 - `POST /ad_campaign/{campaign_id}/pause`
 - `POST /ad_campaign/{campaign_id}/resume`
 - `PUT /ad_campaign/{campaign_id}/update_campaign_identification`
