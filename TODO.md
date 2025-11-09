@@ -1,128 +1,35 @@
-# Project TODO List
+# eBay API MCP Server - TODO
 
-This document outlines the remaining tasks to complete the eBay API MCP Server and areas where contributors can help. This list has been refined based on a detailed analysis of the source code against the OpenAPI specifications.
+This file outlines the current status of the eBay API MCP Server and provides a roadmap for future development. The goal is to achieve complete implementation of the eBay Sell APIs and create a robust and reliable server for AI assistants.
 
-## 🚀 Core Goal
+## High-Priority Tasks
 
-The primary objective is to implement all eBay Sell APIs defined in the OpenAPI specifications located in the `docs/sell-apps/` directory, making them available as tools via the Model Context Protocol (MCP).
+- **Complete API Implementations:** Many of the API endpoints are not yet implemented. The most critical task is to complete the implementation of all the APIs defined in the OpenAPI specifications in the `docs/` folder.
+- **Implement a Testing Framework:** The project currently lacks a testing framework. Adding a framework like Jest or Mocha is crucial for ensuring the quality and stability of the server.
+- **Create a CI/CD Pipeline:** A CI/CD pipeline will automate the testing and deployment process, making it easier to maintain the project.
+- **Improve Error Handling:** The current error handling is basic. We need to provide more detailed and structured error messages to the AI clients.
+- **Add Input Validation:** The server should validate all input from the AI clients to prevent errors and security vulnerabilities.
 
----
+## API Implementation Status
 
-## 📝 API Implementation
+The following is a summary of the implementation status of each API. Please refer to the `TODO.md` file in each API's folder for a more detailed list of tasks.
 
-The following is a more detailed breakdown of the implementation status for each API category. The main focus is to build out the missing and partial implementations.
+- **Account Management:** Partially implemented. See `src/api/account-management/TODO.md`.
+- **Analytics and Report:** Partially implemented. See `src/api/analytics-and-report/TODO.md`.
+- **Communication:** Partially implemented. See `src/api/communication/TODO.md`.
+- **Listing Management:** Not implemented. See `src/api/listing-management/TODO.md`.
+- **Listing Metadata:** Partially implemented. See `src/api/listing-metadata/TODO.md`.
+- **Marketing and Promotions:** Partially implemented. See `src/api/marketing-and-promotions/TODO.md`.
+- **Order Management:** Partially implemented. See `src/api/order-management/TODO.md`.
+- **Other APIs:** Partially implemented. See `src/api/other/TODO.md`.
 
-### Account API (`sell_account_v1_oas3.json`)
-This API is partially implemented. While some functions for retrieving collections of policies exist, most of the operations for creating, updating, deleting, and fetching individual items are missing.
+## Contribution Guidelines
 
--   [x] `getCustomPolicies`
--   [x] `getFulfillmentPolicies`
--   [x] `getPaymentPolicies`
--   [x] `getReturnPolicies`
--   [x] `getPrivileges`
--   [ ] `createCustomPolicy`
--   [ ] `getCustomPolicy`
--   [ ] `updateCustomPolicy`
--   [ ] `createFulfillmentPolicy`
--   [ ] `deleteFulfillmentPolicy`
--   [ ] `getFulfillmentPolicy`
--   [ ] `getFulfillmentPolicyByName`
--   [ ] `updateFulfillmentPolicy`
--   [ ] `getKYC`
--   [ ] `createPaymentPolicy`
--   [ ] `deletePaymentPolicy`
--   [ ] `getPaymentPolicy`
--   [ ] `getPaymentPolicyByName`
--   [ ] `updatePaymentPolicy`
--   [ ] `getPaymentsProgram`
--   [ ] `getPaymentsProgramOnboarding`
--   [ ] `getOptedInPrograms`
--   [ ] `optInToProgram`
--   [ ] `optOutOfProgram`
--   [ ] `getRateTables`
--   [ ] `createReturnPolicy`
--   [ ] `deleteReturnPolicy`
--   [ ] `getReturnPolicy`
--   [ ] `getReturnPolicyByName`
--   [ ] `updateReturnPolicy`
--   [ ] `getSubscription`
--   [ ] `createOrReplaceSalesTax`
--   [ ] `deleteSalesTax`
--   [ ] `getSalesTax`
--   [ ] `getSalesTaxes`
--   [ ] `bulkCreateOrReplaceSalesTax`
+We welcome contributions from the community! If you would like to contribute, please:
 
-### Listing & Inventory Management
-This section has several placeholder type files, indicating that the implementation is incomplete.
+1.  Fork the repository.
+2.  Create a new branch for your feature or bug fix.
+3.  Implement your changes, including tests.
+4.  Submit a pull request.
 
--   [ ] **Perform Gap Analysis**: A contributor needs to analyze the OpenAPI specs for these APIs and create a detailed checklist similar to the Account API one.
--   [ ] **Feed API**: Implement handlers and types.
--   [ ] **Media API**: Implement handlers and types.
--   [ ] **Merchant Integration Platform**: Implement handlers and types.
--   [ ] **Stores API**: Implement handlers and types.
--   [ ] **Traditional Listing API**: Implement handlers and types.
-
-### Other APIs
-A full gap analysis is needed for the remaining APIs.
-
--   [ ] **Perform Gap Analysis**: For each API below, a contributor needs to compare the implementation in `src/api/` with the spec in `docs/` and create a detailed checklist of missing operations.
-    -   [ ] Analytics & Report (`sell_analytics_v1_oas3.json`)
-    -   [ ] Communication (Feedback, Message, Notification, Negotiation)
-    -   [ ] Marketing & Promotions
-    -   [ ] Order Management
-    -   [ ] Other APIs (Identity, Translation, VERO, etc.)
-
----
-
-## 🧹 Refactoring & Cleanup
-
--   [ ] **Investigate Code Duplication**: The function `getReturnPolicies` is implemented in both `src/api/account-management/account.ts` and `src/api/listing-metadata/metadata.ts`. This needs to be investigated and consolidated into the correct API client.
--   [ ] **Remove extraneous directories**: The directory `docs/sell-apps/listing-metadata copy/` appears to be an accidental duplication and should be removed after verification.
--   [ ] **Scan for TODO/FIXME comments**: A global search for `// TODO` and `// FIXME` comments should be performed to identify and address smaller, isolated tasks.
-
----
-
-## 🧪 Testing
-
-The project currently lacks an automated testing framework. This is a high-priority area for contributions.
-
--   [ ] **Setup Testing Framework**:
-    -   Integrate a testing framework like [Jest](https://jestjs.io/), [Vitest](https://vitest.dev/), or [Mocha](https://mochajs.org/) into the project.
-    -   Configure scripts in `package.json` to run tests.
--   [ ] **Write Unit Tests**:
-    -   Add unit tests for existing API handlers in the `src/api/` directory.
-    -   Mock dependencies like the `axios` client to isolate tests.
--   [ ] **Write Integration Tests**:
-    -   Develop integration tests that call the MCP server and verify that it correctly interacts with a mock eBay API.
-
----
-
-## 🏗️ Project Infrastructure & Developer Experience
-
--   [ ] **Setup CI/CD**:
-    -   Create a GitHub Actions workflow (`.github/workflows/`) to automatically run tests, linting, and type-checking on pull requests.
-    -   Add a workflow to publish the package to npm on new releases.
--   [ ] **Add Linter and Formatter**:
-    -   Integrate [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) to enforce a consistent code style.
-    -   Add a `lint` and `format` script to `package.json`.
--   [ ] **Improve In-Code Documentation**:
-    -   Add TSDoc comments to functions, classes, and types to explain their purpose, parameters, and return values.
-
----
-
-## 🤝 Contributor Guidance
-
--   [ ] **Create `CONTRIBUTING.md`**:
-    -   Write a guide for new contributors explaining how to set up the development environment, run tests, and submit pull requests.
--   [ ] **Create `CODE_OF_CONDUCT.md`**:
-    -   Add a standard Code of Conduct to foster a welcoming and inclusive community.
-
----
-
-### How to Contribute
-1.  **Pick a Task**: Choose an unchecked task from this list.
-2.  **Open an Issue**: Create a new issue to let us know you're working on it.
-3.  **Fork & Code**: Fork the repository and create a new branch for your feature or fix.
-4.  **Submit a Pull Request**: Once your work is complete, submit a PR and link it to the issue you created.
-
-Thank you for helping to improve the project!
+Please make sure to follow the existing coding style and conventions.
