@@ -1,1 +1,0 @@
-# ebay-api-mcp-server
