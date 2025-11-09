@@ -1407,24 +1407,7 @@ export const metadataTools: ToolDefinition[] = [
       required: ['marketplaceId']
     }
   },
-  {
-    name: 'ebay_get_return_policies',
-    description: 'Get return policies for a marketplace',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        marketplaceId: {
-          type: 'string',
-          description: 'Marketplace ID'
-        },
-        filter: {
-          type: 'string',
-          description: 'Filter criteria'
-        }
-      },
-      required: ['marketplaceId']
-    }
-  },
+
   {
     name: 'ebay_get_shipping_cost_type_policies',
     description: 'Get shipping cost type policies for a marketplace',

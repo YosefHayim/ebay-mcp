@@ -1,9 +1,8 @@
 {
 	"mcpServers": {
-		"MCP_DOCKER": {
-			"command": "docker",
-			"args": ["mcp", "gateway", "run"],
-			"type": "stdio"
+		"eBayMcpServer": {
+			"command": "node",
+			"args": ["/Applications/Github/ebay-api-mcp-server/build/index.js"]
 		}
 	}
 }
