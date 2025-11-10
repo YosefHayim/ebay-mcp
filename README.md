@@ -254,6 +254,56 @@ Contributions are welcome! Please ensure:
 - Proper error handling
 - Tool definitions follow MCP specification
 
+## Gemini CLI Setup
+
+To add a custom Model Context Protocol (MCP) server to Gemini CLI, follow these steps:
+
+### 1. Locate or Create the `settings.json` file:
+
+The Gemini CLI uses a `settings.json` file for configuration. This file is typically located in your home directory within a hidden `.gemini` folder: `~/.gemini/settings.json`.
+If the `.gemini` directory or `settings.json` file does not exist, create them.
+
+### 2. Edit `settings.json` to configure the MCP server:
+
+Open the `settings.json` file in a text editor.
+Add or modify the `mcpServers` object within this JSON file. Each custom MCP server will be an entry within this object.
+The configuration for each server will vary depending on the server's requirements, but generally includes details like the server's `command`, `args`, and any necessary authentication tokens or specific parameters.
+
+```json
+{
+  "mcpServers": {
+    "myCustomServerName": {
+      "command": "path/to/your/server/executable",
+      "args": ["--arg1", "value1", "--arg2", "value2"],
+      "env": {
+        "API_KEY": "your_api_key"
+      }
+    },
+    "anotherMCPserver": {
+      "command": "npx",
+      "args": ["-y", "some-mcp-package@latest", "mcp-command"]
+    }
+  }
+}
+```
+
+Replace `"myCustomServerName"` with a descriptive name for your server.
+Adjust the `command`, `args`, and `env` (for environment variables) according to your specific MCP server's documentation and requirements.
+
+### 3. Install any dependencies:
+
+Ensure that any required dependencies for your custom MCP server are installed on your system.
+
+### 4. Restart Gemini CLI or refresh MCP servers:
+
+After saving the `settings.json` file, restart the Gemini CLI session for the changes to take effect.
+Alternatively, if Gemini CLI is already running, you can use the `/mcp refresh` command within the CLI to reload the server configurations.
+
+### 5. Verify the server connection:
+
+Once Gemini CLI has restarted or the MCP servers have been refreshed, use the `/mcp` command within the CLI to list the configured servers and verify that your custom server is recognized and available.
+You can also use `/mcp desc <serverName>` to see detailed information about the tools provided by your custom server.
+
 ## License
 
 MIT
