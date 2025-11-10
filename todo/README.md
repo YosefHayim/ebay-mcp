@@ -1,324 +1,456 @@
-# OAuth Scopes Implementation Todo List
-
-This document tracks all locations in the project where OAuth scopes need to be properly handled for sandbox vs production environments.
-
-## Overview
-
-Two scope configuration files have been added:
-- `docs/auth/production_scopes.json` - Production environment scopes (27 unique scopes)
-- `docs/auth/sandbox_scopes.json` - Sandbox environment scopes (35 unique scopes)
-
-Key differences:
-- Sandbox includes additional Buy API scopes (e.g., `buy.order.readonly`, `buy.guest.order`, `buy.shopping.cart`)
-- Sandbox includes extended Identity scopes (email, phone, address, name, status)
-- Sandbox includes `sell.item.draft` and `sell.item` scopes
-- Production includes `sell.edelivery` scope (not in sandbox)
-- Production includes `commerce.message` scope explicitly
-- Production includes `commerce.shipping` scope (not in sandbox)
-
-## 🔴 Critical Priority Tasks
-
-### 1. Environment-Specific Scope Configuration
-
-**File:** `src/config/environment.ts`
-**Lines:** 57-91
-**Issue:** Hardcoded scope array in `getOAuthAuthorizationUrl()` uses sandbox scopes but applies to both environments
-
-**Action Required:**
-- [ ] Create separate `getProductionScopes()` and `getSandboxScopes()` functions
-- [ ] Load scopes from `docs/auth/production_scopes.json` and `docs/auth/sandbox_scopes.json`
-- [ ] Update `getOAuthAuthorizationUrl()` to select scopes based on `environment` parameter
-- [ ] Add scope validation to ensure requested scopes match environment capabilities
-
-**Code Location:** src/config/environment.ts:57-91
-
-**Current Implementation:**
-```typescript
-const defaultScopes = [
-  "https://api.ebay.com/oauth/api_scope",
-  "https://api.ebay.com/oauth/api_scope/buy.order.readonly",
-  // ... 30+ hardcoded scopes
-];
-```
-
-**Required Implementation:**
-```typescript
-// Load from JSON files
-function getProductionScopes(): string[]
-function getSandboxScopes(): string[]
-function getDefaultScopes(environment: "production" | "sandbox"): string[]
-```
-
-### 2. OAuth Tool Scope Parameter Support
-
-**File:** `src/tools/tool-definitions.ts`
-**Lines:** 25-32
-**Issue:** `ebay_get_oauth_url` tool accepts optional scopes but doesn't validate them against environment
-
-**Action Required:**
-- [ ] Add scope validation in tool execution
-- [ ] Warn users if requesting production-only scopes in sandbox environment
-- [ ] Warn users if requesting sandbox-only scopes in production environment
-- [ ] Document which scopes are environment-specific in tool description
-
-**Code Location:** src/tools/tool-definitions.ts:25-32
-
-### 3. OAuth Client Default Scope
-
-**File:** `src/auth/oauth.ts`
-**Line:** 236
-**Issue:** Client credentials flow hardcodes basic scope: `https://api.ebay.com/oauth/api_scope`
-
-**Action Required:**
-- [ ] Verify if client credentials should use environment-specific scopes
-- [ ] Consider if additional scopes are needed for client credentials flow
-- [ ] Document scope limitations for client credentials vs user tokens
-
-**Code Location:** src/auth/oauth.ts:236
-
-## 🟡 Medium Priority Tasks
-
-### 4. HTTP Server OAuth Scopes Configuration
-
-**File:** `src/server-http.ts`
-**Lines:** 44-46, 109-110
-**Issue:** MCP OAuth scopes (`mcp:tools`) are separate from eBay OAuth scopes, but not clearly separated
-
-**Action Required:**
-- [ ] Document distinction between MCP OAuth scopes and eBay OAuth scopes
-- [ ] Add configuration example showing both scope types
-- [ ] Consider if MCP scopes should be environment-aware
-- [ ] Update README with dual OAuth system explanation
-
-**Code Locations:**
-- src/server-http.ts:44-46 (requiredScopes configuration)
-- src/server-http.ts:109-110 (metadata router scopes)
-
-### 5. Token Storage Scope Persistence
-
-**File:** `src/auth/oauth.ts`
-**Lines:** 150, 207
-**Issue:** Scopes are stored in `StoredTokenData` but not validated against environment
-
-**Action Required:**
-- [ ] Add scope validation when loading persisted tokens
-- [ ] Warn if stored token scopes don't match current environment requirements
-- [ ] Implement scope comparison utility function
-- [ ] Consider auto-refresh if scopes are insufficient
-
-**Code Locations:**
-- src/auth/oauth.ts:150 (exchangeCodeForToken scope storage)
-- src/auth/oauth.ts:207 (refreshUserToken scope storage)
-
-### 6. OAuth Metadata Endpoints
-
-**File:** `src/auth/oauth-metadata.ts`
-**Lines:** 27, 57
-**Issue:** `scopes_supported` in metadata doesn't reflect environment-specific scopes
-
-**Action Required:**
-- [ ] Update `createMetadataRouter()` to accept environment parameter
-- [ ] Return environment-appropriate scopes in `/.well-known/oauth-protected-resource`
-- [ ] Update `/.well-known/mcp-server-info` to show eBay environment
-- [ ] Document OAuth metadata endpoints in README
-
-**Code Locations:**
-- src/auth/oauth-metadata.ts:27 (MetadataConfig interface)
-- src/auth/oauth-metadata.ts:57 (scopes_supported in metadata response)
-
-## 🟢 Low Priority / Enhancement Tasks
-
-### 7. Scope Documentation
-
-**Action Required:**
-- [ ] Create `docs/auth/README.md` explaining scope differences
-- [ ] Document which APIs require which scopes
-- [ ] Create scope requirement matrix (API endpoint → required scopes)
-- [ ] Add scope troubleshooting guide
-- [ ] Document rate limit differences between scope types
-
-**Files to Create:**
-- `docs/auth/README.md`
-- `docs/auth/scope-requirements.md`
-- `docs/auth/troubleshooting.md`
-
-### 8. Tool-Specific Scope Requirements
-
-**File:** `src/tools/tool-definitions.ts`
-**Issue:** Tool descriptions don't indicate required scopes
-
-**Action Required:**
-- [ ] Add scope requirements to tool descriptions
-- [ ] Group tools by scope requirements
-- [ ] Add tool that checks if current token has required scopes
-- [ ] Implement scope-based tool filtering (hide tools if scopes missing)
-
-**Example Enhancement:**
-```typescript
-{
-  name: 'ebay_create_offer',
-  description: 'Create a new offer for an inventory item',
-  requiredScopes: ['https://api.ebay.com/oauth/api_scope/sell.inventory'],
-  inputSchema: { ... }
-}
-```
-
-### 9. Scope Utility Functions
-
-**Action Required:**
-- [ ] Create `src/auth/scope-utils.ts` with helper functions
-- [ ] Implement `validateScopes(scopes: string[], environment: string): ValidationResult`
-- [ ] Implement `getRequiredScopesForTool(toolName: string): string[]`
-- [ ] Implement `hasRequiredScopes(tokenScopes: string[], requiredScopes: string[]): boolean`
-- [ ] Implement `getScopeDifferences(production: string[], sandbox: string[]): Diff`
-
-### 10. Environment Variable Validation
-
-**File:** `src/config/environment.ts`
-**Action Required:**
-- [ ] Validate `EBAY_ENVIRONMENT` matches available scope configuration
-- [ ] Warn on startup if environment/scope mismatch detected
-- [ ] Add `EBAY_CUSTOM_SCOPES` environment variable for override
-- [ ] Document all environment variables in README
-
-### 11. Test Coverage for Scopes
-
-**Action Required:**
-- [ ] Create test suite for scope handling
-- [ ] Test environment-specific scope loading
-- [ ] Test scope validation for OAuth URL generation
-- [ ] Test token storage with different scope sets
-- [ ] Test error handling for invalid scopes
-
-**Files to Create:**
-- `tests/auth/scopes.test.ts`
-- `tests/auth/scope-validation.test.ts`
-
-### 12. Scope Migration Helper
-
-**Action Required:**
-- [ ] Create CLI tool to migrate tokens between environments
-- [ ] Implement scope comparison when switching environments
-- [ ] Add warning system for scope downgrades
-- [ ] Document token migration process
-
-**File to Create:**
-- `scripts/migrate-tokens.ts`
-
-## 📋 Implementation Checklist
-
-### Phase 1: Critical Scope Handling (Week 1)
-- [ ] Load scopes from JSON files dynamically
-- [ ] Environment-specific scope selection in `getOAuthAuthorizationUrl()`
-- [ ] Scope validation in `ebay_get_oauth_url` tool
-- [ ] Update documentation with environment differences
-
-### Phase 2: Scope Validation & Storage (Week 2)
-- [ ] Scope validation when loading persisted tokens
-- [ ] Scope validation in OAuth metadata endpoints
-- [ ] Warning system for scope mismatches
-- [ ] Enhanced error messages for scope-related issues
-
-### Phase 3: Developer Experience (Week 3)
-- [ ] Tool descriptions with scope requirements
-- [ ] Comprehensive scope documentation
-- [ ] Scope utility functions
-- [ ] CLI helper tools
-
-### Phase 4: Testing & Refinement (Week 4)
-- [ ] Test coverage for all scope handling
-- [ ] Integration tests with both environments
-- [ ] Documentation review and updates
-- [ ] Migration guide for existing users
-
-## 🔍 Scope Analysis Results
-
-### Production-Only Scopes
-```
-https://api.ebay.com/oauth/scope/sell.edelivery
-https://api.ebay.com/oauth/api_scope/commerce.message (explicit)
-https://api.ebay.com/oauth/api_scope/commerce.shipping
-```
-
-### Sandbox-Only Scopes
-```
-https://api.ebay.com/oauth/api_scope/buy.order.readonly
-https://api.ebay.com/oauth/api_scope/buy.guest.order
-https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly
-https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly
-https://api.ebay.com/oauth/api_scope/buy.shopping.cart
-https://api.ebay.com/oauth/api_scope/buy.offer.auction
-https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly
-https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly
-https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly
-https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly
-https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly
-https://api.ebay.com/oauth/api_scope/sell.item.draft
-https://api.ebay.com/oauth/api_scope/sell.item
-https://api.ebay.com/oauth/api_scope/buy.item.feed
-https://api.ebay.com/oauth/api_scope/buy.marketing
-https://api.ebay.com/oauth/api_scope/buy.product.feed
-https://api.ebay.com/oauth/api_scope/buy.marketplace.insights
-https://api.ebay.com/oauth/api_scope/buy.proxy.guest.order
-https://api.ebay.com/oauth/api_scope/buy.item.bulk
-https://api.ebay.com/oauth/api_scope/buy.deal
-```
-
-### Common Scopes (Both Environments)
-```
-https://api.ebay.com/oauth/api_scope
-https://api.ebay.com/oauth/api_scope/sell.marketing.readonly
-https://api.ebay.com/oauth/api_scope/sell.marketing
-https://api.ebay.com/oauth/api_scope/sell.inventory.readonly
-https://api.ebay.com/oauth/api_scope/sell.inventory
-https://api.ebay.com/oauth/api_scope/sell.account.readonly
-https://api.ebay.com/oauth/api_scope/sell.account
-https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly
-https://api.ebay.com/oauth/api_scope/sell.fulfillment
-https://api.ebay.com/oauth/api_scope/sell.analytics.readonly
-https://api.ebay.com/oauth/api_scope/commerce.identity.readonly
-https://api.ebay.com/oauth/api_scope/sell.finances
-https://api.ebay.com/oauth/api_scope/sell.payment.dispute
-https://api.ebay.com/oauth/api_scope/sell.reputation
-https://api.ebay.com/oauth/api_scope/sell.reputation.readonly
-https://api.ebay.com/oauth/api_scope/commerce.notification.subscription
-https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly
-https://api.ebay.com/oauth/api_scope/sell.stores
-https://api.ebay.com/oauth/api_scope/sell.stores.readonly
-https://api.ebay.com/oauth/api_scope/commerce.vero
-https://api.ebay.com/oauth/api_scope/sell.inventory.mapping
-https://api.ebay.com/oauth/api_scope/commerce.feedback
-https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly
-```
-
-## 📚 Reference Files
-
-- Production scopes: `/docs/auth/production_scopes.json`
-- Sandbox scopes: `/docs/auth/sandbox_scopes.json`
-- OAuth configuration: `/src/config/environment.ts`
-- OAuth client: `/src/auth/oauth.ts`
-- Tool definitions: `/src/tools/tool-definitions.ts`
-- HTTP server: `/src/server-http.ts`
-- OAuth metadata: `/src/auth/oauth-metadata.ts`
-
-## 🚀 Quick Start for Contributors
-
-1. Review scope JSON files to understand environment differences
-2. Start with Critical Priority tasks (Section 1-3)
-3. Test changes in both sandbox and production environments
-4. Update documentation as you implement changes
-5. Add tests for any new scope validation logic
-
-## ⚠️ Important Notes
-
-- Always test scope changes in sandbox before production
-- Maintain backward compatibility with existing stored tokens
-- Document breaking changes in CHANGELOG.md
-- Consider security implications of scope expansion
-- Rate limits differ between client credentials and user tokens (1k vs 10k-50k requests/day)
+# eBay API MCP Server - Feature Roadmap & Todo List
+
+This document tracks completed features and outlines the next priorities for development.
+
+## 🎉 Recently Completed
+
+### ✅ Zod Schema Implementation (Completed: 2025-11-11)
+- **Status**: COMPLETED
+- **Impact**: High - Improves type safety and developer experience
+- **Details**:
+  - Created comprehensive Zod schema library (`src/tools/schemas.ts`, ~450 lines)
+  - Replaced all 38 instances of `z.unknown()` with properly typed schemas
+  - Categories covered: Account, Inventory, Fulfillment, Marketing, Communication, Metadata, Bulk Operations
+  - All schemas use `.passthrough()` for flexibility while validating core fields
+  - Build verified successfully with no TypeScript errors
+
+**Benefits Delivered**:
+- ✅ Type safety for all tool inputs
+- ✅ Clear structure and required fields documentation
+- ✅ Better validation and error messages
+- ✅ Centralized schema management
 
 ---
 
-**Last Updated:** 2025-11-11
-**Status:** Initial scan complete, implementation pending
-**Priority:** Critical - Blocks proper environment separation
+## 🔴 Critical Priority - Next Features
+
+### 1. Environment-Specific OAuth Scope Management
+**Priority**: CRITICAL | **Effort**: Medium (3-5 days) | **Impact**: High
+
+**Current Issue**:
+OAuth scopes are hardcoded and not environment-aware. Sandbox and Production environments have different available scopes, but the code doesn't handle this distinction properly.
+
+**Scope Differences Summary**:
+- Production: 27 unique scopes (includes `sell.edelivery`, `commerce.shipping`)
+- Sandbox: 35 unique scopes (includes Buy API scopes, extended Identity scopes, `sell.item.draft`)
+- Common: 21 scopes available in both environments
+
+**Tasks**:
+- [ ] **Phase 1.1**: Update `src/config/environment.ts`
+  - Already has `getProductionScopes()` and `getSandboxScopes()` functions (DONE)
+  - Already has `validateScopes()` function (DONE)
+  - Already has `validateEnvironmentConfig()` (DONE)
+  - ✅ Functions load scopes from JSON files dynamically
+  - ✅ Scope validation working
+
+- [ ] **Phase 1.2**: Add scope validation to tools
+  - Update `ebay_get_oauth_url` tool to validate scopes against environment
+  - Warn users when requesting environment-incompatible scopes
+  - Add scope validation error messages
+
+- [ ] **Phase 1.3**: Token scope validation
+  - Validate scopes when loading persisted tokens
+  - Warn if stored token scopes don't match current environment
+  - Consider auto-refresh if scopes are insufficient
+
+- [ ] **Phase 1.4**: Documentation
+  - Create `docs/auth/scope-differences.md`
+  - Update main README with scope information
+  - Add troubleshooting guide for scope-related errors
+
+**Files to Modify**:
+- `src/tools/tool-definitions.ts` (scope validation in tools)
+- `src/auth/oauth.ts` (token scope validation)
+- `docs/auth/` (new documentation)
+
+**Reference Files** (already exist):
+- `docs/auth/production_scopes.json` ✅
+- `docs/auth/sandbox_scopes.json` ✅
+- `src/config/environment.ts` ✅ (has helper functions)
+
+---
+
+### 2. Enhanced Error Handling & Logging
+**Priority**: HIGH | **Effort**: Small (1-2 days) | **Impact**: High
+
+**Current Issue**:
+Error messages are generic and don't provide enough context for debugging. No structured logging system.
+
+**Tasks**:
+- [ ] Create `src/utils/logger.ts` with structured logging
+  - Support different log levels (debug, info, warn, error)
+  - Environment-aware (verbose in dev, quiet in prod)
+  - Optional log file output
+
+- [ ] Enhance error messages in API calls
+  - Include request details in errors (endpoint, params)
+  - Parse and format eBay error responses better
+  - Add error codes for common issues
+
+- [ ] Add request/response logging (optional via env var)
+  - Log all API requests when `EBAY_DEBUG=true`
+  - Sanitize sensitive data (tokens, passwords)
+
+- [ ] Create error recovery suggestions
+  - Suggest fixes for common errors (invalid token, missing scope, etc.)
+  - Link to relevant documentation
+
+**Files to Create**:
+- `src/utils/logger.ts`
+- `src/utils/error-formatter.ts`
+- `src/types/errors.ts`
+
+**Files to Modify**:
+- `src/api/client.ts` (enhanced error handling)
+- `src/auth/oauth.ts` (better OAuth error messages)
+- All API implementation files (add logging)
+
+---
+
+### 3. Rate Limiting & Request Throttling
+**Priority**: HIGH | **Effort**: Medium (2-3 days) | **Impact**: Medium-High
+
+**Current Issue**:
+No rate limiting protection. Users can easily exceed eBay's API limits:
+- Client credentials: 1,000 requests/day
+- User tokens: 10,000-50,000 requests/day (varies by account tier)
+
+**Tasks**:
+- [ ] Create `src/utils/rate-limiter.ts`
+  - Track request counts per token type
+  - Implement sliding window rate limiting
+  - Queue requests when approaching limits
+  - Respect eBay's rate limit headers
+
+- [ ] Add rate limit awareness to tools
+  - Display remaining requests in debug mode
+  - Warn when approaching limits
+  - Auto-throttle bulk operations
+
+- [ ] Create rate limit monitoring tool
+  - `ebay_get_rate_limit_status` tool
+  - Shows current usage and remaining requests
+  - Estimates time until reset
+
+**Files to Create**:
+- `src/utils/rate-limiter.ts`
+- `src/tools/rate-limit-tools.ts`
+
+**Files to Modify**:
+- `src/api/client.ts` (integrate rate limiter)
+- `src/tools/tool-definitions.ts` (add rate limit tool)
+
+---
+
+## 🟡 Medium Priority - Quality of Life Improvements
+
+### 4. Bulk Operation Utilities
+**Priority**: MEDIUM | **Effort**: Medium (3-4 days) | **Impact**: Medium
+
+**Current Issue**:
+Many bulk operations exist but lack helper utilities for common patterns (batching, progress tracking, error recovery).
+
+**Tasks**:
+- [ ] Create `src/utils/bulk-operations.ts`
+  - Generic batch processor with configurable batch sizes
+  - Progress tracking for long-running operations
+  - Automatic retry on failures
+  - Partial success handling
+
+- [ ] Add bulk operation helper tools
+  - `ebay_bulk_create_inventory_items_from_csv` (CSV import)
+  - `ebay_bulk_update_prices` (price updates from data)
+  - Progress reporting for bulk operations
+
+- [ ] Create bulk operation templates
+  - Example CSV formats
+  - Batch operation best practices
+  - Error handling patterns
+
+**Files to Create**:
+- `src/utils/bulk-operations.ts`
+- `src/tools/bulk-helpers.ts`
+- `docs/guides/bulk-operations.md`
+- `examples/bulk-inventory-import.csv`
+
+---
+
+### 5. Tool Scope Requirements Documentation
+**Priority**: MEDIUM | **Effort**: Medium (2-3 days) | **Impact**: Medium
+
+**Current Issue**:
+Tool descriptions mention required scopes but it's inconsistent. Users don't know which scopes they need until they get an error.
+
+**Tasks**:
+- [ ] Add `requiredScopes` metadata to all tools
+  - Extend ToolDefinition interface
+  - Document minimum scopes for each tool
+  - Add scope checking before execution
+
+- [ ] Create scope requirement matrix
+  - Map each tool to required scopes
+  - Group tools by scope requirements
+  - Create visual documentation
+
+- [ ] Add runtime scope validation
+  - Check token scopes before tool execution
+  - Provide helpful error messages
+  - Suggest missing scopes to request
+
+**Files to Modify**:
+- `src/tools/tool-definitions.ts` (add requiredScopes metadata)
+- `src/types/tools.ts` (extend ToolDefinition interface)
+
+**Files to Create**:
+- `docs/auth/tool-scope-requirements.md`
+- `src/utils/scope-checker.ts`
+
+---
+
+### 6. Testing Infrastructure
+**Priority**: MEDIUM | **Effort**: Large (5-7 days) | **Impact**: High
+
+**Current Issue**:
+No automated tests. Changes risk breaking existing functionality.
+
+**Tasks**:
+- [ ] Setup testing framework
+  - Add Jest or Vitest
+  - Configure TypeScript for tests
+  - Setup test environments (sandbox/production mocks)
+
+- [ ] Unit tests
+  - OAuth token management
+  - Scope validation
+  - Schema validation
+  - Rate limiting
+
+- [ ] Integration tests
+  - API client with mocked responses
+  - Tool execution
+  - Error handling
+
+- [ ] E2E tests (sandbox only)
+  - Full OAuth flow
+  - Key user workflows
+  - Bulk operations
+
+**Files to Create**:
+- `tests/unit/auth/oauth.test.ts`
+- `tests/unit/auth/scopes.test.ts`
+- `tests/unit/tools/schemas.test.ts`
+- `tests/integration/api/inventory.test.ts`
+- `tests/e2e/oauth-flow.test.ts`
+- `jest.config.js` or `vitest.config.ts`
+
+**Dependencies to Add**:
+- `jest` or `vitest`
+- `@types/jest` or `@vitest/ui`
+- `nock` (HTTP mocking)
+
+---
+
+## 🟢 Low Priority - Nice to Have Features
+
+### 7. Webhook Support
+**Priority**: LOW | **Effort**: Large (7-10 days) | **Impact**: Medium
+
+**Description**:
+Add support for eBay notification webhooks (order updates, inventory changes, messages).
+
+**Tasks**:
+- [ ] Create webhook receiver endpoint
+- [ ] Implement webhook signature validation
+- [ ] Add webhook event storage/forwarding
+- [ ] Create webhook management tools
+- [ ] Document webhook setup
+
+---
+
+### 8. Multi-Account Management
+**Priority**: LOW | **Effort**: Large (7-10 days) | **Impact**: Low-Medium
+
+**Description**:
+Support managing multiple eBay seller accounts from one server instance.
+
+**Tasks**:
+- [ ] Add account switching mechanism
+- [ ] Store tokens per account
+- [ ] Create account selection tool
+- [ ] Update documentation
+
+---
+
+### 9. Advanced Analytics Dashboard
+**Priority**: LOW | **Effort**: Large (10-14 days) | **Impact**: Low
+
+**Description**:
+Web-based analytics dashboard for eBay seller metrics.
+
+**Tasks**:
+- [ ] Create Express-based web server
+- [ ] Build React/Vue dashboard UI
+- [ ] Integrate with Analytics API
+- [ ] Add data visualization
+- [ ] Create custom reports
+
+---
+
+### 10. CLI Tool for Common Operations
+**Priority**: LOW | **Effort**: Medium (3-5 days) | **Impact**: Low-Medium
+
+**Description**:
+Command-line interface for common operations (token management, quick queries, bulk imports).
+
+**Tasks**:
+- [ ] Create CLI entry point
+- [ ] Add token management commands
+- [ ] Add inventory query commands
+- [ ] Add bulk import commands
+- [ ] Create man pages/help docs
+
+---
+
+## 📋 Implementation Phases
+
+### Phase 1: Foundation & Critical Fixes (Week 1-2)
+**Focus**: Stability, proper OAuth scope handling, better error messages
+
+1. ✅ Zod Schema Implementation (COMPLETED)
+2. 🔄 Environment-Specific OAuth Scope Management (IN PROGRESS)
+3. Enhanced Error Handling & Logging
+4. Rate Limiting & Request Throttling
+
+**Expected Outcomes**:
+- Proper sandbox/production separation
+- Better developer experience
+- Protection against rate limits
+- Clear error messages
+
+---
+
+### Phase 2: Quality of Life & Developer Tools (Week 3-4)
+**Focus**: Making the server easier to use and more powerful
+
+1. Bulk Operation Utilities
+2. Tool Scope Requirements Documentation
+3. Testing Infrastructure (begin)
+
+**Expected Outcomes**:
+- Easier bulk operations
+- Better documentation
+- Test coverage for critical paths
+
+---
+
+### Phase 3: Advanced Features (Week 5+)
+**Focus**: Nice-to-have features based on user feedback
+
+1. Complete Testing Infrastructure
+2. Webhook Support
+3. Multi-Account Management
+4. CLI Tool
+5. Advanced Analytics Dashboard (if needed)
+
+**Expected Outcomes**:
+- Production-ready quality
+- Advanced use cases supported
+- Complete test coverage
+
+---
+
+## 🔍 Technical Debt & Refactoring
+
+### Items to Address
+- [ ] Consolidate error handling patterns across API classes
+- [ ] Extract common API client patterns to base class
+- [ ] Review and optimize type imports (reduce duplication)
+- [ ] Add JSDoc comments to all public APIs
+- [ ] Review and update all tool descriptions for consistency
+- [ ] Consider splitting large files (tool-definitions.ts is 2087 lines)
+
+---
+
+## 📚 Documentation Improvements Needed
+
+### High Priority
+- [ ] Complete OAuth setup guide with screenshots
+- [ ] Add troubleshooting guide for common errors
+- [ ] Create "Getting Started" video tutorial
+- [ ] Document all environment variables
+
+### Medium Priority
+- [ ] Add API reference documentation
+- [ ] Create architecture decision records (ADRs)
+- [ ] Document contribution guidelines
+- [ ] Add code examples for common use cases
+
+### Low Priority
+- [ ] Create Postman collection
+- [ ] Add OpenAPI/Swagger documentation
+- [ ] Create integration guides for popular frameworks
+
+---
+
+## 💡 Future Ideas (Not Yet Prioritized)
+
+- **AI-Powered Listing Optimization**: Use AI to suggest optimal pricing, titles, descriptions
+- **Inventory Sync with Other Platforms**: Shopify, WooCommerce, Amazon
+- **Automated Repricing**: Dynamic pricing based on competition
+- **Smart Shipping Calculator**: Optimize shipping costs and methods
+- **Customer Communication Templates**: AI-generated response templates
+- **Fraud Detection**: Flag suspicious orders/buyers
+- **Performance Monitoring**: Track API latency, error rates, success metrics
+- **GraphQL API Layer**: Alternative to REST for complex queries
+- **Real-time Inventory Updates**: WebSocket-based inventory sync
+- **Mobile App**: Companion mobile app for quick updates
+
+---
+
+## 🎯 Success Metrics
+
+### Phase 1 Success Criteria
+- ✅ Zero `z.unknown()` instances in codebase (ACHIEVED)
+- [ ] All tools have proper scope requirements documented
+- [ ] Error messages include actionable suggestions
+- [ ] Rate limiting prevents API limit violations
+- [ ] 90%+ of common errors have helpful messages
+
+### Phase 2 Success Criteria
+- [ ] Bulk operations support batches of 100+ items
+- [ ] Unit test coverage > 70%
+- [ ] Integration test coverage for all API categories
+- [ ] Documentation completeness score > 80%
+
+### Phase 3 Success Criteria
+- [ ] Webhook support for all major event types
+- [ ] Multi-account switching in < 1 second
+- [ ] CLI supports 90% of common operations
+- [ ] E2E test coverage for critical workflows
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Priority areas:
+1. **OAuth scope validation** (Critical)
+2. **Error handling improvements** (High)
+3. **Testing infrastructure** (High)
+4. **Documentation** (Medium)
+5. **Bulk operation utilities** (Medium)
+
+See individual tasks above for specific contribution opportunities.
+
+---
+
+## 📞 Questions or Suggestions?
+
+- **GitHub Issues**: Report bugs or request features
+- **Discussions**: Ask questions or share ideas
+- **Pull Requests**: Submit improvements
+
+---
+
+**Last Updated**: 2025-11-11
+**Status**: Phase 1 in progress (Zod schemas completed, OAuth scopes next)
+**Next Milestone**: Complete OAuth scope validation by 2025-11-18
