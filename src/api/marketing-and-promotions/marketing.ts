@@ -1,79 +1,123 @@
+import type {
+  BulkDeleteKeywordsRequest,
+  CloneAdGroupRequest,
+  CloneAdRequest,
+  ItemPromotionRequest,
+  SuggestKeywordsRequest,
+  TargetingRequest,
+  UpdateAdGroupBidsRequest,
+  UpdateAdGroupKeywordsRequest,
+  UpdateBidRequest,
+} from "../../types/ebay/sell/marketing-and-promotions/marketing-api-types.js";
+import type {
+  BulkDeleteKeywordsResponse,
+  CreateKeywordResponse,
+  TargetingResponse,
+} from "../../types/ebay/sell/marketing-and-promotions/marketing-response-types.js";
 import type { components } from "../../types/openapi-schemas/sell_marketing_v1_oas3.js";
 import type { EbayApiClient } from "../client.js";
 
-
 type AdGroupRequest = components["schemas"]["CreateAdGroupRequest"];
 type BulkCreateAdRequest = components["schemas"]["BulkCreateAdRequest"];
-type BulkCreateAdsByInventoryReferenceRequest = components["schemas"]["BulkCreateAdsByInventoryReferenceRequest"];
-type BulkCreateKeywordsRequest = components["schemas"]["BulkCreateKeywordRequest"];
+type BulkCreateAdsByInventoryReferenceRequest =
+  components["schemas"]["BulkCreateAdsByInventoryReferenceRequest"];
+type BulkCreateKeywordsRequest =
+  components["schemas"]["BulkCreateKeywordRequest"];
 type BulkDeleteAdRequest = components["schemas"]["BulkDeleteAdRequest"];
-type BulkDeleteAdsByInventoryReferenceRequest = components["schemas"]["BulkDeleteAdsByInventoryReferenceRequest"];
-type BulkDeleteKeywordsRequest = components["schemas"]["BulkDeleteKeywordRequest"];
-type BulkUpdateAdStatusByListingIdRequest = components["schemas"]["BulkUpdateAdStatusByListingIdRequest"];
-type BulkUpdateAdStatusRequest = components["schemas"]["BulkUpdateAdStatusRequest"];
-type BulkUpdateKeywordBidsRequest = components["schemas"]["BulkUpdateKeywordRequest"];
-type CloneAdGroupRequest = components["schemas"]["CloneAdGroupRequest"];
-type CloneAdRequest = components["schemas"]["CloneAdRequest"];
+type BulkDeleteAdsByInventoryReferenceRequest =
+  components["schemas"]["BulkDeleteAdsByInventoryReferenceRequest"];
+// type BulkDeleteKeywordsRequest = components["schemas"]["BulkDeleteKeywordRequest"]; // Not in OpenAPI schema
+type BulkUpdateAdStatusByListingIdRequest =
+  components["schemas"]["BulkUpdateAdStatusByListingIdRequest"];
+type BulkUpdateAdStatusRequest =
+  components["schemas"]["BulkUpdateAdStatusRequest"];
+type BulkUpdateKeywordBidsRequest =
+  components["schemas"]["BulkUpdateKeywordRequest"];
+// type CloneAdGroupRequest = components["schemas"]["CloneAdGroupRequest"]; // Not in OpenAPI schema
+// type CloneAdRequest = components["schemas"]["CloneAdRequest"]; // Not in OpenAPI schema
 type CloneCampaignRequest = components["schemas"]["CloneCampaignRequest"];
 type CreateAdRequest = components["schemas"]["CreateAdRequest"];
-type CreateAdsByInventoryReferenceRequest = components["schemas"]["CreateAdsByInventoryReferenceRequest"];
+type CreateAdsByInventoryReferenceRequest =
+  components["schemas"]["CreateAdsByInventoryReferenceRequest"];
 type CreateCampaignRequest = components["schemas"]["CreateCampaignRequest"];
 type CreateKeywordRequest = components["schemas"]["CreateKeywordRequest"];
-type CreateNegativeKeywordRequest = components["schemas"]["CreateNegativeKeywordRequest"];
+type CreateNegativeKeywordRequest =
+  components["schemas"]["CreateNegativeKeywordRequest"];
 type CreateReportTask = components["schemas"]["CreateReportTask"];
 type ItemPromotion = components["schemas"]["ItemPromotion"];
-type ItemPromotionRequest = components["schemas"]["ItemPromotionRequest"];
-type SuggestKeywordsRequest = components["schemas"]["SuggestKeywordsRequest"];
-type TargetingRequest = components["schemas"]["TargetingRequest"];
-type UpdateAdGroupBidsRequest = components["schemas"]["UpdateAdGroupBidsRequest"];
-type UpdateAdGroupKeywordsRequest = components["schemas"]["UpdateAdGroupKeywordsRequest"];
-type UpdateBidPercentageRequest = components["schemas"]["UpdateBidPercentageRequest"];
-type UpdateBidRequest = components["schemas"]["UpdateBidRequest"];
-type UpdateCampaignIdentificationRequest = components["schemas"]["UpdateCampaignIdentificationRequest"];
+// type ItemPromotionRequest = components["schemas"]["ItemPromotionRequest"]; // Not in OpenAPI schema
+// type SuggestKeywordsRequest = components["schemas"]["SuggestKeywordsRequest"]; // Not in OpenAPI schema
+// type TargetingRequest = components["schemas"]["TargetingRequest"]; // Not in OpenAPI schema
+// type UpdateAdGroupBidsRequest = components["schemas"]["UpdateAdGroupBidsRequest"]; // Not in OpenAPI schema
+// type UpdateAdGroupKeywordsRequest = components["schemas"]["UpdateAdGroupKeywordsRequest"]; // Not in OpenAPI schema
+type UpdateBidPercentageRequest =
+  components["schemas"]["UpdateBidPercentageRequest"];
+// type UpdateBidRequest = components["schemas"]["UpdateBidRequest"]; // Not in OpenAPI schema
+type UpdateCampaignIdentificationRequest =
+  components["schemas"]["UpdateCampaignIdentificationRequest"];
 type Ad = components["schemas"]["Ad"];
 type AdGroup = components["schemas"]["AdGroup"];
-type AdGroupPagedCollection = components["schemas"]["AdGroupPagedCollectionResponse"];
-type AdPagedCollectionResponse = components["schemas"]["AdPagedCollectionResponse"];
+type AdGroupPagedCollection =
+  components["schemas"]["AdGroupPagedCollectionResponse"];
+type AdPagedCollectionResponse =
+  components["schemas"]["AdPagedCollectionResponse"];
 type AdReferences = components["schemas"]["AdReferences"];
 type Ads = components["schemas"]["Ads"];
 type BaseResponse = components["schemas"]["BaseResponse"];
 type BulkAdResponse = components["schemas"]["BulkAdResponse"];
 type BulkAdUpdateResponse = components["schemas"]["BulkAdUpdateResponse"];
-type BulkAdUpdateStatusByListingIdResponse = components["schemas"]["BulkAdUpdateStatusByListingIdResponse"];
-type BulkAdUpdateStatusResponse = components["schemas"]["BulkAdUpdateStatusResponse"];
-type BulkCreateAdsByInventoryReferenceResponse = components["schemas"]["BulkCreateAdsByInventoryReferenceResponse"];
-type BulkCreateKeywordsResponse = components["schemas"]["BulkCreateKeywordResponse"];
+type BulkAdUpdateStatusByListingIdResponse =
+  components["schemas"]["BulkAdUpdateStatusByListingIdResponse"];
+type BulkAdUpdateStatusResponse =
+  components["schemas"]["BulkAdUpdateStatusResponse"];
+type BulkCreateAdsByInventoryReferenceResponse =
+  components["schemas"]["BulkCreateAdsByInventoryReferenceResponse"];
+type BulkCreateKeywordsResponse =
+  components["schemas"]["BulkCreateKeywordResponse"];
 type BulkDeleteAdResponse = components["schemas"]["BulkDeleteAdResponse"];
-type BulkDeleteAdsByInventoryReferenceResponse = components["schemas"]["BulkDeleteAdsByInventoryReferenceResponse"];
-type BulkDeleteKeywordsResponse = components["schemas"]["BulkDeleteKeywordResponse"];
-type BulkUpdateAdsByInventoryReferenceResponse = components["schemas"]["BulkUpdateAdsByInventoryReferenceResponse"];
-type BulkUpdateKeywordBidsResponse = components["schemas"]["BulkUpdateKeywordResponse"];
+type BulkDeleteAdsByInventoryReferenceResponse =
+  components["schemas"]["BulkDeleteAdsByInventoryReferenceResponse"];
+// type BulkDeleteKeywordsResponse = components["schemas"]["BulkDeleteKeywordResponse"]; // Not in OpenAPI schema
+type BulkUpdateAdsByInventoryReferenceResponse =
+  components["schemas"]["BulkUpdateAdsByInventoryReferenceResponse"];
+type BulkUpdateKeywordBidsResponse =
+  components["schemas"]["BulkUpdateKeywordResponse"];
 type Campaign = components["schemas"]["Campaign"];
-type CampaignPagedCollectionResponse = components["schemas"]["CampaignPagedCollectionResponse"];
-type CreateKeywordResponse = components["schemas"]["CreateKeywordResponse"];
+type CampaignPagedCollectionResponse =
+  components["schemas"]["CampaignPagedCollectionResponse"];
+// type CreateKeywordResponse = components["schemas"]["CreateKeywordResponse"]; // Not in OpenAPI schema
 type ItemPromotionResponse = components["schemas"]["ItemPromotionResponse"];
-type ItemPromotionsPagedCollection = components["schemas"]["ItemPromotionPagedCollection"];
+type ItemPromotionsPagedCollection =
+  components["schemas"]["ItemPromotionPagedCollection"];
 type Keyword = components["schemas"]["Keyword"];
 type KeywordPagedCollection = components["schemas"]["KeywordPagedCollection"];
 type NegativeKeyword = components["schemas"]["NegativeKeyword"];
-type NegativeKeywordPagedCollection = components["schemas"]["NegativeKeywordPagedCollection"];
-type PromotionsReportPagedCollection = components["schemas"]["PromotionsReportPagedCollection"];
+type NegativeKeywordPagedCollection =
+  components["schemas"]["NegativeKeywordPagedCollection"];
+type PromotionsReportPagedCollection =
+  components["schemas"]["PromotionsReportPagedCollection"];
 type Report = components["schemas"]["Report"];
 type ReportMetadata = components["schemas"]["ReportMetadata"];
 type ReportMetadatas = components["schemas"]["ReportMetadatas"];
 type ReportTask = components["schemas"]["ReportTask"];
-type ReportTaskPagedCollection = components["schemas"]["ReportTaskPagedCollection"];
+type ReportTaskPagedCollection =
+  components["schemas"]["ReportTaskPagedCollection"];
 type SuggestedBids = components["schemas"]["SuggestedBids"];
 type SuggestedKeywords = components["schemas"]["SuggestedKeywords"];
 type SummaryReportResponse = components["schemas"]["SummaryReportResponse"];
-type TargetingResponse = components["schemas"]["TargetingResponse"];
-type BulkCreateNegativeKeywordRequest = components["schemas"]["BulkCreateNegativeKeywordRequest"];
-type BulkCreateNegativeKeywordResponse = components["schemas"]["BulkCreateNegativeKeywordResponse"];
-type BulkDeleteNegativeKeywordRequest = components["schemas"]["BulkDeleteNegativeKeywordRequest"];
-type BulkDeleteNegativeKeywordResponse = components["schemas"]["BulkDeleteNegativeKeywordResponse"];
-type BulkUpdateNegativeKeywordRequest = components["schemas"]["BulkUpdateNegativeKeywordRequest"];
-type BulkUpdateNegativeKeywordResponse = components["schemas"]["BulkUpdateNegativeKeywordResponse"];
-type NegativeKeywordRequest = components["schemas"]["UpdateNegativeKeywordRequest"];
+// type TargetingResponse = components["schemas"]["TargetingResponse"]; // Not in OpenAPI schema
+type BulkCreateNegativeKeywordRequest =
+  components["schemas"]["BulkCreateNegativeKeywordRequest"];
+type BulkCreateNegativeKeywordResponse =
+  components["schemas"]["BulkCreateNegativeKeywordResponse"];
+// type BulkDeleteNegativeKeywordRequest = components["schemas"]["BulkDeleteNegativeKeywordRequest"]; // Not in OpenAPI schema
+// type BulkDeleteNegativeKeywordResponse = components["schemas"]["BulkDeleteNegativeKeywordResponse"]; // Not in OpenAPI schema
+type BulkUpdateNegativeKeywordRequest =
+  components["schemas"]["BulkUpdateNegativeKeywordRequest"];
+type BulkUpdateNegativeKeywordResponse =
+  components["schemas"]["BulkUpdateNegativeKeywordResponse"];
+type NegativeKeywordRequest =
+  components["schemas"]["UpdateNegativeKeywordRequest"];
 
 /**
  * Marketing API - Marketing campaigns and promotions

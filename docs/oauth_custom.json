@@ -1,0 +1,99 @@
+[
+	{
+		"Field Name": "Display Title",
+		"Description": "The title that eBay displays at the top of the Grant Application Access page during the client-grant flow."
+	},
+	{
+		"Field Name": "Privacy Policy URL",
+		"Description": "Enter the URL where you host your privacy policy. This policy states how you use the eBay information that your application can access when a user grants permission to your application."
+	},
+	{
+		"Field Name": "Auth Accepted URL",
+		"Description": "eBay redirects the user to this URL if the user grants your application the permissions it needs to act upon their behalf."
+	},
+	{
+		"Field Name": "Auth Declined URL",
+		"Description": "eBay redirects the user to this URL if the user does not grant your application the permissions it needs."
+	},
+	{},
+	{
+		"Field Name": "Client credentials grant\n(grant_type = client_credentials)",
+		"Description": "Application access token",
+		"undefined": "1,000 requests/day"
+	},
+	{
+		"Field Name": "Authorization code grant\n(grant_type = authorization_code)",
+		"Description": "User access token",
+		"undefined": "10,000 requests/day"
+	},
+	{
+		"Field Name": "Refresh token grant\n(grant_type = refresh_token)",
+		"Description": "User access token",
+		"undefined": "50,000 requests/day"
+	},
+	{},
+	{
+		"Field Name": "Sandbox",
+		"Description": "POST https://api.sandbox.ebay.com/identity/v1/oauth2/token"
+	},
+	{
+		"Field Name": "Production",
+		"Description": "POST https://api.ebay.com/identity/v1/oauth2/token"
+	},
+	{},
+	{
+		"Field Name": "Sandbox",
+		"Description": "GET https://auth.sandbox.ebay.com/oauth2/authorize"
+	},
+	{
+		"Field Name": "Production",
+		"Description": "GET https://auth.ebay.com/oauth2/authorize"
+	},
+	{},
+	{
+		"Field Name": "client_id",
+		"Description": "The client_id value for the environment you're targeting.\nOccurrence: Required"
+	},
+	{
+		"Field Name": "locale",
+		"Description": "The locale parameter to localize the OAuth consent page for the marketplace you're targeting. For example, set locale=de-DE for Germany. See the Locale Support column of the Marketplace ID values table for the supported locales.\nOccurrence: Optional"
+	},
+	{
+		"Field Name": "prompt",
+		"Description": "If needed, you can force a user to log in when you redirect them to the Grant Application Access page, even if they already have an existing user session. To do so, set the prompt query parameter to login.\nOccurrence: Optional"
+	},
+	{
+		"Field Name": "redirect_uri",
+		"Description": "The RuName value for the environment you're targeting.\nFor details, see Getting your redirect_uri value.\nOccurrence: Required"
+	},
+	{
+		"Field Name": "response_type",
+		"Description": "Set to \"code\" to have eBay generate and return an authorization code.\nOccurrence: Required"
+	},
+	{
+		"Field Name": "scope",
+		"Description": "A list of OAuth scopes that provide access to the resources used by your application.\nFor details, see Using OAuth to access eBay APIs\nOccurrence: Required"
+	},
+	{
+		"Field Name": "state",
+		"Description": "An opaque value used by the client to maintain state between the request and callback.\nThe authorization server returns the same value supplied in the request when it redirects the user-agent back to the client's accept URL. While the state value is optional, we recommend you supply this value and use it to prevent cross-site request forgery, as described in Section 10.12 of the OAuth spec.\nOccurrence: Optional"
+	},
+	{},
+	{
+		"Field Name": "Sandbox",
+		"Description": "POST https://api.sandbox.ebay.com/identity/v1/oauth2/token"
+	},
+	{
+		"Field Name": "Production",
+		"Description": "POST https://api.ebay.com/identity/v1/oauth2/token"
+	},
+	{},
+	{
+		"Field Name": "Sandbox",
+		"Description": "POST https://api.sandbox.ebay.com/identity/v1/oauth2/token"
+	},
+	{
+		"Field Name": "Production",
+		"Description": "POST https://api.ebay.com/identity/v1/oauth2/token"
+	}
+]
