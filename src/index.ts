@@ -35,6 +35,13 @@ class EbayMcpServer {
     this.setupErrorHandling();
   }
 
+  /**
+   * Initialize the API (load tokens from storage)
+   */
+  private async initialize(): Promise<void> {
+    await this.api.initialize();
+  }
+
   private setupHandlers(): void {
     // Register all tools dynamically from tool definitions
     const tools = getToolDefinitions();
@@ -84,6 +91,9 @@ class EbayMcpServer {
   }
 
   async run(): Promise<void> {
+    // Initialize API (load tokens from storage)
+    await this.initialize();
+
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     console.error("eBay API MCP Server running on stdio");

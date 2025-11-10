@@ -64,6 +64,40 @@ export const chatGptTools: ToolDefinition[] = [
       },
       required: ['redirectUri']
     }
+  },
+  {
+    name: 'ebay_set_user_tokens',
+    description: 'Set the user access token and refresh token for authenticated API requests. These tokens should be obtained through the OAuth authorization code flow. Tokens will be persisted to disk and automatically refreshed when needed. User tokens provide higher rate limits (10,000-50,000 requests/day) compared to client credentials (1,000 requests/day).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          description: 'The user access token obtained from OAuth flow'
+        },
+        refreshToken: {
+          type: 'string',
+          description: 'The refresh token obtained from OAuth flow'
+        }
+      },
+      required: ['accessToken', 'refreshToken']
+    }
+  },
+  {
+    name: 'ebay_get_token_status',
+    description: 'Check the current OAuth token status. Returns information about whether user tokens or client credentials are being used, and whether tokens are valid.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    name: 'ebay_clear_tokens',
+    description: 'Clear all stored OAuth tokens (both user tokens and client credentials). This will require re-authentication for subsequent API calls.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
   }
 ];
 

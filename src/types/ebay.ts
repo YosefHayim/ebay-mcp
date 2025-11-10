@@ -9,11 +9,41 @@ export interface EbayConfig {
   environment: 'production' | 'sandbox';
 }
 
+/**
+ * OAuth token response from eBay
+ * Supports both client credentials and authorization code grants
+ */
 export interface EbayAuthToken {
   access_token: string;
   token_type: string;
   expires_in: number;
   refresh_token?: string;
+  refresh_token_expires_in?: number;
+}
+
+/**
+ * User access token with refresh token
+ * Used for user-specific operations (10,000-50,000 requests/day)
+ */
+export interface EbayUserToken {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token_expires_in: number;
+  scope?: string;
+}
+
+/**
+ * Stored token data with expiry timestamps
+ */
+export interface StoredTokenData {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  accessTokenExpiry: number; // Unix timestamp in milliseconds
+  refreshTokenExpiry: number; // Unix timestamp in milliseconds
+  scope?: string;
 }
 
 export interface EbayApiResponse<T = any> {

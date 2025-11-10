@@ -134,6 +134,54 @@ export async function executeTool(
       };
     }
 
+    case "ebay_set_user_tokens": {
+      const accessToken = args.accessToken as string;
+      const refreshToken = args.refreshToken as string;
+
+      if (!accessToken || !refreshToken) {
+        throw new Error("Both accessToken and refreshToken are required");
+      }
+
+      await api.setUserTokens(accessToken, refreshToken);
+
+      return {
+        success: true,
+        message:
+          "User tokens successfully stored. These tokens will be used for all subsequent API requests and will be automatically refreshed when needed.",
+        tokenInfo: api.getTokenInfo(),
+      };
+    }
+
+    case "ebay_get_token_status": {
+      const tokenInfo = api.getTokenInfo();
+      const hasUserTokens = api.hasUserTokens();
+
+      return {
+        hasUserToken: tokenInfo.hasUserToken,
+        hasClientToken: tokenInfo.hasClientToken,
+        authenticated: api.isAuthenticated(),
+        currentTokenType: tokenInfo.hasUserToken
+          ? "user_token (10,000-50,000 req/day)"
+          : tokenInfo.hasClientToken
+            ? "client_credentials (1,000 req/day)"
+            : "none",
+        message: hasUserTokens
+          ? "Using user access token with automatic refresh"
+          : "Using client credentials flow (lower rate limits). Consider setting user tokens for higher rate limits.",
+      };
+    }
+
+    case "ebay_clear_tokens": {
+      const authClient = api.getAuthClient().getOAuthClient();
+      await authClient.clearAllTokens();
+
+      return {
+        success: true,
+        message:
+          "All tokens cleared successfully. You will need to re-authenticate for subsequent API calls.",
+      };
+    }
+
     // Account Management
     case "ebay_get_custom_policies":
       return api.account.getCustomPolicies(args.policyTypes as string);

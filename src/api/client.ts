@@ -91,9 +91,44 @@ export class EbayApiClient {
   }
 
   /**
+   * Initialize the client (load user tokens from storage)
+   */
+  async initialize(): Promise<void> {
+    await this.authClient.initialize();
+  }
+
+  /**
    * Check if client is authenticated
    */
   isAuthenticated(): boolean {
     return this.authClient.isAuthenticated();
+  }
+
+  /**
+   * Check if user tokens are available
+   */
+  hasUserTokens(): boolean {
+    return this.authClient.hasUserTokens();
+  }
+
+  /**
+   * Set user access and refresh tokens
+   */
+  async setUserTokens(accessToken: string, refreshToken: string): Promise<void> {
+    await this.authClient.setUserTokens(accessToken, refreshToken);
+  }
+
+  /**
+   * Get token information for debugging
+   */
+  getTokenInfo() {
+    return this.authClient.getTokenInfo();
+  }
+
+  /**
+   * Get the OAuth client instance for advanced operations
+   */
+  getOAuthClient(): EbayOAuthClient {
+    return this.authClient;
   }
 }

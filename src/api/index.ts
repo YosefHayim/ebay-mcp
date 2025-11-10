@@ -70,10 +70,45 @@ export class EbaySellerApi {
   }
 
   /**
+   * Initialize the API (load tokens from storage)
+   */
+  async initialize(): Promise<void> {
+    await this.client.initialize();
+  }
+
+  /**
    * Check if the API client is authenticated
    */
   isAuthenticated(): boolean {
     return this.client.isAuthenticated();
+  }
+
+  /**
+   * Check if user tokens are available
+   */
+  hasUserTokens(): boolean {
+    return this.client.hasUserTokens();
+  }
+
+  /**
+   * Set user access and refresh tokens
+   */
+  async setUserTokens(accessToken: string, refreshToken: string): Promise<void> {
+    await this.client.setUserTokens(accessToken, refreshToken);
+  }
+
+  /**
+   * Get OAuth client for advanced operations
+   */
+  getAuthClient(): EbayApiClient {
+    return this.client;
+  }
+
+  /**
+   * Get token information for debugging
+   */
+  getTokenInfo() {
+    return this.client.getTokenInfo();
   }
 }
 
