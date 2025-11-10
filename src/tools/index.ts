@@ -16,6 +16,49 @@ import {
   taxonomyTools,
 } from "./tool-definitions.js";
 
+// Import Zod schemas for input validation
+import {
+  getFeedbackSchema,
+  getFeedbackRatingSummarySchema,
+  leaveFeedbackForBuyerSchema,
+  respondToFeedbackSchema,
+  getAwaitingFeedbackSchema,
+} from "../utils/communication/feedback.js";
+import {
+  getConversationsSchema,
+  getConversationSchema,
+  sendMessageSchema,
+  bulkUpdateConversationSchema,
+  updateConversationSchema,
+} from "../utils/communication/message.js";
+import {
+  findEligibleItemsSchema,
+  sendOfferToInterestedBuyersSchema,
+  getOffersToBuyersSchema,
+} from "../utils/communication/negotiation.js";
+import {
+  getPublicKeySchema,
+  getConfigSchema,
+  updateConfigSchema,
+  getDestinationSchema,
+  createDestinationSchema,
+  updateDestinationSchema,
+  deleteDestinationSchema,
+  getSubscriptionsSchema,
+  createSubscriptionSchema,
+  getSubscriptionSchema,
+  updateSubscriptionSchema,
+  deleteSubscriptionSchema,
+  disableSubscriptionSchema,
+  enableSubscriptionSchema,
+  testSubscriptionSchema,
+  getTopicSchema,
+  getTopicsSchema,
+  createSubscriptionFilterSchema,
+  getSubscriptionFilterSchema,
+  deleteSubscriptionFilterSchema,
+} from "../utils/communication/notification.js";
+
 export type { ToolDefinition };
 
 /**
@@ -634,55 +677,209 @@ export async function executeTool(
       );
 
     // Communication - Negotiation
-    case "ebay_get_offers_to_buyers":
+    case "ebay_get_offers_to_buyers": {
+      const validated = getOffersToBuyersSchema.parse(args);
       return api.negotiation.getOffersToBuyers(
-        args.filter as string,
-        args.limit as number,
-        args.offset as number,
+        validated.filter,
+        validated.limit,
+        validated.offset,
       );
-    case "ebay_send_offer_to_interested_buyers":
+    }
+    case "ebay_send_offer_to_interested_buyers": {
+      const validated = sendOfferToInterestedBuyersSchema.parse(args);
       return api.negotiation.sendOfferToInterestedBuyers(
-        args.offerData as Record<string, unknown>,
+        validated.offer_data,
       );
+    }
+    case "ebay_find_eligible_items": {
+      const validated = findEligibleItemsSchema.parse(args);
+      return api.negotiation.findEligibleItems(
+        validated.filter,
+        validated.limit,
+        validated.offset,
+      );
+    }
 
     // Communication - Message
-    case "ebay_search_messages":
+    case "ebay_search_messages": {
+      const validated = getConversationsSchema.parse(args);
       return api.message.searchMessages(
-        args.filter as string,
-        args.limit as number,
-        args.offset as number,
+        validated.filter,
+        validated.limit,
+        validated.offset,
       );
-    case "ebay_get_message":
-      return api.message.getMessage(args.messageId as string);
-    case "ebay_send_message":
-      return api.message.sendMessage(args.messageData as Record<string, unknown>);
-    case "ebay_reply_to_message":
+    }
+    case "ebay_get_message": {
+      const validated = getConversationSchema.parse(args);
+      return api.message.getMessage(validated.conversation_id);
+    }
+    case "ebay_send_message": {
+      const validated = sendMessageSchema.parse(args);
+      return api.message.sendMessage(validated.message_data);
+    }
+    case "ebay_reply_to_message": {
+      // This is a deprecated method that maps to sendMessage
+      // We'll validate with a simple schema
+      if (!args.messageId || !args.messageContent) {
+        throw new Error("messageId and messageContent are required");
+      }
       return api.message.replyToMessage(
         args.messageId as string,
         args.messageContent as string,
       );
+    }
+    case "ebay_get_conversations": {
+      const validated = getConversationsSchema.parse(args);
+      return api.message.getConversations(
+        validated.filter,
+        validated.limit,
+        validated.offset,
+      );
+    }
+    case "ebay_get_conversation": {
+      const validated = getConversationSchema.parse(args);
+      return api.message.getConversation(validated.conversation_id);
+    }
+    case "ebay_bulk_update_conversation": {
+      const validated = bulkUpdateConversationSchema.parse(args);
+      return api.message.bulkUpdateConversation(validated.update_data);
+    }
+    case "ebay_update_conversation": {
+      const validated = updateConversationSchema.parse(args);
+      return api.message.updateConversation(validated.update_data);
+    }
 
     // Communication - Notification
-    case "ebay_get_notification_config":
+    case "ebay_get_notification_config": {
+      getConfigSchema.parse(args); // Validate empty args
       return api.notification.getConfig();
-    case "ebay_update_notification_config":
-      return api.notification.updateConfig(
-        args.config as Record<string, unknown>,
+    }
+    case "ebay_update_notification_config": {
+      const validated = updateConfigSchema.parse(args);
+      return api.notification.updateConfig(validated.config);
+    }
+    case "ebay_create_notification_destination": {
+      const validated = createDestinationSchema.parse(args);
+      return api.notification.createDestination(validated.destination);
+    }
+    case "ebay_get_notification_destination": {
+      const validated = getDestinationSchema.parse(args);
+      return api.notification.getDestination(validated.destination_id);
+    }
+    case "ebay_update_notification_destination": {
+      const validated = updateDestinationSchema.parse(args);
+      return api.notification.updateDestination(
+        validated.destination_id,
+        validated.destination,
       );
-    case "ebay_create_notification_destination":
-      return api.notification.createDestination(
-        args.destination as Record<string, unknown>,
+    }
+    case "ebay_delete_notification_destination": {
+      const validated = deleteDestinationSchema.parse(args);
+      return api.notification.deleteDestination(validated.destination_id);
+    }
+    case "ebay_get_notification_subscriptions": {
+      const validated = getSubscriptionsSchema.parse(args);
+      return api.notification.getSubscriptions(
+        validated.limit,
+        validated.continuation_token,
       );
+    }
+    case "ebay_create_notification_subscription": {
+      const validated = createSubscriptionSchema.parse(args);
+      return api.notification.createSubscription(validated.subscription);
+    }
+    case "ebay_get_notification_subscription": {
+      const validated = getSubscriptionSchema.parse(args);
+      return api.notification.getSubscription(validated.subscription_id);
+    }
+    case "ebay_update_notification_subscription": {
+      const validated = updateSubscriptionSchema.parse(args);
+      return api.notification.updateSubscription(
+        validated.subscription_id,
+        validated.subscription,
+      );
+    }
+    case "ebay_delete_notification_subscription": {
+      const validated = deleteSubscriptionSchema.parse(args);
+      return api.notification.deleteSubscription(validated.subscription_id);
+    }
+    case "ebay_disable_notification_subscription": {
+      const validated = disableSubscriptionSchema.parse(args);
+      return api.notification.disableSubscription(validated.subscription_id);
+    }
+    case "ebay_enable_notification_subscription": {
+      const validated = enableSubscriptionSchema.parse(args);
+      return api.notification.enableSubscription(validated.subscription_id);
+    }
+    case "ebay_test_notification_subscription": {
+      const validated = testSubscriptionSchema.parse(args);
+      return api.notification.testSubscription(validated.subscription_id);
+    }
+    case "ebay_get_notification_topic": {
+      const validated = getTopicSchema.parse(args);
+      return api.notification.getTopic(validated.topic_id);
+    }
+    case "ebay_get_notification_topics": {
+      const validated = getTopicsSchema.parse(args);
+      return api.notification.getTopics(
+        validated.limit,
+        validated.continuation_token,
+      );
+    }
+    case "ebay_create_notification_subscription_filter": {
+      const validated = createSubscriptionFilterSchema.parse(args);
+      return api.notification.createSubscriptionFilter(
+        validated.subscription_id,
+        validated.filter,
+      );
+    }
+    case "ebay_get_notification_subscription_filter": {
+      const validated = getSubscriptionFilterSchema.parse(args);
+      return api.notification.getSubscriptionFilter(
+        validated.subscription_id,
+        validated.filter_id,
+      );
+    }
+    case "ebay_delete_notification_subscription_filter": {
+      const validated = deleteSubscriptionFilterSchema.parse(args);
+      return api.notification.deleteSubscriptionFilter(
+        validated.subscription_id,
+        validated.filter_id,
+      );
+    }
+    case "ebay_get_notification_public_key": {
+      const validated = getPublicKeySchema.parse(args);
+      return api.notification.getPublicKey(validated.public_key_id);
+    }
 
     // Communication - Feedback
-    case "ebay_get_feedback":
-      return api.feedback.getFeedback(args.transactionId as string);
-    case "ebay_leave_feedback_for_buyer":
-      return api.feedback.leaveFeedbackForBuyer(
-        args.feedbackData as Record<string, unknown>,
-      );
-    case "ebay_get_feedback_summary":
+    case "ebay_get_feedback": {
+      const validated = getFeedbackSchema.parse(args);
+      return api.feedback.getFeedback(validated.transaction_id);
+    }
+    case "ebay_leave_feedback_for_buyer": {
+      const validated = leaveFeedbackForBuyerSchema.parse(args);
+      return api.feedback.leaveFeedbackForBuyer(validated.feedback_data);
+    }
+    case "ebay_get_feedback_summary": {
+      getFeedbackRatingSummarySchema.parse(args); // Validate empty args
       return api.feedback.getFeedbackSummary();
+    }
+    case "ebay_get_awaiting_feedback": {
+      const validated = getAwaitingFeedbackSchema.parse(args);
+      return api.feedback.getAwaitingFeedback(
+        validated.filter,
+        validated.limit,
+        validated.offset,
+      );
+    }
+    case "ebay_respond_to_feedback": {
+      const validated = respondToFeedbackSchema.parse(args);
+      return api.feedback.respondToFeedback(
+        validated.feedback_id,
+        validated.response_text,
+      );
+    }
 
     // Other APIs - Identity
     case "ebay_get_user":

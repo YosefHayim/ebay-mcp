@@ -42,10 +42,10 @@ The following is a list of Zod schemas that need to be created. The list is base
 - [ ] `analytics.ts`
 
 ### Communication
-- [ ] `feedback.ts`
-- [ ] `message.ts`
-- [ ] `negotiation.ts`
-- [ ] `notification.ts`
+- [x] `feedback.ts`
+- [x] `message.ts`
+- [x] `negotiation.ts`
+- [x] `notification.ts`
 
 ### Listing Management
 - [ ] `inventory.ts`
