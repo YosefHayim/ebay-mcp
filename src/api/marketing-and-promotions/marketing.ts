@@ -9,17 +9,15 @@ type BulkCreateAdsByInventoryReferenceRequest =
 type BulkCreateKeywordsRequest =
   components["schemas"]["BulkCreateKeywordRequest"];
 type BulkDeleteAdRequest = components["schemas"]["BulkDeleteAdRequest"];
-type BulkDeleteAdsByInventoryReferenceRequest =
-  components["schemas"]["BulkDeleteAdsByInventoryReferenceRequest"];
-// type BulkDeleteKeywordsRequest = components["schemas"]["BulkDeleteKeywordRequest"]; // Not in OpenAPI schema
+type BulkDeleteKeywordsRequest = components["schemas"]["BulkDeleteKeywordRequest"];
 type BulkUpdateAdStatusByListingIdRequest =
   components["schemas"]["BulkUpdateAdStatusByListingIdRequest"];
 type BulkUpdateAdStatusRequest =
   components["schemas"]["BulkUpdateAdStatusRequest"];
 type BulkUpdateKeywordBidsRequest =
   components["schemas"]["BulkUpdateKeywordRequest"];
-// type CloneAdGroupRequest = components["schemas"]["CloneAdGroupRequest"]; // Not in OpenAPI schema
-// type CloneAdRequest = components["schemas"]["CloneAdRequest"]; // Not in OpenAPI schema
+type CloneAdGroupRequest = components["schemas"]["CloneAdGroupRequest"];
+type CloneAdRequest = components["schemas"]["CloneAdRequest"];
 type CloneCampaignRequest = components["schemas"]["CloneCampaignRequest"];
 type CreateAdRequest = components["schemas"]["CreateAdRequest"];
 type CreateAdsByInventoryReferenceRequest =
@@ -30,14 +28,14 @@ type CreateNegativeKeywordRequest =
   components["schemas"]["CreateNegativeKeywordRequest"];
 type CreateReportTask = components["schemas"]["CreateReportTask"];
 type ItemPromotion = components["schemas"]["ItemPromotion"];
-// type ItemPromotionRequest = components["schemas"]["ItemPromotionRequest"]; // Not in OpenAPI schema
-// type SuggestKeywordsRequest = components["schemas"]["SuggestKeywordsRequest"]; // Not in OpenAPI schema
-// type TargetingRequest = components["schemas"]["TargetingRequest"]; // Not in OpenAPI schema
-// type UpdateAdGroupBidsRequest = components["schemas"]["UpdateAdGroupBidsRequest"]; // Not in OpenAPI schema
-// type UpdateAdGroupKeywordsRequest = components["schemas"]["UpdateAdGroupKeywordsRequest"]; // Not in OpenAPI schema
+type ItemPromotionRequest = components["schemas"]["ItemPromotionRequest"];
+type SuggestKeywordsRequest = components["schemas"]["SuggestKeywordsRequest"];
+type TargetingRequest = components["schemas"]["TargetingRequest"];
+type UpdateAdGroupBidsRequest = components["schemas"]["UpdateAdGroupBidsRequest"];
+type UpdateAdGroupKeywordsRequest = components["schemas"]["UpdateAdGroupKeywordsRequest"];
 type UpdateBidPercentageRequest =
   components["schemas"]["UpdateBidPercentageRequest"];
-// type UpdateBidRequest = components["schemas"]["UpdateBidRequest"]; // Not in OpenAPI schema
+type UpdateBidRequest = components["schemas"]["UpdateBidRequest"];
 type UpdateCampaignIdentificationRequest =
   components["schemas"]["UpdateCampaignIdentificationRequest"];
 type Ad = components["schemas"]["Ad"];
@@ -62,7 +60,7 @@ type BulkCreateKeywordsResponse =
 type BulkDeleteAdResponse = components["schemas"]["BulkDeleteAdResponse"];
 type BulkDeleteAdsByInventoryReferenceResponse =
   components["schemas"]["BulkDeleteAdsByInventoryReferenceResponse"];
-// type BulkDeleteKeywordsResponse = components["schemas"]["BulkDeleteKeywordResponse"]; // Not in OpenAPI schema
+type BulkDeleteKeywordsResponse = components["schemas"]["BulkDeleteKeywordResponse"];
 type BulkUpdateAdsByInventoryReferenceResponse =
   components["schemas"]["BulkUpdateAdsByInventoryReferenceResponse"];
 type BulkUpdateKeywordBidsResponse =
@@ -70,15 +68,16 @@ type BulkUpdateKeywordBidsResponse =
 type Campaign = components["schemas"]["Campaign"];
 type CampaignPagedCollectionResponse =
   components["schemas"]["CampaignPagedCollectionResponse"];
-// type CreateKeywordResponse = components["schemas"]["CreateKeywordResponse"]; // Not in OpenAPI schema
+type CreateKeywordResponse = components["schemas"]["CreateKeywordResponse"];
 type ItemPromotionResponse = components["schemas"]["ItemPromotionResponse"];
 type ItemPromotionsPagedCollection =
   components["schemas"]["ItemPromotionPagedCollection"];
 type Keyword = components["schemas"]["Keyword"];
-type KeywordPagedCollection = components["schemas"]["KeywordPagedCollection"];
+type KeywordPagedCollection =
+  components["schemas"]["KeywordPagedCollectionResponse"];
 type NegativeKeyword = components["schemas"]["NegativeKeyword"];
 type NegativeKeywordPagedCollection =
-  components["schemas"]["NegativeKeywordPagedCollection"];
+  components["schemas"]["NegativeKeywordPagedCollectionResponse"];
 type PromotionsReportPagedCollection =
   components["schemas"]["PromotionsReportPagedCollection"];
 type Report = components["schemas"]["Report"];
@@ -90,13 +89,13 @@ type ReportTaskPagedCollection =
 type SuggestedBids = components["schemas"]["SuggestedBids"];
 type SuggestedKeywords = components["schemas"]["SuggestedKeywords"];
 type SummaryReportResponse = components["schemas"]["SummaryReportResponse"];
-// type TargetingResponse = components["schemas"]["TargetingResponse"]; // Not in OpenAPI schema
+type TargetingResponse = components["schemas"]["TargetingResponse"];
 type BulkCreateNegativeKeywordRequest =
   components["schemas"]["BulkCreateNegativeKeywordRequest"];
 type BulkCreateNegativeKeywordResponse =
   components["schemas"]["BulkCreateNegativeKeywordResponse"];
-// type BulkDeleteNegativeKeywordRequest = components["schemas"]["BulkDeleteNegativeKeywordRequest"]; // Not in OpenAPI schema
-// type BulkDeleteNegativeKeywordResponse = components["schemas"]["BulkDeleteNegativeKeywordResponse"]; // Not in OpenAPI schema
+type BulkDeleteNegativeKeywordRequest = components["schemas"]["BulkDeleteNegativeKeywordRequest"];
+type BulkDeleteNegativeKeywordResponse = components["schemas"]["BulkDeleteNegativeKeywordResponse"];
 type BulkUpdateNegativeKeywordRequest =
   components["schemas"]["BulkUpdateNegativeKeywordRequest"];
 type BulkUpdateNegativeKeywordResponse =
@@ -249,7 +248,7 @@ export class MarketingApi {
   async cloneAd(
     campaignId: string,
     adId: string,
-    ad: CloneAdRequest,
+    ad: CreateAdRequest,
   ): Promise<BaseResponse> {
     return this.client.post<BaseResponse>(
       `${this.basePath}/ad_campaign/${campaignId}/ad/${adId}/clone`,
@@ -494,7 +493,7 @@ export class MarketingApi {
   async cloneAdGroup(
     campaignId: string,
     adGroupId: string,
-    body: CloneAdGroupRequest,
+    body: CreateAdGroupRequest,
   ): Promise<BaseResponse> {
     return this.client.post<BaseResponse>(
       `${this.basePath}/ad_campaign/${campaignId}/ad_group/${adGroupId}/clone`,
@@ -549,7 +548,7 @@ export class MarketingApi {
   async updateAdGroupBids(
     campaignId: string,
     adGroupId: string,
-    body: UpdateAdGroupBidsRequest,
+    body: UpdateKeywordByKeywordIdRequest,
   ): Promise<void> {
     return this.client.post<void>(
       `${this.basePath}/ad_campaign/${campaignId}/ad_group/${adGroupId}/update_ad_group_bids`,
@@ -563,7 +562,7 @@ export class MarketingApi {
   async updateAdGroupKeywords(
     campaignId: string,
     adGroupId: string,
-    body: UpdateAdGroupKeywordsRequest,
+    body: BulkUpdateKeywordRequest,
   ): Promise<void> {
     return this.client.post<void>(
       `${this.basePath}/ad_campaign/${campaignId}/ad_group/${adGroupId}/update_ad_group_keywords`,
