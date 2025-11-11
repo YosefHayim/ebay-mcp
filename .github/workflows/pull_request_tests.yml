@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18" # Use Node.js 18 as specified in GEMINI.md
+          node-version: "20" # Use Node.js 18 as specified in GEMINI.md
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
