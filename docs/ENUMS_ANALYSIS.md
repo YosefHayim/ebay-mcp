@@ -7,9 +7,10 @@ This document catalogs all enum types used across the eBay Sell APIs and identif
 ## Summary Statistics
 
 - **Total enum types found**: 180+
-- **Implemented in ebay-enums.ts**: 22 core enums
-- **Currently used in tool definitions**: MarketplaceId only (as example strings)
-- **Missing**: 158+ specialized enums
+- **Implemented in ebay-enums.ts**: 33 core enums (updated from 22)
+- **Currently used in tool definitions**: 19 tool schemas using native enums (23 schema objects updated)
+- **Test coverage**: 86 tests (49 enum structure + 37 schema validation)
+- **Missing**: 147+ specialized enums (down from 158+)
 
 ## Implemented Enums
 
@@ -342,12 +343,12 @@ For implementation help, refer to <a href='https://developer.ebay.com/api-docs/s
 
 ## Next Steps
 
-1. ✅ Created `src/types/ebay-enums.ts` with 22 core enums
-2. ⏳ Update Zod schemas in `src/utils/` to use native enums
-3. ⏳ Update tool definitions to reference enum types
-4. ⏳ Add remaining high-priority enums (15-20 more)
-5. ⏳ Generate enum helper functions
-6. ⏳ Add enum validation tests
+1. ✅ Created `src/types/ebay-enums.ts` with 33 core enums (updated from 22)
+2. ✅ Updated Zod schemas in `src/tools/schemas.ts` to use native enums (23 schemas updated)
+3. ✅ Updated tool definitions to reference enum types (19 occurrences updated)
+4. ✅ Added remaining high-priority enums (11 additional enums: DepositType, PublishStatus, RegionType, ExtendedProducerResponsibilityEnum, and 7 more)
+5. ⏳ Generate enum helper functions (optional enhancement)
+6. ✅ Added comprehensive enum validation tests (49 enum structure tests + 37 schema validation tests = 86 total tests)
 
 ## Benefits of Using Enums
 

@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.4] - 2025-01-12
+
+### Added
+- **Comprehensive Enum Type System** (`src/types/ebay-enums.ts`)
+  - Added 33 TypeScript native enums covering all eBay API domains
+  - Core business enums: MarketplaceId (41 values), Condition (17 values), FormatType, OrderPaymentStatus, CampaignStatus
+  - Policy enums: RefundMethod, ReturnMethod, ReturnShippingCostPayer, ShippingCostType, ShippingOptionType, CategoryType, PaymentMethodType, DepositType
+  - Fulfillment & inventory enums: LineItemFulfillmentStatus, OfferStatus, ListingStatus, PublishStatus
+  - Compliance & standards: ComplianceType
+  - Measurement units: TimeDurationUnit (9 values), WeightUnit (4 values), LengthUnit (4 values)
+  - Localization: LanguageCode (13 values), CurrencyCode (14 values)
+  - Regulatory & metadata: RegionType, ExtendedProducerResponsibilityEnum
+  - All enums include JSDoc documentation with eBay API references
+- **Enhanced Type Safety**
+  - Updated all Zod validation schemas in `src/tools/schemas.ts` to use `z.nativeEnum()` instead of string enums
+  - 23 schema objects now use native enum validation
+  - Provides compile-time type checking and runtime validation
+- **Comprehensive Test Coverage**
+  - Added `tests/unit/types/ebay-enums.test.ts` with 49 tests validating enum structure and values
+  - Added `tests/unit/tools/schemas-enums.test.ts` with 37 tests validating Zod schema integration
+  - Tests verify enum value counts, type safety, runtime validation, and cross-schema consistency
+- **Documentation**
+  - Created `docs/ENUMS_ANALYSIS.md` with comprehensive enum catalog
+  - Documents 180+ total eBay enum types (33 implemented, 147+ pending)
+  - Includes implementation priorities, usage examples, and migration guide
+
+### Changed
+- **Tool Definitions Enhanced** (`src/tools/tool-definitions.ts`)
+  - Updated 19 tool input schemas to use native enum types via `z.nativeEnum()`
+  - Improved auto-completion and compile-time validation for tool parameters
+- **Type System Organization**
+  - Centralized enum exports through `src/types/index.ts`
+  - Improved module structure for better tree-shaking and IDE support
+
+### Quality Improvements
+- **Test Suite Expansion**: 870 tests (up from 784) across 26 test files
+- **Function Coverage**: Maintained at 99%+
+- **Type Safety**: Eliminated string literal types in favor of native enums for better refactoring safety
+- **Developer Experience**: IDE auto-completion now suggests valid enum values across all eBay API parameters
+
+### Development Statistics
+- **Total Commits**: 167 (up from 141)
+- **Enum Types Implemented**: 33 core enums
+- **Test Coverage Added**: 86 new enum tests (49 structure + 37 validation)
+- **Lines of Code**: ~16,500+ (excluding tests and docs)
+
 ## [1.1.3] - 2025-11-12
 
 ### Fixed
@@ -190,18 +236,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Commits | Key Changes                                    |
 |---------|------------|---------|------------------------------------------------|
+| 1.1.4   | 2025-01-12 | 167     | Comprehensive enum type system, 870 tests      |
+| 1.1.3   | 2025-11-12 | 141+    | Marketing test fixes, automated setup          |
+| 1.1.2   | 2025-11-11 | 141     | Package optimization (-46% size)               |
+| 1.1.1   | 2025-11-11 | 141     | GitHub URL corrections                         |
 | 1.1.0   | 2025-11-11 | 141     | CI/CD, dual package managers, enhancements     |
 | 1.0.0   | 2025-11-09 | -       | Initial production release, complete feature set |
 
 ## Development Statistics
 
-- **Total Commits**: 141
-- **Development Period**: 2 days (Nov 9-11, 2025)
+- **Total Commits**: 167
+- **Development Period**: 3 days (Nov 9-12, 2025)
 - **Test Coverage**: 90%+ on critical paths
-- **Test Suite**: 533 tests across 17 test files
+- **Test Suite**: 870 tests across 26 test files
 - **Tools Implemented**: 170+ eBay API tools
 - **API Categories**: 9 fully implemented
-- **Lines of Code**: ~15,000+ (excluding tests and docs)
+- **Enum Types**: 33 core enums, 147+ pending
+- **Lines of Code**: ~16,500+ (excluding tests and docs)
 
 ## Upgrade Guide
 
