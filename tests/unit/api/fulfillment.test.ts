@@ -417,7 +417,7 @@ describe('FulfillmentApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockRefund);
 
-      const result = await fulfillmentApi.issueRefund('12345-67890', refundRequest);
+      const _result = await fulfillmentApi.issueRefund('12345-67890', refundRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/issue_refund',

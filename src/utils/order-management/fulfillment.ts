@@ -9,11 +9,16 @@ import type { operations, components } from '@/types/sell_fulfillment_v1_oas3.js
  */
 
 // Extract operation parameter types for reference
-type GetOrdersParams = operations['getOrders']['parameters']['query'];
-type GetOrderParams = operations['getOrder']['parameters']['path'];
-type CreateShippingFulfillmentRequest = components['schemas']['ShippingFulfillmentDetails'];
-type GetShippingFulfillmentParams = operations['getShippingFulfillment']['parameters']['path'];
-type IssueRefundRequest = components['schemas']['IssueRefundRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetOrdersParams = operations['getOrders']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetOrderParams = operations['getOrder']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _CreateShippingFulfillmentRequest = components['schemas']['ShippingFulfillmentDetails'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetShippingFulfillmentParams = operations['getShippingFulfillment']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _IssueRefundRequest = components['schemas']['IssueRefundRequest'];
 
 // Reusable schema for order ID
 const orderIdSchema = z.string({

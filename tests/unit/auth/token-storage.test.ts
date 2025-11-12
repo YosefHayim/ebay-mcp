@@ -5,11 +5,11 @@ import type { StoredTokenData } from '@/types/ebay.js';
 import { createMockTokens } from '../../helpers/mock-token-storage.js';
 
 describe('TokenStorage', () => {
-  let originalTokenPath: string;
+  let _originalTokenPath: string;
 
   beforeEach(async () => {
     // Save the original token file path
-    originalTokenPath = TokenStorage.getTokenFilePath();
+    _originalTokenPath = TokenStorage.getTokenFilePath();
 
     // Clean up any existing test token file
     try {
@@ -134,7 +134,7 @@ describe('TokenStorage', () => {
     });
 
     it('should throw error when unable to write file', async () => {
-      const mockTokens = createMockTokens();
+      const _mockTokens = createMockTokens();
 
       // Create a test by trying to write to a path that doesn't exist/is invalid
       // This is platform-specific, so we'll skip this test for now

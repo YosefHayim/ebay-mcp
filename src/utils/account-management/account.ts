@@ -8,34 +8,56 @@ import type { operations, components } from '@/types/sell_account_v1_oas3.js';
  * Types from: src/types/sell_account_v1_oas3.ts
  */
 
-// Extract operation parameter types for reference
-type GetCustomPoliciesParams = operations['getCustomPolicies']['parameters']['query'];
-type GetCustomPolicyParams = operations['getCustomPolicy']['parameters']['path'];
-type CreateCustomPolicyRequest = components['schemas']['CustomPolicyCreateRequest'];
-type UpdateCustomPolicyRequest = components['schemas']['CustomPolicyRequest'];
+// Extract operation parameter types for reference (unused but kept for documentation)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetCustomPoliciesParams = operations['getCustomPolicies']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetCustomPolicyParams = operations['getCustomPolicy']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _CreateCustomPolicyRequest = components['schemas']['CustomPolicyCreateRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UpdateCustomPolicyRequest = components['schemas']['CustomPolicyRequest'];
 
-type GetFulfillmentPoliciesParams = operations['getFulfillmentPolicies']['parameters']['query'];
-type GetFulfillmentPolicyParams = operations['getFulfillmentPolicy']['parameters']['path'];
-type GetFulfillmentPolicyByNameParams =
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetFulfillmentPoliciesParams = operations['getFulfillmentPolicies']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetFulfillmentPolicyParams = operations['getFulfillmentPolicy']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetFulfillmentPolicyByNameParams =
   operations['getFulfillmentPolicyByName']['parameters']['query'];
-type FulfillmentPolicyRequest = components['schemas']['FulfillmentPolicyRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _FulfillmentPolicyRequest = components['schemas']['FulfillmentPolicyRequest'];
 
-type GetPaymentPoliciesParams = operations['getPaymentPolicies']['parameters']['query'];
-type GetPaymentPolicyParams = operations['getPaymentPolicy']['parameters']['path'];
-type GetPaymentPolicyByNameParams = operations['getPaymentPolicyByName']['parameters']['query'];
-type PaymentPolicyRequest = components['schemas']['PaymentPolicyRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPaymentPoliciesParams = operations['getPaymentPolicies']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPaymentPolicyParams = operations['getPaymentPolicy']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPaymentPolicyByNameParams = operations['getPaymentPolicyByName']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _PaymentPolicyRequest = components['schemas']['PaymentPolicyRequest'];
 
-type GetReturnPoliciesParams = operations['getReturnPolicies']['parameters']['query'];
-type GetReturnPolicyParams = operations['getReturnPolicy']['parameters']['path'];
-type GetReturnPolicyByNameParams = operations['getReturnPolicyByName']['parameters']['query'];
-type ReturnPolicyRequest = components['schemas']['ReturnPolicyRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetReturnPoliciesParams = operations['getReturnPolicies']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetReturnPolicyParams = operations['getReturnPolicy']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetReturnPolicyByNameParams = operations['getReturnPolicyByName']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ReturnPolicyRequest = components['schemas']['ReturnPolicyRequest'];
 
-type GetPaymentsProgramParams = operations['getPaymentsProgram']['parameters']['path'];
-type GetSalesTaxParams = operations['getSalesTax']['parameters']['path'];
-type GetSalesTaxesParams = operations['getSalesTaxes']['parameters']['query'];
-type GetSubscriptionParams = operations['getSubscription']['parameters']['query'];
-type SalesTaxBase = components['schemas']['SalesTaxBase'];
-type OptInToProgramRequest = components['schemas']['Program'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPaymentsProgramParams = operations['getPaymentsProgram']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetSalesTaxParams = operations['getSalesTax']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetSalesTaxesParams = operations['getSalesTaxes']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetSubscriptionParams = operations['getSubscription']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _SalesTaxBase = components['schemas']['SalesTaxBase'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _OptInToProgramRequest = components['schemas']['Program'];
 
 // Reusable schema for ID parameters
 const idSchema = (name: string, description: string) =>
@@ -54,8 +76,9 @@ const marketplaceIdSchema = z
   })
   .optional();
 
-// Reusable schema for optional name parameter
-const nameSchema = z
+// Reusable schema for optional name parameter (currently unused)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _nameSchema = z
   .string({
     invalid_type_error: 'name must be a string',
     description: 'The policy name',

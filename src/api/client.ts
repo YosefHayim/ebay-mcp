@@ -81,7 +81,7 @@ export class EbayApiClient {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(new Error(error))
     );
 
     // Add response interceptor for error handling and retry logic

@@ -9,15 +9,24 @@ import type { operations, components } from '@/types/commerce_notification_v1_oa
  */
 
 // Extract operation parameter types for reference
-type GetPublicKeyParams = operations['getPublicKey']['parameters']['path'];
-type ConfigType = components['schemas']['Config'];
-type DestinationRequest = components['schemas']['DestinationRequest'];
-type DestinationParams = operations['getDestinations']['parameters']['query'];
-type SubscriptionParams = operations['getSubscriptions']['parameters']['query'];
-type CreateSubscriptionRequest = components['schemas']['CreateSubscriptionRequest'];
-type UpdateSubscriptionRequest = components['schemas']['UpdateSubscriptionRequest'];
-type CreateSubscriptionFilterRequest = components['schemas']['CreateSubscriptionFilterRequest'];
-type TopicParams = operations['getTopics']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPublicKeyParams = operations['getPublicKey']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ConfigType = components['schemas']['Config'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _DestinationRequest = components['schemas']['DestinationRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _DestinationParams = operations['getDestinations']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _SubscriptionParams = operations['getSubscriptions']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _CreateSubscriptionRequest = components['schemas']['CreateSubscriptionRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UpdateSubscriptionRequest = components['schemas']['UpdateSubscriptionRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _CreateSubscriptionFilterRequest = components['schemas']['CreateSubscriptionFilterRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _TopicParams = operations['getTopics']['parameters']['query'];
 
 // Reusable schema for limit parameter (string in API)
 const limitSchema = z
@@ -45,8 +54,9 @@ const idSchema = (name: string, description: string) =>
     description,
   });
 
-// Reusable schema for object data parameters
-const objectDataSchema = (name: string, description: string) =>
+// Reusable schema for object data parameters (currently unused)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _objectDataSchema = (name: string, description: string) =>
   z.record(z.unknown(), {
     message: `${name} is required`,
     required_error: `${name.toLowerCase().replace(/\s+/g, '_')} is required`,

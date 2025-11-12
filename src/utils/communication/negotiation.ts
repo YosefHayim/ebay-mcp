@@ -9,12 +9,15 @@ import type { operations, components } from '@/types/sell_negotiation_v1_oas3.js
  */
 
 // Extract operation parameter types for reference
-type FindEligibleItemsParams = operations['findEligibleItems']['parameters']['query'];
-type FindEligibleItemsHeaders = operations['findEligibleItems']['parameters']['header'];
-type SendOfferRequest = components['schemas']['CreateOffersRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _FindEligibleItemsParams = operations['findEligibleItems']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _FindEligibleItemsHeaders = operations['findEligibleItems']['parameters']['header'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _SendOfferRequest = components['schemas']['CreateOffersRequest'];
 
 // Reusable schema for filter parameter
-const filterSchema = z
+const _filterSchemaForGetOffers = z
   .string({
     message: 'Filter must be a string',
     invalid_type_error: 'filter must be a string',
@@ -166,7 +169,7 @@ export const sendOfferToInterestedBuyersSchema = z.object({
  * Note: This method does not match any endpoint in the OpenAPI spec
  */
 export const getOffersToBuyersSchema = z.object({
-  filter: filterSchema,
+  filter: _filterSchemaForGetOffers,
   limit: limitSchema,
   offset: offsetSchema,
 });

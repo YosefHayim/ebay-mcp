@@ -9,15 +9,23 @@ import type { operations, components } from '@/types/sell_fulfillment_v1_oas3.js
  */
 
 // Extract operation parameter types for reference
-type GetPaymentDisputeParams = operations['getPaymentDispute']['parameters']['path'];
-type FetchEvidenceContentParams = operations['fetchEvidenceContent']['parameters'];
-type GetActivitiesParams = operations['getActivities']['parameters']['path'];
-type GetPaymentDisputeSummariesParams =
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPaymentDisputeParams = operations['getPaymentDispute']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _FetchEvidenceContentParams = operations['fetchEvidenceContent']['parameters'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetActivitiesParams = operations['getActivities']['parameters']['path'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetPaymentDisputeSummariesParams =
   operations['getPaymentDisputeSummaries']['parameters']['query'];
-type ContestPaymentDisputeRequest = components['schemas']['ContestPaymentDisputeRequest'];
-type AcceptPaymentDisputeRequest = components['schemas']['AcceptPaymentDisputeRequest'];
-type AddEvidencePaymentDisputeRequest = components['schemas']['AddEvidencePaymentDisputeRequest'];
-type UpdateEvidencePaymentDisputeRequest =
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _ContestPaymentDisputeRequest = components['schemas']['ContestPaymentDisputeRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _AcceptPaymentDisputeRequest = components['schemas']['AcceptPaymentDisputeRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _AddEvidencePaymentDisputeRequest = components['schemas']['AddEvidencePaymentDisputeRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UpdateEvidencePaymentDisputeRequest =
   components['schemas']['UpdateEvidencePaymentDisputeRequest'];
 
 // Reusable schema for payment dispute ID

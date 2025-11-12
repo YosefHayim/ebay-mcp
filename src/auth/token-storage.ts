@@ -50,7 +50,7 @@ export class TokenStorage {
       }
 
       return tokens;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }

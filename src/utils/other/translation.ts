@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/commerce_translation_v1_beta_oas3.js';
+import type { components } from '@/types/commerce_translation_v1_beta_oas3.js';
 
 /**
  * Zod schemas for Translation API input validation
@@ -9,7 +9,8 @@ import type { operations, components } from '@/types/commerce_translation_v1_bet
  */
 
 // Extract operation parameter types for reference
-type TranslateRequest = components['schemas']['TranslateRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _TranslateRequest = components['schemas']['TranslateRequest'];
 
 /**
  * Schema for translate method

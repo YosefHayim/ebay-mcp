@@ -9,11 +9,16 @@ import type { operations, components } from '@/types/commerce_feedback_v1_beta_o
  */
 
 // Extract operation parameter types for reference
-type GetAwaitingFeedbackParams = operations['getItemsAwaitingFeedback']['parameters']['query'];
-type GetFeedbackParams = operations['getFeedback']['parameters']['query'];
-type LeaveFeedbackRequest = components['schemas']['LeaveFeedbackRequest'];
-type RespondToFeedbackRequest = components['schemas']['RespondToFeedbackRequest'];
-type GetFeedbackRatingSummaryParams = operations['getFeedbackRatingSummary']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetAwaitingFeedbackParams = operations['getItemsAwaitingFeedback']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetFeedbackParams = operations['getFeedback']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _LeaveFeedbackRequest = components['schemas']['LeaveFeedbackRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _RespondToFeedbackRequest = components['schemas']['RespondToFeedbackRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetFeedbackRatingSummaryParams = operations['getFeedbackRatingSummary']['parameters']['query'];
 
 // Reusable schema for filter parameter
 const filterSchema = z

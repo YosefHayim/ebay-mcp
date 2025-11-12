@@ -9,14 +9,20 @@ import type { operations, components } from '@/types/commerce_message_v1_oas3.js
  */
 
 // Extract operation parameter types for reference
-type GetConversationsParams = operations['getConversations']['parameters']['query'];
-type GetConversationParams = operations['getConversation']['parameters'];
-type SendMessageRequest = components['schemas']['SendMessageRequest'];
-type BulkUpdateConversationsRequest = components['schemas']['BulkUpdateConversationsRequest'];
-type UpdateConversationRequest = components['schemas']['UpdateConversationRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetConversationsParams = operations['getConversations']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetConversationParams = operations['getConversation']['parameters'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _SendMessageRequest = components['schemas']['SendMessageRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _BulkUpdateConversationsRequest = components['schemas']['BulkUpdateConversationsRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _UpdateConversationRequest = components['schemas']['UpdateConversationRequest'];
 
-// Reusable schema for filter parameter
-const filterSchema = z
+// Reusable schema for filter parameter (currently unused)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _filterSchema = z
   .string({
     message: 'Filter must be a string',
     invalid_type_error: 'filter must be a string',

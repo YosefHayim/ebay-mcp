@@ -11,10 +11,11 @@ import type { components } from '@/types/commerce_vero_v1_oas3.js';
  */
 
 // Extract operation parameter types for reference
-type VeroReportItemsRequest = components['schemas']['VeroReportItemsRequest'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _VeroReportItemsRequest = components['schemas']['VeroReportItemsRequest'];
 
 // Reusable schema for filter parameter
-const filterSchema = z
+const _filterSchema = z
   .string({
     message: 'Filter must be a string',
     invalid_type_error: 'filter must be a string',

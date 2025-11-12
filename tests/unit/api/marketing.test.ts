@@ -10,7 +10,8 @@ type CreateCampaignRequest = components['schemas']['CreateCampaignRequest'];
 type AdPagedCollectionResponse = components['schemas']['AdPagedCollectionResponse'];
 type Ad = components['schemas']['Ad'];
 type CreateAdRequest = components['schemas']['CreateAdRequest'];
-type AdReferences = components['schemas']['AdReferences'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _AdReferences = components['schemas']['AdReferences'];
 type CloneCampaignRequest = components['schemas']['CloneCampaignRequest'];
 type UpdateCampaignIdentificationRequest =
   components['schemas']['UpdateCampaignIdentificationRequest'];
@@ -69,7 +70,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getCampaigns();
+      const _result = await marketingApi.getCampaigns();
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/ad_campaign', {});
       expect(result).toEqual(mockResponse);
@@ -101,7 +102,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockCampaign);
 
-      const result = await marketingApi.getCampaign('campaign-001');
+      const _result = await marketingApi.getCampaign('campaign-001');
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/ad_campaign/campaign-001');
       expect(result.campaignId).toBe('campaign-001');
@@ -125,7 +126,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createCampaign(campaignRequest);
+      const _result = await marketingApi.createCampaign(campaignRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign',
@@ -147,7 +148,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.cloneCampaign('campaign-001', cloneRequest);
+      const _result = await marketingApi.cloneCampaign('campaign-001', cloneRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/clone',
@@ -198,7 +199,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockCampaign);
 
-      const result = await marketingApi.getCampaignByName('Test Campaign');
+      const _result = await marketingApi.getCampaignByName('Test Campaign');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/get_campaign_by_name',
@@ -238,7 +239,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getAds('campaign-001');
+      const _result = await marketingApi.getAds('campaign-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad',
@@ -277,7 +278,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockAd);
 
-      const result = await marketingApi.getAd('campaign-001', 'ad-001');
+      const _result = await marketingApi.getAd('campaign-001', 'ad-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad/ad-001'
@@ -297,7 +298,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createAd('campaign-001', adRequest);
+      const _result = await marketingApi.createAd('campaign-001', adRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad',
@@ -328,7 +329,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.cloneAd('campaign-001', 'ad-001', adRequest);
+      const _result = await marketingApi.cloneAd('campaign-001', 'ad-001', adRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad/ad-001/clone',
@@ -344,7 +345,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockAds);
 
-      const result = await marketingApi.getAdsByListingId('campaign-001', 'listing-001');
+      const _result = await marketingApi.getAdsByListingId('campaign-001', 'listing-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/get_ads_by_listing_id',
@@ -375,7 +376,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createAdsByInventoryReference('campaign-001', request);
+      const _result = await marketingApi.createAdsByInventoryReference('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/create_ads_by_inventory_reference',
@@ -389,7 +390,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getAdsByInventoryReference(
+      const _result = await marketingApi.getAdsByInventoryReference(
         'campaign-001',
         'ref-001',
         'INVENTORY_ITEM'
@@ -420,7 +421,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkCreateAdsByInventoryReference('campaign-001', request);
+      const _result = await marketingApi.bulkCreateAdsByInventoryReference('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_create_ads_by_inventory_reference',
@@ -439,7 +440,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkCreateAdsByListingId('campaign-001', request);
+      const _result = await marketingApi.bulkCreateAdsByListingId('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_create_ads_by_listing_id',
@@ -463,7 +464,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkDeleteAdsByInventoryReference('campaign-001', request);
+      const _result = await marketingApi.bulkDeleteAdsByInventoryReference('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_delete_ads_by_inventory_reference',
@@ -482,7 +483,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkDeleteAdsByListingId('campaign-001', request);
+      const _result = await marketingApi.bulkDeleteAdsByListingId('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_delete_ads_by_listing_id',
@@ -507,7 +508,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateAdsBidByInventoryReference(
+      const _result = await marketingApi.bulkUpdateAdsBidByInventoryReference(
         'campaign-001',
         request
       );
@@ -534,7 +535,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateAdsBidByListingId('campaign-001', request);
+      const _result = await marketingApi.bulkUpdateAdsBidByListingId('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_bid_by_listing_id',
@@ -558,7 +559,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateAdsStatus('campaign-001', request);
+      const _result = await marketingApi.bulkUpdateAdsStatus('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_status',
@@ -582,7 +583,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateAdsStatusByListingId('campaign-001', request);
+      const _result = await marketingApi.bulkUpdateAdsStatusByListingId('campaign-001', request);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_status_by_listing_id',
@@ -605,7 +606,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createAdGroup('campaign-001', adGroupRequest);
+      const _result = await marketingApi.createAdGroup('campaign-001', adGroupRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group',
@@ -628,7 +629,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getAdGroups('campaign-001');
+      const _result = await marketingApi.getAdGroups('campaign-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group',
@@ -665,7 +666,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockAdGroup);
 
-      const result = await marketingApi.getAdGroup('campaign-001', 'adgroup-001');
+      const _result = await marketingApi.getAdGroup('campaign-001', 'adgroup-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001'
@@ -685,7 +686,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.cloneAdGroup('campaign-001', 'adgroup-001', cloneRequest);
+      const _result = await marketingApi.cloneAdGroup('campaign-001', 'adgroup-001', cloneRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/clone',
@@ -705,7 +706,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockBids);
 
-      const result = await marketingApi.suggestBids('campaign-001', 'adgroup-001');
+      const _result = await marketingApi.suggestBids('campaign-001', 'adgroup-001');
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/suggest_bids',
@@ -775,7 +776,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getKeywords('campaign-001', 'adgroup-001');
+      const _result = await marketingApi.getKeywords('campaign-001', 'adgroup-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/keyword',
@@ -815,7 +816,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createKeyword(
+      const _result = await marketingApi.createKeyword(
         'campaign-001',
         'adgroup-001',
         keywordRequest
@@ -837,7 +838,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockKeyword);
 
-      const result = await marketingApi.getKeyword('campaign-001', 'adgroup-001', 'keyword-001');
+      const _result = await marketingApi.getKeyword('campaign-001', 'adgroup-001', 'keyword-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/keyword/keyword-001'
@@ -880,7 +881,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockKeywords);
 
-      const result = await marketingApi.suggestKeywords(
+      const _result = await marketingApi.suggestKeywords(
         'campaign-001',
         'adgroup-001',
         suggestRequest
@@ -916,7 +917,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkCreateKeywords(
+      const _result = await marketingApi.bulkCreateKeywords(
         'campaign-001',
         'adgroup-001',
         bulkRequest
@@ -940,7 +941,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkDeleteKeywords(
+      const _result = await marketingApi.bulkDeleteKeywords(
         'campaign-001',
         'adgroup-001',
         bulkRequest
@@ -973,7 +974,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateKeywordBids(
+      const _result = await marketingApi.bulkUpdateKeywordBids(
         'campaign-001',
         'adgroup-001',
         bulkRequest
@@ -1002,7 +1003,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getNegativeKeywords('campaign-001');
+      const _result = await marketingApi.getNegativeKeywords('campaign-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/negative_keyword',
@@ -1023,7 +1024,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createNegativeKeyword('campaign-001', negKeywordRequest);
+      const _result = await marketingApi.createNegativeKeyword('campaign-001', negKeywordRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/negative_keyword',
@@ -1041,7 +1042,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockNegKeyword);
 
-      const result = await marketingApi.getNegativeKeyword('campaign-001', 'neg-001');
+      const _result = await marketingApi.getNegativeKeyword('campaign-001', 'neg-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/negative_keyword/neg-001'
@@ -1067,7 +1068,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getNegativeKeywordsForAdGroup('adgroup-001', 10, 0);
+      const _result = await marketingApi.getNegativeKeywordsForAdGroup('adgroup-001', 10, 0);
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_group/adgroup-001/negative_keyword',
@@ -1088,7 +1089,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createNegativeKeywordForAdGroup(
+      const _result = await marketingApi.createNegativeKeywordForAdGroup(
         'adgroup-001',
         negKeywordRequest
       );
@@ -1123,7 +1124,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkCreateNegativeKeywords('campaign-001', bulkRequest);
+      const _result = await marketingApi.bulkCreateNegativeKeywords('campaign-001', bulkRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_create_negative_keywords',
@@ -1143,7 +1144,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkDeleteNegativeKeywords('campaign-001', bulkRequest);
+      const _result = await marketingApi.bulkDeleteNegativeKeywords('campaign-001', bulkRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_delete_negative_keywords',
@@ -1172,7 +1173,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateNegativeKeywords('campaign-001', bulkRequest);
+      const _result = await marketingApi.bulkUpdateNegativeKeywords('campaign-001', bulkRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_negative_keywords',
@@ -1212,7 +1213,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkCreateNegativeKeywordsForAdGroup(
+      const _result = await marketingApi.bulkCreateNegativeKeywordsForAdGroup(
         'adgroup-001',
         bulkRequest
       );
@@ -1235,7 +1236,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkDeleteNegativeKeywordsForAdGroup(
+      const _result = await marketingApi.bulkDeleteNegativeKeywordsForAdGroup(
         'adgroup-001',
         bulkRequest
       );
@@ -1263,7 +1264,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.bulkUpdateNegativeKeywordsForAdGroup(
+      const _result = await marketingApi.bulkUpdateNegativeKeywordsForAdGroup(
         'adgroup-001',
         bulkRequest
       );
@@ -1284,7 +1285,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockNegKeyword);
 
-      const result = await marketingApi.getNegativeKeywordForAdGroup('adgroup-001', 'neg-001');
+      const _result = await marketingApi.getNegativeKeywordForAdGroup('adgroup-001', 'neg-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_group/adgroup-001/negative_keyword/neg-001'
@@ -1332,7 +1333,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getPromotions();
+      const _result = await marketingApi.getPromotions();
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/promotion', {});
       expect(result).toEqual(mockResponse);
@@ -1367,7 +1368,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.createPromotion(promotionRequest);
+      const _result = await marketingApi.createPromotion(promotionRequest);
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/marketing/v1/item_promotion',
@@ -1384,7 +1385,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPromotion);
 
-      const result = await marketingApi.getItemPromotion('promo-001');
+      const _result = await marketingApi.getItemPromotion('promo-001');
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/item_promotion/promo-001');
       expect(result).toEqual(mockPromotion);
@@ -1431,7 +1432,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'put').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.updateItemPromotion('promo-001', updateRequest);
+      const _result = await marketingApi.updateItemPromotion('promo-001', updateRequest);
 
       expect(mockClient.put).toHaveBeenCalledWith(
         '/sell/marketing/v1/item_promotion/promo-001',
@@ -1451,7 +1452,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockReport);
 
-      const result = await marketingApi.getAdReport(
+      const _result = await marketingApi.getAdReport(
         'LISTING_ID',
         'CLICK',
         '2025-01-01',
@@ -1508,7 +1509,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockMetadata);
 
-      const result = await marketingApi.getAdReportMetadata();
+      const _result = await marketingApi.getAdReportMetadata();
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/ad_report_metadata');
       expect(result).toEqual(mockMetadata);
@@ -1523,7 +1524,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockMetadata);
 
-      const result = await marketingApi.getAdReportMetadataForReportType('CAMPAIGN_PERFORMANCE');
+      const _result = await marketingApi.getAdReportMetadataForReportType('CAMPAIGN_PERFORMANCE');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_report_metadata/CAMPAIGN_PERFORMANCE'
@@ -1561,7 +1562,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getReportTasks();
+      const _result = await marketingApi.getReportTasks();
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/ad_report_task', {});
       expect(result).toEqual(mockResponse);
@@ -1591,7 +1592,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockTask);
 
-      const result = await marketingApi.getReportTask('task-001');
+      const _result = await marketingApi.getReportTask('task-001');
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/ad_report_task/task-001');
       expect(result.reportTaskId).toBe('task-001');
@@ -1609,7 +1610,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getPromotionReport('EBAY_US');
+      const _result = await marketingApi.getPromotionReport('EBAY_US');
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/promotion_report', {
         marketplace_id: 'EBAY_US',
@@ -1624,7 +1625,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await marketingApi.getPromotionSummaryReport('EBAY_US');
+      const _result = await marketingApi.getPromotionSummaryReport('EBAY_US');
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/marketing/v1/promotion_summary_report', {
         marketplace_id: 'EBAY_US',
@@ -1645,7 +1646,7 @@ describe('MarketingApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockTargeting);
 
-      const result = await marketingApi.getTargeting('campaign-001');
+      const _result = await marketingApi.getTargeting('campaign-001');
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/marketing/v1/ad_campaign/campaign-001/targeting'

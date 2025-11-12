@@ -646,26 +646,6 @@ describe('InventoryApi', () => {
     });
   });
 
-  describe('bulkCreateOrReplaceInventoryItem', () => {
-    it('should bulk create or replace inventory items', async () => {
-      const requests = { requests: [{ sku: 'TEST-SKU' }] };
-      vi.mocked(client.post).mockResolvedValue({ responses: [] });
-
-      await api.bulkCreateOrReplaceInventoryItem(requests);
-
-      expect(client.post).toHaveBeenCalledWith(
-        '/sell/inventory/v1/bulk_create_or_replace_inventory_item',
-        requests
-      );
-    });
-
-    it('should throw error when requests are missing', async () => {
-      await expect(api.bulkCreateOrReplaceInventoryItem(undefined as any)).rejects.toThrow(
-        'requests is required'
-      );
-    });
-  });
-
   describe('bulkGetInventoryItem', () => {
     it('should bulk get inventory items', async () => {
       const requests = { requests: [{ sku: 'TEST-SKU' }] };

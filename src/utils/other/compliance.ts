@@ -9,8 +9,10 @@ import type { operations } from '@/types/sell_compliance_v1_oas3.js';
  */
 
 // Extract operation parameter types for reference
-type GetListingViolationsParams = operations['getListingViolations']['parameters']['query'];
-type GetListingViolationsSummaryParams =
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetListingViolationsParams = operations['getListingViolations']['parameters']['query'];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _GetListingViolationsSummaryParams =
   operations['getListingViolationsSummary']['parameters']['query'];
 
 // Reusable schema for compliance_type parameter
