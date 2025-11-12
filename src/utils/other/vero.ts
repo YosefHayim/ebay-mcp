@@ -39,30 +39,62 @@ const offsetSchema = z
   .optional();
 
 /**
- * Schema for reportInfringement method
- * Endpoint: POST /report_infringement
- * Body: VeroReportItemsRequest - infringement data
- *
- * Note: The actual API implementation uses a generic Record<string, unknown> type
- * This schema accepts any object structure as the infringement data
+ * Schema for createVeroReport method
+ * Endpoint: POST /vero_report
+ * Body: VeroReportItemsRequest - report data
  */
-export const reportInfringementSchema = z.object({
-  infringement_data: z.record(z.unknown(), {
-    message: 'Infringement data is required',
-    required_error: 'infringement_data is required',
-    invalid_type_error: 'infringement_data must be an object',
+export const createVeroReportSchema = z.object({
+  report_data: z.record(z.unknown(), {
+    message: 'Report data is required',
+    required_error: 'report_data is required',
+    invalid_type_error: 'report_data must be an object',
     description:
-      'The VeRO infringement report data containing item details and violation information',
+      'The VeRO report data containing item details and intellectual property violation information',
   }),
 });
 
 /**
- * Schema for getReportedItems method
- * Endpoint: GET /reported_item
+ * Schema for getVeroReport method
+ * Endpoint: GET /vero_report/{vero_report_id}
+ * Path: vero_report_id
+ */
+export const getVeroReportSchema = z.object({
+  vero_report_id: z.string({
+    message: 'VERO report ID is required',
+    required_error: 'vero_report_id is required',
+    invalid_type_error: 'vero_report_id must be a string',
+    description: 'The unique identifier of the VERO report',
+  }).min(1, 'VERO report ID cannot be empty'),
+});
+
+/**
+ * Schema for getVeroReportItems method
+ * Endpoint: GET /vero_report_items
  * Query: filter, limit, offset
  */
-export const getReportedItemsSchema = z.object({
+export const getVeroReportItemsSchema = z.object({
   filter: filterSchema,
   limit: limitSchema,
   offset: offsetSchema,
 });
+
+/**
+ * Schema for getVeroReasonCode method
+ * Endpoint: GET /vero_reason_code/{vero_reason_code_id}
+ * Path: vero_reason_code_id
+ */
+export const getVeroReasonCodeSchema = z.object({
+  vero_reason_code_id: z.string({
+    message: 'VERO reason code ID is required',
+    required_error: 'vero_reason_code_id is required',
+    invalid_type_error: 'vero_reason_code_id must be a string',
+    description: 'The unique identifier of the VERO reason code',
+  }).min(1, 'VERO reason code ID cannot be empty'),
+});
+
+/**
+ * Schema for getVeroReasonCodes method
+ * Endpoint: GET /vero_reason_code
+ * No parameters required
+ */
+export const getVeroReasonCodesSchema = z.object({});

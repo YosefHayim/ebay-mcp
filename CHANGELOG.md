@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.7] - 2025-01-12
+
+### Removed
+- **GitHub Actions**: Removed Prettier and ESLint linting workflow
+  - Removed `.github/workflows/lint.yml` to streamline CI/CD pipeline
+  - Linting and formatting still available via npm scripts (`npm run lint`, `npm run format:check`)
+  - Reduces CI overhead while maintaining local development quality checks
+
+### Changed
+- **CI/CD Optimization**: Simplified GitHub Actions workflow by removing redundant lint checks
+  - Main CI workflow still runs typecheck, tests, and builds
+  - Developers encouraged to use `npm run check` locally before pushing
+
 ## [1.1.4] - 2025-01-12
 
 ### Added

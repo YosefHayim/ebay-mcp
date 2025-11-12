@@ -28,6 +28,7 @@ import {
   notificationConfigSchema,
   notificationDestinationSchema,
   infringementDataSchema,
+  veroReportDataSchema,
   shippingQuoteRequestSchema,
   bulkSalesTaxRequestSchema,
 } from './schemas.js';
@@ -1319,20 +1320,48 @@ export const otherApiTools: ToolDefinition[] = [
   },
   // VERO API
   {
-    name: 'ebay_report_infringement',
-    description: 'Report intellectual property infringement',
+    name: 'ebay_create_vero_report',
+    description:
+      'Create a VERO report to report intellectual property infringement. This endpoint is part of the Verified Rights Owner (VeRO) Program and allows rights owners to report listings that infringe on their intellectual property.',
     inputSchema: {
-      infringementData: infringementDataSchema.describe('Infringement report details'),
+      reportData: veroReportDataSchema.describe(
+        'VERO report data containing item details and intellectual property violation information'
+      ),
     },
   },
   {
-    name: 'ebay_get_reported_items',
-    description: 'Get reported items',
+    name: 'ebay_get_vero_report',
+    description: 'Get a specific VERO report by ID',
     inputSchema: {
-      filter: z.string().optional().describe('Filter criteria'),
-      limit: z.number().optional().describe('Number of items to return'),
-      offset: z.number().optional().describe('Number of items to skip'),
+      veroReportId: z.string().min(1).describe('The unique identifier of the VERO report'),
     },
+  },
+  {
+    name: 'ebay_get_vero_report_items',
+    description:
+      'Get VERO report items (listings reported for intellectual property infringement). Supports filtering, pagination via limit and offset parameters.',
+    inputSchema: {
+      filter: z.string().optional().describe('Filter criteria for the query (e.g., date range)'),
+      limit: z.number().optional().describe('Maximum number of items to return'),
+      offset: z.number().optional().describe('Number of items to skip for pagination'),
+    },
+  },
+  {
+    name: 'ebay_get_vero_reason_code',
+    description:
+      'Get a specific VERO reason code by ID. Reason codes categorize the types of intellectual property violations.',
+    inputSchema: {
+      veroReasonCodeId: z
+        .string()
+        .min(1)
+        .describe('The unique identifier of the VERO reason code'),
+    },
+  },
+  {
+    name: 'ebay_get_vero_reason_codes',
+    description:
+      'Get all available VERO reason codes. These codes are used when creating VERO reports to specify the type of intellectual property violation.',
+    inputSchema: {},
   },
   // Translation API
   {

@@ -610,6 +610,20 @@ export const infringementDataSchema = z
   })
   .passthrough();
 
+// VERO API schemas
+export const veroReportDataSchema = z
+  .object({
+    items: z.array(
+      z.object({
+        itemId: z.string(),
+        reportingReason: z.string(),
+      })
+    ),
+    rightsOwnerEmail: z.string().email().optional(),
+    message: z.string().optional(),
+  })
+  .passthrough();
+
 export const shippingQuoteRequestSchema = z
   .object({
     packageDetails: z

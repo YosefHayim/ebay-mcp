@@ -973,14 +973,20 @@ export async function executeTool(
       return await api.compliance.suppressViolation(args.listingViolationId as string);
 
     // Other APIs - VERO
-    case 'ebay_report_infringement':
-      return await api.vero.reportInfringement(args.infringementData as Record<string, unknown>);
-    case 'ebay_get_reported_items':
-      return await api.vero.getReportedItems(
+    case 'ebay_create_vero_report':
+      return await api.vero.createVeroReport(args.reportData as Record<string, unknown>);
+    case 'ebay_get_vero_report':
+      return await api.vero.getVeroReport(args.veroReportId as string);
+    case 'ebay_get_vero_report_items':
+      return await api.vero.getVeroReportItems(
         args.filter as string,
         args.limit as number,
         args.offset as number
       );
+    case 'ebay_get_vero_reason_code':
+      return await api.vero.getVeroReasonCode(args.veroReasonCodeId as string);
+    case 'ebay_get_vero_reason_codes':
+      return await api.vero.getVeroReasonCodes();
 
     // Other APIs - Translation
     case 'ebay_translate':

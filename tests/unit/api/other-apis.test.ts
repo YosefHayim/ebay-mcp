@@ -248,32 +248,80 @@ describe('Other APIs', () => {
       api = new VeroApi(client);
     });
 
-    it('should report infringement', async () => {
-      const mockResponse = { reportId: 'REPORT123' };
-      const infringementData = {
-        itemId: 'ITEM123',
-        reportingReason: 'TRADEMARK',
+    it('should create VERO report', async () => {
+      const mockResponse = { veroReportId: 'REPORT123' };
+      const reportData = {
+        items: [
+          {
+            itemId: 'ITEM123',
+            reportingReason: 'TRADEMARK',
+          },
+        ],
+        rightsOwnerEmail: 'owner@example.com',
       };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await api.reportInfringement(infringementData);
+      await api.createVeroReport(reportData);
 
-      expect(client.post).toHaveBeenCalledWith(
-        '/commerce/vero/v1/report_infringement',
-        infringementData
-      );
+      expect(client.post).toHaveBeenCalledWith('/commerce/vero/v1/vero_report', reportData);
     });
 
-    it('should get reported items', async () => {
+    it('should get VERO report by ID', async () => {
+      const mockResponse = { veroReportId: 'REPORT123', status: 'OPEN' };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getVeroReport('REPORT123');
+
+      expect(client.get).toHaveBeenCalledWith('/commerce/vero/v1/vero_report/REPORT123');
+    });
+
+    it('should get VERO report items', async () => {
       const mockResponse = { items: [] };
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      await api.getReportedItems('filter:test', 10, undefined);
+      await api.getVeroReportItems('filter:test', 10, 5);
 
-      expect(client.get).toHaveBeenCalledWith('/commerce/vero/v1/reported_item', {
+      expect(client.get).toHaveBeenCalledWith('/commerce/vero/v1/vero_report_items', {
         filter: 'filter:test',
         limit: 10,
+        offset: 5,
       });
+    });
+
+    it('should get VERO report items without optional params', async () => {
+      const mockResponse = { items: [] };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getVeroReportItems();
+
+      expect(client.get).toHaveBeenCalledWith('/commerce/vero/v1/vero_report_items', {});
+    });
+
+    it('should get VERO reason code by ID', async () => {
+      const mockResponse = {
+        veroReasonCodeId: 'CODE123',
+        name: 'Trademark Infringement',
+        description: 'Unauthorized use of trademark',
+      };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getVeroReasonCode('CODE123');
+
+      expect(client.get).toHaveBeenCalledWith('/commerce/vero/v1/vero_reason_code/CODE123');
+    });
+
+    it('should get all VERO reason codes', async () => {
+      const mockResponse = {
+        veroReasonCodes: [
+          { veroReasonCodeId: 'CODE1', name: 'Trademark' },
+          { veroReasonCodeId: 'CODE2', name: 'Copyright' },
+        ],
+      };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getVeroReasonCodes();
+
+      expect(client.get).toHaveBeenCalledWith('/commerce/vero/v1/vero_reason_code');
     });
   });
 

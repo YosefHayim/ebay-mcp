@@ -172,8 +172,11 @@ describe('Comprehensive Tools Coverage', () => {
         suppressViolation: vi.fn(),
       },
       vero: {
-        reportInfringement: vi.fn(),
-        getReportedItems: vi.fn(),
+        createVeroReport: vi.fn(),
+        getVeroReport: vi.fn(),
+        getVeroReportItems: vi.fn(),
+        getVeroReasonCode: vi.fn(),
+        getVeroReasonCodes: vi.fn(),
       },
       translation: {
         translate: vi.fn(),
@@ -1309,19 +1312,40 @@ describe('Comprehensive Tools Coverage', () => {
       expect(mockApi.compliance.suppressViolation).toHaveBeenCalledWith('VIOLATION123');
     });
 
-    it('ebay_report_infringement', async () => {
-      const mockResponse = { reportId: 'REPORT123' };
-      const infringementData = { itemId: 'ITEM123' };
-      vi.mocked(mockApi.vero.reportInfringement).mockResolvedValue(mockResponse);
-      await executeTool(mockApi, 'ebay_report_infringement', { infringementData });
-      expect(mockApi.vero.reportInfringement).toHaveBeenCalledWith(infringementData);
+    it('ebay_create_vero_report', async () => {
+      const mockResponse = { veroReportId: 'REPORT123' };
+      const reportData = { items: [{ itemId: 'ITEM123', reportingReason: 'TRADEMARK' }] };
+      vi.mocked(mockApi.vero.createVeroReport).mockResolvedValue(mockResponse);
+      await executeTool(mockApi, 'ebay_create_vero_report', { reportData });
+      expect(mockApi.vero.createVeroReport).toHaveBeenCalledWith(reportData);
     });
 
-    it('ebay_get_reported_items', async () => {
+    it('ebay_get_vero_report', async () => {
+      const mockResponse = { veroReportId: 'REPORT123', status: 'OPEN' };
+      vi.mocked(mockApi.vero.getVeroReport).mockResolvedValue(mockResponse);
+      await executeTool(mockApi, 'ebay_get_vero_report', { veroReportId: 'REPORT123' });
+      expect(mockApi.vero.getVeroReport).toHaveBeenCalledWith('REPORT123');
+    });
+
+    it('ebay_get_vero_report_items', async () => {
       const mockResponse = { items: [] };
-      vi.mocked(mockApi.vero.getReportedItems).mockResolvedValue(mockResponse);
-      await executeTool(mockApi, 'ebay_get_reported_items', { filter: 'test' });
-      expect(mockApi.vero.getReportedItems).toHaveBeenCalledWith('test', undefined, undefined);
+      vi.mocked(mockApi.vero.getVeroReportItems).mockResolvedValue(mockResponse);
+      await executeTool(mockApi, 'ebay_get_vero_report_items', { filter: 'test' });
+      expect(mockApi.vero.getVeroReportItems).toHaveBeenCalledWith('test', undefined, undefined);
+    });
+
+    it('ebay_get_vero_reason_code', async () => {
+      const mockResponse = { veroReasonCodeId: 'CODE123', name: 'Trademark' };
+      vi.mocked(mockApi.vero.getVeroReasonCode).mockResolvedValue(mockResponse);
+      await executeTool(mockApi, 'ebay_get_vero_reason_code', { veroReasonCodeId: 'CODE123' });
+      expect(mockApi.vero.getVeroReasonCode).toHaveBeenCalledWith('CODE123');
+    });
+
+    it('ebay_get_vero_reason_codes', async () => {
+      const mockResponse = { veroReasonCodes: [] };
+      vi.mocked(mockApi.vero.getVeroReasonCodes).mockResolvedValue(mockResponse);
+      await executeTool(mockApi, 'ebay_get_vero_reason_codes', {});
+      expect(mockApi.vero.getVeroReasonCodes).toHaveBeenCalled();
     });
 
     it('ebay_translate', async () => {

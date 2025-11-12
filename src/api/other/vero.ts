@@ -10,20 +10,41 @@ export class VeroApi {
   constructor(private client: EbayApiClient) {}
 
   /**
-   * Report infringement
+   * Create a VERO report to report intellectual property infringement
    */
-  async reportInfringement(infringementData: Record<string, unknown>) {
-    return await this.client.post(`${this.basePath}/report_infringement`, infringementData);
+  async createVeroReport(reportData: Record<string, unknown>) {
+    return await this.client.post(`${this.basePath}/vero_report`, reportData);
   }
 
   /**
-   * Get reported items
+   * Get a specific VERO report by ID
    */
-  async getReportedItems(filter?: string, limit?: number, offset?: number) {
+  async getVeroReport(veroReportId: string) {
+    return await this.client.get(`${this.basePath}/vero_report/${veroReportId}`);
+  }
+
+  /**
+   * Get VERO report items (listings reported for infringement)
+   */
+  async getVeroReportItems(filter?: string, limit?: number, offset?: number) {
     const params: Record<string, string | number> = {};
     if (filter) params.filter = filter;
     if (limit) params.limit = limit;
     if (offset) params.offset = offset;
-    return await this.client.get(`${this.basePath}/reported_item`, params);
+    return await this.client.get(`${this.basePath}/vero_report_items`, params);
+  }
+
+  /**
+   * Get a specific VERO reason code by ID
+   */
+  async getVeroReasonCode(veroReasonCodeId: string) {
+    return await this.client.get(`${this.basePath}/vero_reason_code/${veroReasonCodeId}`);
+  }
+
+  /**
+   * Get all available VERO reason codes
+   */
+  async getVeroReasonCodes() {
+    return await this.client.get(`${this.basePath}/vero_reason_code`);
   }
 }
