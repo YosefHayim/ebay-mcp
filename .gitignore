@@ -12,11 +12,6 @@ dist/
 .env.local
 .env.*.local
 
-# OAuth tokens (sensitive)
-.ebay-tokens.json
-.ebay-mcp-tokens.json
-mcp-setup.json
-
 
 # Logs
 logs/
@@ -45,8 +40,9 @@ coverage/
 tmp/
 temp/
 
-# General
-CLAUDE.md
+# General (excluding docs/CLAUDE.md which tracks development progress)
+/CLAUDE.md
+!docs/CLAUDE.md
 GEMINI.md
 .claude
 .mcp.json

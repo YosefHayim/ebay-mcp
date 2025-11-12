@@ -1,63 +1,62 @@
 import type { EbaySellerApi } from '@/api/index.js';
 import { TokenStorage } from '@/auth/token-storage.js';
 import { getOAuthAuthorizationUrl, validateScopes } from '@/config/environment.js';
-import { convertToTimestamp, validateTokenExpiry } from '@/utils/date-converter.js';
 import {
   accountTools,
   analyticsTools,
-  chatGptTools,
-  claudeTools, // Add claudeTools here
   communicationTools,
   fulfillmentTools,
   inventoryTools,
   marketingTools,
   metadataTools,
   otherApiTools,
-  type ToolDefinition,
   taxonomyTools,
-} from '@/tools/tool-definitions.js';
+  tokenManagementTools,
+  type ToolDefinition,
+} from '@/tools/definitions/index.js';
+import { convertToTimestamp, validateTokenExpiry } from '@/utils/date-converter.js';
 
 // Import Zod schemas for input validation
 import {
-  getFeedbackSchema,
+  getAwaitingFeedbackSchema,
   getFeedbackRatingSummarySchema,
+  getFeedbackSchema,
   leaveFeedbackForBuyerSchema,
   respondToFeedbackSchema,
-  getAwaitingFeedbackSchema,
 } from '@/utils/communication/feedback.js';
 import {
-  getConversationsSchema,
-  getConversationSchema,
-  sendMessageSchema,
   bulkUpdateConversationSchema,
+  getConversationSchema,
+  getConversationsSchema,
+  sendMessageSchema,
   updateConversationSchema,
 } from '@/utils/communication/message.js';
 import {
   findEligibleItemsSchema,
-  sendOfferToInterestedBuyersSchema,
   getOffersToBuyersSchema,
+  sendOfferToInterestedBuyersSchema,
 } from '@/utils/communication/negotiation.js';
 import {
-  getPublicKeySchema,
-  getConfigSchema,
-  updateConfigSchema,
-  getDestinationSchema,
   createDestinationSchema,
-  updateDestinationSchema,
-  deleteDestinationSchema,
-  getSubscriptionsSchema,
+  createSubscriptionFilterSchema,
   createSubscriptionSchema,
-  getSubscriptionSchema,
-  updateSubscriptionSchema,
+  deleteDestinationSchema,
+  deleteSubscriptionFilterSchema,
   deleteSubscriptionSchema,
   disableSubscriptionSchema,
   enableSubscriptionSchema,
-  testSubscriptionSchema,
+  getConfigSchema,
+  getDestinationSchema,
+  getPublicKeySchema,
+  getSubscriptionFilterSchema,
+  getSubscriptionSchema,
+  getSubscriptionsSchema,
   getTopicSchema,
   getTopicsSchema,
-  createSubscriptionFilterSchema,
-  getSubscriptionFilterSchema,
-  deleteSubscriptionFilterSchema,
+  testSubscriptionSchema,
+  updateConfigSchema,
+  updateDestinationSchema,
+  updateSubscriptionSchema,
 } from '@/utils/communication/notification.js';
 
 export type { ToolDefinition };
@@ -67,7 +66,7 @@ export type { ToolDefinition };
  */
 export function getToolDefinitions(): ToolDefinition[] {
   return [
-    ...chatGptTools,
+    ...tokenManagementTools,
     ...accountTools,
     ...inventoryTools,
     ...fulfillmentTools,
@@ -77,7 +76,6 @@ export function getToolDefinitions(): ToolDefinition[] {
     ...taxonomyTools,
     ...communicationTools,
     ...otherApiTools,
-    ...claudeTools, // Add claudeTools here
   ];
 }
 
@@ -94,15 +92,15 @@ export async function executeTool(
     case 'search': {
       // For this example, we'll treat the query as a search for inventory items.
       // A more robust implementation might search across different types of content.
-      const response = await api.inventory.getInventoryItems((args.limit as number) || 10);
+      const response = await api.inventory.getInventoryItems((args.limit as number) ?? 10);
       const results =
         response.inventoryItems?.map((item, index) => ({
           id: `item-${index}`,
-          title: item.product?.title || 'No Title',
+          title: item.product?.title ?? 'No Title',
           // The URL should be a canonical link to the item, which we don't have here.
           // We'll use a placeholder.
           url: `https://www.ebay.com/`, // Placeholder URL
-        })) || [];
+        })) ?? [];
 
       // Format the response as required by the ChatGPT connector spec.
       return {
@@ -122,8 +120,8 @@ export async function executeTool(
       // Format the response as required by the ChatGPT connector spec.
       const result = {
         id: sku,
-        title: item.product?.title || 'No Title',
-        text: item.product?.description || 'No description available.',
+        title: item.product?.title ?? 'No Title',
+        text: item.product?.description ?? 'No description available.',
         url: `https://www.ebay.com/`, // Placeholder URL
         metadata: {
           source: 'ebay_inventory',
@@ -144,12 +142,12 @@ export async function executeTool(
 
     case 'ebay_get_oauth_url': {
       // Get config from environment
-      const clientId = process.env.EBAY_CLIENT_ID || '';
-      const environment = (process.env.EBAY_ENVIRONMENT || 'sandbox') as 'production' | 'sandbox';
+      const clientId = process.env.EBAY_CLIENT_ID ?? '';
+      const environment = (process.env.EBAY_ENVIRONMENT ?? 'sandbox') as 'production' | 'sandbox';
       const envRedirectUri = process.env.EBAY_REDIRECT_URI;
 
       // Use redirectUri from args if provided, otherwise use from .env
-      const redirectUri = (args.redirectUri as string | undefined) || envRedirectUri;
+      const redirectUri = (args.redirectUri as string | undefined) ?? envRedirectUri;
       const scopes = args.scopes as string[] | undefined;
       const state = args.state as string | undefined;
 
@@ -187,7 +185,7 @@ export async function executeTool(
         instructions:
           'Open this URL in a browser to authorize the application. After authorization, you will be redirected to your redirect URI with an authorization code that can be exchanged for an access token.',
         environment,
-        scopes: scopes || 'default (all Sell API scopes)',
+        scopes: scopes ?? 'default (all Sell API scopes)',
       };
 
       // Include warnings if any scopes are invalid for the environment
@@ -202,7 +200,7 @@ export async function executeTool(
       const accessToken = args.accessToken as string;
       const refreshToken = args.refreshToken as string;
 
-      if (!accessToken || !refreshToken) {
+      if (accessToken ?? !refreshToken) {
         throw new Error('Both accessToken and refreshToken are required');
       }
 
@@ -299,7 +297,7 @@ export async function executeTool(
       const refreshTokenExpiry = args.refreshTokenExpiry as string | number | undefined;
       const autoRefresh = (args.autoRefresh as boolean) ?? true;
 
-      if (!accessToken || !refreshToken) {
+      if (accessToken ?? !refreshToken) {
         throw new Error('Both accessToken and refreshToken are required');
       }
 
@@ -382,7 +380,7 @@ export async function executeTool(
 
     // Fulfillment Policy CRUD
     case 'ebay_create_fulfillment_policy':
-      return await api.account.createFulfillmentPolicy(args.policy as any);
+      return await api.account.createFulfillmentPolicy(args.policy as Record<string, unknown>);
     case 'ebay_get_fulfillment_policy':
       return await api.account.getFulfillmentPolicy(args.fulfillmentPolicyId as string);
     case 'ebay_get_fulfillment_policy_by_name':
@@ -393,14 +391,14 @@ export async function executeTool(
     case 'ebay_update_fulfillment_policy':
       return await api.account.updateFulfillmentPolicy(
         args.fulfillmentPolicyId as string,
-        args.policy as any
+        args.policy as Record<string, unknown>
       );
     case 'ebay_delete_fulfillment_policy':
       return await api.account.deleteFulfillmentPolicy(args.fulfillmentPolicyId as string);
 
     // Payment Policy CRUD
     case 'ebay_create_payment_policy':
-      return await api.account.createPaymentPolicy(args.policy as any);
+      return await api.account.createPaymentPolicy(args.policy as Record<string, unknown>);
     case 'ebay_get_payment_policy':
       return await api.account.getPaymentPolicy(args.paymentPolicyId as string);
     case 'ebay_get_payment_policy_by_name':
@@ -411,14 +409,14 @@ export async function executeTool(
     case 'ebay_update_payment_policy':
       return await api.account.updatePaymentPolicy(
         args.paymentPolicyId as string,
-        args.policy as any
+        args.policy as Record<string, unknown>
       );
     case 'ebay_delete_payment_policy':
       return await api.account.deletePaymentPolicy(args.paymentPolicyId as string);
 
     // Return Policy CRUD
     case 'ebay_create_return_policy':
-      return await api.account.createReturnPolicy(args.policy as any);
+      return await api.account.createReturnPolicy(args.policy as Record<string, unknown>);
     case 'ebay_get_return_policy':
       return await api.account.getReturnPolicy(args.returnPolicyId as string);
     case 'ebay_get_return_policy_by_name':
@@ -429,20 +427,20 @@ export async function executeTool(
     case 'ebay_update_return_policy':
       return await api.account.updateReturnPolicy(
         args.returnPolicyId as string,
-        args.policy as any
+        args.policy as Record<string, unknown>
       );
     case 'ebay_delete_return_policy':
       return await api.account.deleteReturnPolicy(args.returnPolicyId as string);
 
     // Custom Policy CRUD
     case 'ebay_create_custom_policy':
-      return await api.account.createCustomPolicy(args.policy as any);
+      return await api.account.createCustomPolicy(args.policy as Record<string, unknown>);
     case 'ebay_get_custom_policy':
       return await api.account.getCustomPolicy(args.customPolicyId as string);
     case 'ebay_update_custom_policy':
       return await api.account.updateCustomPolicy(
         args.customPolicyId as string,
-        args.policy as any
+        args.policy as Record<string, unknown>
       );
     case 'ebay_delete_custom_policy':
       return await api.account.deleteCustomPolicy(args.customPolicyId as string);
@@ -466,10 +464,10 @@ export async function executeTool(
       return await api.account.createOrReplaceSalesTax(
         args.countryCode as string,
         args.jurisdictionId as string,
-        args.salesTaxBase as any
+        args.salesTaxBase as Record<string, unknown>
       );
     case 'ebay_bulk_create_or_replace_sales_tax':
-      return await api.account.bulkCreateOrReplaceSalesTax(args.requests as any);
+      return await api.account.bulkCreateOrReplaceSalesTax(args.requests as unknown as { countryCode: string; jurisdictionId: string; salesTaxBase: Record<string, unknown> }[]);
     case 'ebay_delete_sales_tax':
       return await api.account.deleteSalesTax(
         args.countryCode as string,
@@ -485,9 +483,9 @@ export async function executeTool(
     case 'ebay_get_subscription':
       return await api.account.getSubscription(args.limitType as string);
     case 'ebay_opt_in_to_program':
-      return await api.account.optInToProgram(args.request as any);
+      return await api.account.optInToProgram(args.request as Record<string, unknown>);
     case 'ebay_opt_out_of_program':
-      return await api.account.optOutOfProgram(args.request as any);
+      return await api.account.optOutOfProgram(args.request as Record<string, unknown>);
     case 'ebay_get_opted_in_programs':
       return await api.account.getOptedInPrograms();
 
@@ -499,16 +497,16 @@ export async function executeTool(
     case 'ebay_create_inventory_item':
       return await api.inventory.createOrReplaceInventoryItem(
         args.sku as string,
-        args.inventoryItem as any
+        args.inventoryItem as Record<string, unknown>
       );
 
     // Bulk Operations
     case 'ebay_bulk_create_or_replace_inventory_item':
-      return await api.inventory.bulkCreateOrReplaceInventoryItem(args.requests as any);
+      return await api.inventory.bulkCreateOrReplaceInventoryItem(args.requests as Record<string, unknown>);
     case 'ebay_bulk_get_inventory_item':
-      return await api.inventory.bulkGetInventoryItem(args.requests as any);
+      return await api.inventory.bulkGetInventoryItem(args.requests as Record<string, unknown>);
     case 'ebay_bulk_update_price_quantity':
-      return await api.inventory.bulkUpdatePriceQuantity(args.requests as any);
+      return await api.inventory.bulkUpdatePriceQuantity(args.requests as Record<string, unknown>);
 
     // Product Compatibility
     case 'ebay_get_product_compatibility':
@@ -516,7 +514,7 @@ export async function executeTool(
     case 'ebay_create_or_replace_product_compatibility':
       return await api.inventory.createOrReplaceProductCompatibility(
         args.sku as string,
-        args.compatibility as any
+        args.compatibility as Record<string, unknown>
       );
     case 'ebay_delete_product_compatibility':
       return await api.inventory.deleteProductCompatibility(args.sku as string);
@@ -527,7 +525,7 @@ export async function executeTool(
     case 'ebay_create_or_replace_inventory_item_group':
       return await api.inventory.createOrReplaceInventoryItemGroup(
         args.inventoryItemGroupKey as string,
-        args.inventoryItemGroup as any
+        args.inventoryItemGroup as Record<string, unknown>
       );
     case 'ebay_delete_inventory_item_group':
       return await api.inventory.deleteInventoryItemGroup(args.inventoryItemGroupKey as string);
@@ -540,7 +538,7 @@ export async function executeTool(
     case 'ebay_create_or_replace_inventory_location':
       return await api.inventory.createOrReplaceInventoryLocation(
         args.merchantLocationKey as string,
-        args.location as any
+        args.location as Record<string, unknown>
       );
     case 'ebay_delete_inventory_location':
       return await api.inventory.deleteInventoryLocation(args.merchantLocationKey as string);
@@ -551,7 +549,7 @@ export async function executeTool(
     case 'ebay_update_location_details':
       return await api.inventory.updateLocationDetails(
         args.merchantLocationKey as string,
-        args.locationDetails as any
+        args.locationDetails as Record<string, unknown>
       );
 
     // Offer Management
@@ -564,9 +562,9 @@ export async function executeTool(
     case 'ebay_get_offer':
       return await api.inventory.getOffer(args.offerId as string);
     case 'ebay_create_offer':
-      return await api.inventory.createOffer(args.offer as any);
+      return await api.inventory.createOffer(args.offer as Record<string, unknown>);
     case 'ebay_update_offer':
-      return await api.inventory.updateOffer(args.offerId as string, args.offer as any);
+      return await api.inventory.updateOffer(args.offerId as string, args.offer as Record<string, unknown>);
     case 'ebay_delete_offer':
       return await api.inventory.deleteOffer(args.offerId as string);
     case 'ebay_publish_offer':
@@ -574,15 +572,15 @@ export async function executeTool(
     case 'ebay_withdraw_offer':
       return await api.inventory.withdrawOffer(args.offerId as string);
     case 'ebay_bulk_create_offer':
-      return await api.inventory.bulkCreateOffer(args.requests as any);
+      return await api.inventory.bulkCreateOffer(args.requests as Record<string, unknown>);
     case 'ebay_bulk_publish_offer':
-      return await api.inventory.bulkPublishOffer(args.requests as any);
+      return await api.inventory.bulkPublishOffer(args.requests as Record<string, unknown>);
     case 'ebay_get_listing_fees':
-      return await api.inventory.getListingFees(args.offers as any);
+      return await api.inventory.getListingFees(args.offers as Record<string, unknown>);
 
     // Listing Migration
     case 'ebay_bulk_migrate_listing':
-      return await api.inventory.bulkMigrateListing(args.requests as any);
+      return await api.inventory.bulkMigrateListing(args.requests as Record<string, unknown>);
 
     // Order Management
     case 'ebay_get_orders':
@@ -596,10 +594,10 @@ export async function executeTool(
     case 'ebay_create_shipping_fulfillment':
       return await api.fulfillment.createShippingFulfillment(
         args.orderId as string,
-        args.fulfillment as any
+        args.fulfillment as Record<string, unknown>
       );
     case 'ebay_issue_refund':
-      return await api.fulfillment.issueRefund(args.orderId as string, args.refundData as any);
+      return await api.fulfillment.issueRefund(args.orderId as string, args.refundData as Record<string, unknown>);
 
     // Marketing
     case 'ebay_get_campaigns':
@@ -619,10 +617,10 @@ export async function executeTool(
     case 'ebay_update_campaign_identification':
       return await api.marketing.updateCampaignIdentification(
         args.campaignId as string,
-        args.updateData as any
+        args.updateData as Record<string, unknown>
       );
     case 'ebay_clone_campaign':
-      return await api.marketing.cloneCampaign(args.campaignId as string, args.cloneData as any);
+      return await api.marketing.cloneCampaign(args.campaignId as string, args.cloneData as Record<string, unknown>);
     case 'ebay_get_promotions':
       return await api.marketing.getPromotions(args.marketplaceId as string, args.limit as number);
 
@@ -731,15 +729,15 @@ export async function executeTool(
         args.filter as string
       );
     case 'ebay_get_compatibilities_by_specification':
-      return await api.metadata.getCompatibilitiesBySpecification(args.specification as any);
+      return await api.metadata.getCompatibilitiesBySpecification(args.specification as Record<string, unknown>);
     case 'ebay_get_compatibility_property_names':
-      return await api.metadata.getCompatibilityPropertyNames(args.data as any);
+      return await api.metadata.getCompatibilityPropertyNames(args.data as Record<string, unknown>);
     case 'ebay_get_compatibility_property_values':
-      return await api.metadata.getCompatibilityPropertyValues(args.data as any);
+      return await api.metadata.getCompatibilityPropertyValues(args.data as Record<string, unknown>);
     case 'ebay_get_multi_compatibility_property_values':
-      return await api.metadata.getMultiCompatibilityPropertyValues(args.data as any);
+      return await api.metadata.getMultiCompatibilityPropertyValues(args.data as Record<string, unknown>);
     case 'ebay_get_product_compatibilities':
-      return await api.metadata.getProductCompatibilities(args.data as any);
+      return await api.metadata.getProductCompatibilities(args.data as Record<string, unknown>);
     case 'ebay_get_sales_tax_jurisdictions':
       return await api.metadata.getSalesTaxJurisdictions(args.countryCode as string);
 
@@ -770,7 +768,7 @@ export async function executeTool(
     }
     case 'ebay_send_offer_to_interested_buyers': {
       const validated = sendOfferToInterestedBuyersSchema.parse(args);
-      return await api.negotiation.sendOfferToInterestedBuyers(validated as any);
+      return await api.negotiation.sendOfferToInterestedBuyers(validated as Record<string, unknown>);
     }
     case 'ebay_find_eligible_items': {
       const validated = findEligibleItemsSchema.parse(args);
@@ -785,7 +783,7 @@ export async function executeTool(
     case 'ebay_search_messages': {
       const validated = getConversationsSchema.parse(args);
       return await api.message.searchMessages(
-        validated as any,
+        undefined,
         validated.limit ? Number(validated.limit) : undefined,
         validated.offset ? Number(validated.offset) : undefined
       );
@@ -796,7 +794,7 @@ export async function executeTool(
     }
     case 'ebay_send_message': {
       const validated = sendMessageSchema.parse(args);
-      return await api.message.sendMessage(validated as any);
+      return await api.message.sendMessage(validated as Record<string, unknown>);
     }
     case 'ebay_reply_to_message': {
       // This is a deprecated method that maps to sendMessage
@@ -812,7 +810,7 @@ export async function executeTool(
     case 'ebay_get_conversations': {
       const validated = getConversationsSchema.parse(args);
       return await api.message.getConversations(
-        validated as any,
+        undefined,
         validated.limit ? Number(validated.limit) : undefined,
         validated.offset ? Number(validated.offset) : undefined
       );
@@ -823,11 +821,11 @@ export async function executeTool(
     }
     case 'ebay_bulk_update_conversation': {
       const validated = bulkUpdateConversationSchema.parse(args);
-      return await api.message.bulkUpdateConversation(validated as any);
+      return await api.message.bulkUpdateConversation(validated as Record<string, unknown>);
     }
     case 'ebay_update_conversation': {
       const validated = updateConversationSchema.parse(args);
-      return await api.message.updateConversation(validated as any);
+      return await api.message.updateConversation(validated as Record<string, unknown>);
     }
 
     // Communication - Notification
@@ -837,11 +835,11 @@ export async function executeTool(
     }
     case 'ebay_update_notification_config': {
       const validated = updateConfigSchema.parse(args);
-      return await api.notification.updateConfig(validated as any);
+      return await api.notification.updateConfig(validated as Record<string, unknown>);
     }
     case 'ebay_create_notification_destination': {
       const validated = createDestinationSchema.parse(args);
-      return await api.notification.createDestination(validated as any);
+      return await api.notification.createDestination(validated as Record<string, unknown>);
     }
     case 'ebay_get_notification_destination': {
       const validated = getDestinationSchema.parse(args);
@@ -849,7 +847,7 @@ export async function executeTool(
     }
     case 'ebay_update_notification_destination': {
       const validated = updateDestinationSchema.parse(args);
-      return await api.notification.updateDestination(validated.destination_id, validated as any);
+      return await api.notification.updateDestination(validated.destination_id, validated as Record<string, unknown>);
     }
     case 'ebay_delete_notification_destination': {
       const validated = deleteDestinationSchema.parse(args);
@@ -864,7 +862,7 @@ export async function executeTool(
     }
     case 'ebay_create_notification_subscription': {
       const validated = createSubscriptionSchema.parse(args);
-      return await api.notification.createSubscription(validated as any);
+      return await api.notification.createSubscription(validated as Record<string, unknown>);
     }
     case 'ebay_get_notification_subscription': {
       const validated = getSubscriptionSchema.parse(args);
@@ -872,7 +870,7 @@ export async function executeTool(
     }
     case 'ebay_update_notification_subscription': {
       const validated = updateSubscriptionSchema.parse(args);
-      return await api.notification.updateSubscription(validated.subscription_id, validated as any);
+      return await api.notification.updateSubscription(validated.subscription_id, validated as Record<string, unknown>);
     }
     case 'ebay_delete_notification_subscription': {
       const validated = deleteSubscriptionSchema.parse(args);
@@ -905,7 +903,7 @@ export async function executeTool(
       const validated = createSubscriptionFilterSchema.parse(args);
       return await api.notification.createSubscriptionFilter(
         validated.subscription_id,
-        validated as any
+        validated as Record<string, unknown>
       );
     }
     case 'ebay_get_notification_subscription_filter': {
@@ -930,11 +928,11 @@ export async function executeTool(
     // Communication - Feedback
     case 'ebay_get_feedback': {
       const validated = getFeedbackSchema.parse(args);
-      return await api.feedback.getFeedback(validated.transaction_id || '');
+      return await api.feedback.getFeedback(validated.transaction_id ?? '');
     }
     case 'ebay_leave_feedback_for_buyer': {
       const validated = leaveFeedbackForBuyerSchema.parse(args);
-      return await api.feedback.leaveFeedbackForBuyer(validated as any);
+      return await api.feedback.leaveFeedbackForBuyer(validated as Record<string, unknown>);
     }
     case 'ebay_get_feedback_summary': {
       getFeedbackRatingSummarySchema.parse(args); // Validate empty args
@@ -951,8 +949,8 @@ export async function executeTool(
     case 'ebay_respond_to_feedback': {
       const validated = respondToFeedbackSchema.parse(args);
       return await api.feedback.respondToFeedback(
-        validated.feedback_id || '',
-        validated.response_text || ''
+        validated.feedback_id ?? '',
+        validated.response_text ?? ''
       );
     }
 

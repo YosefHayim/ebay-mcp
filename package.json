@@ -17,6 +17,8 @@
 		"start:http": "node build/server-http.js",
 		"clean": "rm -rf build",
 		"prepare": "npm run build",
+		"postinstall": "npm run auto-setup --if-present || true",
+		"auto-setup": "node build/scripts/auto-setup.js",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:watch": "vitest",

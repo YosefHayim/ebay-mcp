@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import type { StoredTokenData } from '../types/ebay.js';
 
@@ -44,13 +44,15 @@ export class TokenStorage {
       const data = await fs.readFile(TOKEN_FILE_PATH, 'utf-8');
       const tokens = JSON.parse(data) as StoredTokenData;
 
-      // Validate token structure
-      if (!tokens.userAccessToken || !tokens.userRefreshToken) {
+      // Validate token structure - at minimum we need a refresh token
+      // Access token can be empty if it needs to be refreshed
+      if (!tokens.userRefreshToken) {
         return null;
       }
 
       return tokens;
     } catch (error) {
+      console.error(error)
       return null;
     }
   }

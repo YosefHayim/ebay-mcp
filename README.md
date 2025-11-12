@@ -57,7 +57,7 @@ A comprehensive [Model Context Protocol (MCP)](https://modelcontextprotocol.io) 
 - **140 eBay API Tools** - Comprehensive coverage of eBay Sell APIs across 8 categories
 - **Dual Transport Modes** - STDIO (local) and HTTP with OAuth 2.1 (remote multi-user)
 - **OAuth 2.0 Support** - Full user token management with automatic refresh
-- **Token Persistence** - Secure file-based storage across sessions with `.ebay-mcp-tokens.json`
+- **Simple Configuration** - All authentication managed through `.env` file only
 - **Type Safety** - Built with TypeScript, Zod validation, OpenAPI-generated types, and 33+ native enums
 - **Smart Authentication** - Automatic fallback from user tokens (10k-50k req/day) to client credentials (1k req/day)
 - **Centralized Configuration** - Single source of truth with `mcp-setup.json` and automated setup scripts
@@ -126,99 +126,73 @@ A comprehensive [Model Context Protocol (MCP)](https://modelcontextprotocol.io) 
 
 ## 🚀 Quick Start
 
-### Prerequisites
+Get up and running in **3 simple steps** (< 2 minutes):
 
-- **Node.js** 18+ (check with `node --version`)
-- **eBay Developer Account** ([sign up here](https://developer.ebay.com/))
-- **eBay App Credentials** (Client ID + Secret from [Developer Portal](https://developer.ebay.com/my/keys))
+### Step 1: Get eBay Credentials
 
-### Installation
+1. Sign up for [eBay Developer Account](https://developer.ebay.com/) (free)
+2. Create an application in [Developer Portal](https://developer.ebay.com/my/keys)
+3. Copy your **Client ID** and **Client Secret**
+
+### Step 2: Clone & Configure
 
 ```bash
 # Clone the repository
 git clone https://github.com/YosefHayim/ebay-api-mcp-server.git
 cd ebay-api-mcp-server
 
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
+# Copy and edit the environment file
+cp .env.example .env
 ```
+
+Edit `.env` with your credentials (only 4 values needed):
+
+```bash
+EBAY_CLIENT_ID=your_client_id_here
+EBAY_CLIENT_SECRET=your_client_secret_here
+EBAY_ENVIRONMENT=sandbox  # or "production"
+EBAY_REDIRECT_URI=your_runame_here
+```
+
+### Step 3: Install & Auto-Configure
+
+```bash
+# Install dependencies (auto-configures all MCP clients!)
+npm install
+```
+
+**That's it!** 🎉 The installation will automatically:
+- ✅ Build the project
+- ✅ Detect installed MCP clients (Claude Desktop, Gemini, ChatGPT)
+- ✅ Generate MCP client configurations
+- ✅ Set up token persistence
+
+### Step 4: Restart & Test
+
+1. **Restart your MCP client** (Claude Desktop, Gemini, etc.)
+2. **Verify connection** in MCP client settings/logs
+3. **Test it:** Ask your AI assistant "List my eBay inventory items"
+
+> **Pro Tip:** For high rate limits (10k-50k req/day), add `EBAY_USER_ACCESS_TOKEN` and `EBAY_USER_REFRESH_TOKEN` to your `.env` file. See [OAuth Setup](#-oauth-setup) for details.
 
 ---
 
 ## ⚙️ Configuration
 
-### Automated Setup (Recommended)
+### ✨ New: Automatic Setup (Recommended)
 
-The centralized configuration approach uses a single `mcp-setup.json` file to manage all credentials and automatically configure supported MCP clients.
+**Zero configuration needed!** The server automatically detects and configures all MCP clients when you run `npm install`.
 
-#### Step 1: Create Configuration Template
+Just edit `.env` with your eBay credentials - that's it!
 
-```bash
-./scripts/create-mcp-setup.sh
-```
+### Legacy: Manual Configuration (Advanced Users Only)
 
-This generates `mcp-setup.json` with the following structure:
+If you prefer to manually configure MCP clients or need custom settings, you can still do so.
 
-```json
-{
-  "ebay": {
-    "credentials": {
-      "clientId": "YOUR_EBAY_CLIENT_ID",
-      "clientSecret": "YOUR_EBAY_CLIENT_SECRET",
-      "environment": "sandbox",
-      "redirectUri": "YOUR_RUNAME"
-    },
-    "tokens": {
-      "accessToken": "YOUR_USER_ACCESS_TOKEN_OPTIONAL",
-      "refreshToken": "YOUR_USER_REFRESH_TOKEN_OPTIONAL"
-    }
-  },
-  "mcpServer": {
-    "buildPath": "/absolute/path/to/ebay-api-mcp-server/build/index.js",
-    "autoGenerateConfigs": true,
-    "clients": {
-      "claude": { "enabled": true },
-      "gemini": { "enabled": false },
-      "chatgpt": { "enabled": false }
-    }
-  }
-}
-```
+> **Note:** The automatic setup is recommended for 99% of users. Only use manual configuration if you need special customization.
 
-#### Step 2: Configure Credentials
-
-Edit `mcp-setup.json` with your eBay credentials:
-
-1. Get your **Client ID** and **Client Secret** from [eBay Developer Portal](https://developer.ebay.com/my/keys)
-2. Set **environment** to `sandbox` (testing) or `production`
-3. Set **redirectUri** to your RuName (for OAuth user flow)
-4. *Optional:* Add OAuth tokens (see [OAuth Setup](#-oauth-setup))
-
-#### Step 3: Auto-Generate Client Configs
-
-```bash
-./scripts/setup-mcp-clients.sh
-```
-
-This script automatically:
-- ✅ Reads your `mcp-setup.json` configuration
-- ✅ Generates MCP client configs for enabled clients (Claude, Gemini, ChatGPT)
-- ✅ Creates `.ebay-mcp-tokens.json` with your tokens (if provided)
-- ✅ Backs up existing configs before modifying
-- ✅ Validates all paths and configurations
-
-#### Step 4: Restart Your MCP Client
-
-1. Restart Claude Desktop, Gemini, or ChatGPT
-2. Open MCP inspector or check client logs to verify connection
-3. Test by asking: "List my eBay inventory items"
-
----
-
-### Manual Setup
+<details>
+<summary><strong>Click to expand manual configuration instructions</strong></summary>
 
 #### With Claude Desktop
 
@@ -298,6 +272,8 @@ This script automatically:
 
 3. Restart ChatGPT
 
+</details>
+
 ---
 
 ## 🔐 OAuth Setup
@@ -329,22 +305,18 @@ The server supports two authentication modes:
 
 4. **Configure Tokens**
 
-   **Option A: Via mcp-setup.json** (Recommended)
-   ```json
-   {
-     "ebay": {
-       "tokens": {
-         "accessToken": "v^1.1#...",
-         "refreshToken": "v^1.1#..."
-       }
-     }
-   }
+   **Option A: Via .env** (Recommended)
+
+   Add tokens to your `.env` file:
+   ```bash
+   EBAY_USER_ACCESS_TOKEN=v^1.1#...
+   EBAY_USER_REFRESH_TOKEN=v^1.1#...
    ```
-   Then run: `./scripts/setup-mcp-clients.sh`
+   Then run: `npm run auto-setup`
 
    **Option B: Via MCP Tool**
    ```
-   Use the ebay_set_user_tokens tool with your access and refresh tokens
+   Use the ebay_set_user_tokens_with_expiry tool with your access and refresh tokens
    ```
 
 5. **Verify Token Status**
@@ -443,13 +415,33 @@ For the complete list of 140 tools, see [Tool Definitions](src/tools/tool-defini
 
 ## 📱 Supported MCP Clients
 
-This server is compatible with the following MCP clients:
+This server has been tested and verified with the following MCP clients:
 
-- **[Claude Desktop](https://claude.ai/download)** - Anthropic's official desktop application
-- **[Google Gemini](https://gemini.google.com/)** - Google's AI assistant
-- **[ChatGPT](https://chatgpt.com/)** - OpenAI's conversational AI
+### ✅ Fully Supported & Verified
 
-**Setup:** Use the [automated setup script](#automated-setup-recommended) or [manual configuration](#manual-setup) for your preferred client.
+| Client | Status | Version Tested | Notes |
+|--------|--------|----------------|-------|
+| **[Gemini CLI](https://gemini.google.com/)** | ✅ **Working** | Latest | Fully functional with all 140 tools |
+| **[Claude Code](https://claude.ai/code)** | ✅ **Working** | Latest | Complete integration, all features supported |
+| **[Codex](https://github.com/openai/codex)** | ✅ **Working** | Latest | Tested and verified |
+
+### 🚧 In Development
+
+| Client | Status | Progress | ETA |
+|--------|--------|----------|-----|
+| **[Claude Desktop](https://claude.ai/download)** | 🚧 **In Progress** | 85% | Coming Soon |
+| **[ChatGPT Desktop](https://chatgpt.com/)** | 🚧 **In Progress** | 70% | Q2 2025 |
+
+### Setup Instructions
+
+**For Verified Clients** (Gemini CLI, Claude Code, Codex):
+- Use the [automated setup script](#automated-setup-recommended) for quick configuration
+- Or follow the [manual configuration](#manual-setup) guide
+
+**For Clients in Development** (Claude Desktop, ChatGPT):
+- Configuration templates are available but may require adjustments
+- Join [GitHub Discussions](https://github.com/YosefHayim/ebay-api-mcp-server/discussions) for updates
+- Contributions and testing help welcome!
 
 ---
 
@@ -508,16 +500,13 @@ ebay-api-mcp-server/
 │   ├── auth/                   # OAuth & authentication guides
 │   └── sell-apps/              # OpenAPI specifications
 ├── scripts/                    # Build and setup scripts
-│   ├── create-mcp-setup.sh     # Generate mcp-setup.json
-│   ├── setup-mcp-clients.sh    # Auto-configure MCP clients
-│   └── ...
+│   └── generate-types.sh       # Generate TypeScript types from OpenAPI specs
 ├── tests/                      # Test suite
 │   ├── unit/                   # Unit tests
 │   ├── integration/            # Integration tests
 │   └── e2e/                    # End-to-end tests
 ├── build/                      # Compiled JavaScript
 ├── .env.example                # Environment template
-├── mcp-setup.json.template     # Configuration template
 └── package.json                # Dependencies & scripts
 ```
 
@@ -750,6 +739,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [eBay Developers Program](https://developer.ebay.com/) - API access and documentation
 - [Model Context Protocol](https://modelcontextprotocol.io/) - MCP specification and SDK
 - [Anthropic](https://anthropic.com/) - Claude and MCP support
+
+---
+
+## 👥 Contributors
+
+Thanks to all the amazing people who have contributed to this project!
+
+<a href="https://github.com/YosefHayim/ebay-api-mcp-server/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=YosefHayim/ebay-api-mcp-server" alt="Contributors" />
+</a>
 
 ---
 

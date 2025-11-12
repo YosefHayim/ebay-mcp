@@ -4,17 +4,91 @@ This directory contains automated setup and utility scripts for the eBay API MCP
 
 ## Available Scripts
 
-### 1. MCP Client Auto-Configuration (`setup-mcp-clients.sh`)
+### 1. Automatic Setup (`auto-setup.ts`)
 
-**Automated MCP client configuration for Claude Desktop, Gemini CLI, and ChatGPT Desktop**
+**Automated configuration for all MCP clients with zero manual configuration**
 
 #### Quick Start
 ```bash
-# From project root
-./scripts/setup-mcp-clients.sh
+# Automatically runs after npm install, or run manually:
+npm run auto-setup
 ```
 
-[Jump to detailed documentation →](#script-setup-mcp-clientssh)
+#### What It Does
+
+1. **Validates Environment**: Checks `.env` file for required eBay credentials
+2. **Detects MCP Clients**: Automatically finds installed MCP clients (Claude Desktop, Gemini, ChatGPT)
+3. **Generates Configurations**: Creates/updates MCP client config files with your credentials
+4. **Creates Token File**: Generates `.ebay-mcp-tokens.json` if user tokens are in `.env`
+
+#### Requirements
+
+- Node.js 18+ installed
+- `.env` file configured with eBay credentials
+- Built project (runs automatically during `npm install`)
+
+#### Configuration
+
+Edit `.env` file with your eBay credentials:
+
+```bash
+# Required
+EBAY_CLIENT_ID=your_client_id
+EBAY_CLIENT_SECRET=your_client_secret
+EBAY_ENVIRONMENT=sandbox
+EBAY_REDIRECT_URI=https://your-app.com/callback
+
+# Optional (for high rate limits)
+EBAY_USER_ACCESS_TOKEN=v^1.1#...
+EBAY_USER_REFRESH_TOKEN=v^1.1#...
+```
+
+#### Supported MCP Clients
+
+- ✅ **Claude Desktop** (macOS, Windows, Linux)
+- ✅ **Gemini** (all platforms)
+- ✅ **ChatGPT** (all platforms)
+
+#### Platform-Specific Config Paths
+
+**macOS:**
+- Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Gemini: `~/.config/gemini/config.json`
+- ChatGPT: `~/.config/chatgpt/config.json`
+
+**Linux:**
+- Claude Desktop: `~/.config/Claude/claude_desktop_config.json`
+- Gemini: `~/.config/gemini/config.json`
+- ChatGPT: `~/.config/chatgpt/config.json`
+
+**Windows:**
+- Claude Desktop: `%APPDATA%/Claude/claude_desktop_config.json`
+- Gemini: `~/.config/gemini/config.json`
+- ChatGPT: `~/.config/chatgpt/config.json`
+
+#### Usage
+
+```bash
+# Configure your credentials
+cp .env.example .env
+nano .env
+
+# Run auto-setup (also runs automatically after npm install)
+npm run auto-setup
+
+# Restart your MCP client to load the configuration
+```
+
+#### Features
+
+- ✅ Zero configuration required
+- ✅ Runs automatically during installation
+- ✅ Detects all installed MCP clients
+- ✅ Backs up existing configurations
+- ✅ No external dependencies (no jq required)
+- ✅ Cross-platform support (macOS, Linux, Windows)
+
+For more details, see [AUTO-SETUP.md](../docs/AUTO-SETUP.md).
 
 ---
 
@@ -27,323 +101,119 @@ This directory contains automated setup and utility scripts for the eBay API MCP
 npm run generate:types
 ```
 
-This command generates TypeScript types for all eBay APIs from the OpenAPI specs in the `docs/` folder.
+#### What It Does
 
-[Jump to detailed documentation →](#script-generate-typessh)
+Generates TypeScript type definitions for all eBay APIs from the OpenAPI specifications in the `docs/` folder:
 
----
+- Account API
+- Analytics API
+- Communication API (Feed, Feedback, Notification)
+- Fulfillment API
+- Inventory API
+- Marketing API
+- Metadata API
+- Other APIs (Recommendation, Taxonomy)
 
-## Script: setup-mcp-clients.sh
+#### Requirements
 
-### Overview
+- `openapi-typescript` package (installed as dev dependency)
+- OpenAPI spec files in `docs/` directory
 
-Automatically detects and configures the eBay API MCP server for all supported AI clients.
+#### Generated Files
 
-### Supported Clients
+Types are generated in `src/types/`:
+- `account.ts` - Account management types
+- `analytics.ts` - Analytics and reporting types
+- `communication.ts` - Messaging and notification types
+- `fulfillment.ts` - Order and shipping types
+- `inventory.ts` - Inventory management types
+- `marketing.ts` - Marketing campaign types
+- `metadata.ts` - Metadata and location types
+- `other.ts` - Miscellaneous API types
 
-- ✅ **Claude Desktop** (macOS, Windows, Linux)
-- ✅ **Gemini CLI** (macOS, Linux, Windows via WSL)
-- ✅ **ChatGPT Desktop** (macOS, Windows, Linux - if MCP support is available)
-
-### What It Does
-
-1. **Detects Operating System**: Automatically detects macOS, Linux, or Windows
-2. **Verifies Prerequisites**:
-   - Checks for Node.js installation
-   - Verifies project is built (`build/index.js` exists)
-   - Installs `jq` if needed (for JSON manipulation)
-3. **Prompts for Configuration**:
-   - eBay Client ID
-   - eBay Client Secret
-   - Environment (Sandbox or Production)
-   - Optional: OAuth Redirect URI
-4. **Auto-Configures Clients**:
-   - Searches for Claude Desktop config directory
-   - Searches for Gemini CLI config directory
-   - Searches for ChatGPT Desktop config directory
-   - Creates or updates MCP configuration files
-   - Uses absolute paths for reliability
-5. **Provides Summary**: Lists all successfully configured clients
-
-### Requirements
-
-- **Node.js** 18+ installed
-- **Built project**: Run `npm run build` first
-- **jq** (installed automatically if missing via package manager)
-
-### Platform-Specific Config Paths
-
-**macOS:**
-- Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Gemini CLI: `~/.gemini/settings.json`
-- ChatGPT Desktop: `~/Library/Application Support/ChatGPT/mcp_config.json`
-
-**Linux:**
-- Claude Desktop: `~/.config/Claude/claude_desktop_config.json`
-- Gemini CLI: `~/.gemini/settings.json`
-- ChatGPT Desktop: `~/.config/ChatGPT/mcp_config.json`
-
-**Windows:**
-- Claude Desktop: `%APPDATA%/Claude/claude_desktop_config.json`
-- Gemini CLI: `~/.gemini/settings.json` (WSL)
-- ChatGPT Desktop: `%APPDATA%/ChatGPT/mcp_config.json`
-
-### Usage
+#### Usage
 
 ```bash
-# Make sure the project is built
-npm install && npm run build
-
-# Run the setup script
-./scripts/setup-mcp-clients.sh
-
-# Follow the interactive prompts
-```
-
-### Troubleshooting
-
-**Permission Denied:**
-```bash
-chmod +x ./scripts/setup-mcp-clients.sh
-./scripts/setup-mcp-clients.sh
-```
-
-**jq Not Found:**
-The script will attempt to install `jq` automatically. If it fails:
-- macOS: `brew install jq`
-- Ubuntu/Debian: `sudo apt-get install jq`
-- CentOS/RHEL: `sudo yum install jq`
-- Windows: Use WSL or install manually from https://stedolan.github.io/jq/
-
-**Build Not Found:**
-```bash
-npm install
-npm run build
-./scripts/setup-mcp-clients.sh
-```
-
-**Client Not Detected:**
-- Ensure the client is installed in the default location
-- Check that config directories exist
-- Fall back to [manual configuration](../README.md#manual-configuration)
-
-### Security Notes
-
-- **Credentials in Config**: The script stores eBay credentials in client config files
-- **File Permissions**: Config files are created with user-only read/write permissions
-- **No Network Calls**: The script only modifies local configuration files
-- **Credentials Display**: Credentials are not echoed to the terminal during input
-
----
-
-## Script: generate-types.sh
-
-## Overview
-
-The type generation workflow uses `openapi-typescript` to convert eBay's OpenAPI 3.0 specifications into type-safe TypeScript definitions.
-
-### Flow Diagram
-
-```
-docs/sell-apps/
-├── account-management/
-│   └── sell_account_v1_oas3.json ──────┐
-├── order-management/                    │
-│   └── sell_fulfillment_v1_oas3.json ───┤
-├── listing-management/                  │
-│   └── sell_inventory_v1_oas3.json ─────┤
-├── listing-metadata/                    │
-│   └── sell_metadata_v1_oas3.json ──────┤
-├── analytics-and-report/                │
-│   └── sell_analytics_v1_oas3.json ─────┤
-├── markeitng-and-promotions/            │
-│   ├── sell_marketing_v1_oas3.json ─────┤
-│   └── sell_recommendation_v1_oas3.json ┤
-├── communication/                       │
-│   ├── sell_negotiation_v1_oas3.json ───┤  openapi-typescript
-│   ├── commerce_feedback_v1_beta_oas3.json  ────────────►
-│   ├── commerce_notification_v1_oas3.json   conversion
-│   └── commerce_message_v1_oas3.json ───┤
-└── other-apis/                          │
-    ├── commerce_identity_v1_oas3.json ──┤
-    ├── commerce_vero_v1_oas3.json ──────┤
-    ├── sell_compliance_v1_oas3.json ────┤
-    └── commerce_translation_v1_beta_oas3.json
-                                         │
-                                         │
-                                         ▼
-            src/types/openapi-schemas/
-            ├── sell_account_v1_oas3.ts
-            ├── sell_fulfillment_v1_oas3.ts
-            ├── sell_inventory_v1_oas3.ts
-            ├── sell_metadata_v1_oas3.ts
-            ├── sell_analytics_v1_oas3.ts
-            ├── sell_marketing_v1_oas3.ts
-            ├── sell_recommendation_v1_oas3.ts
-            ├── sell_negotiation_v1_oas3.ts
-            ├── commerce_feedback_v1_beta_oas3.ts
-            ├── commerce_notification_v1_oas3.ts
-            ├── commerce_message_v1_oas3.ts
-            ├── commerce_identity_v1_oas3.ts
-            ├── commerce_vero_v1_oas3.ts
-            ├── sell_compliance_v1_oas3.ts
-            └── commerce_translation_v1_beta_oas3.ts
-```
-
-## Script: generate-types.sh
-
-### What It Does
-
-1. **Validates Environment**: Ensures script runs from project root
-2. **Creates Output Directory**: Creates `src/types/openapi-schemas/` if needed
-3. **Processes Each Spec**: Iterates through all OpenAPI JSON files
-4. **Generates TypeScript Types**: Uses `openapi-typescript` for conversion
-5. **Reports Results**: Shows success/failure summary
-
-### Features
-
-- ✅ **Colored Output**: Easy-to-read progress indicators
-- ✅ **Error Handling**: Continues processing even if individual files fail
-- ✅ **Mapping System**: Explicit docs-to-output path mapping
-- ✅ **Silent Mode**: Suppresses verbose openapi-typescript output
-- ✅ **Exit Codes**: Returns non-zero on errors for CI/CD integration
-
-### Output
-
-The script generates TypeScript definition files with:
-- **Type-safe interfaces** for all API schemas
-- **Discriminated unions** for polymorphic responses
-- **Proper JSDoc comments** from OpenAPI descriptions
-- **Enum types** for fixed value sets
-
-### Example Generated Type Usage
-
-```typescript
-// Import generated types
-import type { components } from "./types/openapi-schemas/sell_inventory_v1_oas3.js";
-
-// Use strongly-typed interfaces
-type InventoryItem = components["schemas"]["InventoryItem"];
-type Offer = components["schemas"]["Offer"];
-
-// Type-safe function signatures
-async function getInventoryItem(sku: string): Promise<InventoryItem> {
-  // Implementation uses correctly typed responses
-}
-```
-
-## Folder Mapping
-
-The script uses explicit path mappings to control where types are generated:
-
-| Docs Folder | OpenAPI Spec | Generated Type |
-|-------------|--------------|----------------|
-| `sell-apps/account-management/` | `sell_account_v1_oas3.json` | `src/types/openapi-schemas/sell_account_v1_oas3.ts` |
-| `sell-apps/order-management/` | `sell_fulfillment_v1_oas3.json` | `src/types/openapi-schemas/sell_fulfillment_v1_oas3.ts` |
-| `sell-apps/listing-management/` | `sell_inventory_v1_oas3.json` | `src/types/openapi-schemas/sell_inventory_v1_oas3.ts` |
-| `sell-apps/listing-metadata/` | `sell_metadata_v1_oas3.json` | `src/types/openapi-schemas/sell_metadata_v1_oas3.ts` |
-| `sell-apps/analytics-and-report/` | `sell_analytics_v1_oas3.json` | `src/types/openapi-schemas/sell_analytics_v1_oas3.ts` |
-| `sell-apps/markeitng-and-promotions/` | `sell_marketing_v1_oas3.json` | `src/types/openapi-schemas/sell_marketing_v1_oas3.ts` |
-| `sell-apps/markeitng-and-promotions/` | `sell_recommendation_v1_oas3.json` | `src/types/openapi-schemas/sell_recommendation_v1_oas3.ts` |
-| `sell-apps/communication/` | `sell_negotiation_v1_oas3.json` | `src/types/openapi-schemas/sell_negotiation_v1_oas3.ts` |
-| `sell-apps/communication/` | `commerce_feedback_v1_beta_oas3.json` | `src/types/openapi-schemas/commerce_feedback_v1_beta_oas3.ts` |
-| `sell-apps/communication/` | `commerce_notification_v1_oas3.json` | `src/types/openapi-schemas/commerce_notification_v1_oas3.ts` |
-| `sell-apps/communication/` | `commerce_message_v1_oas3.json` | `src/types/openapi-schemas/commerce_message_v1_oas3.ts` |
-| `sell-apps/other-apis/` | `commerce_identity_v1_oas3.json` | `src/types/openapi-schemas/commerce_identity_v1_oas3.ts` |
-| `sell-apps/other-apis/` | `commerce_vero_v1_oas3.json` | `src/types/openapi-schemas/commerce_vero_v1_oas3.ts` |
-| `sell-apps/other-apis/` | `sell_compliance_v1_oas3.json` | `src/types/openapi-schemas/sell_compliance_v1_oas3.ts` |
-| `sell-apps/other-apis/` | `commerce_translation_v1_beta_oas3.json` | `src/types/openapi-schemas/commerce_translation_v1_beta_oas3.ts` |
-
-## Adding New Specs
-
-To add a new OpenAPI specification:
-
-1. **Add the spec file** to the appropriate `docs/sell-apps/*/` folder
-2. **Edit `generate-types.sh`** and add a new entry to the `SPEC_MAPPINGS` array:
-
-```bash
-declare -a SPEC_MAPPINGS=(
-    # ... existing mappings ...
-
-    # Your New API
-    "sell-apps/your-folder:your_api_v1_oas3.json:your_api_v1_oas3.ts"
-)
-```
-
-3. **Run the generator**:
-```bash
+# Generate all types
 npm run generate:types
-```
 
-## Manual Usage
-
-You can also run the script directly:
-
-```bash
-# From project root
-./scripts/generate-types.sh
-
-# Or with bash explicitly
+# Or run the script directly
 bash scripts/generate-types.sh
 ```
 
+#### When to Regenerate Types
+
+Run this script when:
+- eBay updates their OpenAPI specifications
+- You add new API endpoints
+- You update OpenAPI spec files in `docs/`
+
+---
+
+## Script Development
+
+All scripts are located in the `scripts/` directory and follow these conventions:
+
+- **TypeScript scripts**: Run via npm scripts (e.g., `npm run auto-setup`)
+- **Shell scripts**: Use bash and should be cross-platform compatible
+- **Documentation**: Each script has detailed documentation in this README
+
+### Adding New Scripts
+
+When adding a new script:
+
+1. Create the script in the `scripts/` directory
+2. Add it to `package.json` scripts section if it's a TypeScript script
+3. Make shell scripts executable: `chmod +x scripts/your-script.sh`
+4. Document it in this README with:
+   - Purpose and overview
+   - Requirements
+   - Usage examples
+   - Configuration options
+
+---
+
 ## Troubleshooting
 
-### Script Won't Execute
+### Auto-setup Issues
 
-```bash
-# Make sure it's executable
-chmod +x scripts/generate-types.sh
+**Error: "Environment validation failed"**
+- Make sure `.env` file exists and contains `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET`
+- Check that `.env` is in the project root directory
 
-# Check line endings (must be Unix LF, not Windows CRLF)
-file scripts/generate-types.sh
-# Should show: "Bourne-Again shell script text executable"
-```
+**Error: "No MCP clients detected"**
+- Install an MCP client (Claude Desktop, Gemini, or ChatGPT)
+- Run `npm run auto-setup` again after installation
 
-### "Input file not found" Error
+**Error: "Build directory not found"**
+- Run `npm run build` first
+- Make sure the build completed successfully
 
-- Verify the OpenAPI JSON file exists in the `docs/` folder
-- Check the path in `SPEC_MAPPINGS` array matches the actual file location
-- Ensure folder names are correct (note: `markeitng-and-promotions` has a typo)
+### Type Generation Issues
 
-### Generation Fails for Specific File
+**Error: "OpenAPI spec not found"**
+- Check that OpenAPI spec files exist in `docs/` directory
+- Verify file paths match those in `generate-types.sh`
 
-- Validate the OpenAPI JSON is valid (use https://editor.swagger.io/)
-- Check for syntax errors in the JSON file
-- Try generating that specific file manually:
-  ```bash
-  npx openapi-typescript docs/path/to/spec.json -o output.ts
-  ```
+**Error: "openapi-typescript command not found"**
+- Run `npm install` to install dev dependencies
+- Make sure you're in the project root directory
 
-### Types Not Updating
+---
 
-- Generated files are cached - delete and regenerate:
-  ```bash
-  rm -rf src/types/openapi-schemas/
-  npm run generate:types
-  ```
+## Security
 
-## CI/CD Integration
+- **Never commit `.env` files** - Already protected in `.gitignore`
+- **Never commit `.ebay-mcp-tokens.json`** - Already protected in `.gitignore`
+- **Set restrictive permissions**: `chmod 600 .env .ebay-mcp-tokens.json`
+- **Rotate tokens regularly**, especially if exposed
 
-The script exits with status code 1 if any errors occur, making it suitable for CI/CD:
+---
 
-```yaml
-# Example GitHub Actions workflow
-- name: Generate TypeScript Types
-  run: npm run generate:types
+## Documentation
 
-- name: Verify Types Compile
-  run: npm run typecheck
-```
+For more information, see:
 
-## Dependencies
-
-- **openapi-typescript**: v7.10.1+ (installed as devDependency)
-- **Node.js**: 18.0.0+
-- **Bash**: 3.0+ (macOS/Linux standard)
-
-## See Also
-
-- [openapi-typescript Documentation](https://github.com/drwpow/openapi-typescript)
-- [eBay API Documentation](https://developer.ebay.com/api-docs)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [AUTO-SETUP.md](../docs/AUTO-SETUP.md) - Detailed auto-setup documentation
+- [Authentication Guide](../docs/auth/README.md) - OAuth and token management
+- [README.md](../README.md) - Main project documentation
