@@ -124,6 +124,45 @@ describe('Other APIs', () => {
         '/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category/123'
       );
     });
+
+    it('should get category subtree', async () => {
+      const mockResponse = { categorySubtreeNode: {} };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getCategorySubtree('0', '123');
+
+      expect(client.get).toHaveBeenCalledWith(
+        '/commerce/taxonomy/v1/category_tree/0/get_category_subtree',
+        { category_id: '123' }
+      );
+    });
+
+    it('should get compatibility properties', async () => {
+      const mockResponse = { compatibilityProperties: [] };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getCompatibilityProperties('0', '123');
+
+      expect(client.get).toHaveBeenCalledWith(
+        '/commerce/taxonomy/v1/category_tree/0/get_compatibility_properties',
+        { category_id: '123' }
+      );
+    });
+
+    it('should get compatibility property values', async () => {
+      const mockResponse = { compatibilityPropertyValues: [] };
+      vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+      await api.getCompatibilityPropertyValues('0', '123', 'Make');
+
+      expect(client.get).toHaveBeenCalledWith(
+        '/commerce/taxonomy/v1/category_tree/0/get_compatibility_property_values',
+        {
+          category_id: '123',
+          compatibility_property: 'Make'
+        }
+      );
+    });
   });
 
   describe('RecommendationApi', () => {

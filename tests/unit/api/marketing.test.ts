@@ -400,6 +400,255 @@ describe("MarketingApi", () => {
         bidUpdate
       );
     });
+
+    it("should create ads by inventory reference", async () => {
+      const mockResponse = { ads: [{ adId: "ad-001" }] };
+      const request = {
+        inventoryReferenceId: "ref-001",
+        inventoryReferenceType: "INVENTORY_ITEM",
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.createAdsByInventoryReference(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/create_ads_by_inventory_reference",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should get ads by inventory reference", async () => {
+      const mockResponse = { ads: [{ adId: "ad-001" }] };
+
+      vi.spyOn(mockClient, "get").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.getAdsByInventoryReference(
+        "campaign-001",
+        "ref-001",
+        "INVENTORY_ITEM"
+      );
+
+      expect(mockClient.get).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/get_ads_by_inventory_reference",
+        {
+          inventory_reference_id: "ref-001",
+          inventory_reference_type: "INVENTORY_ITEM",
+        }
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk create ads by inventory reference", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 201, adId: "ad-001" }],
+      };
+      const request = {
+        requests: [
+          {
+            inventoryReferenceId: "ref-001",
+            inventoryReferenceType: "INVENTORY_ITEM",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkCreateAdsByInventoryReference(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_create_ads_by_inventory_reference",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk create ads by listing ID", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 201, adId: "ad-001" }],
+      };
+      const request = {
+        requests: [{ listingId: "listing-001" }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkCreateAdsByListingId(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_create_ads_by_listing_id",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk delete ads by inventory reference", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 204 }],
+      };
+      const request = {
+        requests: [
+          {
+            inventoryReferenceId: "ref-001",
+            inventoryReferenceType: "INVENTORY_ITEM",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkDeleteAdsByInventoryReference(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_delete_ads_by_inventory_reference",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk delete ads by listing ID", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 204 }],
+      };
+      const request = {
+        requests: [{ listingId: "listing-001" }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkDeleteAdsByListingId(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_delete_ads_by_listing_id",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update ads bid by inventory reference", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 200 }],
+      };
+      const request = {
+        requests: [
+          {
+            inventoryReferenceId: "ref-001",
+            inventoryReferenceType: "INVENTORY_ITEM",
+            bidPercentage: "10.5",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateAdsBidByInventoryReference(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_bid_by_inventory_reference",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update ads bid by listing ID", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 200 }],
+      };
+      const request = {
+        requests: [
+          {
+            listingId: "listing-001",
+            bidPercentage: "10.5",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateAdsBidByListingId(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_bid_by_listing_id",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update ads status", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 200 }],
+      };
+      const request = {
+        requests: [
+          {
+            adId: "ad-001",
+            adStatus: "ACTIVE",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateAdsStatus(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_status",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update ads status by listing ID", async () => {
+      const mockResponse = {
+        responses: [{ statusCode: 200 }],
+      };
+      const request = {
+        requests: [
+          {
+            listingId: "listing-001",
+            adStatus: "ACTIVE",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateAdsStatusByListingId(
+        "campaign-001",
+        request
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_ads_status_by_listing_id",
+        request
+      );
+      expect(result).toEqual(mockResponse);
+    });
   });
 
   describe("Ad Group Management", () => {
@@ -532,6 +781,55 @@ describe("MarketingApi", () => {
         {}
       );
       expect(result).toEqual(mockBids);
+    });
+
+    it("should update ad group bids", async () => {
+      const updateBidsRequest: UpdateAdGroupBidsRequest = {
+        requests: [
+          {
+            adGroupId: "adgroup-001",
+            bidPercentage: "12.5",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(undefined);
+
+      await marketingApi.updateAdGroupBids(
+        "campaign-001",
+        "adgroup-001",
+        updateBidsRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/update_ad_group_bids",
+        updateBidsRequest
+      );
+    });
+
+    it("should update ad group keywords", async () => {
+      const updateKeywordsRequest: UpdateAdGroupKeywordsRequest = {
+        requests: [
+          {
+            adGroupId: "adgroup-001",
+            keywordText: "updated keyword",
+            matchType: "PHRASE",
+          },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(undefined);
+
+      await marketingApi.updateAdGroupKeywords(
+        "campaign-001",
+        "adgroup-001",
+        updateKeywordsRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/update_ad_group_keywords",
+        updateKeywordsRequest
+      );
     });
   });
 
@@ -686,6 +984,99 @@ describe("MarketingApi", () => {
       );
       expect(result).toEqual(mockKeywords);
     });
+
+    it("should bulk create keywords", async () => {
+      const bulkRequest: BulkCreateKeywordRequest = {
+        requests: [
+          {
+            keywordText: "bulk keyword 1",
+            matchType: "EXACT",
+          },
+          {
+            keywordText: "bulk keyword 2",
+            matchType: "PHRASE",
+          },
+        ],
+      };
+
+      const mockResponse: BulkCreateKeywordResponse = {
+        responses: [
+          { statusCode: 201, keywordId: "keyword-100" },
+          { statusCode: 201, keywordId: "keyword-101" },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkCreateKeywords(
+        "campaign-001",
+        "adgroup-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/bulk_create_keywords",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk delete keywords", async () => {
+      const bulkRequest: BulkDeleteKeywordRequest = {
+        requests: [{ keywordId: "keyword-001" }, { keywordId: "keyword-002" }],
+      };
+
+      const mockResponse: BulkDeleteKeywordResponse = {
+        responses: [{ statusCode: 204 }, { statusCode: 204 }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkDeleteKeywords(
+        "campaign-001",
+        "adgroup-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/bulk_delete_keywords",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update keyword bids", async () => {
+      const bulkRequest: BulkUpdateKeywordBidRequest = {
+        requests: [
+          {
+            keywordId: "keyword-001",
+            bidAmount: { value: "2.50", currency: "USD" },
+          },
+          {
+            keywordId: "keyword-002",
+            bidAmount: { value: "3.00", currency: "USD" },
+          },
+        ],
+      };
+
+      const mockResponse: BulkUpdateKeywordBidResponse = {
+        responses: [{ statusCode: 200 }, { statusCode: 200 }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateKeywordBids(
+        "campaign-001",
+        "adgroup-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/ad_group/adgroup-001/bulk_update_keyword_bids",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
   });
 
   describe("Negative Keyword Management", () => {
@@ -809,6 +1200,249 @@ describe("MarketingApi", () => {
         negKeywordRequest
       );
       expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk create negative keywords for a campaign", async () => {
+      const bulkRequest: BulkCreateNegativeKeywordRequest = {
+        requests: [
+          {
+            negativeKeywordText: "excluded 1",
+            negativeKeywordMatchType: "EXACT",
+          },
+          {
+            negativeKeywordText: "excluded 2",
+            negativeKeywordMatchType: "PHRASE",
+          },
+        ],
+      };
+
+      const mockResponse: BulkCreateNegativeKeywordResponse = {
+        responses: [
+          { statusCode: 201, negativeKeywordId: "neg-100" },
+          { statusCode: 201, negativeKeywordId: "neg-101" },
+        ],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkCreateNegativeKeywords(
+        "campaign-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_create_negative_keywords",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk delete negative keywords for a campaign", async () => {
+      const bulkRequest: BulkDeleteNegativeKeywordRequest = {
+        requests: [
+          { negativeKeywordId: "neg-001" },
+          { negativeKeywordId: "neg-002" },
+        ],
+      };
+
+      const mockResponse: BulkDeleteNegativeKeywordResponse = {
+        responses: [{ statusCode: 204 }, { statusCode: 204 }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkDeleteNegativeKeywords(
+        "campaign-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_delete_negative_keywords",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update negative keywords for a campaign", async () => {
+      const bulkRequest: BulkUpdateNegativeKeywordRequest = {
+        requests: [
+          {
+            negativeKeywordId: "neg-001",
+            negativeKeywordStatus: "ACTIVE",
+          },
+          {
+            negativeKeywordId: "neg-002",
+            negativeKeywordStatus: "PAUSED",
+          },
+        ],
+      };
+
+      const mockResponse: BulkUpdateNegativeKeywordResponse = {
+        responses: [{ statusCode: 200 }, { statusCode: 200 }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateNegativeKeywords(
+        "campaign-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/bulk_update_negative_keyword",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should update a negative keyword for a campaign", async () => {
+      const updateRequest = {
+        negativeKeywordStatus: "PAUSED",
+      };
+
+      vi.spyOn(mockClient, "put").mockResolvedValue(undefined);
+
+      await marketingApi.updateNegativeKeyword(
+        "campaign-001",
+        "neg-001",
+        updateRequest
+      );
+
+      expect(mockClient.put).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_campaign/campaign-001/negative_keyword/neg-001",
+        updateRequest
+      );
+    });
+
+    it("should bulk create negative keywords for an ad group", async () => {
+      const bulkRequest: BulkCreateNegativeKeywordRequest = {
+        requests: [
+          {
+            negativeKeywordText: "excluded 1",
+            negativeKeywordMatchType: "EXACT",
+          },
+        ],
+      };
+
+      const mockResponse: BulkCreateNegativeKeywordResponse = {
+        responses: [{ statusCode: 201, negativeKeywordId: "neg-200" }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkCreateNegativeKeywordsForAdGroup(
+        "adgroup-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_group/adgroup-001/bulk_create_negative_keyword",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk delete negative keywords for an ad group", async () => {
+      const bulkRequest: BulkDeleteNegativeKeywordRequest = {
+        requests: [{ negativeKeywordId: "neg-001" }],
+      };
+
+      const mockResponse: BulkDeleteNegativeKeywordResponse = {
+        responses: [{ statusCode: 204 }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkDeleteNegativeKeywordsForAdGroup(
+        "adgroup-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_group/adgroup-001/bulk_delete_negative_keyword",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should bulk update negative keywords for an ad group", async () => {
+      const bulkRequest: BulkUpdateNegativeKeywordRequest = {
+        requests: [
+          {
+            negativeKeywordId: "neg-001",
+            negativeKeywordStatus: "ACTIVE",
+          },
+        ],
+      };
+
+      const mockResponse: BulkUpdateNegativeKeywordResponse = {
+        responses: [{ statusCode: 200 }],
+      };
+
+      vi.spyOn(mockClient, "post").mockResolvedValue(mockResponse);
+
+      const result = await marketingApi.bulkUpdateNegativeKeywordsForAdGroup(
+        "adgroup-001",
+        bulkRequest
+      );
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_group/adgroup-001/bulk_update_negative_keyword",
+        bulkRequest
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should get a specific negative keyword for an ad group", async () => {
+      const mockNegKeyword: NegativeKeyword = {
+        negativeKeywordId: "neg-001",
+        negativeKeywordText: "excluded keyword",
+        negativeKeywordStatus: "ACTIVE",
+      };
+
+      vi.spyOn(mockClient, "get").mockResolvedValue(mockNegKeyword);
+
+      const result = await marketingApi.getNegativeKeywordForAdGroup(
+        "adgroup-001",
+        "neg-001"
+      );
+
+      expect(mockClient.get).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_group/adgroup-001/negative_keyword/neg-001"
+      );
+      expect(result.negativeKeywordId).toBe("neg-001");
+    });
+
+    it("should delete a negative keyword for an ad group", async () => {
+      vi.spyOn(mockClient, "delete").mockResolvedValue(undefined);
+
+      await marketingApi.deleteNegativeKeywordForAdGroup(
+        "adgroup-001",
+        "neg-001"
+      );
+
+      expect(mockClient.delete).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_group/adgroup-001/negative_keyword/neg-001"
+      );
+    });
+
+    it("should update a negative keyword for an ad group", async () => {
+      const updateRequest = {
+        negativeKeywordStatus: "PAUSED",
+      };
+
+      vi.spyOn(mockClient, "put").mockResolvedValue(undefined);
+
+      await marketingApi.updateNegativeKeywordForAdGroup(
+        "adgroup-001",
+        "neg-001",
+        updateRequest
+      );
+
+      expect(mockClient.put).toHaveBeenCalledWith(
+        "/sell/marketing/v1/ad_group/adgroup-001/negative_keyword/neg-001",
+        updateRequest
+      );
     });
   });
 

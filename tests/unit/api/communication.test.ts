@@ -195,6 +195,86 @@ describe('Communication APIs', () => {
         );
       });
     });
+
+    describe('deprecated methods', () => {
+      it('should call getConversations via searchMessages', async () => {
+        const mockResponse = { conversations: [] };
+        vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+        await api.searchMessages('filter:test', 10, 0);
+
+        expect(client.get).toHaveBeenCalledWith('/commerce/message/v1/conversation', {
+          filter: 'filter:test',
+          limit: 10,
+          offset: 0
+        });
+      });
+
+      it('should call getConversation via getMessage', async () => {
+        const mockResponse = { conversationId: '123' };
+        vi.mocked(client.get).mockResolvedValue(mockResponse);
+
+        await api.getMessage('msg123');
+
+        expect(client.get).toHaveBeenCalledWith('/commerce/message/v1/conversation/msg123');
+      });
+
+      it('should call sendMessage via replyToMessage', async () => {
+        const mockResponse = { messageId: '123' };
+        vi.mocked(client.post).mockResolvedValue(mockResponse);
+
+        await api.replyToMessage('conv123', 'Hello');
+
+        expect(client.post).toHaveBeenCalledWith('/commerce/message/v1/send_message', {
+          conversation_id: 'conv123',
+          message_content: 'Hello'
+        });
+      });
+    });
+
+    describe('error handling', () => {
+      it('should handle API errors in getConversations', async () => {
+        vi.mocked(client.get).mockRejectedValue(new Error('API Error'));
+
+        await expect(api.getConversations()).rejects.toThrow('Failed to get conversations');
+      });
+
+      it('should handle API errors in getConversation', async () => {
+        vi.mocked(client.get).mockRejectedValue(new Error('API Error'));
+
+        await expect(api.getConversation('123')).rejects.toThrow('Failed to get conversation');
+      });
+
+      it('should handle API errors in sendMessage', async () => {
+        vi.mocked(client.post).mockRejectedValue(new Error('API Error'));
+
+        await expect(api.sendMessage({ text: 'test' })).rejects.toThrow('Failed to send message');
+      });
+
+      it('should handle API errors in updateConversation', async () => {
+        vi.mocked(client.post).mockRejectedValue(new Error('API Error'));
+
+        await expect(api.updateConversation({ read: true })).rejects.toThrow('Failed to update conversation');
+      });
+
+      it('should handle API errors in bulkUpdateConversation', async () => {
+        vi.mocked(client.post).mockRejectedValue(new Error('API Error'));
+
+        await expect(api.bulkUpdateConversation({ ids: ['123'] })).rejects.toThrow('Failed to bulk update conversation');
+      });
+
+      it('should validate filter parameter type', async () => {
+        await expect(api.getConversations(123 as any)).rejects.toThrow('filter must be a string');
+      });
+
+      it('should validate limit parameter type', async () => {
+        await expect(api.getConversations(undefined, 0)).rejects.toThrow('limit must be a positive number');
+      });
+
+      it('should validate offset parameter type', async () => {
+        await expect(api.getConversations(undefined, undefined, -1)).rejects.toThrow('offset must be a non-negative number');
+      });
+    });
   });
 
   describe('FeedbackApi', () => {
