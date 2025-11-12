@@ -1,8 +1,0 @@
-{
-	"mcpServers": {
-		"eBayMcpServer": {
-			"command": "node",
-			"args": ["/Applications/Github/ebay-api-mcp-server/build/index.js"]
-		}
-	}
-}

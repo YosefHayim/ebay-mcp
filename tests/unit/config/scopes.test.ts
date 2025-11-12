@@ -111,7 +111,7 @@ describe("Scope Validation", () => {
       const result = validateScopes(sandboxOnlyScopes, "production");
 
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0]).toContain("not recognized");
+      expect(result.warnings[0]).toContain("only available in sandbox environment");
       // Still includes the scopes (let eBay reject them)
       expect(result.validScopes).toEqual(sandboxOnlyScopes);
     });
@@ -168,7 +168,7 @@ describe("Scope Validation", () => {
       const result = validateScopes(sandboxOnlyScope, "production");
 
       expect(result.warnings[0]).toMatch(/sell\.item\.draft/);
-      expect(result.warnings[0]).toMatch(/not recognized/);
+      expect(result.warnings[0]).toMatch(/only available in sandbox environment/);
       expect(result.warnings[0]).toMatch(/may be rejected/);
     });
   });
