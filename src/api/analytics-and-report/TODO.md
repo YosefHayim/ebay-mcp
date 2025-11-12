@@ -5,6 +5,7 @@
 ✅ **All endpoints implemented and tested** (v1.1.4)
 
 ### Analytics API (`analytics.ts`)
+
 - 100% function coverage
 - 94.28% line coverage
 - 86.95% branch coverage

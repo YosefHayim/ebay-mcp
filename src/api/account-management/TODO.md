@@ -5,6 +5,7 @@
 ✅ **All endpoints implemented and tested** (v1.1.4)
 
 ### Account API (`account.ts`)
+
 - 100% function coverage
 - 100% line coverage
 - 28 endpoints fully tested

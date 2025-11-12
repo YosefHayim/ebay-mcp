@@ -1351,10 +1351,7 @@ export const otherApiTools: ToolDefinition[] = [
     description:
       'Get a specific VERO reason code by ID. Reason codes categorize the types of intellectual property violations.',
     inputSchema: {
-      veroReasonCodeId: z
-        .string()
-        .min(1)
-        .describe('The unique identifier of the VERO reason code'),
+      veroReasonCodeId: z.string().min(1).describe('The unique identifier of the VERO reason code'),
     },
   },
   {

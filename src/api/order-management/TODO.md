@@ -5,11 +5,13 @@
 ✅ **All endpoints implemented and tested** (v1.1.4)
 
 ### Fulfillment API (`fulfillment.ts`)
+
 - 100% function coverage
 - 100% line coverage
 - 4 endpoints with comprehensive tests
 
 ### Dispute API (`dispute.ts`)
+
 - 100% function coverage
 - 100% line coverage
 - All payment dispute endpoints tested

@@ -6,7 +6,7 @@ import nock from 'nock';
 export function mockOAuthTokenEndpoint(
   environment: 'production' | 'sandbox' = 'sandbox',
   responseData?: object,
-  statusCode: number = 200
+  statusCode = 200
 ) {
   const baseUrl =
     environment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
@@ -32,7 +32,7 @@ export function mockEbayApiEndpoint(
   method: 'get' | 'post' | 'put' | 'delete' = 'get',
   environment: 'production' | 'sandbox' = 'sandbox',
   responseData?: object,
-  statusCode: number = 200
+  statusCode = 200
 ) {
   const baseUrl =
     environment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
@@ -58,8 +58,8 @@ export function mockEbayApiError(
   path: string,
   method: 'get' | 'post' | 'put' | 'delete' = 'get',
   environment: 'production' | 'sandbox' = 'sandbox',
-  errorMessage: string = 'API Error',
-  statusCode: number = 400
+  errorMessage = 'API Error',
+  statusCode = 400
 ) {
   const errorResponse = {
     errors: [

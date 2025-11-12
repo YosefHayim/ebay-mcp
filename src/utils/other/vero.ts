@@ -59,12 +59,14 @@ export const createVeroReportSchema = z.object({
  * Path: vero_report_id
  */
 export const getVeroReportSchema = z.object({
-  vero_report_id: z.string({
-    message: 'VERO report ID is required',
-    required_error: 'vero_report_id is required',
-    invalid_type_error: 'vero_report_id must be a string',
-    description: 'The unique identifier of the VERO report',
-  }).min(1, 'VERO report ID cannot be empty'),
+  vero_report_id: z
+    .string({
+      message: 'VERO report ID is required',
+      required_error: 'vero_report_id is required',
+      invalid_type_error: 'vero_report_id must be a string',
+      description: 'The unique identifier of the VERO report',
+    })
+    .min(1, 'VERO report ID cannot be empty'),
 });
 
 /**
@@ -84,12 +86,14 @@ export const getVeroReportItemsSchema = z.object({
  * Path: vero_reason_code_id
  */
 export const getVeroReasonCodeSchema = z.object({
-  vero_reason_code_id: z.string({
-    message: 'VERO reason code ID is required',
-    required_error: 'vero_reason_code_id is required',
-    invalid_type_error: 'vero_reason_code_id must be a string',
-    description: 'The unique identifier of the VERO reason code',
-  }).min(1, 'VERO reason code ID cannot be empty'),
+  vero_reason_code_id: z
+    .string({
+      message: 'VERO reason code ID is required',
+      required_error: 'vero_reason_code_id is required',
+      invalid_type_error: 'vero_reason_code_id must be a string',
+      description: 'The unique identifier of the VERO reason code',
+    })
+    .min(1, 'VERO reason code ID cannot be empty'),
 });
 
 /**

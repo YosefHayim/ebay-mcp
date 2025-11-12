@@ -5,12 +5,14 @@
 ✅ **All endpoints implemented and tested** (v1.1.4)
 
 ### Taxonomy API (`taxonomy.ts`)
+
 - 100% function coverage
 - 100% line coverage
 - 100% branch coverage
 - All category tree operations tested
 
 ### Metadata API (`metadata.ts`)
+
 - 100% function coverage
 - 71.09% line coverage
 - 58.10% branch coverage

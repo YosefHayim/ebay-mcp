@@ -20,6 +20,7 @@
 The following 24 endpoint methods need to be implemented based on the OpenAPI spec at `docs/sell-apps/other-apis/sell_edelivery_international_shipping_oas3.json`:
 
 **Cost & Preferences:**
+
 - [ ] `getActualCosts` - GET /actual_costs
 - [ ] `getAddressPreferences` - GET /address_preference
 - [ ] `createAddressPreference` - POST /address_preference
@@ -27,18 +28,21 @@ The following 24 endpoint methods need to be implemented based on the OpenAPI sp
 - [ ] `createConsignPreference` - POST /consign_preference
 
 **Agents & Services:**
+
 - [ ] `getAgents` - GET /agents
 - [ ] `getBatteryQualifications` - GET /battery_qualifications
 - [ ] `getDropoffSites` - GET /dropoff_sites
 - [ ] `getShippingServices` - GET /services
 
 **Bundles:**
+
 - [ ] `createBundle` - POST /bundle
 - [ ] `getBundle` - GET /bundle/{bundle_id}
 - [ ] `cancelBundle` - POST /bundle/{bundle_id}/cancel
 - [ ] `getBundleLabel` - GET /bundle/{bundle_id}/label
 
 **Packages (Single):**
+
 - [ ] `createPackage` - POST /package
 - [ ] `getPackage` - GET /package/{package_id}
 - [ ] `deletePackage` - DELETE /package/{package_id}
@@ -48,16 +52,19 @@ The following 24 endpoint methods need to be implemented based on the OpenAPI sp
 - [ ] `confirmPackage` - POST /package/{package_id}/confirm
 
 **Packages (Bulk):**
+
 - [ ] `bulkCancelPackages` - POST /package/bulk_cancel_packages
 - [ ] `bulkConfirmPackages` - POST /package/bulk_confirm_packages
 - [ ] `bulkDeletePackages` - POST /package/bulk_delete_packages
 
 **Labels & Tracking:**
+
 - [ ] `getLabels` - GET /labels
 - [ ] `getHandoverSheet` - GET /handover_sheet
 - [ ] `getTracking` - GET /tracking
 
 **Other:**
+
 - [ ] `createComplaint` - POST /complaint
 
 **Note:** Existing `createShippingQuote` and `getShippingQuote` are NOT part of the eDelivery spec above. They appear to be from a different API version or spec file.

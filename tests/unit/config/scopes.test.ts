@@ -182,9 +182,9 @@ describe('Scope Validation', () => {
       expect(url).toContain('ru=');
       expect(url).toContain(`AppName=${clientId}`);
       // Decode the ru parameter to check authorize URL contents
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
       expect(decodedRu).toContain('https://auth.ebay.com/oauth2/authorize');
       expect(decodedRu).toContain(`client_id=${clientId}`);
       expect(decodedRu).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
@@ -198,9 +198,9 @@ describe('Scope Validation', () => {
       expect(url).toContain('ru=');
       expect(url).toContain(`AppName=${clientId}`);
       // Decode the ru parameter to check authorize URL contents
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
       expect(decodedRu).toContain('https://auth.sandbox.ebay.com/oauth2/authorize');
       expect(decodedRu).toContain(`client_id=${clientId}`);
       expect(decodedRu).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
@@ -211,9 +211,9 @@ describe('Scope Validation', () => {
       const url = getOAuthAuthorizationUrl(clientId, redirectUri, 'production');
 
       // Decode the ru parameter to check scopes
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
       expect(decodedRu).toContain('scope=');
       // Should include at least one default scope
       expect(decodedRu).toContain('sell.inventory');
@@ -228,9 +228,9 @@ describe('Scope Validation', () => {
       const url = getOAuthAuthorizationUrl(clientId, redirectUri, 'production', customScopes);
 
       // Decode the ru parameter to check custom scopes
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
 
       customScopes.forEach((scope) => {
         expect(decodedRu).toContain(encodeURIComponent(scope));
@@ -243,9 +243,9 @@ describe('Scope Validation', () => {
       const url = getOAuthAuthorizationUrl(clientId, redirectUri, 'production', undefined, state);
 
       // Decode the ru parameter to check state
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
       expect(decodedRu).toContain(`state=${state}`);
     });
 
@@ -253,9 +253,9 @@ describe('Scope Validation', () => {
       const url = getOAuthAuthorizationUrl(clientId, redirectUri, 'production');
 
       // Decode the ru parameter to check state is not present
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
       expect(decodedRu).not.toContain('state=');
     });
 
@@ -265,9 +265,9 @@ describe('Scope Validation', () => {
       const url = getOAuthAuthorizationUrl(clientId, specialRedirectUri, 'production');
 
       // Decode the ru parameter to check redirect_uri encoding
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
       expect(decodedRu).toContain(encodeURIComponent(specialRedirectUri));
     });
 
@@ -280,9 +280,9 @@ describe('Scope Validation', () => {
       const url = getOAuthAuthorizationUrl(clientId, redirectUri, 'production', scopes);
 
       // Decode the ru parameter to check scopes are joined
-      const ruMatch = url.match(/ru=([^&]+)/);
+      const ruMatch = /ru=([^&]+)/.exec(url);
       expect(ruMatch).not.toBeNull();
-      const decodedRu = decodeURIComponent(ruMatch![1]!);
+      const decodedRu = decodeURIComponent(ruMatch![1]);
 
       // Scopes should be joined and present (URL encoding uses + for spaces)
       scopes.forEach((scope) => {

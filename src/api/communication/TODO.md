@@ -5,24 +5,28 @@
 ✅ **All endpoints implemented and tested** (v1.1.4)
 
 ### Message API (`message.ts`)
+
 - 100% function coverage
 - 100% line coverage
 - 88.09% branch coverage
 - Buyer message management fully tested
 
 ### Feedback API (`feedback.ts`)
+
 - 100% function coverage
 - 79.48% line coverage
 - 69.04% branch coverage
 - Feedback operations tested
 
 ### Negotiation API (`negotiation.ts`)
+
 - 100% function coverage
 - 82.14% line coverage
 - 76.66% branch coverage
 - Best offer negotiation tested
 
 ### Notification API (`notification.ts`)
+
 - 100% function coverage
 - 80.64% line coverage
 - 70.27% branch coverage

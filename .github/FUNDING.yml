@@ -1,0 +1,29 @@
+# GitHub Sponsors configuration
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+# Supported platforms:
+# - github: GitHub Sponsors username(s)
+# - patreon: Patreon username
+# - open_collective: Open Collective username
+# - ko_fi: Ko-fi username
+# - tidelift: Tidelift package name
+# - community_bridge: Community Bridge project name
+# - liberapay: Liberapay username
+# - issuehunt: IssueHunt username
+# - otechie: Otechie username
+# - lfx_crowdfunding: LFX Crowdfunding project name
+# - custom: List of custom sponsorship URLs (max 4)
+
+# Uncomment and configure the platforms you support:
+
+# GitHub Sponsors
+# github: [YosefHayim]
+
+# Other platforms (examples)
+# patreon: username
+# open_collective: ebay-api-mcp-server
+# ko_fi: username
+# tidelift: npm/ebay-api-mcp-server
+
+# Custom sponsorship URLs (max 4)
+custom: ['https://www.buymeacoffee.com/yosefhayim']

@@ -5,6 +5,7 @@
 ✅ **All endpoints implemented and tested** (v1.1.4)
 
 ### Inventory API (`inventory.ts`)
+
 - 100% function coverage
 - 83.5% line coverage
 - 30 endpoints fully tested
