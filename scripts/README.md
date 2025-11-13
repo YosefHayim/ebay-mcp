@@ -39,7 +39,6 @@ EBAY_ENVIRONMENT=sandbox
 EBAY_REDIRECT_URI=https://your-app.com/callback
 
 # Optional (for high rate limits)
-EBAY_USER_ACCESS_TOKEN=v^1.1#...
 EBAY_USER_REFRESH_TOKEN=v^1.1#...
 ```
 

@@ -57,10 +57,10 @@ A comprehensive [Model Context Protocol (MCP)](https://modelcontextprotocol.io) 
 - **140 eBay API Tools** - Comprehensive coverage of eBay Sell APIs across 8 categories
 - **Dual Transport Modes** - STDIO (local) and HTTP with OAuth 2.1 (remote multi-user)
 - **OAuth 2.0 Support** - Full user token management with automatic refresh
-- **Simple Configuration** - All authentication managed through `.env` file only
+- **Simple Configuration** - All authentication managed through `.env` file only (no token files)
 - **Type Safety** - Built with TypeScript, Zod validation, OpenAPI-generated types, and 33+ native enums
 - **Smart Authentication** - Automatic fallback from user tokens (10k-50k req/day) to client credentials (1k req/day)
-- **Centralized Configuration** - Single source of truth with `mcp-setup.json` and automated setup scripts
+- **Cloudflare Workers** - Deploy as HTTP server for remote MCP access with OAuth 2.1 support
 - **Comprehensive Testing** - 870+ tests with 99%+ function coverage and 85%+ line coverage
 
 ### API Coverage
@@ -165,7 +165,7 @@ npm install
 - ✅ Build the project
 - ✅ Detect installed MCP clients (Claude Desktop, Gemini, ChatGPT)
 - ✅ Generate MCP client configurations
-- ✅ Set up token persistence
+- ✅ Validate environment tokens (.env)
 
 ### Step 4: Restart & Test
 
@@ -173,7 +173,7 @@ npm install
 2. **Verify connection** in MCP client settings/logs
 3. **Test it:** Ask your AI assistant "List my eBay inventory items"
 
-> **Pro Tip:** For high rate limits (10k-50k req/day), add `EBAY_USER_ACCESS_TOKEN` and `EBAY_USER_REFRESH_TOKEN` to your `.env` file. See [OAuth Setup](#-oauth-setup) for details.
+> **Pro Tip:** For high rate limits (10k-50k req/day), add `EBAY_USER_REFRESH_TOKEN` to your `.env` file. See [OAuth Setup](#-oauth-setup) for details.
 
 ---
 
@@ -409,7 +409,7 @@ The server supports two authentication modes:
 - `ebay_translate` - Translate listing text
 - `SearchClaudeCodeDocs` - Search Claude Code documentation
 
-For the complete list of 140 tools, see [Tool Definitions](src/tools/tool-definitions.ts).
+For the complete list of 140 tools, see the modular [Tool Definitions](src/tools/definitions/).
 
 ---
 
@@ -485,11 +485,10 @@ ebay-api-mcp-server/
 │   │   ├── marketing-and-promotions/ # Marketing APIs
 │   │   └── ...
 │   ├── auth/                   # OAuth & token management
-│   │   ├── oauth.ts            # OAuth client
-│   │   ├── token-storage.ts    # File-based token persistence
+│   │   ├── oauth.ts            # OAuth client with auto-refresh
 │   │   └── ...
 │   ├── tools/                  # MCP tool definitions
-│   │   ├── tool-definitions.ts # 140 tool schemas
+│   │   ├── definitions/        # Modular tool schemas by category
 │   │   └── index.ts            # Tool dispatcher
 │   ├── types/                  # TypeScript types
 │   │   ├── ebay.ts             # Core types

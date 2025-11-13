@@ -418,7 +418,7 @@ await use_mcp_tool("ebay_set_user_tokens", {
 ```
 
 Tokens are automatically:
-- Stored in `.env (tokens stored as EBAY_USER_REFRESH_TOKEN)` (project root directory)
+- Stored in `.env` file as `EBAY_USER_REFRESH_TOKEN` (project root directory)
 - Loaded on server startup
 - Refreshed when access token expires
 
@@ -453,7 +453,7 @@ npm run auto-setup
 **Step 2** (`npm run auto-setup`):
 - ✅ Detects installed MCP clients (Claude Desktop, Gemini, ChatGPT)
 - ✅ Auto-generates configs for detected clients
-- ✅ Creates `.env (tokens stored as EBAY_USER_REFRESH_TOKEN)` if user tokens provided
+- ✅ Validates tokens from `.env` file
 - ✅ Backs up existing configs before modifying
 - ✅ Works on macOS, Linux, and Windows
 
@@ -532,18 +532,19 @@ Parameters:
 
 ---
 
-#### Token File Location & Security
+#### Token Storage & Security
 
-**File Location:**
-- Path: `.env (tokens stored as EBAY_USER_REFRESH_TOKEN)` (project root directory, same folder as `package.json`)
-- Generated automatically by `npm run auto-setup` if tokens are provided in `.env`
-- Can also be created by `ebay_set_user_tokens` or `ebay_set_user_tokens_with_expiry` tools
+**Environment-Based Storage:**
+- Location: `.env` file in project root (same folder as `package.json`)
+- Variable: `EBAY_USER_REFRESH_TOKEN=v^1.1#...`
+- Validated automatically by `npm run auto-setup`
+- Can be updated via `ebay_set_user_tokens_with_expiry` tool (memory-only, requires manual .env update)
 
 **Security:**
 - ✅ Already protected in `.gitignore` (line 17) - won't be committed to git
 - ⚠️ **Recommended:** Set file permissions to user-only (600):
   ```bash
-  chmod 600 .env (tokens stored as EBAY_USER_REFRESH_TOKEN)
+  chmod 600 .env
   ```
 - ⚠️ **Never commit actual tokens to version control**
 - ⚠️ **Rotate tokens regularly** (especially if exposed)
@@ -554,13 +555,13 @@ Parameters:
 
 The server checks for tokens in this order:
 
-1. **Token File** (`.env (tokens stored as EBAY_USER_REFRESH_TOKEN)`) - Highest priority
-   - If file exists with valid tokens, use these
+1. **Environment Variable** (`EBAY_USER_REFRESH_TOKEN` in `.env`) - Highest priority
    - Loaded automatically on server startup
+   - Immediately refreshed to get valid access token
 
-2. **Runtime Token Setting** - Via `ebay_set_user_tokens` tool
-   - If no file exists or tokens expired
-   - Automatically creates/updates `.env (tokens stored as EBAY_USER_REFRESH_TOKEN)`
+2. **Runtime Token Setting** - Via `ebay_set_user_tokens_with_expiry` tool
+   - Stores tokens in memory only (not persisted to .env)
+   - Requires manual .env update for persistence across restarts
 
 3. **Client Credentials** - Fallback (lowest priority)
    - Only if no user tokens available
@@ -1023,11 +1024,7 @@ Use this systematic checklist to diagnose issues:
   - [ ] `EBAY_CLIENT_SECRET` set?
   - [ ] `EBAY_ENVIRONMENT` correct (matches credentials)?
   - [ ] `EBAY_REDIRECT_URI` set (if using OAuth flow)?
-- [ ] Check token file: `cat .env (tokens stored as EBAY_USER_REFRESH_TOKEN)` (in project root)
-  - [ ] File exists?
-  - [ ] `accessToken` present?
-  - [ ] `refreshToken` present?
-  - [ ] `scope` field populated?
+  - [ ] `EBAY_USER_REFRESH_TOKEN` set (for user tokens)?
 - [ ] Environment match:
   - [ ] Sandbox credentials with `EBAY_ENVIRONMENT=sandbox`?
   - [ ] Production credentials with `EBAY_ENVIRONMENT=production`?
@@ -1050,31 +1047,23 @@ Re-authorize when:
 
 ### Advanced Troubleshooting
 
-#### Check Token File Directly
+#### Check Environment Variables Directly
 
 ```bash
-cat .env (tokens stored as EBAY_USER_REFRESH_TOKEN)
+grep EBAY_USER_REFRESH_TOKEN .env
 ```
 
-(File is located in the project root directory)
+(`.env` file is located in the project root directory)
 
 **Expected format**:
-```json
-{
-  "accessToken": "v^1.1#i^1#...",
-  "refreshToken": "v^1.1#i^1#...",
-  "tokenType": "Bearer",
-  "accessTokenExpiry": 1736899200000,
-  "refreshTokenExpiry": 1783449600000,
-  "scope": "https://api.ebay.com/oauth/api_scope/sell.inventory ..."
-}
+```bash
+EBAY_USER_REFRESH_TOKEN=v^1.1#i^1#...
 ```
 
 **Issues**:
-- File doesn't exist → No tokens stored
-- Empty `{}` → Tokens were cleared
-- Missing `scope` → Old token format
-- Expiry in past → Token expired
+- Variable not set → No user tokens configured (will use client credentials)
+- Empty value → Token was cleared
+- Server not starting → Check token validity with `ebay_get_token_status` tool
 
 #### Manual OAuth Test
 
@@ -1144,7 +1133,7 @@ If none of these solutions work:
 3. **Monitor Token Status** - Use `ebay_get_token_status` to check validity
 4. **Handle Refresh Gracefully** - Server auto-refreshes, but handle expiry in your app
 5. **Test in Sandbox First** - Always test scope changes in sandbox before production
-6. **Store Tokens Securely** - Protect `.env (tokens stored as EBAY_USER_REFRESH_TOKEN)` file (in project root)
+6. **Store Tokens Securely** - Protect `.env` file with user-only permissions (chmod 600)
 7. **Rotate Tokens Regularly** - Re-authorize periodically for security
 
 ### Environment-Specific Best Practices
@@ -1276,7 +1265,7 @@ await use_mcp_tool("ebay_set_user_tokens", {
 });
 ```
 
-Tokens are persisted to `.env (tokens stored as EBAY_USER_REFRESH_TOKEN)` (project root) and auto-refreshed.
+Tokens are stored in memory only. For persistence across server restarts, manually add `EBAY_USER_REFRESH_TOKEN` to `.env` file.
 
 ### ebay_clear_tokens
 
