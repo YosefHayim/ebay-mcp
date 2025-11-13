@@ -147,9 +147,11 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await accountApi.getFulfillmentPolicies();
+      const result = await accountApi.getFulfillmentPolicies('EBAY_US');
 
-      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/fulfillment_policy', undefined);
+      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/fulfillment_policy', {
+        marketplace_id: 'EBAY_US',
+      });
       expect(result).toEqual(mockResponse);
     });
 
@@ -267,9 +269,11 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await accountApi.getPaymentPolicies();
+      const result = await accountApi.getPaymentPolicies('EBAY_US');
 
-      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/payment_policy', undefined);
+      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/payment_policy', {
+        marketplace_id: 'EBAY_US',
+      });
       expect(result).toEqual(mockResponse);
     });
 
@@ -381,9 +385,11 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await accountApi.getReturnPolicies();
+      const result = await accountApi.getReturnPolicies('EBAY_US');
 
-      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/return_policy', undefined);
+      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/return_policy', {
+        marketplace_id: 'EBAY_US',
+      });
       expect(result).toEqual(mockResponse);
     });
 
@@ -606,9 +612,11 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await accountApi.getSalesTaxes();
+      const result = await accountApi.getSalesTaxes('US');
 
-      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/sales_tax', undefined);
+      expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/sales_tax', {
+        country_code: 'US',
+      });
       expect(result).toEqual(mockResponse);
     });
 

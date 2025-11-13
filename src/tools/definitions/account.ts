@@ -31,21 +31,21 @@ export const accountTools: ToolDefinition[] = [
     description:
       'Get fulfillment policies for the seller.\n\nRequired OAuth Scope: sell.account.readonly or sell.account\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.account.readonly',
     inputSchema: {
-      marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('eBay marketplace ID'),
+      marketplaceId: z.nativeEnum(MarketplaceId).describe('Required: eBay marketplace ID'),
     },
   },
   {
     name: 'ebay_get_payment_policies',
     description: 'Get payment policies for the seller',
     inputSchema: {
-      marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('eBay marketplace ID'),
+      marketplaceId: z.nativeEnum(MarketplaceId).describe('Required: eBay marketplace ID'),
     },
   },
   {
     name: 'ebay_get_return_policies',
     description: 'Get return policies for the seller',
     inputSchema: {
-      marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('eBay marketplace ID'),
+      marketplaceId: z.nativeEnum(MarketplaceId).describe('Required: eBay marketplace ID'),
     },
   },
   // Fulfillment Policy CRUD
@@ -254,9 +254,9 @@ export const accountTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_sales_taxes',
-    description: 'Get all sales tax tables',
+    description: 'Get all sales tax tables for a country',
     inputSchema: {
-      countryCode: z.string().optional().describe('Optional country code to filter by'),
+      countryCode: z.string().describe('Required: Two-letter ISO 3166-1 country code'),
     },
   },
   {

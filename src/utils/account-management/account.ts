@@ -177,10 +177,15 @@ export const deleteCustomPolicySchema = z.object({
 /**
  * Schema for getFulfillmentPolicies method
  * Endpoint: GET /fulfillment_policy
- * Query: GetFulfillmentPoliciesParams - marketplace_id (optional)
+ * Query: GetFulfillmentPoliciesParams - marketplace_id (required)
  */
 export const getFulfillmentPoliciesSchema = z.object({
-  marketplace_id: marketplaceIdSchema,
+  marketplace_id: z.string({
+    message: 'Marketplace ID is required',
+    required_error: 'marketplace_id is required',
+    invalid_type_error: 'marketplace_id must be a string',
+    description: 'The eBay marketplace ID',
+  }),
 });
 
 /**
@@ -357,10 +362,15 @@ export const deleteFulfillmentPolicySchema = z.object({
 /**
  * Schema for getPaymentPolicies method
  * Endpoint: GET /payment_policy
- * Query: GetPaymentPoliciesParams - marketplace_id (optional)
+ * Query: GetPaymentPoliciesParams - marketplace_id (required)
  */
 export const getPaymentPoliciesSchema = z.object({
-  marketplace_id: marketplaceIdSchema,
+  marketplace_id: z.string({
+    message: 'Marketplace ID is required',
+    required_error: 'marketplace_id is required',
+    invalid_type_error: 'marketplace_id must be a string',
+    description: 'The eBay marketplace ID',
+  }),
 });
 
 /**
@@ -519,10 +529,15 @@ export const deletePaymentPolicySchema = z.object({
 /**
  * Schema for getReturnPolicies method
  * Endpoint: GET /return_policy
- * Query: GetReturnPoliciesParams - marketplace_id (optional)
+ * Query: GetReturnPoliciesParams - marketplace_id (required)
  */
 export const getReturnPoliciesSchema = z.object({
-  marketplace_id: marketplaceIdSchema,
+  marketplace_id: z.string({
+    message: 'Marketplace ID is required',
+    required_error: 'marketplace_id is required',
+    invalid_type_error: 'marketplace_id must be a string',
+    description: 'The eBay marketplace ID',
+  }),
 });
 
 /**
@@ -874,15 +889,15 @@ export const deleteSalesTaxSchema = z.object({
 /**
  * Schema for getSalesTaxes method
  * Endpoint: GET /sales_tax
- * Query: GetSalesTaxesParams - country_code (optional)
+ * Query: GetSalesTaxesParams - country_code (required)
  */
 export const getSalesTaxesSchema = z.object({
-  country_code: z
-    .string({
-      invalid_type_error: 'country_code must be a string',
-      description: 'Filter by two-letter ISO 3166-1 country code',
-    })
-    .optional(),
+  country_code: z.string({
+    message: 'Country code is required',
+    required_error: 'country_code is required',
+    invalid_type_error: 'country_code must be a string',
+    description: 'Two-letter ISO 3166-1 country code',
+  }),
 });
 
 /**

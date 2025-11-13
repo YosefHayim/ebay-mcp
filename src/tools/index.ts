@@ -750,17 +750,10 @@ export async function executeTool(
       return await api.marketing.resumeCampaign(args.campaignId as string);
     case 'ebay_end_campaign':
       return await api.marketing.endCampaign(args.campaignId as string);
-    case 'ebay_delete_campaign':
-      return await api.marketing.deleteCampaign(args.campaignId as string);
     case 'ebay_update_campaign_identification':
       return await api.marketing.updateCampaignIdentification(
         args.campaignId as string,
         args.updateData as Record<string, unknown>
-      );
-    case 'ebay_update_campaign_budget':
-      return await api.marketing.updateCampaignBudget(
-        args.campaignId as string,
-        args.budgetData as Record<string, unknown>
       );
 
     // Marketing - Ad Operations (Bulk)
@@ -821,6 +814,7 @@ export async function executeTool(
         args.adGroupIds as string,
         args.adStatus as string,
         args.limit as number,
+        args.listingIds as string,
         args.offset as number
       );
     case 'ebay_get_ads_by_inventory_reference':
@@ -977,51 +971,43 @@ export async function executeTool(
     // Marketing - Negative Keywords (Ad Group Level)
     case 'ebay_create_negative_keyword_for_ad_group':
       return await api.marketing.createNegativeKeywordForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeyword as Record<string, unknown>
       );
     case 'ebay_get_negative_keyword_for_ad_group':
       return await api.marketing.getNegativeKeywordForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeywordId as string
       );
     case 'ebay_get_negative_keywords_for_ad_group':
       return await api.marketing.getNegativeKeywordsForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.limit as number,
         args.offset as number
       );
     case 'ebay_delete_negative_keyword_for_ad_group':
       return await api.marketing.deleteNegativeKeywordForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeywordId as string
       );
     case 'ebay_update_negative_keyword_for_ad_group':
       return await api.marketing.updateNegativeKeywordForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeywordId as string,
         args.negativeKeyword as Record<string, unknown>
       );
     case 'ebay_bulk_create_negative_keywords_for_ad_group':
       return await api.marketing.bulkCreateNegativeKeywordsForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeywords as Record<string, unknown>
       );
     case 'ebay_bulk_update_negative_keywords_for_ad_group':
       return await api.marketing.bulkUpdateNegativeKeywordsForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeywords as Record<string, unknown>
       );
     case 'ebay_bulk_delete_negative_keywords_for_ad_group':
       return await api.marketing.bulkDeleteNegativeKeywordsForAdGroup(
-        args.campaignId as string,
         args.adGroupId as string,
         args.negativeKeywords as Record<string, unknown>
       );
@@ -1030,15 +1016,13 @@ export async function executeTool(
     case 'ebay_create_targeting':
       return await api.marketing.createTargeting(
         args.campaignId as string,
-        args.adGroupId as string,
         args.targeting as Record<string, unknown>
       );
     case 'ebay_get_targeting':
-      return await api.marketing.getTargeting(args.campaignId as string, args.adGroupId as string);
+      return await api.marketing.getTargeting(args.campaignId as string);
     case 'ebay_update_targeting':
       return await api.marketing.updateTargeting(
         args.campaignId as string,
-        args.adGroupId as string,
         args.targeting as Record<string, unknown>
       );
 
@@ -1063,14 +1047,15 @@ export async function executeTool(
         args.limit as number,
         args.offset as number
       );
-    case 'ebay_delete_report_task':
-      return await api.marketing.deleteReportTask(args.reportTaskId as string);
     case 'ebay_get_ad_report':
       return await api.marketing.getAdReport(
-        args.campaignId as string,
-        args.reportType as string,
+        args.dimension as string,
+        args.metric as string,
         args.reportStartDate as string,
-        args.reportEndDate as string
+        args.reportEndDate as string,
+        args.sort as string,
+        args.listingIds as string,
+        args.marketplaceId as string
       );
     case 'ebay_get_ad_report_metadata':
       return await api.marketing.getAdReportMetadata();
@@ -1081,22 +1066,27 @@ export async function executeTool(
     case 'ebay_get_promotions':
       return await api.marketing.getPromotions(args.marketplaceId as string, args.limit as number);
     case 'ebay_get_item_promotion':
-      return await api.marketing.getPromotion(args.promotionId as string);
+      return await api.marketing.getItemPromotion(args.promotionId as string);
     case 'ebay_create_item_promotion':
       return await api.marketing.createPromotion(args.promotion as Record<string, unknown>);
     case 'ebay_update_item_promotion':
-      return await api.marketing.updatePromotion(
+      return await api.marketing.updateItemPromotion(
         args.promotionId as string,
         args.promotion as Record<string, unknown>
       );
     case 'ebay_delete_item_promotion':
-      return await api.marketing.deletePromotion(args.promotionId as string);
+      return await api.marketing.deleteItemPromotion(args.promotionId as string);
     case 'ebay_pause_item_promotion':
-      return await api.marketing.pausePromotion(args.promotionId as string);
+      return await api.marketing.pauseItemPromotion(args.promotionId as string);
     case 'ebay_resume_item_promotion':
-      return await api.marketing.resumePromotion(args.promotionId as string);
+      return await api.marketing.resumeItemPromotion(args.promotionId as string);
     case 'ebay_get_promotion_report':
-      return await api.marketing.getPromotionReport(args.promotionId as string);
+      return await api.marketing.getPromotionReport(
+        args.marketplaceId as string,
+        args.promotionStatus as string,
+        args.limit as number,
+        args.offset as number
+      );
     case 'ebay_get_promotion_summary_report':
       return await api.marketing.getPromotionSummaryReport(args.marketplaceId as string);
 

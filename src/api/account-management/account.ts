@@ -55,32 +55,32 @@ export class AccountApi {
 
   /**
    * Get fulfillment policies
+   * @param marketplaceId - Required: The eBay marketplace ID
    */
-  async getFulfillmentPolicies(marketplaceId?: string): Promise<FulfillmentPolicyResponse> {
-    const params = marketplaceId ? { marketplace_id: marketplaceId } : undefined;
-    return await this.client.get<FulfillmentPolicyResponse>(
-      `${this.basePath}/fulfillment_policy`,
-      params
-    );
+  async getFulfillmentPolicies(marketplaceId: string): Promise<FulfillmentPolicyResponse> {
+    return await this.client.get<FulfillmentPolicyResponse>(`${this.basePath}/fulfillment_policy`, {
+      marketplace_id: marketplaceId,
+    });
   }
 
   /**
    * Get payment policies
+   * @param marketplaceId - Required: The eBay marketplace ID
    */
-  async getPaymentPolicies(marketplaceId?: string): Promise<GetPaymentPoliciesResponse> {
-    const params = marketplaceId ? { marketplace_id: marketplaceId } : undefined;
-    return await this.client.get<GetPaymentPoliciesResponse>(
-      `${this.basePath}/payment_policy`,
-      params
-    );
+  async getPaymentPolicies(marketplaceId: string): Promise<GetPaymentPoliciesResponse> {
+    return await this.client.get<GetPaymentPoliciesResponse>(`${this.basePath}/payment_policy`, {
+      marketplace_id: marketplaceId,
+    });
   }
 
   /**
    * Get return policies
+   * @param marketplaceId - Required: The eBay marketplace ID
    */
-  async getReturnPolicies(marketplaceId?: string): Promise<ReturnPolicyResponse> {
-    const params = marketplaceId ? { marketplace_id: marketplaceId } : undefined;
-    return await this.client.get<ReturnPolicyResponse>(`${this.basePath}/return_policy`, params);
+  async getReturnPolicies(marketplaceId: string): Promise<ReturnPolicyResponse> {
+    return await this.client.get<ReturnPolicyResponse>(`${this.basePath}/return_policy`, {
+      marketplace_id: marketplaceId,
+    });
   }
 
   /**
@@ -370,10 +370,12 @@ export class AccountApi {
 
   /**
    * Get all sales tax tables
+   * @param countryCode - Required: Two-letter ISO 3166-1 country code
    */
-  async getSalesTaxes(countryCode?: string): Promise<SalesTaxes> {
-    const params = countryCode ? { country_code: countryCode } : undefined;
-    return await this.client.get<SalesTaxes>(`${this.basePath}/sales_tax`, params);
+  async getSalesTaxes(countryCode: string): Promise<SalesTaxes> {
+    return await this.client.get<SalesTaxes>(`${this.basePath}/sales_tax`, {
+      country_code: countryCode,
+    });
   }
 
   /**
