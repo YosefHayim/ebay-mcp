@@ -305,7 +305,7 @@ The server supports two authentication modes:
 
 4. **Configure Tokens**
 
-   **Option A: Via .env** (Recommended)
+   **Option A: Via .env** (Recommended - Works with MCP Clients)
 
    Add tokens to your `.env` file:
    ```bash
@@ -314,10 +314,14 @@ The server supports two authentication modes:
    ```
    Then run: `npm run auto-setup`
 
-   **Option B: Via MCP Tool**
+   **✅ This automatically configures all detected MCP clients (Claude Desktop, Gemini, ChatGPT) with your tokens!**
+
+   **Option B: Via MCP Tool** (Memory-only, not persisted)
    ```
    Use the ebay_set_user_tokens_with_expiry tool with your access and refresh tokens
    ```
+
+   ⚠️ **Note:** Tokens set via MCP tool are stored in memory only and will be lost when the server restarts. For persistent tokens across restarts, use Option A (.env file).
 
 5. **Verify Token Status**
    ```
@@ -587,9 +591,22 @@ node test-user-identity.js
 
 #### 1. "Access token is missing" Error
 
-**Cause**: No user tokens configured
+**Cause**: No user tokens configured in MCP client
 
 **Solution**:
+
+**For MCP Clients (Claude Desktop, Gemini, ChatGPT):**
+```bash
+# 1. Add tokens to .env file
+echo 'EBAY_USER_REFRESH_TOKEN=v^1.1#...' >> .env
+
+# 2. Run auto-setup to update MCP client configs
+npm run auto-setup
+
+# 3. Restart your MCP client
+```
+
+**For Direct API Usage:**
 ```bash
 # Generate OAuth URL
 Use ebay_get_oauth_url tool
@@ -597,6 +614,8 @@ Use ebay_get_oauth_url tool
 # After user authorization, set tokens
 Use ebay_set_user_tokens tool with your access and refresh tokens
 ```
+
+**Note:** As of v1.2.1+, the auto-setup script automatically includes all token environment variables (EBAY_USER_REFRESH_TOKEN, EBAY_USER_ACCESS_TOKEN, etc.) in MCP client configurations, ensuring tokens are available when using MCP clients like Claude Desktop.
 
 #### 2. "401 Unauthorized" Error
 

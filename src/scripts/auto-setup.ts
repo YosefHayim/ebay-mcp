@@ -128,6 +128,9 @@ interface MCPServerConfig {
     EBAY_CLIENT_SECRET: string;
     EBAY_ENVIRONMENT: string;
     EBAY_REDIRECT_URI?: string;
+    EBAY_USER_ACCESS_TOKEN?: string;
+    EBAY_USER_REFRESH_TOKEN?: string;
+    EBAY_APP_ACCESS_TOKEN?: string;
   };
 }
 
@@ -144,8 +147,21 @@ function generateMCPServerConfig(): MCPServerConfig {
     },
   };
 
+  // Add optional environment variables if they exist
   if (process.env.EBAY_REDIRECT_URI) {
     config.env.EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI;
+  }
+
+  if (process.env.EBAY_USER_ACCESS_TOKEN) {
+    config.env.EBAY_USER_ACCESS_TOKEN = process.env.EBAY_USER_ACCESS_TOKEN;
+  }
+
+  if (process.env.EBAY_USER_REFRESH_TOKEN) {
+    config.env.EBAY_USER_REFRESH_TOKEN = process.env.EBAY_USER_REFRESH_TOKEN;
+  }
+
+  if (process.env.EBAY_APP_ACCESS_TOKEN) {
+    config.env.EBAY_APP_ACCESS_TOKEN = process.env.EBAY_APP_ACCESS_TOKEN;
   }
 
   return config;

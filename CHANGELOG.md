@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Auto-Setup Token Configuration**: Fixed MCP client configurations to include all token environment variables
+  - `EBAY_USER_REFRESH_TOKEN`, `EBAY_USER_ACCESS_TOKEN`, and `EBAY_APP_ACCESS_TOKEN` now automatically included
+  - Resolves "Access token is missing" error when using Claude Desktop and other MCP clients
+  - Tokens from `.env` file are now properly propagated to all detected MCP clients
+
+### Documentation
+- Updated OAuth setup instructions with clearer guidance on token configuration
+- Added troubleshooting section for MCP client token issues
+- Clarified the difference between `.env` token persistence vs MCP tool memory-only tokens
+
 ## [1.2.1] - 2025-01-13
 
 ### Fixed
