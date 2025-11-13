@@ -20,7 +20,7 @@ const getUrlsFromReadme = (content: string): string[] => {
 };
 
 const getSpecUrlFromHtml = (html: string): string | null => {
-  const linkRegex = /<a download="" class="spec-parent" href="([^"]+)" id="[^"]+">/g;
+  const linkRegex = /<a[^>]*?class="spec-parent"[^>]*?href="([^"]+)"[^>]*?>/g;
   const match = linkRegex.exec(html);
   return match ? match[1] : null;
 };
@@ -73,6 +73,8 @@ const main = async () => {
       try {
         const response = await axios.get(url);
         const html = response.data;
+        fs.writeFileSync('debug.html', html);
+        console.log('HTML content saved to debug.html');
         const specUrl = getSpecUrlFromHtml(html);
 
         if (specUrl) {
@@ -88,6 +90,7 @@ const main = async () => {
       } catch (error) {
         console.error(`Failed to process ${url}:`, error);
       }
+      return; // Exit after first URL for debugging
     }
   } catch (error) {
     console.error('Failed to read README.md:', error);
