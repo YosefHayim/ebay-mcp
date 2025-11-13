@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3] - 2025-01-13
+
 ### Changed
 - **Documentation Updates**: Updated tool counts throughout documentation
   - README.md: Updated from 140 to 230+ tools in all references
