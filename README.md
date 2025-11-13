@@ -449,8 +449,8 @@ This server has been tested and verified with the following MCP clients:
 
 ### Getting Started
 - [Quick Start Guide](#quick-start) - Get up and running in 5 minutes
-- [OAuth Setup Guide](OAUTH-SETUP.md) - Step-by-step OAuth configuration
 - [Authentication Guide](docs/auth/README.md) - OAuth scopes and token management
+- [OAuth 2.1 Setup for Cloudflare Workers](docs/OAUTH_SETUP.md) - Secure remote deployment with OAuth
 
 ### Development
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute to this project
