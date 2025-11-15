@@ -96,14 +96,10 @@ export class EbaySellerApi {
   async setUserTokens(
     accessToken: string,
     refreshToken: string,
-    accessTokenExpiry?: number,
-    refreshTokenExpiry?: number
   ): Promise<void> {
     await this.client.setUserTokens(
       accessToken,
       refreshToken,
-      accessTokenExpiry,
-      refreshTokenExpiry
     );
   }
 
