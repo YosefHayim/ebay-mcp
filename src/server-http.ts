@@ -182,7 +182,6 @@ async function createApp(): Promise<express.Application> {
         version: '1.4.0',
         title: 'eBay API MCP Server',
         websiteUrl: 'https://coming-soon.com',
-        description: 'Access eBay APIs to manage listings, orders, and inventory.',
         icons: [
           {
             src: './icons/16x16.png',
