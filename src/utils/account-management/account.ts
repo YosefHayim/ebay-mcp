@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/sell_account_v1_oas3.js';
 
 /**
  * Zod schemas for Account API input validation
@@ -7,35 +6,6 @@ import type { operations, components } from '@/types/sell_account_v1_oas3.js';
  * OpenAPI spec: docs/sell-apps/account-management/sell_account_v1_oas3.json
  * Types from: src/types/sell_account_v1_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type GetCustomPoliciesParams = operations['getCustomPolicies']['parameters']['query'];
-type GetCustomPolicyParams = operations['getCustomPolicy']['parameters']['path'];
-type CreateCustomPolicyRequest = components['schemas']['CustomPolicyCreateRequest'];
-type UpdateCustomPolicyRequest = components['schemas']['CustomPolicyRequest'];
-
-type GetFulfillmentPoliciesParams = operations['getFulfillmentPolicies']['parameters']['query'];
-type GetFulfillmentPolicyParams = operations['getFulfillmentPolicy']['parameters']['path'];
-type GetFulfillmentPolicyByNameParams =
-  operations['getFulfillmentPolicyByName']['parameters']['query'];
-type FulfillmentPolicyRequest = components['schemas']['FulfillmentPolicyRequest'];
-
-type GetPaymentPoliciesParams = operations['getPaymentPolicies']['parameters']['query'];
-type GetPaymentPolicyParams = operations['getPaymentPolicy']['parameters']['path'];
-type GetPaymentPolicyByNameParams = operations['getPaymentPolicyByName']['parameters']['query'];
-type PaymentPolicyRequest = components['schemas']['PaymentPolicyRequest'];
-
-type GetReturnPoliciesParams = operations['getReturnPolicies']['parameters']['query'];
-type GetReturnPolicyParams = operations['getReturnPolicy']['parameters']['path'];
-type GetReturnPolicyByNameParams = operations['getReturnPolicyByName']['parameters']['query'];
-type ReturnPolicyRequest = components['schemas']['ReturnPolicyRequest'];
-
-type GetPaymentsProgramParams = operations['getPaymentsProgram']['parameters']['path'];
-type GetSalesTaxParams = operations['getSalesTax']['parameters']['path'];
-type GetSalesTaxesParams = operations['getSalesTaxes']['parameters']['query'];
-type GetSubscriptionParams = operations['getSubscription']['parameters']['query'];
-type SalesTaxBase = components['schemas']['SalesTaxBase'];
-type OptInToProgramRequest = components['schemas']['Program'];
 
 // Reusable schema for ID parameters
 const idSchema = (name: string, description: string) =>

@@ -14,7 +14,7 @@ const mockOAuthClient = {
 };
 
 vi.mock('@/auth/oauth.js', () => ({
-  EbayOAuthClient: vi.fn(function(this: any) {
+  EbayOAuthClient: vi.fn(function (this: any) {
     return mockOAuthClient;
   }),
 }));

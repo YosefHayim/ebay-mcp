@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/sell_negotiation_v1_oas3.js';
 
 /**
  * Zod schemas for Negotiation API input validation
@@ -7,11 +6,6 @@ import type { operations, components } from '@/types/sell_negotiation_v1_oas3.js
  * OpenAPI spec: docs/sell-apps/communication/sell_negotiation_v1_oas3.json
  * Types from: src/types/sell_negotiation_v1_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type FindEligibleItemsParams = operations['findEligibleItems']['parameters']['query'];
-type FindEligibleItemsHeaders = operations['findEligibleItems']['parameters']['header'];
-type SendOfferRequest = components['schemas']['CreateOffersRequest'];
 
 // Reusable schema for filter parameter
 const filterSchema = z

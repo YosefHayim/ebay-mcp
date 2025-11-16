@@ -76,17 +76,17 @@ describe('AnalyticsApi', () => {
     });
 
     it('should throw error when sort is not a string', async () => {
-      await expect(
-        api.getTrafficReport('LISTING', 'filter', 'metric', 123 as any)
-      ).rejects.toThrow('sort must be a string when provided');
+      await expect(api.getTrafficReport('LISTING', 'filter', 'metric', 123 as any)).rejects.toThrow(
+        'sort must be a string when provided'
+      );
     });
 
     it('should handle API errors when fetching traffic report', async () => {
       vi.mocked(client.get).mockRejectedValue(new Error('Service Unavailable'));
 
-      await expect(
-        api.getTrafficReport('LISTING', 'filter', 'metric')
-      ).rejects.toThrow('Failed to get traffic report: Service Unavailable');
+      await expect(api.getTrafficReport('LISTING', 'filter', 'metric')).rejects.toThrow(
+        'Failed to get traffic report: Service Unavailable'
+      );
     });
   });
 

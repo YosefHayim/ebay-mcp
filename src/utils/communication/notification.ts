@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/commerce_notification_v1_oas3.js';
 
 /**
  * Zod schemas for Notification API input validation
@@ -7,17 +6,6 @@ import type { operations, components } from '@/types/commerce_notification_v1_oa
  * OpenAPI spec: docs/sell-apps/communication/commerce_notification_v1_oas3.json
  * Types from: src/types/commerce_notification_v1_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type GetPublicKeyParams = operations['getPublicKey']['parameters']['path'];
-type ConfigType = components['schemas']['Config'];
-type DestinationRequest = components['schemas']['DestinationRequest'];
-type DestinationParams = operations['getDestinations']['parameters']['query'];
-type SubscriptionParams = operations['getSubscriptions']['parameters']['query'];
-type CreateSubscriptionRequest = components['schemas']['CreateSubscriptionRequest'];
-type UpdateSubscriptionRequest = components['schemas']['UpdateSubscriptionRequest'];
-type CreateSubscriptionFilterRequest = components['schemas']['CreateSubscriptionFilterRequest'];
-type TopicParams = operations['getTopics']['parameters']['query'];
 
 // Reusable schema for limit parameter (string in API)
 const limitSchema = z
@@ -46,7 +34,7 @@ const idSchema = (name: string, description: string) =>
   });
 
 // Reusable schema for object data parameters
-const objectDataSchema = (name: string, description: string) =>
+const _objectDataSchema = (name: string, description: string) =>
   z.record(z.unknown(), {
     message: `${name} is required`,
     required_error: `${name.toLowerCase().replace(/\s+/g, '_')} is required`,

@@ -1,5 +1,5 @@
 import type { EbayApiClient } from '@/api/client.js';
-import type { components } from '@/types/sell_account_v1_oas3.js';
+import type { components } from '../../types/sell-apps/account-management/sellAccountV1Oas3.js';
 
 type CustomPolicyCreateRequest = components['schemas']['CustomPolicyCreateRequest'];
 type CustomPolicyResponse = components['schemas']['CustomPolicyResponse'];
@@ -15,7 +15,8 @@ type GetPaymentPoliciesResponse = components['schemas']['PaymentPolicyResponse']
 type PaymentPolicy = components['schemas']['PaymentPolicy'];
 type PaymentsProgramResponse = components['schemas']['PaymentsProgramResponse'];
 type PaymentsProgramOnboardingResponse = components['schemas']['PaymentsProgramOnboardingResponse'];
-type SellerEligibilityMultiProgramResponse = components['schemas']['SellerEligibilityMultiProgramResponse'];
+type SellerEligibilityMultiProgramResponse =
+  components['schemas']['SellerEligibilityMultiProgramResponse'];
 type SellingPrivileges = components['schemas']['SellingPrivileges'];
 type Programs = components['schemas']['Programs'];
 type OptInToProgramRequest = components['schemas']['Program'];

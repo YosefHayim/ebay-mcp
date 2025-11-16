@@ -51,11 +51,40 @@ function getClineConfigPath(): string {
 
   switch (os) {
     case 'darwin':
-      return join(home, 'Library', 'Application Support', 'Code', 'User', 'globalStorage', 'saoudrizwan.claude-dev', 'settings', 'cline_mcp_settings.json');
+      return join(
+        home,
+        'Library',
+        'Application Support',
+        'Code',
+        'User',
+        'globalStorage',
+        'saoudrizwan.claude-dev',
+        'settings',
+        'cline_mcp_settings.json'
+      );
     case 'win32':
-      return join(home, 'AppData', 'Roaming', 'Code', 'User', 'globalStorage', 'saoudrizwan.claude-dev', 'settings', 'cline_mcp_settings.json');
+      return join(
+        home,
+        'AppData',
+        'Roaming',
+        'Code',
+        'User',
+        'globalStorage',
+        'saoudrizwan.claude-dev',
+        'settings',
+        'cline_mcp_settings.json'
+      );
     default:
-      return join(home, '.config', 'Code', 'User', 'globalStorage', 'saoudrizwan.claude-dev', 'settings', 'cline_mcp_settings.json');
+      return join(
+        home,
+        '.config',
+        'Code',
+        'User',
+        'globalStorage',
+        'saoudrizwan.claude-dev',
+        'settings',
+        'cline_mcp_settings.json'
+      );
   }
 }
 
@@ -211,7 +240,10 @@ export function configureContinue(projectRoot: string): boolean {
 
     const experimental = config.experimental as Record<string, unknown>;
 
-    if (!experimental.modelContextProtocolServers || !Array.isArray(experimental.modelContextProtocolServers)) {
+    if (
+      !experimental.modelContextProtocolServers ||
+      !Array.isArray(experimental.modelContextProtocolServers)
+    ) {
       experimental.modelContextProtocolServers = [];
     }
 

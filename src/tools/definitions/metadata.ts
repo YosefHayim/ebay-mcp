@@ -2,7 +2,6 @@ import { MarketplaceId } from '@/types/ebay-enums.js';
 import { z } from 'zod';
 import { compatibilityDataSchema, compatibilitySpecificationSchema } from '../schemas.js';
 
-
 export interface ToolDefinition {
   name: string;
   description: string;
@@ -81,10 +80,14 @@ export const metadataTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_return_policy_metadata',
-    description: 'Get marketplace return policy requirements and guidelines. Returns eBay policies that define whether return policies are required for categories and the guidelines for creating domestic and international return policies.',
+    description:
+      'Get marketplace return policy requirements and guidelines. Returns eBay policies that define whether return policies are required for categories and the guidelines for creating domestic and international return policies.',
     inputSchema: {
       marketplaceId: z.nativeEnum(MarketplaceId).describe('Marketplace ID'),
-      filter: z.string().optional().describe('Filter criteria to limit results to specific category IDs'),
+      filter: z
+        .string()
+        .optional()
+        .describe('Filter criteria to limit results to specific category IDs'),
     },
   },
   {

@@ -25,7 +25,8 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_get_campaigns',
-    description: 'Get all marketing campaigns for the seller. Returns campaigns with status, budget, and performance data.',
+    description:
+      'Get all marketing campaigns for the seller. Returns campaigns with status, budget, and performance data.',
     inputSchema: {
       campaignStatus: z
         .string()
@@ -38,48 +39,65 @@ export const marketingTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_campaign',
-    description: 'Get details of a specific marketing campaign by ID. Returns campaign configuration, status, and statistics.',
+    description:
+      'Get details of a specific marketing campaign by ID. Returns campaign configuration, status, and statistics.',
     inputSchema: {
       campaignId: campaignIdSchema,
     },
   },
   {
     name: 'ebay_get_campaign_by_name',
-    description: 'Find a campaign by its name. Returns campaign details if a matching name is found.',
+    description:
+      'Find a campaign by its name. Returns campaign details if a matching name is found.',
     inputSchema: {
       campaignName: z.string().describe('Campaign name to search for'),
     },
   },
   {
     name: 'ebay_create_campaign',
-    description: 'Create a new marketing campaign. Supports both CPS (Cost Per Sale) and CPC (Cost Per Click) campaigns.',
+    description:
+      'Create a new marketing campaign. Supports both CPS (Cost Per Sale) and CPC (Cost Per Click) campaigns.',
     inputSchema: {
-      campaign: z.object({
-        campaignName: z.string().describe('Campaign name'),
-        marketplaceId: z.nativeEnum(MarketplaceId).describe('Marketplace ID'),
-        fundingStrategy: z.object({
-          fundingModel: z.enum(['COST_PER_SALE', 'COST_PER_CLICK']).describe('Funding model: CPS or CPC'),
-          bidPercentage: z.string().optional().describe('Bid percentage for CPS campaigns (e.g., "10.5")'),
-        }).describe('Funding strategy configuration'),
-        startDate: z.string().optional().describe('Campaign start date (ISO 8601 format)'),
-        endDate: z.string().optional().describe('Campaign end date (ISO 8601 format)'),
-      }).describe('Campaign configuration'),
+      campaign: z
+        .object({
+          campaignName: z.string().describe('Campaign name'),
+          marketplaceId: z.nativeEnum(MarketplaceId).describe('Marketplace ID'),
+          fundingStrategy: z
+            .object({
+              fundingModel: z
+                .enum(['COST_PER_SALE', 'COST_PER_CLICK'])
+                .describe('Funding model: CPS or CPC'),
+              bidPercentage: z
+                .string()
+                .optional()
+                .describe('Bid percentage for CPS campaigns (e.g., "10.5")'),
+            })
+            .describe('Funding strategy configuration'),
+          startDate: z.string().optional().describe('Campaign start date (ISO 8601 format)'),
+          endDate: z.string().optional().describe('Campaign end date (ISO 8601 format)'),
+        })
+        .describe('Campaign configuration'),
     },
   },
   {
     name: 'ebay_clone_campaign',
-    description: 'Clone an existing campaign with new settings. Useful for creating campaigns with modified budget or duration.',
+    description:
+      'Clone an existing campaign with new settings. Useful for creating campaigns with modified budget or duration.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      cloneData: z.object({
-        campaignName: z.string().optional().describe('Name for the cloned campaign'),
-        fundingStrategy: z.object({
-          fundingModel: z.enum(['COST_PER_SALE', 'COST_PER_CLICK']).optional(),
-          bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
-        }).optional(),
-        startDate: z.string().optional().describe('Start date (ISO 8601 format)'),
-        endDate: z.string().optional().describe('End date (ISO 8601 format)'),
-      }).describe('New campaign settings'),
+      cloneData: z
+        .object({
+          campaignName: z.string().optional().describe('Name for the cloned campaign'),
+          fundingStrategy: z
+            .object({
+              fundingModel: z.enum(['COST_PER_SALE', 'COST_PER_CLICK']).optional(),
+              bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
+            })
+            .optional(),
+          startDate: z.string().optional().describe('Start date (ISO 8601 format)'),
+          endDate: z.string().optional().describe('End date (ISO 8601 format)'),
+        })
+        .describe('New campaign settings'),
     },
   },
   {
@@ -108,9 +126,11 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update campaign name or other identification details.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      updateData: z.object({
-        campaignName: z.string().optional().describe('New campaign name'),
-      }).describe('Campaign identification data to update'),
+      updateData: z
+        .object({
+          campaignName: z.string().optional().describe('New campaign name'),
+        })
+        .describe('Campaign identification data to update'),
     },
   },
 
@@ -119,29 +139,49 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_bulk_create_ads_by_inventory_reference',
-    description: 'Create multiple ads using Inventory API references (SKU/inventory item group key). CPS campaigns only.',
+    description:
+      'Create multiple ads using Inventory API references (SKU/inventory item group key). CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        inventoryReferences: z.array(z.object({
-          inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
-          inventoryReferenceType: z.enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP']).describe('Reference type'),
-        })).describe('Array of inventory references'),
-        bidPercentage: z.string().optional().describe('Bid percentage for all ads (e.g., "10.5")'),
-      }).describe('Bulk ad creation request'),
+      ads: z
+        .object({
+          inventoryReferences: z
+            .array(
+              z.object({
+                inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
+                inventoryReferenceType: z
+                  .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+                  .describe('Reference type'),
+              })
+            )
+            .describe('Array of inventory references'),
+          bidPercentage: z
+            .string()
+            .optional()
+            .describe('Bid percentage for all ads (e.g., "10.5")'),
+        })
+        .describe('Bulk ad creation request'),
     },
   },
   {
     name: 'ebay_bulk_create_ads_by_listing_id',
-    description: 'Create multiple ads using listing IDs. Maximum 500 listings per call. Supports both CPS and CPC campaigns.',
+    description:
+      'Create multiple ads using listing IDs. Maximum 500 listings per call. Supports both CPS and CPC campaigns.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        requests: z.array(z.object({
-          listingId: z.string().describe('eBay listing ID'),
-          bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
-        })).max(500).describe('Array of ad requests (max 500)'),
-      }).describe('Bulk ad creation request'),
+      ads: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                listingId: z.string().describe('eBay listing ID'),
+                bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
+              })
+            )
+            .max(500)
+            .describe('Array of ad requests (max 500)'),
+        })
+        .describe('Bulk ad creation request'),
     },
   },
   {
@@ -149,12 +189,20 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Delete multiple ads by inventory reference. CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        inventoryReferences: z.array(z.object({
-          inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
-          inventoryReferenceType: z.enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP']).describe('Reference type'),
-        })).describe('Array of inventory references to delete'),
-      }).describe('Bulk ad deletion request'),
+      ads: z
+        .object({
+          inventoryReferences: z
+            .array(
+              z.object({
+                inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
+                inventoryReferenceType: z
+                  .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+                  .describe('Reference type'),
+              })
+            )
+            .describe('Array of inventory references to delete'),
+        })
+        .describe('Bulk ad deletion request'),
     },
   },
   {
@@ -162,23 +210,34 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Delete multiple ads by listing ID. CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        listingIds: z.array(z.string()).describe('Array of listing IDs to delete'),
-      }).describe('Bulk ad deletion request'),
+      ads: z
+        .object({
+          listingIds: z.array(z.string()).describe('Array of listing IDs to delete'),
+        })
+        .describe('Bulk ad deletion request'),
     },
   },
   {
     name: 'ebay_bulk_update_ads_bid_by_inventory_reference',
-    description: 'Update bid percentages for multiple ads by inventory reference. CPS campaigns only.',
+    description:
+      'Update bid percentages for multiple ads by inventory reference. CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        requests: z.array(z.object({
-          inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
-          inventoryReferenceType: z.enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP']).describe('Reference type'),
-          bidPercentage: z.string().describe('New bid percentage (e.g., "10.5")'),
-        })).describe('Array of bid update requests'),
-      }).describe('Bulk bid update request'),
+      ads: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
+                inventoryReferenceType: z
+                  .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+                  .describe('Reference type'),
+                bidPercentage: z.string().describe('New bid percentage (e.g., "10.5")'),
+              })
+            )
+            .describe('Array of bid update requests'),
+        })
+        .describe('Bulk bid update request'),
     },
   },
   {
@@ -186,12 +245,18 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update bid percentages for multiple ads by listing ID. CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        requests: z.array(z.object({
-          listingId: z.string().describe('eBay listing ID'),
-          bidPercentage: z.string().describe('New bid percentage (e.g., "10.5")'),
-        })).describe('Array of bid update requests'),
-      }).describe('Bulk bid update request'),
+      ads: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                listingId: z.string().describe('eBay listing ID'),
+                bidPercentage: z.string().describe('New bid percentage (e.g., "10.5")'),
+              })
+            )
+            .describe('Array of bid update requests'),
+        })
+        .describe('Bulk bid update request'),
     },
   },
   {
@@ -199,25 +264,38 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update status for multiple ads. CPC priority strategy campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        requests: z.array(z.object({
-          adId: z.string().describe('Ad ID'),
-          adStatus: z.enum(['ACTIVE', 'PAUSED', 'ARCHIVED']).describe('New ad status'),
-        })).describe('Array of status update requests'),
-      }).describe('Bulk status update request'),
+      ads: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                adId: z.string().describe('Ad ID'),
+                adStatus: z.enum(['ACTIVE', 'PAUSED', 'ARCHIVED']).describe('New ad status'),
+              })
+            )
+            .describe('Array of status update requests'),
+        })
+        .describe('Bulk status update request'),
     },
   },
   {
     name: 'ebay_bulk_update_ads_status_by_listing_id',
-    description: 'Update status for multiple ads by listing ID. CPC priority strategy campaigns only.',
+    description:
+      'Update status for multiple ads by listing ID. CPC priority strategy campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        requests: z.array(z.object({
-          listingId: z.string().describe('eBay listing ID'),
-          adStatus: z.enum(['ACTIVE', 'PAUSED', 'ARCHIVED']).describe('New ad status'),
-        })).describe('Array of status update requests'),
-      }).describe('Bulk status update request'),
+      ads: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                listingId: z.string().describe('eBay listing ID'),
+                adStatus: z.enum(['ACTIVE', 'PAUSED', 'ARCHIVED']).describe('New ad status'),
+              })
+            )
+            .describe('Array of status update requests'),
+        })
+        .describe('Bulk status update request'),
     },
   },
 
@@ -229,11 +307,16 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Create a single ad in a campaign. Supports both CPS and CPC campaigns.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ad: z.object({
-        listingId: z.string().describe('eBay listing ID'),
-        bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
-        adGroupId: z.string().optional().describe('Ad group ID (required for manual targeting CPC campaigns)'),
-      }).describe('Ad configuration'),
+      ad: z
+        .object({
+          listingId: z.string().describe('eBay listing ID'),
+          bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
+          adGroupId: z
+            .string()
+            .optional()
+            .describe('Ad group ID (required for manual targeting CPC campaigns)'),
+        })
+        .describe('Ad configuration'),
     },
   },
   {
@@ -241,13 +324,21 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Create ads using Inventory API references. CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      ads: z.object({
-        inventoryReferences: z.array(z.object({
-          inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
-          inventoryReferenceType: z.enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP']).describe('Reference type'),
-        })).describe('Array of inventory references'),
-        bidPercentage: z.string().optional().describe('Bid percentage for all ads'),
-      }).describe('Ad creation request'),
+      ads: z
+        .object({
+          inventoryReferences: z
+            .array(
+              z.object({
+                inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
+                inventoryReferenceType: z
+                  .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+                  .describe('Reference type'),
+              })
+            )
+            .describe('Array of inventory references'),
+          bidPercentage: z.string().optional().describe('Bid percentage for all ads'),
+        })
+        .describe('Ad creation request'),
     },
   },
   {
@@ -272,11 +363,14 @@ export const marketingTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_ads_by_inventory_reference',
-    description: 'Get ads by inventory reference (SKU or inventory item group key). CPS campaigns only.',
+    description:
+      'Get ads by inventory reference (SKU or inventory item group key). CPS campaigns only.',
     inputSchema: {
       campaignId: campaignIdSchema,
       inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
-      inventoryReferenceType: z.enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP']).describe('Reference type'),
+      inventoryReferenceType: z
+        .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+        .describe('Reference type'),
     },
   },
   {
@@ -318,16 +412,22 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_create_ad_group',
-    description: 'Create an ad group for manual targeting in a CPC campaign. Required for CPC campaigns with manual targeting.',
+    description:
+      'Create an ad group for manual targeting in a CPC campaign. Required for CPC campaigns with manual targeting.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      adGroup: z.object({
-        name: z.string().describe('Ad group name'),
-        defaultBid: z.object({
-          amount: z.string().describe('Default bid amount'),
-          currency: z.string().describe('Currency code (e.g., USD)'),
-        }).optional().describe('Default bid for keywords in this ad group'),
-      }).describe('Ad group configuration'),
+      adGroup: z
+        .object({
+          name: z.string().describe('Ad group name'),
+          defaultBid: z
+            .object({
+              amount: z.string().describe('Default bid amount'),
+              currency: z.string().describe('Currency code (e.g., USD)'),
+            })
+            .optional()
+            .describe('Default bid for keywords in this ad group'),
+        })
+        .describe('Ad group configuration'),
     },
   },
   {
@@ -361,12 +461,16 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
-      updateData: z.object({
-        defaultBid: z.object({
-          amount: z.string().describe('New default bid amount'),
-          currency: z.string().describe('Currency code'),
-        }).describe('New default bid'),
-      }).describe('Bid update data'),
+      updateData: z
+        .object({
+          defaultBid: z
+            .object({
+              amount: z.string().describe('New default bid amount'),
+              currency: z.string().describe('Currency code'),
+            })
+            .describe('New default bid'),
+        })
+        .describe('Bid update data'),
     },
   },
   {
@@ -387,14 +491,19 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Create a keyword for manual targeting in a CPC campaign ad group.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      keyword: z.object({
-        keywordText: z.string().describe('Keyword text'),
-        matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Keyword match type'),
-        bid: z.object({
-          amount: z.string().describe('Bid amount'),
-          currency: z.string().describe('Currency code'),
-        }).optional().describe('Keyword-specific bid (overrides ad group default)'),
-      }).describe('Keyword configuration'),
+      keyword: z
+        .object({
+          keywordText: z.string().describe('Keyword text'),
+          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Keyword match type'),
+          bid: z
+            .object({
+              amount: z.string().describe('Bid amount'),
+              currency: z.string().describe('Currency code'),
+            })
+            .optional()
+            .describe('Keyword-specific bid (overrides ad group default)'),
+        })
+        .describe('Keyword configuration'),
     },
   },
   {
@@ -429,28 +538,39 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       campaignId: campaignIdSchema,
       keywordId: keywordIdSchema,
-      bid: z.object({
-        amount: z.string().describe('New bid amount'),
-        currency: z.string().describe('Currency code'),
-      }).describe('New bid'),
+      bid: z
+        .object({
+          amount: z.string().describe('New bid amount'),
+          currency: z.string().describe('Currency code'),
+        })
+        .describe('New bid'),
     },
   },
   {
     name: 'ebay_bulk_create_keywords',
-    description: 'Create multiple keywords in a campaign. Maximum recommended per call varies by eBay.',
+    description:
+      'Create multiple keywords in a campaign. Maximum recommended per call varies by eBay.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      keywords: z.object({
-        requests: z.array(z.object({
-          keywordText: z.string().describe('Keyword text'),
-          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
-          adGroupId: z.string().optional().describe('Ad group ID'),
-          bid: z.object({
-            amount: z.string(),
-            currency: z.string(),
-          }).optional(),
-        })).describe('Array of keyword creation requests'),
-      }).describe('Bulk keyword creation request'),
+      keywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                keywordText: z.string().describe('Keyword text'),
+                matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
+                adGroupId: z.string().optional().describe('Ad group ID'),
+                bid: z
+                  .object({
+                    amount: z.string(),
+                    currency: z.string(),
+                  })
+                  .optional(),
+              })
+            )
+            .describe('Array of keyword creation requests'),
+        })
+        .describe('Bulk keyword creation request'),
     },
   },
   {
@@ -458,9 +578,11 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Delete multiple keywords from a campaign.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      keywords: z.object({
-        keywordIds: z.array(z.string()).describe('Array of keyword IDs to delete'),
-      }).describe('Bulk keyword deletion request'),
+      keywords: z
+        .object({
+          keywordIds: z.array(z.string()).describe('Array of keyword IDs to delete'),
+        })
+        .describe('Bulk keyword deletion request'),
     },
   },
   {
@@ -468,15 +590,23 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update bids for multiple keywords.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      keywords: z.object({
-        requests: z.array(z.object({
-          keywordId: z.string().describe('Keyword ID'),
-          bid: z.object({
-            amount: z.string().describe('New bid amount'),
-            currency: z.string().describe('Currency code'),
-          }).describe('New bid'),
-        })).describe('Array of bid update requests'),
-      }).describe('Bulk keyword bid update request'),
+      keywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                keywordId: z.string().describe('Keyword ID'),
+                bid: z
+                  .object({
+                    amount: z.string().describe('New bid amount'),
+                    currency: z.string().describe('Currency code'),
+                  })
+                  .describe('New bid'),
+              })
+            )
+            .describe('Array of bid update requests'),
+        })
+        .describe('Bulk keyword bid update request'),
     },
   },
 
@@ -485,12 +615,15 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_create_campaign_negative_keyword',
-    description: 'Create a campaign-level negative keyword. Prevents ads from showing for this keyword across entire campaign.',
+    description:
+      'Create a campaign-level negative keyword. Prevents ads from showing for this keyword across entire campaign.',
     inputSchema: {
-      negativeKeyword: z.object({
-        keywordText: z.string().describe('Negative keyword text'),
-        matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
-      }).describe('Negative keyword configuration'),
+      negativeKeyword: z
+        .object({
+          keywordText: z.string().describe('Negative keyword text'),
+          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
+        })
+        .describe('Negative keyword configuration'),
     },
   },
   {
@@ -521,45 +654,66 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update a campaign-level negative keyword.',
     inputSchema: {
       negativeKeywordId: negativeKeywordIdSchema,
-      updateData: z.object({
-        keywordText: z.string().optional().describe('New keyword text'),
-        matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
-      }).describe('Negative keyword update data'),
+      updateData: z
+        .object({
+          keywordText: z.string().optional().describe('New keyword text'),
+          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
+        })
+        .describe('Negative keyword update data'),
     },
   },
   {
     name: 'ebay_bulk_create_campaign_negative_keywords',
     description: 'Create multiple campaign-level negative keywords.',
     inputSchema: {
-      negativeKeywords: z.object({
-        requests: z.array(z.object({
-          campaignId: z.string().describe('Campaign ID'),
-          keywordText: z.string().describe('Negative keyword text'),
-          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
-        })).describe('Array of negative keyword creation requests'),
-      }).describe('Bulk negative keyword creation request'),
+      negativeKeywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                campaignId: z.string().describe('Campaign ID'),
+                keywordText: z.string().describe('Negative keyword text'),
+                matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
+              })
+            )
+            .describe('Array of negative keyword creation requests'),
+        })
+        .describe('Bulk negative keyword creation request'),
     },
   },
   {
     name: 'ebay_bulk_update_campaign_negative_keywords',
     description: 'Update multiple campaign-level negative keywords.',
     inputSchema: {
-      negativeKeywords: z.object({
-        requests: z.array(z.object({
-          negativeKeywordId: z.string().describe('Negative keyword ID'),
-          keywordText: z.string().optional().describe('New keyword text'),
-          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
-        })).describe('Array of update requests'),
-      }).describe('Bulk negative keyword update request'),
+      negativeKeywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                negativeKeywordId: z.string().describe('Negative keyword ID'),
+                keywordText: z.string().optional().describe('New keyword text'),
+                matchType: z
+                  .enum(['BROAD', 'PHRASE', 'EXACT'])
+                  .optional()
+                  .describe('New match type'),
+              })
+            )
+            .describe('Array of update requests'),
+        })
+        .describe('Bulk negative keyword update request'),
     },
   },
   {
     name: 'ebay_bulk_delete_campaign_negative_keywords',
     description: 'Delete multiple campaign-level negative keywords.',
     inputSchema: {
-      negativeKeywords: z.object({
-        negativeKeywordIds: z.array(z.string()).describe('Array of negative keyword IDs to delete'),
-      }).describe('Bulk negative keyword deletion request'),
+      negativeKeywords: z
+        .object({
+          negativeKeywordIds: z
+            .array(z.string())
+            .describe('Array of negative keyword IDs to delete'),
+        })
+        .describe('Bulk negative keyword deletion request'),
     },
   },
 
@@ -568,14 +722,17 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_create_ad_group_negative_keyword',
-    description: 'Create an ad group-level negative keyword. Prevents ads in this ad group from showing for this keyword.',
+    description:
+      'Create an ad group-level negative keyword. Prevents ads in this ad group from showing for this keyword.',
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
-      negativeKeyword: z.object({
-        keywordText: z.string().describe('Negative keyword text'),
-        matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
-      }).describe('Negative keyword configuration'),
+      negativeKeyword: z
+        .object({
+          keywordText: z.string().describe('Negative keyword text'),
+          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
+        })
+        .describe('Negative keyword configuration'),
     },
   },
   {
@@ -613,10 +770,12 @@ export const marketingTools: ToolDefinition[] = [
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
       negativeKeywordId: negativeKeywordIdSchema,
-      updateData: z.object({
-        keywordText: z.string().optional().describe('New keyword text'),
-        matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
-      }).describe('Negative keyword update data'),
+      updateData: z
+        .object({
+          keywordText: z.string().optional().describe('New keyword text'),
+          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
+        })
+        .describe('Negative keyword update data'),
     },
   },
   {
@@ -625,12 +784,18 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
-      negativeKeywords: z.object({
-        requests: z.array(z.object({
-          keywordText: z.string().describe('Negative keyword text'),
-          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
-        })).describe('Array of negative keyword creation requests'),
-      }).describe('Bulk negative keyword creation request'),
+      negativeKeywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                keywordText: z.string().describe('Negative keyword text'),
+                matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
+              })
+            )
+            .describe('Array of negative keyword creation requests'),
+        })
+        .describe('Bulk negative keyword creation request'),
     },
   },
   {
@@ -639,13 +804,22 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
-      negativeKeywords: z.object({
-        requests: z.array(z.object({
-          negativeKeywordId: z.string().describe('Negative keyword ID'),
-          keywordText: z.string().optional().describe('New keyword text'),
-          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
-        })).describe('Array of update requests'),
-      }).describe('Bulk negative keyword update request'),
+      negativeKeywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                negativeKeywordId: z.string().describe('Negative keyword ID'),
+                keywordText: z.string().optional().describe('New keyword text'),
+                matchType: z
+                  .enum(['BROAD', 'PHRASE', 'EXACT'])
+                  .optional()
+                  .describe('New match type'),
+              })
+            )
+            .describe('Array of update requests'),
+        })
+        .describe('Bulk negative keyword update request'),
     },
   },
   {
@@ -654,9 +828,13 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
-      negativeKeywords: z.object({
-        negativeKeywordIds: z.array(z.string()).describe('Array of negative keyword IDs to delete'),
-      }).describe('Bulk negative keyword deletion request'),
+      negativeKeywords: z
+        .object({
+          negativeKeywordIds: z
+            .array(z.string())
+            .describe('Array of negative keyword IDs to delete'),
+        })
+        .describe('Bulk negative keyword deletion request'),
     },
   },
 
@@ -692,7 +870,8 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_suggest_bids',
-    description: 'Get bid suggestions for an ad group. Helps optimize bid amounts based on competition.',
+    description:
+      'Get bid suggestions for an ad group. Helps optimize bid amounts based on competition.',
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
@@ -700,7 +879,8 @@ export const marketingTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_suggest_keywords',
-    description: 'Get keyword suggestions for an ad group. Returns relevant keywords based on listings.',
+    description:
+      'Get keyword suggestions for an ad group. Returns relevant keywords based on listings.',
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
@@ -712,22 +892,27 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_create_report_task',
-    description: 'Create an asynchronous report generation task. Reports are generated in the background.',
+    description:
+      'Create an asynchronous report generation task. Reports are generated in the background.',
     inputSchema: {
-      reportTask: z.object({
-        reportType: z.enum([
-          'CAMPAIGN_PERFORMANCE_REPORT',
-          'LISTING_PERFORMANCE_REPORT',
-          'KEYWORD_PERFORMANCE_REPORT',
-          'ACCOUNT_PERFORMANCE_REPORT',
-        ]).describe('Type of report to generate'),
-        campaignIds: z.array(z.string()).optional().describe('Campaign IDs to include in report'),
-        dateFrom: z.string().describe('Start date for report data (ISO 8601 format)'),
-        dateTo: z.string().describe('End date for report data (ISO 8601 format)'),
-        marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('Marketplace ID'),
-        dimensions: z.array(z.string()).optional().describe('Report dimensions'),
-        metrics: z.array(z.string()).optional().describe('Report metrics'),
-      }).describe('Report task configuration'),
+      reportTask: z
+        .object({
+          reportType: z
+            .enum([
+              'CAMPAIGN_PERFORMANCE_REPORT',
+              'LISTING_PERFORMANCE_REPORT',
+              'KEYWORD_PERFORMANCE_REPORT',
+              'ACCOUNT_PERFORMANCE_REPORT',
+            ])
+            .describe('Type of report to generate'),
+          campaignIds: z.array(z.string()).optional().describe('Campaign IDs to include in report'),
+          dateFrom: z.string().describe('Start date for report data (ISO 8601 format)'),
+          dateTo: z.string().describe('End date for report data (ISO 8601 format)'),
+          marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('Marketplace ID'),
+          dimensions: z.array(z.string()).optional().describe('Report dimensions'),
+          metrics: z.array(z.string()).optional().describe('Report metrics'),
+        })
+        .describe('Report task configuration'),
     },
   },
   {
@@ -743,7 +928,10 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       limit: limitSchema,
       offset: offsetSchema,
-      reportTaskStatuses: z.string().optional().describe('Comma-separated status filters: PENDING, IN_PROGRESS, SUCCESS, FAILED'),
+      reportTaskStatuses: z
+        .string()
+        .optional()
+        .describe('Comma-separated status filters: PENDING, IN_PROGRESS, SUCCESS, FAILED'),
     },
   },
   {
@@ -755,19 +943,22 @@ export const marketingTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_ad_report_metadata',
-    description: 'Get metadata for all available report types. Returns dimensions, metrics, and filters.',
+    description:
+      'Get metadata for all available report types. Returns dimensions, metrics, and filters.',
     inputSchema: {},
   },
   {
     name: 'ebay_get_ad_report_metadata_for_type',
     description: 'Get metadata for a specific report type.',
     inputSchema: {
-      reportType: z.enum([
-        'CAMPAIGN_PERFORMANCE_REPORT',
-        'LISTING_PERFORMANCE_REPORT',
-        'KEYWORD_PERFORMANCE_REPORT',
-        'ACCOUNT_PERFORMANCE_REPORT',
-      ]).describe('Report type'),
+      reportType: z
+        .enum([
+          'CAMPAIGN_PERFORMANCE_REPORT',
+          'LISTING_PERFORMANCE_REPORT',
+          'KEYWORD_PERFORMANCE_REPORT',
+          'ACCOUNT_PERFORMANCE_REPORT',
+        ])
+        .describe('Report type'),
     },
   },
 
@@ -776,11 +967,18 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_get_promotions',
-    description: 'Get all item promotions with optional filters. Returns order discounts, shipping discounts, etc.',
+    description:
+      'Get all item promotions with optional filters. Returns order discounts, shipping discounts, etc.',
     inputSchema: {
       marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('Filter by marketplace ID'),
-      promotionStatus: z.string().optional().describe('Filter by status: DRAFT, SCHEDULED, RUNNING, PAUSED, ENDED'),
-      promotionType: z.string().optional().describe('Filter by type: ORDER_DISCOUNT, MARKDOWN_SALE, etc.'),
+      promotionStatus: z
+        .string()
+        .optional()
+        .describe('Filter by status: DRAFT, SCHEDULED, RUNNING, PAUSED, ENDED'),
+      promotionType: z
+        .string()
+        .optional()
+        .describe('Filter by type: ORDER_DISCOUNT, MARKDOWN_SALE, etc.'),
       limit: limitSchema,
       offset: offsetSchema,
     },
@@ -796,7 +994,9 @@ export const marketingTools: ToolDefinition[] = [
     name: 'ebay_create_item_promotion',
     description: 'Create a new item promotion (order discount, volume pricing, etc.).',
     inputSchema: {
-      promotion: z.record(z.unknown()).describe('Promotion configuration with discountRules, inventoryCriterion, etc.'),
+      promotion: z
+        .record(z.unknown())
+        .describe('Promotion configuration with discountRules, inventoryCriterion, etc.'),
     },
   },
   {
@@ -852,9 +1052,13 @@ export const marketingTools: ToolDefinition[] = [
   // ========================================
   {
     name: 'ebay_find_listing_recommendations',
-    description: 'Find listing recommendations for items. Returns suggestions to improve listing performance.',
+    description:
+      'Find listing recommendations for items. Returns suggestions to improve listing performance.',
     inputSchema: {
-      listingIds: z.array(z.string()).optional().describe('Array of listing IDs to get recommendations for'),
+      listingIds: z
+        .array(z.string())
+        .optional()
+        .describe('Array of listing IDs to get recommendations for'),
       filter: z.string().optional().describe('Filter criteria'),
       limit: limitSchema,
       offset: offsetSchema,

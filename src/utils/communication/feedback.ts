@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/commerce_feedback_v1_beta_oas3.js';
 
 /**
  * Zod schemas for Feedback API input validation
@@ -7,13 +6,6 @@ import type { operations, components } from '@/types/commerce_feedback_v1_beta_o
  * OpenAPI spec: docs/sell-apps/communication/commerce_feedback_v1_beta_oas3.json
  * Types from: src/types/commerce_feedback_v1_beta_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type GetAwaitingFeedbackParams = operations['getItemsAwaitingFeedback']['parameters']['query'];
-type GetFeedbackParams = operations['getFeedback']['parameters']['query'];
-type LeaveFeedbackRequest = components['schemas']['LeaveFeedbackRequest'];
-type RespondToFeedbackRequest = components['schemas']['RespondToFeedbackRequest'];
-type GetFeedbackRatingSummaryParams = operations['getFeedbackRatingSummary']['parameters']['query'];
 
 // Reusable schema for filter parameter
 const filterSchema = z

@@ -18,8 +18,7 @@ export default tseslint.config(
       '*.config.mjs',
       'scripts/**',
       // Generated OpenAPI types
-      'src/types/sell_*.ts',
-      'src/types/commerce_*.ts',
+      'src/types/*.d.ts',
     ],
   },
 
@@ -102,7 +101,6 @@ export default tseslint.config(
       'n/no-process-exit': 'warn',
 
       // ===== General Best Practices =====
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       'prefer-const': 'error',
       'no-var': 'error',

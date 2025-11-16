@@ -83,7 +83,7 @@ async function createApp(): Promise<express.Application> {
     cors({
       // TODO: Restrict origin to known clients in production
       // For development, allow all origins
-      // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
       origin: '*',
       exposedHeaders: ['Mcp-Session-Id'],
     })
@@ -381,7 +381,8 @@ async function main() {
     if (CONFIG.authEnabled) {
       console.log(`Auth Server: ${CONFIG.oauth.authServerUrl}`);
       console.log(`Required Scopes: ${CONFIG.oauth.requiredScopes.join(', ')}`);
-      console.log(`Verification Method: ${CONFIG.oauth.useIntrospection ? 'Introspection' : 'JWT'}`
+      console.log(
+        `Verification Method: ${CONFIG.oauth.useIntrospection ? 'Introspection' : 'JWT'}`
       );
     }
 
@@ -393,9 +394,7 @@ async function main() {
       console.log('Server is running!');
       console.log();
       console.log(`MCP endpoint: ${serverUrl}/`);
-      console.log(
-        `Protected Resource Metadata: ${serverUrl}/.well-known/oauth-protected-resource`
-      );
+      console.log(`Protected Resource Metadata: ${serverUrl}/.well-known/oauth-protected-resource`);
       console.log(`Health check: ${serverUrl}/health`);
       console.log();
 

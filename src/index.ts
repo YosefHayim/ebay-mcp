@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { EbaySellerApi } from '@/api/index.js';
-import { getEbayConfig, validateEnvironmentConfig } from '@/config/environment.js';
+import { getEbayConfig, mcpConfig, validateEnvironmentConfig } from '@/config/environment.js';
 import { getToolDefinitions, executeTool } from '@/tools/index.js';
 
 /**
@@ -13,23 +13,10 @@ class EbayMcpServer {
   private api: EbaySellerApi;
 
   constructor() {
-    this.server = new McpServer(
-      {
-        name: 'ebay-api-mcp-server',
-        version: '1.0.0',
-        title: 'eBay API MCP Server',
-      },
-      {
-        capabilities: {
-          tools: {},
-        },
-      }
-    );
+    this.server = new McpServer(mcpConfig);
 
     // Initialize eBay API client
-    const config = getEbayConfig();
-    this.api = new EbaySellerApi(config);
-
+    this.api = new EbaySellerApi(getEbayConfig());
     this.setupHandlers();
     this.setupErrorHandling();
   }

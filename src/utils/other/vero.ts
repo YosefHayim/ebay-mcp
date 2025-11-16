@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { components } from '@/types/commerce_vero_v1_oas3.js';
 
 /**
  * Zod schemas for VERO API input validation
@@ -9,9 +8,6 @@ import type { components } from '@/types/commerce_vero_v1_oas3.js';
  *
  * Note: The VERO API is only available for members of the Verified Rights Owner (VeRO) Program
  */
-
-// Extract operation parameter types for reference
-type VeroReportItemsRequest = components['schemas']['VeroReportItemsRequest'];
 
 // Reusable schema for filter parameter
 const filterSchema = z

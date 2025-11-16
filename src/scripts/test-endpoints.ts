@@ -102,7 +102,9 @@ class EndpointTester {
 
     console.log(`✅ Client initialized (${config.environment} mode)`);
     console.log(
-      this.api.hasUserTokens() ? '✅ Using user tokens (high rate limits)' : '⚠️  Using app tokens (1k req/day limit)'
+      this.api.hasUserTokens()
+        ? '✅ Using user tokens (high rate limits)'
+        : '⚠️  Using app tokens (1k req/day limit)'
     );
   }
 
@@ -159,11 +161,17 @@ class EndpointTester {
     // Collect Account Management IDs
     try {
       const fulfillmentPolicies = await this.api.account.getFulfillmentPolicies('EBAY_US');
-      if (fulfillmentPolicies.fulfillmentPolicies && fulfillmentPolicies.fulfillmentPolicies.length > 0) {
-        this.collectedIds.fulfillmentPolicyId = fulfillmentPolicies.fulfillmentPolicies[0].fulfillmentPolicyId;
+      if (
+        fulfillmentPolicies.fulfillmentPolicies &&
+        fulfillmentPolicies.fulfillmentPolicies.length > 0
+      ) {
+        this.collectedIds.fulfillmentPolicyId =
+          fulfillmentPolicies.fulfillmentPolicies[0].fulfillmentPolicyId;
         console.log(`✓ Fulfillment Policy ID: ${this.collectedIds.fulfillmentPolicyId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const paymentPolicies = await this.api.account.getPaymentPolicies('EBAY_US');
@@ -171,7 +179,9 @@ class EndpointTester {
         this.collectedIds.paymentPolicyId = paymentPolicies.paymentPolicies[0].paymentPolicyId;
         console.log(`✓ Payment Policy ID: ${this.collectedIds.paymentPolicyId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const returnPolicies = await this.api.account.getReturnPolicies('EBAY_US');
@@ -179,7 +189,9 @@ class EndpointTester {
         this.collectedIds.returnPolicyId = returnPolicies.returnPolicies[0].returnPolicyId;
         console.log(`✓ Return Policy ID: ${this.collectedIds.returnPolicyId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const customPolicies = await this.api.account.getCustomPolicies();
@@ -187,7 +199,9 @@ class EndpointTester {
         this.collectedIds.customPolicyId = customPolicies.customPolicies[0].customPolicyId;
         console.log(`✓ Custom Policy ID: ${this.collectedIds.customPolicyId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     // Collect Inventory IDs
     try {
@@ -196,7 +210,9 @@ class EndpointTester {
         this.collectedIds.inventoryItemSku = inventoryItems.inventoryItems[0].sku;
         console.log(`✓ Inventory Item SKU: ${this.collectedIds.inventoryItemSku}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const locations = await this.api.inventory.getInventoryLocations(1, 0);
@@ -204,7 +220,9 @@ class EndpointTester {
         this.collectedIds.inventoryLocationKey = locations.locations[0].merchantLocationKey;
         console.log(`✓ Inventory Location Key: ${this.collectedIds.inventoryLocationKey}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const offers = await this.api.inventory.getOffers(undefined, 'EBAY_US', 1);
@@ -212,7 +230,9 @@ class EndpointTester {
         this.collectedIds.offerId = offers.offers[0].offerId;
         console.log(`✓ Offer ID: ${this.collectedIds.offerId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     // Collect Fulfillment IDs
     try {
@@ -221,7 +241,9 @@ class EndpointTester {
         this.collectedIds.orderId = orders.orders[0].orderId;
         console.log(`✓ Order ID: ${this.collectedIds.orderId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const disputes = await this.api.fulfillment.getPaymentDisputeSummaries({ limit: 1 });
@@ -229,7 +251,9 @@ class EndpointTester {
         this.collectedIds.paymentDisputeId = disputes.paymentDisputeSummaries[0].paymentDisputeId;
         console.log(`✓ Payment Dispute ID: ${this.collectedIds.paymentDisputeId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     // Collect Marketing IDs
     try {
@@ -240,14 +264,20 @@ class EndpointTester {
 
         // If we have a campaign, try to get an ad group
         try {
-          const adGroups = await this.api.marketing.getAdGroups(this.collectedIds.campaignId!, { limit: 1 });
+          const adGroups = await this.api.marketing.getAdGroups(this.collectedIds.campaignId!, {
+            limit: 1,
+          });
           if (adGroups.adGroups && adGroups.adGroups.length > 0) {
             this.collectedIds.adGroupId = adGroups.adGroups[0].adGroupId;
             console.log(`✓ Ad Group ID: ${this.collectedIds.adGroupId}`);
           }
-        } catch { /* Skip if no data */ }
+        } catch {
+          /* Skip if no data */
+        }
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     try {
       const promotions = await this.api.marketing.getPromotions('EBAY_US', 1);
@@ -255,7 +285,9 @@ class EndpointTester {
         this.collectedIds.promotionId = promotions.promotions[0].promotionId;
         console.log(`✓ Promotion ID: ${this.collectedIds.promotionId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     // Collect Other IDs
     try {
@@ -264,7 +296,9 @@ class EndpointTester {
         this.collectedIds.negotiationOfferId = offers.offers[0].offerId;
         console.log(`✓ Negotiation Offer ID: ${this.collectedIds.negotiationOfferId}`);
       }
-    } catch { /* Skip if no data */ }
+    } catch {
+      /* Skip if no data */
+    }
 
     console.log('\n✅ Phase 1 complete - IDs collected\n');
   }
@@ -561,7 +595,8 @@ class EndpointTester {
         'Fulfillment',
         'getCancellation',
         'GET /sell/fulfillment/v1/order/{orderId}/cancellation',
-        () => this.api.fulfillment.getCancellation(this.collectedIds.orderId!, 'test-cancellation-id'),
+        () =>
+          this.api.fulfillment.getCancellation(this.collectedIds.orderId!, 'test-cancellation-id'),
         { orderId: this.collectedIds.orderId, cancellation_id: 'test-cancellation-id' }
       );
     }
@@ -740,14 +775,19 @@ class EndpointTester {
       'Analytics',
       'getCustomerServiceMetric',
       'GET /sell/analytics/v1/customer_service_metric',
-      () => this.api.analytics.getCustomerServiceMetric('ITEM_NOT_AS_DESCRIBED', 'CURRENT', 'EBAY_US'),
-      { customerServiceMetricType: 'ITEM_NOT_AS_DESCRIBED', evaluationType: 'CURRENT', evaluationMarketplaceId: 'EBAY_US' }
+      () =>
+        this.api.analytics.getCustomerServiceMetric('ITEM_NOT_AS_DESCRIBED', 'CURRENT', 'EBAY_US'),
+      {
+        customerServiceMetricType: 'ITEM_NOT_AS_DESCRIBED',
+        evaluationType: 'CURRENT',
+        evaluationMarketplaceId: 'EBAY_US',
+      }
     );
     await this.testEndpoint(
       'Analytics',
       'findSellerStandardsProfiles',
       'GET /sell/analytics/v1/seller_standards_profile/find',
-      () => this.api.analytics.findSellerStandardsProfiles(),
+      () => this.api.analytics.findSellerStandardsProfiles()
     );
 
     console.log('');
@@ -841,11 +881,8 @@ class EndpointTester {
     console.log('\n🔧 Other APIs (Identity, Negotiation, Compliance, Translation)');
 
     // Identity API (1 endpoint)
-    await this.testEndpoint(
-      'Other',
-      'getUser',
-      'GET /commerce/identity/v1/user',
-      () => this.api.identity.getUser()
+    await this.testEndpoint('Other', 'getUser', 'GET /commerce/identity/v1/user', () =>
+      this.api.identity.getUser()
     );
 
     // Negotiation API (2 endpoints)
@@ -969,7 +1006,7 @@ class EndpointTester {
       lines.push('');
 
       // Quick list of failed endpoints
-      const errors = this.failures.filter(f => f.status === 'error');
+      const errors = this.failures.filter((f) => f.status === 'error');
       if (errors.length > 0) {
         lines.push('Failed Endpoints:');
         for (const failure of errors) {
@@ -981,7 +1018,7 @@ class EndpointTester {
 
     if (summary.skipped > 0) {
       lines.push('Skipped Endpoints (No Data):');
-      const skipped = this.failures.filter(f => f.status === 'skipped');
+      const skipped = this.failures.filter((f) => f.status === 'skipped');
       for (const failure of skipped) {
         lines.push(`  • ${failure.endpoint}`);
       }
@@ -1017,8 +1054,8 @@ class EndpointTester {
 
     const totalDuration = Date.now() - startTime;
     const totalTests = this.passCount + this.failures.length;
-    const failed = this.failures.filter(f => f.status === 'error').length;
-    const skipped = this.failures.filter(f => f.status === 'skipped').length;
+    const failed = this.failures.filter((f) => f.status === 'error').length;
+    const skipped = this.failures.filter((f) => f.status === 'skipped').length;
 
     // Generate summary
     const summary: TestSummary = {
@@ -1043,7 +1080,9 @@ class EndpointTester {
     console.log('═'.repeat(80));
     console.log(`\n📊 Results:`);
     console.log(`  Total:   ${summary.totalTests}`);
-    console.log(`  ✅ Pass:  ${summary.passed} (${((summary.passed / totalTests) * 100).toFixed(1)}%)`);
+    console.log(
+      `  ✅ Pass:  ${summary.passed} (${((summary.passed / totalTests) * 100).toFixed(1)}%)`
+    );
     console.log(`  ❌ Fail:  ${summary.failed}`);
     console.log(`  ⏭️  Skip:  ${summary.skipped}`);
     console.log(`  ⏱️  Time:  ${(totalDuration / 1000).toFixed(2)}s`);

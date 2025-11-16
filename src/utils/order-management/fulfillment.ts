@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/sell_fulfillment_v1_oas3.js';
 
 /**
  * Zod schemas for Fulfillment API input validation
@@ -7,13 +6,6 @@ import type { operations, components } from '@/types/sell_fulfillment_v1_oas3.js
  * OpenAPI spec: docs/sell-apps/order-management/sell_fulfillment_v1_oas3.json
  * Types from: src/types/sell_fulfillment_v1_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type GetOrdersParams = operations['getOrders']['parameters']['query'];
-type GetOrderParams = operations['getOrder']['parameters']['path'];
-type CreateShippingFulfillmentRequest = components['schemas']['ShippingFulfillmentDetails'];
-type GetShippingFulfillmentParams = operations['getShippingFulfillment']['parameters']['path'];
-type IssueRefundRequest = components['schemas']['IssueRefundRequest'];
 
 // Reusable schema for order ID
 const orderIdSchema = z.string({

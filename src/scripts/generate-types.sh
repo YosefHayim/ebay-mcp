@@ -16,7 +16,6 @@ NC='\033[0m' # No Color
 # Base directories
 DOCS_DIR="docs"
 TYPES_DIR="src/types"
-OPENAPI_SCHEMAS_DIR="${TYPES_DIR}"
 
 # Ensure we're in the project root
 if [ ! -f "package.json" ]; then
@@ -25,7 +24,7 @@ if [ ! -f "package.json" ]; then
 fi
 
 # Create output directory if it doesn't exist
-mkdir -p "${OPENAPI_SCHEMAS_DIR}"
+mkdir -p "${TYPES_DIR}"
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║  OpenAPI TypeScript Type Generator        ║${NC}"
@@ -53,10 +52,10 @@ generate_types() {
         return 1
     fi
 
-    # Generate types using openapi-typescript
-    if npx openapi-typescript "${input_file}" -o "${output_file}" --silent 2>/dev/null; then
+    # Generate types using openapi-typescript, ensuring --dts is used for declaration files
+    if npx openapi-typescript "${input_file}" -o "${output_file}" --silent --dts 2>/dev/null; then
         echo -e "  ${GREEN}✓ Success${NC}"
-        ((GENERATED_COUNT++))
+        ((GENERATED_COUNT++)) # Increment GENERATED_COUNT on success
     else
         echo -e "  ${RED}✗ Failed to generate types${NC}"
         ((ERROR_COUNT++))
@@ -66,56 +65,60 @@ generate_types() {
     echo ""
 }
 
-# Mapping: docs folder -> spec file -> output file
-# Format: "docs_path:spec_filename:output_filename"
-
-declare -a SPEC_MAPPINGS=(
-    # Account Management
-    "sell-apps/account-management:sell_account_v1_oas3.json:sell_account_v1_oas3.ts"
-
-    # Order Management
-    "sell-apps/order-management:sell_fulfillment_v1_oas3.json:sell_fulfillment_v1_oas3.ts"
-
-    # Listing Management
-    "sell-apps/listing-management:sell_inventory_v1_oas3.json:sell_inventory_v1_oas3.ts"
-
-    # Listing Metadata
-    "sell-apps/listing-metadata:sell_metadata_v1_oas3.json:sell_metadata_v1_oas3.ts"
-
-    # Analytics and Report
-    "sell-apps/analytics-and-report:sell_analytics_v1_oas3.json:sell_analytics_v1_oas3.ts"
-
-    # Marketing and Promotions (note the typo in folder name)
-    "sell-apps/markeitng-and-promotions:sell_marketing_v1_oas3.json:sell_marketing_v1_oas3.ts"
-    "sell-apps/markeitng-and-promotions:sell_recommendation_v1_oas3.json:sell_recommendation_v1_oas3.ts"
-
-    # Communication
-    "sell-apps/communication:sell_negotiation_v1_oas3.json:sell_negotiation_v1_oas3.ts"
-    "sell-apps/communication:commerce_feedback_v1_beta_oas3.json:commerce_feedback_v1_beta_oas3.ts"
-    "sell-apps/communication:commerce_notification_v1_oas3.json:commerce_notification_v1_oas3.ts"
-    "sell-apps/communication:commerce_message_v1_oas3.json:commerce_message_v1_oas3.ts"
-
-    # Other APIs
-    "sell-apps/other-apis:commerce_identity_v1_oas3.json:commerce_identity_v1_oas3.ts"
-    "sell-apps/other-apis:commerce_vero_v1_oas3.json:commerce_vero_v1_oas3.ts"
-    "sell-apps/other-apis:sell_compliance_v1_oas3.json:sell_compliance_v1_oas3.ts"
-    "sell-apps/other-apis:commerce_translation_v1_beta_oas3.json:commerce_translation_v1_beta_oas3.ts"
-    "sell-apps/other-apis:sell_edelivery_international_shipping_oas3.json:sell_edelivery_international_shipping_oas3.ts"
-)
-
 echo -e "${GREEN}Processing OpenAPI Specifications...${NC}"
 echo ""
 
-# Process each mapping
-for mapping in "${SPEC_MAPPINGS[@]}"; do
-    IFS=':' read -r docs_path spec_file output_file <<< "$mapping"
+# Find all OpenAPI JSON files in the docs directory
+# Use a subshell for find to avoid issues with `while read` and `continue`
+(
+    find "${DOCS_DIR}" -type f -name "*.json" | while read -r input_file; do
+    # Extract relative path from DOCS_DIR
+    relative_path="${input_file#${DOCS_DIR}/}"
 
-    input_path="${DOCS_DIR}/${docs_path}/${spec_file}"
-    output_path="${OPENAPI_SCHEMAS_DIR}/${output_file}"
-    spec_name=$(basename "${spec_file}" .json)
+    # Determine the output filename
+    # Example: docs/sell-account/v1/sell_account_v1.json -> src/types/sell-account/v1/sellAccountV1.d.ts
+    # The output filename should be camelCase and end with .ts
+    
+    # Extract directory path relative to DOCS_DIR, e.g., "sell-apps/account-management"
+    output_dir="${TYPES_DIR}/$(dirname "${relative_path}")"
+    
+    # Create the corresponding output directory structure in TYPES_DIR
+    mkdir -p "${output_dir}"
 
-    generate_types "${input_path}" "${output_path}" "${spec_name}"
+    # Convert the base filename (e.g., sell_account_v1_oas3) to camelCase (sellAccountV1Oas3)
+    # Also remove "_oas3" or "_oas3_beta" suffixes before camelCasing if desired,
+    # but for now, let's keep them as part of the name for uniqueness.
+    base_filename_no_ext=$(basename "${input_file}" .json)
+    camel_case_filename=$(echo "${base_filename_no_ext}" | awk -F'[_.-]' '{
+        out = tolower($1);
+        for (i = 2; i <= NF; i++) {
+            out = out toupper(substr($i,1,1)) tolower(substr($i,2));
+        }
+        print out;
+    }') 
+
+    output_path="${output_dir}/${camel_case_filename}.ts"
+
+    # Spec name for logging
+    spec_name="${camel_case_filename}"
+
+    # Check if the input file actually exists (should always be true from find)
+    # Skip generation for files that are not OpenAPI specs (e.g., production_scopes.json)
+    # A simple check is to see if it contains "openapi" or "swagger" top-level keys
+    if ! grep -q -E '"openapi"|"swagger"' "${input_file}"; then
+        echo -e "  ${YELLOW}⚠ Skipping: Not an OpenAPI spec (missing 'openapi' or 'swagger' key)${NC}"
+        ((SKIPPED_COUNT++))
+        continue
+    fi
+    if [ ! -f "${input_file}" ]; then
+        echo -e "  ${RED}✗ Error: Input file not found (unexpected)${NC}"
+        ((ERROR_COUNT++))
+        continue
+    fi
+
+    generate_types "${input_file}" "${output_path}" "${spec_name}"
 done
+)
 
 # Summary
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
@@ -133,6 +136,6 @@ if [ ${ERROR_COUNT} -gt 0 ]; then
 else
     echo -e "${GREEN}All types generated successfully!${NC}"
     echo ""
-    echo -e "${BLUE}Types location:${NC} ${OPENAPI_SCHEMAS_DIR}"
+    echo -e "${BLUE}Types location:${NC} ${TYPES_DIR}"
     exit 0
 fi

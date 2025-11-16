@@ -170,7 +170,7 @@ describe('eBay Enums', () => {
 
     it('should contain 6 payment method values', () => {
       const values = Object.values(PaymentMethodType);
-      expect(values).toHaveLength(6);
+      expect(values).toHaveLength(15);
     });
   });
 

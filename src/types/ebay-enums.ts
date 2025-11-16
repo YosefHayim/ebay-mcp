@@ -413,22 +413,49 @@ export enum CategoryType {
  */
 export enum PaymentMethodType {
   /** Credit card payment */
-  CREDIT_CARD = 'CREDIT_CARD',
+  CREDIT_CARD = 'CREDIT_CARD', // This payment method is no longer valid.
 
   /** PayPal payment */
-  PAYPAL = 'PAYPAL',
+  PAYPAL = 'PAYPAL', // This payment method is no longer valid.
 
   /** Personal check */
-  PERSONAL_CHECK = 'PERSONAL_CHECK',
+  PERSONAL_CHECK = 'PERSONAL_CHECK', // This enumeration value indicates that the payment method will be a Personal check.
 
   /** Money order or cashier's check */
-  MONEY_ORDER_CASHIERS_CHECK = 'MONEY_ORDER_CASHIERS_CHECK',
+  MONEY_ORDER_CASHIERS_CHECK = 'MONEY_ORDER_CASHIERS_CHECK', // This enumeration value indicates that the payment method will be a Cashier Check.
 
   /** Cash on delivery */
-  CASH_ON_DELIVERY = 'CASH_ON_DELIVERY',
+  CASH_ON_DELIVERY = 'CASH_ON_DELIVERY', // This enumeration value indicates that the payment method will be cash, and the transaction will occur after the item is delivered to the buyer.
 
   /** Cash on pickup */
-  CASH_ON_PICKUP = 'CASH_ON_PICKUP',
+  CASH_ON_PICKUP = 'CASH_ON_PICKUP', // This enumeration value indicates that the payment method will be cash, and the transaction will occur when the buyer picks up the item.
+
+  /** This enumeration value indicates that the payment method will be cash, and the transaction will occur in-person. */
+  CASH_IN_PERSON = 'CASH_IN_PERSON',
+
+  /** This enumeration value indicates that escrow was used as the payment method to pay for the order. This form of payment is used for high-value orders. */
+  ESCROW = 'ESCROW',
+
+  /** This payment method is no longer valid. */
+  INTEGRATED_MERCHANT_CREDIT_CARD = 'INTEGRATED_MERCHANT_CREDIT_CARD',
+
+  /** This payment method is no longer valid. */
+  LOAN_CHECK = 'LOAN_CHECK',
+
+  /** This enumeration value indicates that the payment method will be by a Money Order. */
+  MONEY_ORDER = 'MONEY_ORDER',
+
+  /** This payment method is no longer valid. */
+  PAISA_PAY = 'PAISA_PAY',
+
+  /** This payment method is no longer valid. */
+  PAISA_PAY_ESCROW = 'PAISA_PAY_ESCROW',
+
+  /** This payment method is no longer valid. */
+  PAISA_PAY_ESCROW_EMI = 'PAISA_PAY_ESCROW_EMI',
+
+  /** This enumeration value indicates that the seller is offering an offline payment method not otherwise covered. */
+  OTHER = 'OTHER',
 }
 
 /**
@@ -473,16 +500,25 @@ export enum OfferStatus {
  */
 export enum ListingStatus {
   /** Listing is active */
-  ACTIVE = 'ACTIVE',
+  ACTIVE = 'ACTIVE', // This enumeration value indicates that the eBay listing associated with the offer is active.
 
   /** Listing is out of stock */
-  OUT_OF_STOCK = 'OUT_OF_STOCK',
+  OUT_OF_STOCK = 'OUT_OF_STOCK', // This enumeration value indicates that the eBay listing associated with the offer is still active, but that the product is currently out-of-stock. If a single-variation listing is out-of-stock, that listing will be kept alive but hidden from search. If a variation inside a multiple-variation listing is out-of-stock, only that variation is hidden, but the listing remains active and discoverable.
 
   /** Listing has ended */
-  ENDED = 'ENDED',
+  ENDED = 'ENDED', // This enumeration value indicates that the eBay listing associated with the offer has ended.
 
   /** Listing is inactive */
-  INACTIVE = 'INACTIVE',
+  INACTIVE = 'INACTIVE', // This enumeration value indicates that the eBay listing associated with the offer is currently inactive.
+
+  /** This enumeration value indicates that the eBay customer service has administratively ended the eBay listing associated with the offer. */
+  EBAY_ENDED = 'EBAY_ENDED',
+
+  /** This enumeration value indicates that the eBay listing associated with the offer has yet to be listed. */
+  NOT_LISTED = 'NOT_LISTED',
+
+  /** This enumeration value indicates that the eBay listing associated with the offer has ended. */
+  // ENDED = 'ENDED', // Duplicate, already defined above
 }
 
 /**
@@ -493,14 +529,31 @@ export enum ListingStatus {
  * Reference: https://developer.ebay.com/api-docs/sell/compliance/types/com:ComplianceTypeEnum
  */
 export enum ComplianceType {
+  /** @deprecated Note: The ASPECTS_ADOPTION compliance type has been deprecated and will be decommissioned on September 9th, 2025.
+   * Use this compliance type to see if a seller's listings have missing or invalid item aspects (item specifics).
+   * For each category, eBay maintains a list of required and recommended item aspects. */
+  ASPECTS_ADOPTION = 'ASPECTS_ADOPTION',
+
+  /** Use this compliance type to see if any of the seller's listings are violating eBay's policy of using an 'HTTP' link
+   * (to eBay and non-eBay sites) in the listing instead of 'HTTPS' links. This requirement includes links to externally-hosted
+   * listing images. If the server hosting the listing images does not support the HTTPS protocol, this server cannot be used
+   * to host listing images. */
+  HTTPS = 'HTTPS',
+
+  /** Use this compliance type to see if any listings are violating eBay's policy of not allowing links in the listing to sites
+   * outside of eBay. The seller including a personal email address and/or a phone number in the listing is also a violation of this policy.
+   * All communication between seller and buyers should be handled through eBay's communication system. The only exceptions to this
+   * outside links rule are links to product videos, information on freight shipping services, or any legally required information. */
+  OUTSIDE_EBAY_BUYING_AND_SELLING = 'OUTSIDE_EBAY_BUYING_AND_SELLING',
+
   /** Product safety compliance */
   PRODUCT_SAFETY = 'PRODUCT_SAFETY',
 
-  /** Product adoption compliance */
+  /** Product Adoption is not enforced at this time, so this compliance type is not currently applicable. */
   PRODUCT_ADOPTION = 'PRODUCT_ADOPTION',
 
-  /** Product aspects adoption */
-  PRODUCT_ASPECTS_ADOPTION = 'PRODUCT_ASPECTS_ADOPTION',
+  /** Product Adoption is not enforced at this time, so this compliance type is not currently applicable. */
+  PRODUCT_ADOPTION_CONFORMANCE = 'PRODUCT_ADOPTION_CONFORMANCE',
 
   /** Regulatory compliance */
   REGULATORY = 'REGULATORY',
@@ -516,35 +569,90 @@ export enum ComplianceType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:LocaleEnum
  */
+// This enumeration type contains the different locales that can be used. The locale value indicates the language that is used to express the inventory item details.
 export enum LanguageCode {
-  /** English */
-  EN = 'en',
+  /** This value indicates the content is localized for US English. */
+  EN_US = 'en_US',
 
-  /** German */
-  DE = 'de',
+  /** This value indicates the content is localized for Canadian English. */
+  EN_CA = 'en_CA',
 
-  /** Spanish */
-  ES = 'es',
+  /** This value indicates the content is localized for Canadian French. */
+  FR_CA = 'fr_CA',
 
-  /** French */
-  FR = 'fr',
+  /** This value indicates the content is localized for UK English. */
+  EN_GB = 'en_GB',
 
-  /** Italian */
-  IT = 'it',
+  /** This value indicates the content is localized for Australian English. */
+  EN_AU = 'en_AU',
 
-  /** Dutch */
-  NL = 'nl',
+  /** This value indicates the content is localized for English but on the India site. Note: eBay India is no longer a functioning eBay marketplace. */
+  EN_IN = 'en_IN',
 
-  /** Polish */
-  PL = 'pl',
+  /** This value indicates the content is localized for German speakers on the Austria site. */
+  DE_AT = 'de_AT',
 
-  /** Portuguese */
-  PT = 'pt',
+  /** This value indicates the content is localized for French speakers on the Belgium site. */
+  FR_BE = 'fr_BE',
 
-  /** Russian */
-  RU = 'ru',
+  /** This value indicates the content is localized for French speakers on the France site. */
+  FR_FR = 'fr_FR',
 
-  /** Chinese (Simplified) */
+  /** This value indicates the content is localized for German speakers on the Germany site. */
+  DE_DE = 'de_DE',
+
+  /** This value indicates the content is localized for Italian speakers on the Italy site. */
+  IT_IT = 'it_IT',
+
+  /** This value indicates the content is localized for Dutch speakers on the Belgium site. */
+  NL_BE = 'nl_BE',
+
+  /** This value indicates the content is localized for Dutch speakers on the Netherlands site. */
+  NL_NL = 'nl_NL',
+
+  /** This value indicates the content is localized for Spanish speakers on the Spain site. */
+  ES_ES = 'es_ES',
+
+  /** This value indicates the content is localized for Germany speakers on the Switzerland site. */
+  DE_CH = 'de_CH',
+
+  /** This value indicates the content is localized for Finnish speakers. */
+  FI_FI = 'fi_FI',
+
+  /** This value indicates the content is localized for Chinese speakers on the Hong Kong site. */
+  ZH_HK = 'zh_HK',
+
+  /** This value indicates the content is localized for Hungarian speakers. */
+  HU_HU = 'hu_HU',
+
+  /** This value indicates the content is localized for English speakers on the Philippines site. */
+  EN_PH = 'en_PH',
+
+  /** This value indicates the content is localized for Polish speakers on the Poland site. */
+  PL_PL = 'pl_PL',
+
+  /** This value indicates the content is localized for Portuguese speakers. */
+  PT_PT = 'pt_PT',
+
+  /** This value indicates the content is localized for Russian speakers. */
+  RU_RU = 'ru_RU',
+
+  /** This value indicates the content is localized for English on the Singapore site. */
+  EN_SG = 'en_SG',
+
+  /** This value indicates the content is localized for English on the Ireland site. */
+  EN_IE = 'en_IE',
+
+  /** This value indicates the content is localized for English on the Malaysia site. */
+  EN_MY = 'en_MY',
+
+  /** English (generic) */
+  EN = 'en', // Keep generic 'en' for broader compatibility if needed
+
+  /** German (generic) */
+  DE = 'de', // Keep generic 'de' for broader compatibility if needed
+
+  /** Chinese (Simplified) (generic) */
   ZH_CN = 'zh-CN',
 
   /** Chinese (Traditional) */
@@ -606,48 +714,318 @@ export enum LengthUnit {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/ba:CurrencyCodeEnum
  */
+// This enumerated type lists the three-letter ISO 4217 codes representing the supported world currencies.
 export enum CurrencyCode {
   /** US Dollar */
   USD = 'USD',
-
   /** Canadian Dollar */
   CAD = 'CAD',
-
   /** Euro */
   EUR = 'EUR',
-
   /** British Pound */
   GBP = 'GBP',
-
   /** Australian Dollar */
   AUD = 'AUD',
-
   /** Swiss Franc */
   CHF = 'CHF',
-
   /** Hong Kong Dollar */
   HKD = 'HKD',
-
   /** Malaysian Ringgit */
   MYR = 'MYR',
-
   /** Philippine Peso */
   PHP = 'PHP',
-
   /** Polish Zloty */
   PLN = 'PLN',
-
   /** Singapore Dollar */
   SGD = 'SGD',
-
   /** New Taiwan Dollar */
   TWD = 'TWD',
-
   /** Thai Baht */
   THB = 'THB',
-
   /** Japanese Yen */
   JPY = 'JPY',
+  /** The currency is the United Arab Emirates dirham. */
+  AED = 'AED',
+  /** The currency is the Afghan afghani. */
+  AFN = 'AFN',
+  /** The currency is the Albanian lek. */
+  ALL = 'ALL',
+  /** The currency is the Armenian dram. */
+  AMD = 'AMD',
+  /** The currency is the Netherlands Antillean guilder. */
+  ANG = 'ANG',
+  /** The currency is the Angolan kwanza. */
+  AOA = 'AOA',
+  /** The currency is the Argentine peso. */
+  ARS = 'ARS',
+  /** The currency is the Aruban florin. */
+  AWG = 'AWG',
+  /** The currency is the Azerbaijani manat. */
+  AZN = 'AZN',
+  /** The currency is the Bosnia and Herzegovina convertible mark. */
+  BAM = 'BAM',
+  /** The currency is the Barbados dollar. */
+  BBD = 'BBD',
+  /** The currency is the Bangladeshi taka. */
+  BDT = 'BDT',
+  /** The currency is the Bulgarian lev. */
+  BGN = 'BGN',
+  /** The currency is the Bahraini dinar. */
+  BHD = 'BHD',
+  /** The currency is the Burundian franc. */
+  BIF = 'BIF',
+  /** The currency is the Bermudian dollar. */
+  BMD = 'BMD',
+  /** The currency is the Brunei dollar. */
+  BND = 'BND',
+  /** The currency is the Bolivian Boliviano. */
+  BOB = 'BOB',
+  /** The currency is the Brazilian real. */
+  BRL = 'BRL',
+  /** The currency is the Bahamian dollar. */
+  BSD = 'BSD',
+  /** The currency is the Bhutanese ngultrum. */
+  BTN = 'BTN',
+  /** The currency is the Botswana pula. */
+  BWP = 'BWP',
+  /** The currency is the Belarusian ruble. */
+  BYR = 'BYR',
+  /** The currency is the Belize dollar. */
+  BZD = 'BZD',
+  /** The currency is the Congolese franc. */
+  CDF = 'CDF',
+  /** The currency is the Chilean peso. */
+  CLP = 'CLP',
+  /** The currency is the Chinese yuan renminbi. */
+  CNY = 'CNY',
+  /** The currency is the Colombian peso. */
+  COP = 'COP',
+  /** The currency is the Costa Rican colon. */
+  CRC = 'CRC',
+  /** The currency is the Cuban peso. */
+  CUP = 'CUP',
+  /** The currency is the Cape Verde escudo. */
+  CVE = 'CVE',
+  /** The currency is the Czech koruna. */
+  CZK = 'CZK',
+  /** The currency is the Djiboutian franc. */
+  DJF = 'DJF',
+  /** The currency is the Danish krone. */
+  DKK = 'DKK',
+  /** The currency is the Dominican peso. */
+  DOP = 'DOP',
+  /** The currency is the Algerian dinar. */
+  DZD = 'DZD',
+  /** The currency is the Egyptian pound. */
+  EGP = 'EGP',
+  /** The currency is the Eritrean nakfa. */
+  ERN = 'ERN',
+  /** The currency is the Ethiopian birr. */
+  ETB = 'ETB',
+  /** The currency is the Fiji dollar. */
+  FJD = 'FJD',
+  /** The currency is the Falkland Islands pound. */
+  FKP = 'FKP',
+  /** The currency is the Georgian lari. */
+  GEL = 'GEL',
+  /** The currency is the Ghanaian cedi. */
+  GHS = 'GHS',
+  /** The currency is the Gibraltar pound. */
+  GIP = 'GIP',
+  /** The currency is the Gambian dalasi. */
+  GMD = 'GMD',
+  /** The currency is the Guinean franc. */
+  GNF = 'GNF',
+  /** The currency is the Guatemalan quetzal. */
+  GTQ = 'GTQ',
+  /** The currency is the Guyanese dollar. */
+  GYD = 'GYD',
+  /** The currency is the Honduran lempira. */
+  HNL = 'HNL',
+  /** The currency is the Croatian kuna. */
+  HRK = 'HRK',
+  /** The currency is the Haitian gourde. */
+  HTG = 'HTG',
+  /** The currency is the Hungarian forint. */
+  HUF = 'HUF',
+  /** The currency is the Indonesian rupiah. */
+  IDR = 'IDR',
+  /** The currency is the Israeli new shekel. */
+  ILS = 'ILS',
+  /** The currency is the Indian rupee. */
+  INR = 'INR',
+  /** The currency is the Iraqi dinar. */
+  IQD = 'IQD',
+  /** The currency is the Iranian rial. */
+  IRR = 'IRR',
+  /** The currency is the Icelandic krona. */
+  ISK = 'ISK',
+  /** The currency is the Jamaican dollar. */
+  JMD = 'JMD',
+  /** The currency is the Jordanian dinar. */
+  JOD = 'JOD',
+  /** The currency is the Kenyan shilling. */
+  KES = 'KES',
+  /** The currency is the Kyrgyzstani som. */
+  KGS = 'KGS',
+  /** The currency is the Cambodian riel. */
+  KHR = 'KHR',
+  /** The currency is the Comoro franc. */
+  KMF = 'KMF',
+  /** The currency is the North Korean won. */
+  KPW = 'KPW',
+  /** The currency is the South Korean won. */
+  KRW = 'KRW',
+  /** The currency is the Kuwaiti dinar. */
+  KWD = 'KWD',
+  /** The currency is the Cayman Islands dollar. */
+  KYD = 'KYD',
+  /** The currency is the Kazakhstani tenge. */
+  KZT = 'KZT',
+  /** The currency is the Lao kip. */
+  LAK = 'LAK',
+  /** The currency is the Lebanese pound. */
+  LBP = 'LBP',
+  /** The currency is the Sri Lankan rupee. */
+  LKR = 'LKR',
+  /** The currency is the Liberian dollar. */
+  LRD = 'LRD',
+  /** The currency is the Lesotho loti. */
+  LSL = 'LSL',
+  /** The currency is the Lithuanian litas. */
+  LTL = 'LTL',
+  /** The currency is the Libyan dinar. */
+  LYD = 'LYD',
+  /** The currency is the Moroccan dirham. */
+  MAD = 'MAD',
+  /** The currency is the Moldovan leu. */
+  MDL = 'MDL',
+  /** The currency is the Malagasy ariary. */
+  MGA = 'MGA',
+  /** The currency is the Macedonian denar. */
+  MKD = 'MKD',
+  /** The currency is the Myanmar kyat. */
+  MMK = 'MMK',
+  /** The currency is the Mongolian tugrik. */
+  MNT = 'MNT',
+  /** The currency is the Macanese pataca. */
+  MOP = 'MOP',
+  /** The currency is the Mauritanian ouguiya. */
+  MRO = 'MRO',
+  /** The currency is the Mauritian rupee. */
+  MUR = 'MUR',
+  /** The currency is the Maldivian rufiyaa. */
+  MVR = 'MVR',
+  /** The currency is the Malawian kwacha. */
+  MWK = 'MWK',
+  /** The currency is the Mexican peso. */
+  MXN = 'MXN',
+  /** The currency is the Mozambican metical. */
+  MZN = 'MZN',
+  /** The currency is the Namibian dollar. */
+  NAD = 'NAD',
+  /** The currency is the Nigerian naira. */
+  NGN = 'NGN',
+  /** The currency is the Nicaraguan cordoba oro. */
+  NIO = 'NIO',
+  /** The currency is the Norwegian krone. */
+  NOK = 'NOK',
+  /** The currency is the Nepalese rupee. */
+  NPR = 'NPR',
+  /** The currency is the New Zealand dollar. */
+  NZD = 'NZD',
+  /** The currency is the Omani rial. */
+  OMR = 'OMR',
+  /** The currency is the Panamanian balboa. */
+  PAB = 'PAB',
+  /** The currency is the Peruvian sol. */
+  PEN = 'PEN',
+  /** The currency is the Papua New Guinean kina. */
+  PGK = 'PGK',
+  /** The currency is the Pakistani rupee. */
+  PKR = 'PKR',
+  /** The currency is the Paraguayan guarani. */
+  PYG = 'PYG',
+  /** The currency is the Qatari riyal. */
+  QAR = 'QAR',
+  /** The currency is the Romanian leu. */
+  RON = 'RON',
+  /** The currency is the Serbian dinar. */
+  RSD = 'RSD',
+  /** The currency is the Russian ruble. */
+  RUB = 'RUB',
+  /** The currency is the Rwandan franc. */
+  RWF = 'RWF',
+  /** The currency is the Saudi riyal. */
+  SAR = 'SAR',
+  /** The currency is the Solomon Islands dollar. */
+  SBD = 'SBD',
+  /** The currency is the Seychelles rupee. */
+  SCR = 'SCR',
+  /** The currency is the Sudanese pound. */
+  SDG = 'SDG',
+  /** The currency is the Swedish krona. */
+  SEK = 'SEK',
+  /** The currency is the Saint Helena pound. */
+  SHP = 'SHP',
+  /** The currency is the Sierra Leonean leone. */
+  SLL = 'SLL',
+  /** The currency is the Somali shilling. */
+  SOS = 'SOS',
+  /** The currency is the Surinamese dollar. */
+  SRD = 'SRD',
+  /** The currency is the Sao Tome and Principe dobra. */
+  STD = 'STD',
+  /** The currency is the Syrian pound. */
+  SYP = 'SYP',
+  /** The currency is the Swazi lilangeni. */
+  SZL = 'SZL',
+  /** The currency is the Tajikistani somoni. */
+  TJS = 'TJS',
+  /** The currency is the Turkmenistani manat. */
+  TMT = 'TMT',
+  /** The currency is the Tunisian dinar. */
+  TND = 'TND',
+  /** The currency is the Tongan pa'anga. */
+  TOP = 'TOP',
+  /** The currency is the Turkish lira. */
+  TRY = 'TRY',
+  /** The currency is the Trinidad and Tobago dollar. */
+  TTD = 'TTD',
+  /** The currency is the Tanzanian shilling. */
+  TZS = 'TZS',
+  /** The currency is the Ukrainian hryvnia. */
+  UAH = 'UAH',
+  /** The currency is the Ugandan shilling. */
+  UGX = 'UGX',
+  /** The currency is the Uruguayan peso. */
+  UYU = 'UYU',
+  /** The currency is the Uzbekistani som. */
+  UZS = 'UZS',
+  /** The currency is the Venezuelan bolivar. */
+  VEF = 'VEF',
+  /** The currency is the Vietnamese dong. */
+  VND = 'VND',
+  /** The currency is the Vanuatu vatu. */
+  VUV = 'VUV',
+  /** The currency is the Samoan tala. */
+  WST = 'WST',
+  /** The currency is the CFA franc BEAC. */
+  XAF = 'XAF',
+  /** The currency is the East Caribbean dollar. */
+  XCD = 'XCD',
+  /** The currency is the CFA franc BCEAO. */
+  XOF = 'XOF',
+  /** The currency is the CFP franc. */
+  XPF = 'XPF',
+  /** The currency is the Yemeni rial. */
+  YER = 'YER',
+  /** The currency is the South African rand. */
+  ZAR = 'ZAR',
+  /** The currency is the Zambian kwacha. */
+  ZMW = 'ZMW',
+  /** The currency is the Zimbabwean dollar. */
+  ZWL = 'ZWL',
 }
 
 /**
@@ -745,12 +1123,25 @@ export enum MerchantLocationStatus {
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/api:DayOfWeekEnum
  */
 export enum DayOfWeek {
+  /** This enumeration value indicates that the store is open on Monday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Monday. */
   MONDAY = 'MONDAY',
+
+  /** This enumeration value indicates that the store is open on Tuesday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Tuesday. */
   TUESDAY = 'TUESDAY',
+
+  /** This enumeration value indicates that the store is open on Wednesday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Wednesday. */
   WEDNESDAY = 'WEDNESDAY',
+
+  /** This enumeration value indicates that the store is open on Thursday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Thursday. */
   THURSDAY = 'THURSDAY',
+
+  /** This enumeration value indicates that the store is open on Friday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Friday. */
   FRIDAY = 'FRIDAY',
+
+  /** This enumeration value indicates that the store is open on Saturday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Saturday. */
   SATURDAY = 'SATURDAY',
+
+  /** This enumeration value indicates that the store is open on Sunday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Sunday. */
   SUNDAY = 'SUNDAY',
 }
 
@@ -876,6 +1267,209 @@ export const EbayEnums = {
    */
   isValidFormatType(format: string): format is FormatType {
     return Object.values(FormatType).includes(format as FormatType);
+  },
+
+  /**
+   * Check if an order payment status is valid
+   */
+  isValidOrderPaymentStatus(status: string): status is OrderPaymentStatus {
+    return Object.values(OrderPaymentStatus).includes(status as OrderPaymentStatus);
+  },
+
+  /**
+   * Check if a campaign status is valid
+   */
+  isValidCampaignStatus(status: string): status is CampaignStatus {
+    return Object.values(CampaignStatus).includes(status as CampaignStatus);
+  },
+
+  /**
+   * Check if a refund method is valid
+   */
+  isValidRefundMethod(method: string): method is RefundMethod {
+    return Object.values(RefundMethod).includes(method as RefundMethod);
+  },
+
+  /**
+   * Check if a return method is valid
+   */
+  isValidReturnMethod(method: string): method is ReturnMethod {
+    return Object.values(ReturnMethod).includes(method as ReturnMethod);
+  },
+
+  /**
+   * Check if a return shipping cost payer is valid
+   */
+  isValidReturnShippingCostPayer(payer: string): payer is ReturnShippingCostPayer {
+    return Object.values(ReturnShippingCostPayer).includes(payer as ReturnShippingCostPayer);
+  },
+
+  /**
+   * Check if a time duration unit is valid
+   */
+  isValidTimeDurationUnit(unit: string): unit is TimeDurationUnit {
+    return Object.values(TimeDurationUnit).includes(unit as TimeDurationUnit);
+  },
+
+  /**
+   * Check if a shipping cost type is valid
+   */
+  isValidShippingCostType(type: string): type is ShippingCostType {
+    return Object.values(ShippingCostType).includes(type as ShippingCostType);
+  },
+
+  /**
+   * Check if a shipping option type is valid
+   */
+  isValidShippingOptionType(type: string): type is ShippingOptionType {
+    return Object.values(ShippingOptionType).includes(type as ShippingOptionType);
+  },
+
+  /**
+   * Check if a category type is valid
+   */
+  isValidCategoryType(type: string): type is CategoryType {
+    return Object.values(CategoryType).includes(type as CategoryType);
+  },
+
+  /**
+   * Check if a payment method type is valid
+   */
+  isValidPaymentMethodType(type: string): type is PaymentMethodType {
+    return Object.values(PaymentMethodType).includes(type as PaymentMethodType);
+  },
+
+  /**
+   * Check if a line item fulfillment status is valid
+   */
+  isValidLineItemFulfillmentStatus(status: string): status is LineItemFulfillmentStatus {
+    return Object.values(LineItemFulfillmentStatus).includes(status as LineItemFulfillmentStatus);
+  },
+
+  /**
+   * Check if an offer status is valid
+   */
+  isValidOfferStatus(status: string): status is OfferStatus {
+    return Object.values(OfferStatus).includes(status as OfferStatus);
+  },
+
+  /**
+   * Check if a listing status is valid
+   */
+  isValidListingStatus(status: string): status is ListingStatus {
+    return Object.values(ListingStatus).includes(status as ListingStatus);
+  },
+
+  /**
+   * Check if a compliance type is valid
+   */
+  isValidComplianceType(type: string): type is ComplianceType {
+    return Object.values(ComplianceType).includes(type as ComplianceType);
+  },
+
+  /**
+   * Check if a language code is valid
+   */
+  isValidLanguageCode(code: string): code is LanguageCode {
+    return Object.values(LanguageCode).includes(code as LanguageCode);
+  },
+
+  /**
+   * Check if a weight unit is valid
+   */
+  isValidWeightUnit(unit: string): unit is WeightUnit {
+    return Object.values(WeightUnit).includes(unit as WeightUnit);
+  },
+
+  /**
+   * Check if a length unit is valid
+   */
+  isValidLengthUnit(unit: string): unit is LengthUnit {
+    return Object.values(LengthUnit).includes(unit as LengthUnit);
+  },
+
+  /**
+   * Check if a currency code is valid
+   */
+  isValidCurrencyCode(code: string): code is CurrencyCode {
+    return Object.values(CurrencyCode).includes(code as CurrencyCode);
+  },
+
+  /**
+   * Check if a region type is valid
+   */
+  isValidRegionType(type: string): type is RegionType {
+    return Object.values(RegionType).includes(type as RegionType);
+  },
+
+  /**
+   * Check if a deposit type is valid
+   */
+  isValidDepositType(type: string): type is DepositType {
+    return Object.values(DepositType).includes(type as DepositType);
+  },
+
+  /**
+   * Check if a pricing visibility is valid
+   */
+  isValidPricingVisibility(visibility: string): visibility is PricingVisibility {
+    return Object.values(PricingVisibility).includes(visibility as PricingVisibility);
+  },
+
+  /**
+   * Check if a location type is valid
+   */
+  isValidLocationType(type: string): type is LocationType {
+    return Object.values(LocationType).includes(type as LocationType);
+  },
+
+  /**
+   * Check if a merchant location status is valid
+   */
+  isValidMerchantLocationStatus(status: string): status is MerchantLocationStatus {
+    return Object.values(MerchantLocationStatus).includes(status as MerchantLocationStatus);
+  },
+
+  /**
+   * Check if a day of week is valid
+   */
+  isValidDayOfWeek(day: string): day is DayOfWeek {
+    return Object.values(DayOfWeek).includes(day as DayOfWeek);
+  },
+
+  /**
+   * Check if a reason for refund is valid
+   */
+  isValidReasonForRefund(reason: string): reason is ReasonForRefund {
+    return Object.values(ReasonForRefund).includes(reason as ReasonForRefund);
+  },
+
+  /**
+   * Check if a funding model is valid
+   */
+  isValidFundingModel(model: string): model is FundingModel {
+    return Object.values(FundingModel).includes(model as FundingModel);
+  },
+
+  /**
+   * Check if a message reference type is valid
+   */
+  isValidMessageReferenceType(type: string): type is MessageReferenceType {
+    return Object.values(MessageReferenceType).includes(type as MessageReferenceType);
+  },
+
+  /**
+   * Check if a feedback rating is valid
+   */
+  isValidFeedbackRating(rating: string): rating is FeedbackRating {
+    return Object.values(FeedbackRating).includes(rating as FeedbackRating);
+  },
+
+  /**
+   * Check if a reported item type is valid
+   */
+  isValidReportedItemType(type: string): type is ReportedItemType {
+    return Object.values(ReportedItemType).includes(type as ReportedItemType);
   },
 
   /**

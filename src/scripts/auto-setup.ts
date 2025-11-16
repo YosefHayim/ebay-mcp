@@ -1,4 +1,3 @@
-
 /**
  * Auto-Setup Script for eBay API MCP Server
  *
@@ -253,9 +252,7 @@ function validateEnvironment(): { valid: boolean; errors: string[]; warnings: st
 
   const environment = process.env.EBAY_ENVIRONMENT;
   if (environment && environment !== 'production' && environment !== 'sandbox') {
-    errors.push(
-      `EBAY_ENVIRONMENT must be "production" or "sandbox", got: "${environment}"`
-    );
+    errors.push(`EBAY_ENVIRONMENT must be "production" or "sandbox", got: "${environment}"`);
   }
 
   if (!process.env.EBAY_REDIRECT_URI) {
@@ -351,9 +348,7 @@ async function main(): Promise<void> {
 
     if (validation.warnings.some((w) => w.includes('EBAY_REDIRECT_URI'))) {
       print('\n💡 Pro Tip:', 'yellow');
-      print(
-        '  Add EBAY_REDIRECT_URI to .env for user OAuth (10k-50k req/day rate limits)'
-      );
+      print('  Add EBAY_REDIRECT_URI to .env for user OAuth (10k-50k req/day rate limits)');
     }
   } else {
     printInfo('No configurations generated (no MCP clients detected)');

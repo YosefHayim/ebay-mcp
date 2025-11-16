@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/commerce_translation_v1_beta_oas3.js';
 
 /**
  * Zod schemas for Translation API input validation
@@ -7,9 +6,6 @@ import type { operations, components } from '@/types/commerce_translation_v1_bet
  * OpenAPI spec: docs/sell-apps/other-apis/commerce_translation_v1_beta_oas3.json
  * Types from: src/types/commerce_translation_v1_beta_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type TranslateRequest = components['schemas']['TranslateRequest'];
 
 /**
  * Schema for translate method

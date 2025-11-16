@@ -1,4 +1,4 @@
-import type { components } from '../../types/sell_fulfillment_v1_oas3.js';
+import type { components } from '@/types/sell-apps/order-management/sellFulfillmentV1Oas3.js';
 import type { EbayApiClient } from '../client.js';
 
 type IssueRefundRequest = components['schemas']['IssueRefundRequest'];

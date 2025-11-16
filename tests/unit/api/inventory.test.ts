@@ -764,9 +764,7 @@ describe('InventoryApi', () => {
     });
 
     it('should throw error when sku is missing', async () => {
-      await expect(api.getListingLocations('LISTING-123', '')).rejects.toThrow(
-        'sku is required'
-      );
+      await expect(api.getListingLocations('LISTING-123', '')).rejects.toThrow('sku is required');
     });
 
     it('should handle errors when getting listing locations', async () => {

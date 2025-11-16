@@ -12,9 +12,8 @@
     "declaration": true,
     "declarationMap": false,
     "sourceMap": false,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "paths": { "@/*": ["./src/*"] },
+    "baseUrl": "."
   },
 	"include": ["src/**/*", "src/scripts/auto-setup.ts", "src/scripts/interactive-setup.ts", "src/scripts/test-endpoints.ts"],
 	"exclude": [

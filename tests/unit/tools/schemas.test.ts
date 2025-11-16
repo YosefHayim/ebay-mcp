@@ -4,7 +4,6 @@ import {
   amountSchema,
   regionSchema,
   regionSetSchema,
-  shippingServiceSchema,
   fulfillmentPolicySchema,
   paymentPolicySchema,
   returnPolicySchema,

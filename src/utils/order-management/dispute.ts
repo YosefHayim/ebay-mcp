@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/sell_fulfillment_v1_oas3.js';
 
 /**
  * Zod schemas for Dispute API input validation
@@ -7,18 +6,6 @@ import type { operations, components } from '@/types/sell_fulfillment_v1_oas3.js
  * OpenAPI spec: docs/sell-apps/order-management/sell_fulfillment_v1_oas3.json
  * Types from: src/types/sell_fulfillment_v1_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type GetPaymentDisputeParams = operations['getPaymentDispute']['parameters']['path'];
-type FetchEvidenceContentParams = operations['fetchEvidenceContent']['parameters'];
-type GetActivitiesParams = operations['getActivities']['parameters']['path'];
-type GetPaymentDisputeSummariesParams =
-  operations['getPaymentDisputeSummaries']['parameters']['query'];
-type ContestPaymentDisputeRequest = components['schemas']['ContestPaymentDisputeRequest'];
-type AcceptPaymentDisputeRequest = components['schemas']['AcceptPaymentDisputeRequest'];
-type AddEvidencePaymentDisputeRequest = components['schemas']['AddEvidencePaymentDisputeRequest'];
-type UpdateEvidencePaymentDisputeRequest =
-  components['schemas']['UpdateEvidencePaymentDisputeRequest'];
 
 // Reusable schema for payment dispute ID
 const paymentDisputeIdSchema = z.string({

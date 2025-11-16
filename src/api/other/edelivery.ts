@@ -198,7 +198,10 @@ export class EDeliveryApi {
    * Endpoint: POST /package/bulk_cancel_packages
    */
   async bulkCancelPackages(bulkCancelRequest: Record<string, unknown>) {
-    return await this.client.post(`${this.basePath}/package/bulk_cancel_packages`, bulkCancelRequest);
+    return await this.client.post(
+      `${this.basePath}/package/bulk_cancel_packages`,
+      bulkCancelRequest
+    );
   }
 
   /**
@@ -217,7 +220,10 @@ export class EDeliveryApi {
    * Endpoint: POST /package/bulk_delete_packages
    */
   async bulkDeletePackages(bulkDeleteRequest: Record<string, unknown>) {
-    return await this.client.post(`${this.basePath}/package/bulk_delete_packages`, bulkDeleteRequest);
+    return await this.client.post(
+      `${this.basePath}/package/bulk_delete_packages`,
+      bulkDeleteRequest
+    );
   }
 
   // ==================== Labels & Tracking ====================

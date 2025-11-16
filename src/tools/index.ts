@@ -57,8 +57,11 @@ import {
   updateDestinationSchema,
   updateSubscriptionSchema,
 } from '@/utils/communication/notification.js';
+import { type components } from '@/types/sell-apps/listing-management/sellInventoryV1Oas3.js';
 
 export type { ToolDefinition };
+
+type InventoryItem = components['schemas']['InventoryItem'];
 
 /**
  * Get all tool definitions for the MCP server
@@ -93,7 +96,7 @@ export async function executeTool(
       // A more robust implementation might search across different types of content.
       const response = await api.inventory.getInventoryItems((args.limit as number) ?? 10);
       const results =
-        response.inventoryItems?.map((item, index) => ({
+        response.inventoryItems?.map((item: InventoryItem, index: number) => ({
           id: `item-${index}`,
           title: item.product?.title ?? 'No Title',
           // The URL should be a canonical link to the item, which we don't have here.
@@ -258,7 +261,7 @@ export async function executeTool(
         };
       } catch (error) {
         throw new Error(
-          `Failed to convert date: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to convert date: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
@@ -284,7 +287,7 @@ export async function executeTool(
         };
       } catch (error) {
         throw new Error(
-          `Failed to validate token expiry: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to validate token expiry: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
@@ -314,7 +317,7 @@ export async function executeTool(
         }
 
         // Set tokens (will use defaults if expiry times not provided)
-        await api.setUserTokens(accessToken, refreshToken, accessExpiry, refreshExpiry);
+        await api.setUserTokens(accessToken, refreshToken);
 
         // If autoRefresh is enabled, attempt to get a fresh access token
         // (The OAuth client will handle refresh internally if needed)
@@ -351,7 +354,7 @@ export async function executeTool(
         };
       } catch (error) {
         throw new Error(
-          `Failed to set user tokens: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to set user tokens: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
@@ -464,7 +467,7 @@ export async function executeTool(
         };
       } catch (error) {
         throw new Error(
-          `Failed to refresh access token: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to refresh access token: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
@@ -568,7 +571,13 @@ export async function executeTool(
         args.salesTaxBase as Record<string, unknown>
       );
     case 'ebay_bulk_create_or_replace_sales_tax':
-      return await api.account.bulkCreateOrReplaceSalesTax(args.requests as { countryCode: string; jurisdictionId: string; salesTaxBase: Record<string, unknown> }[]);
+      return await api.account.bulkCreateOrReplaceSalesTax(
+        args.requests as {
+          countryCode: string;
+          jurisdictionId: string;
+          salesTaxBase: Record<string, unknown>;
+        }[]
+      );
     case 'ebay_delete_sales_tax':
       return await api.account.deleteSalesTax(
         args.countryCode as string,
@@ -622,7 +631,9 @@ export async function executeTool(
 
     // Bulk Operations
     case 'ebay_bulk_create_or_replace_inventory_item':
-      return await api.inventory.bulkCreateOrReplaceInventoryItem(args.requests as Record<string, unknown>);
+      return await api.inventory.bulkCreateOrReplaceInventoryItem(
+        args.requests as Record<string, unknown>
+      );
     case 'ebay_bulk_get_inventory_item':
       return await api.inventory.bulkGetInventoryItem(args.requests as Record<string, unknown>);
     case 'ebay_bulk_update_price_quantity':
@@ -684,7 +695,10 @@ export async function executeTool(
     case 'ebay_create_offer':
       return await api.inventory.createOffer(args.offer as Record<string, unknown>);
     case 'ebay_update_offer':
-      return await api.inventory.updateOffer(args.offerId as string, args.offer as Record<string, unknown>);
+      return await api.inventory.updateOffer(
+        args.offerId as string,
+        args.offer as Record<string, unknown>
+      );
     case 'ebay_delete_offer':
       return await api.inventory.deleteOffer(args.offerId as string);
     case 'ebay_publish_offer':
@@ -708,9 +722,13 @@ export async function executeTool(
 
     // Inventory Item Group Publishing
     case 'ebay_publish_offer_by_inventory_item_group':
-      return await api.inventory.publishOfferByInventoryItemGroup(args.request as Record<string, unknown>);
+      return await api.inventory.publishOfferByInventoryItemGroup(
+        args.request as Record<string, unknown>
+      );
     case 'ebay_withdraw_offer_by_inventory_item_group':
-      return await api.inventory.withdrawOfferByInventoryItemGroup(args.request as Record<string, unknown>);
+      return await api.inventory.withdrawOfferByInventoryItemGroup(
+        args.request as Record<string, unknown>
+      );
 
     // Order Management
     case 'ebay_get_orders':
@@ -727,7 +745,10 @@ export async function executeTool(
         args.fulfillment as Record<string, unknown>
       );
     case 'ebay_issue_refund':
-      return await api.fulfillment.issueRefund(args.orderId as string, args.refundData as Record<string, unknown>);
+      return await api.fulfillment.issueRefund(
+        args.orderId as string,
+        args.refundData as Record<string, unknown>
+      );
 
     // Marketing - Campaign Management
     case 'ebay_get_campaigns':
@@ -743,7 +764,10 @@ export async function executeTool(
     case 'ebay_create_campaign':
       return await api.marketing.createCampaign(args.campaign as Record<string, unknown>);
     case 'ebay_clone_campaign':
-      return await api.marketing.cloneCampaign(args.campaignId as string, args.cloneData as Record<string, unknown>);
+      return await api.marketing.cloneCampaign(
+        args.campaignId as string,
+        args.cloneData as Record<string, unknown>
+      );
     case 'ebay_pause_campaign':
       return await api.marketing.pauseCampaign(args.campaignId as string);
     case 'ebay_resume_campaign':
@@ -800,7 +824,10 @@ export async function executeTool(
 
     // Marketing - Ad Operations (Single)
     case 'ebay_create_ad':
-      return await api.marketing.createAd(args.campaignId as string, args.ad as Record<string, unknown>);
+      return await api.marketing.createAd(
+        args.campaignId as string,
+        args.ad as Record<string, unknown>
+      );
     case 'ebay_create_ads_by_inventory_reference':
       return await api.marketing.createAdsByInventoryReference(
         args.campaignId as string,
@@ -824,7 +851,10 @@ export async function executeTool(
         args.inventoryReferenceType as string
       );
     case 'ebay_get_ads_by_listing_id':
-      return await api.marketing.getAdsByListingId(args.campaignId as string, args.listingId as string);
+      return await api.marketing.getAdsByListingId(
+        args.campaignId as string,
+        args.listingId as string
+      );
     case 'ebay_delete_ad':
       return await api.marketing.deleteAd(args.campaignId as string, args.adId as string);
     case 'ebay_clone_ad':
@@ -842,7 +872,10 @@ export async function executeTool(
 
     // Marketing - Ad Group Management
     case 'ebay_create_ad_group':
-      return await api.marketing.createAdGroup(args.campaignId as string, args.adGroup as Record<string, unknown>);
+      return await api.marketing.createAdGroup(
+        args.campaignId as string,
+        args.adGroup as Record<string, unknown>
+      );
     case 'ebay_get_ad_group':
       return await api.marketing.getAdGroup(args.campaignId as string, args.adGroupId as string);
     case 'ebay_get_ad_groups':
@@ -1200,13 +1233,19 @@ export async function executeTool(
         args.filter as string
       );
     case 'ebay_get_compatibilities_by_specification':
-      return await api.metadata.getCompatibilitiesBySpecification(args.specification as Record<string, unknown>);
+      return await api.metadata.getCompatibilitiesBySpecification(
+        args.specification as Record<string, unknown>
+      );
     case 'ebay_get_compatibility_property_names':
       return await api.metadata.getCompatibilityPropertyNames(args.data as Record<string, unknown>);
     case 'ebay_get_compatibility_property_values':
-      return await api.metadata.getCompatibilityPropertyValues(args.data as Record<string, unknown>);
+      return await api.metadata.getCompatibilityPropertyValues(
+        args.data as Record<string, unknown>
+      );
     case 'ebay_get_multi_compatibility_property_values':
-      return await api.metadata.getMultiCompatibilityPropertyValues(args.data as Record<string, unknown>);
+      return await api.metadata.getMultiCompatibilityPropertyValues(
+        args.data as Record<string, unknown>
+      );
     case 'ebay_get_product_compatibilities':
       return await api.metadata.getProductCompatibilities(args.data as Record<string, unknown>);
     case 'ebay_get_sales_tax_jurisdictions':
@@ -1239,7 +1278,9 @@ export async function executeTool(
     }
     case 'ebay_send_offer_to_interested_buyers': {
       const validated = sendOfferToInterestedBuyersSchema.parse(args);
-      return await api.negotiation.sendOfferToInterestedBuyers(validated as Record<string, unknown>);
+      return await api.negotiation.sendOfferToInterestedBuyers(
+        validated as Record<string, unknown>
+      );
     }
     case 'ebay_find_eligible_items': {
       const validated = findEligibleItemsSchema.parse(args);
@@ -1323,7 +1364,10 @@ export async function executeTool(
     }
     case 'ebay_update_notification_destination': {
       const validated = updateDestinationSchema.parse(args);
-      return await api.notification.updateDestination(validated.destination_id, validated as Record<string, unknown>);
+      return await api.notification.updateDestination(
+        validated.destination_id,
+        validated as Record<string, unknown>
+      );
     }
     case 'ebay_delete_notification_destination': {
       const validated = deleteDestinationSchema.parse(args);
@@ -1346,7 +1390,10 @@ export async function executeTool(
     }
     case 'ebay_update_notification_subscription': {
       const validated = updateSubscriptionSchema.parse(args);
-      return await api.notification.updateSubscription(validated.subscription_id, validated as Record<string, unknown>);
+      return await api.notification.updateSubscription(
+        validated.subscription_id,
+        validated as Record<string, unknown>
+      );
     }
     case 'ebay_delete_notification_subscription': {
       const validated = deleteSubscriptionSchema.parse(args);
@@ -1505,7 +1552,9 @@ export async function executeTool(
     case 'ebay_get_dropoff_sites':
       return await api.edelivery.getDropoffSites(args.params as Record<string, string>);
     case 'ebay_get_shipping_services':
-      return await api.edelivery.getShippingServices(args.params as Record<string, string> | undefined);
+      return await api.edelivery.getShippingServices(
+        args.params as Record<string, string> | undefined
+      );
 
     // eDelivery - Bundles
     case 'ebay_create_bundle':
@@ -1535,19 +1584,25 @@ export async function executeTool(
 
     // eDelivery - Packages (Bulk)
     case 'ebay_bulk_cancel_packages':
-      return await api.edelivery.bulkCancelPackages(args.bulkCancelRequest as Record<string, unknown>);
+      return await api.edelivery.bulkCancelPackages(
+        args.bulkCancelRequest as Record<string, unknown>
+      );
     case 'ebay_bulk_confirm_packages':
       return await api.edelivery.bulkConfirmPackages(
         args.bulkConfirmRequest as Record<string, unknown>
       );
     case 'ebay_bulk_delete_packages':
-      return await api.edelivery.bulkDeletePackages(args.bulkDeleteRequest as Record<string, unknown>);
+      return await api.edelivery.bulkDeletePackages(
+        args.bulkDeleteRequest as Record<string, unknown>
+      );
 
     // eDelivery - Labels & Tracking
     case 'ebay_get_labels':
       return await api.edelivery.getLabels(args.params as Record<string, string> | undefined);
     case 'ebay_get_handover_sheet':
-      return await api.edelivery.getHandoverSheet(args.params as Record<string, string> | undefined);
+      return await api.edelivery.getHandoverSheet(
+        args.params as Record<string, string> | undefined
+      );
     case 'ebay_get_tracking':
       return await api.edelivery.getTracking(args.params as Record<string, string>);
 

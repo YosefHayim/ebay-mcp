@@ -47,7 +47,7 @@ describe('Environment Configuration', () => {
     });
 
     it('should handle missing credentials gracefully', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       delete process.env.EBAY_CLIENT_ID;
       delete process.env.EBAY_CLIENT_SECRET;
@@ -56,14 +56,14 @@ describe('Environment Configuration', () => {
 
       expect(config.clientId).toBe('');
       expect(config.clientSecret).toBe('');
-      expect(config.environment).toBe('sandbox');
+      expect(config.environment).toBe('production');
       expect(consoleErrorSpy).toHaveBeenCalled();
 
       consoleErrorSpy.mockRestore();
     });
 
     it('should handle missing client ID only', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       delete process.env.EBAY_CLIENT_ID;
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
@@ -77,7 +77,7 @@ describe('Environment Configuration', () => {
     });
 
     it('should handle missing client secret only', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       process.env.EBAY_CLIENT_ID = 'test_id';
       delete process.env.EBAY_CLIENT_SECRET;

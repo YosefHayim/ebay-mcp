@@ -47,8 +47,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm- # Restore key for partial matches
 
-      - name: Install dependencies
+      - name: Install dependencies if cache is not hit
+        if: steps.setup-pnpm-cache.outputs.cache-hit != 'true'
         run: pnpm install --no-frozen-lockfile # Install dependencies, allowing updates if lockfile is not perfectly matched
+      - name: Use cached dependencies
+        if: steps.setup-pnpm-cache.outputs.cache-hit == 'true'
+        run: pnpm install --frozen-lockfile # Use cached dependencies, ensuring lockfile is respected
 
       - name: Run tests with coverage
         run: pnpm run test:coverage

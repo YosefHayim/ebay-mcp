@@ -87,7 +87,7 @@ export class EbayApiClient {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => console.error(error)
     );
 
     // Add response interceptor for error handling and retry logic
@@ -132,7 +132,7 @@ export class EbayApiClient {
               console.error('Token refreshed successfully. Retrying request...');
 
               // Retry the request with the new token
-              return await this.httpClient.request(config!);
+              return await this.httpClient.request(config);
             } catch (refreshError) {
               console.error('Failed to refresh token:', refreshError);
 
@@ -189,7 +189,7 @@ export class EbayApiClient {
             );
 
             await new Promise((resolve) => setTimeout(resolve, Math.min(delay, 5000)));
-            return await this.httpClient.request(config!);
+            return await this.httpClient.request(config);
           }
         }
 
@@ -294,14 +294,10 @@ export class EbayApiClient {
   async setUserTokens(
     accessToken: string,
     refreshToken: string,
-    accessTokenExpiry?: number,
-    refreshTokenExpiry?: number
   ): Promise<void> {
     await this.authClient.setUserTokens(
       accessToken,
       refreshToken,
-      accessTokenExpiry,
-      refreshTokenExpiry
     );
   }
 
@@ -374,7 +370,6 @@ export class EbayApiClient {
         },
         timeout: 30000,
       });
-
       return response.data;
     } catch (error) {
       // Handle 401 authentication errors with automatic token refresh

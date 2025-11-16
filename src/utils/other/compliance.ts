@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations } from '@/types/sell_compliance_v1_oas3.js';
 
 /**
  * Zod schemas for Compliance API input validation
@@ -7,11 +6,6 @@ import type { operations } from '@/types/sell_compliance_v1_oas3.js';
  * OpenAPI spec: docs/sell-apps/other-apis/sell_compliance_v1_oas3.json
  * Types from: src/types/sell_compliance_v1_oas3.ts
  */
-
-// Extract operation parameter types for reference
-type GetListingViolationsParams = operations['getListingViolations']['parameters']['query'];
-type GetListingViolationsSummaryParams =
-  operations['getListingViolationsSummary']['parameters']['query'];
 
 // Reusable schema for compliance_type parameter
 const complianceTypeSchema = z

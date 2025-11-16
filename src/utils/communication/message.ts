@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { operations, components } from '@/types/commerce_message_v1_oas3.js';
 
 /**
  * Zod schemas for Message API input validation
@@ -8,15 +7,8 @@ import type { operations, components } from '@/types/commerce_message_v1_oas3.js
  * Types from: src/types/commerce_message_v1_oas3.ts
  */
 
-// Extract operation parameter types for reference
-type GetConversationsParams = operations['getConversations']['parameters']['query'];
-type GetConversationParams = operations['getConversation']['parameters'];
-type SendMessageRequest = components['schemas']['SendMessageRequest'];
-type BulkUpdateConversationsRequest = components['schemas']['BulkUpdateConversationsRequest'];
-type UpdateConversationRequest = components['schemas']['UpdateConversationRequest'];
-
 // Reusable schema for filter parameter
-const filterSchema = z
+const _filterSchema = z
   .string({
     message: 'Filter must be a string',
     invalid_type_error: 'filter must be a string',

@@ -110,7 +110,12 @@ describe('EbayOAuthClient', () => {
       // Set tokens with expired access token but valid refresh token
       const pastExpiry = Date.now() - 1000;
       const futureRefreshExpiry = Date.now() + 18 * 30 * 24 * 60 * 60 * 1000;
-      await oauthClient.setUserTokens('expired_token', refreshToken, pastExpiry, futureRefreshExpiry);
+      await oauthClient.setUserTokens(
+        'expired_token',
+        refreshToken,
+        pastExpiry,
+        futureRefreshExpiry
+      );
 
       // Mock refresh token API call
       mockOAuthTokenEndpoint('sandbox', {

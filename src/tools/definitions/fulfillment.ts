@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { shippingFulfillmentSchema } from '../schemas.js';
 
-
 export interface ToolDefinition {
   name: string;
   description: string;
@@ -137,10 +136,7 @@ export const fulfillmentTools: ToolDefinition[] = [
         .boolean()
         .optional()
         .describe('If true, only return open disputes. If false, only return closed disputes'),
-      limit: z
-        .number()
-        .optional()
-        .describe('Maximum number of disputes to return (default: 200)'),
+      limit: z.number().optional().describe('Maximum number of disputes to return (default: 200)'),
       offset: z.number().optional().describe('Number of disputes to skip for pagination'),
     },
   },
@@ -176,7 +172,9 @@ export const fulfillmentTools: ToolDefinition[] = [
           countryCode: z.string().describe('Two-letter ISO 3166-1 country code (e.g., "US")'),
         })
         .optional()
-        .describe('Return address for buyer to send item back (required for ITEM_NOT_RECEIVED disputes)'),
+        .describe(
+          'Return address for buyer to send item back (required for ITEM_NOT_RECEIVED disputes)'
+        ),
       revisionNumber: z
         .number()
         .optional()
