@@ -39,8 +39,8 @@ class EbayMcpServer {
           description: toolDef.description,
           inputSchema: toolDef.inputSchema,
           title: toolDef.title,
-          outputSchema: toolDef.outputSchema as any,
-          annotations: toolDef.annotations as any,
+          outputSchema: toolDef.outputSchema,
+          annotations: toolDef.annotations,
           _meta: toolDef._meta,
         },
         async (args: Record<string, unknown>) => {
