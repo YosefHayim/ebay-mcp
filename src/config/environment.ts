@@ -238,7 +238,7 @@ export function getIdentityBaseUrl(environment: 'production' | 'sandbox'): strin
  */
 export function getAuthUrl(
   clientId: string,
-  redirectUri: string,
+  redirectUri: string | undefined,
   environment: 'production' | 'sandbox',
   locale: LocaleEnum = LocaleEnum.en_US,
   prompt: 'login' | 'consent' = 'login',
