@@ -90,8 +90,11 @@ export function enableMocks() {
   if (!nock.isActive()) {
     nock.activate();
   }
+  // Disable real HTTP requests
+  nock.disableNetConnect();
 }
 
 export function disableMocks() {
   nock.restore();
+  nock.enableNetConnect();
 }
