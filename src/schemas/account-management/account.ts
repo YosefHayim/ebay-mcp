@@ -36,13 +36,13 @@ const errorSchema = z.object({
 });
 
 const timeDurationSchema = z.object({
-  unit: z.nativeEnum(TimeDurationUnit),
-  value: z.number(),
+  unit: z.nativeEnum(TimeDurationUnit).optional(),
+  value: z.number().optional(),
 });
 
 const amountSchema = z.object({
-  currency: z.string(),
-  value: z.string(),
+  currency: z.string().optional(),
+  value: z.string().optional(),
 });
 
 const regionSchema = z.object({
@@ -109,20 +109,24 @@ const shippingServiceSchema = z.object({
   additionalShippingCost: amountSchema.optional(),
   buyerResponsibleForPickup: z.boolean().optional(),
   buyerResponsibleForShipping: z.boolean().optional(),
-  cashOnDeliveryFee: amountSchema.optional(),
   freeShipping: z.boolean().optional(),
-  shipToLocations: regionSetSchema.optional(),
   shippingCarrierCode: z.string().optional(),
   shippingCost: amountSchema.optional(),
   shippingServiceCode: z.string().optional(),
+  shipToLocations: regionSetSchema.optional(),
   sortOrder: z.number().optional(),
+  surcharge: amountSchema.optional(), // DEPRECATED but still in API
 });
 
 const shippingOptionSchema = z.object({
-  costType: z.nativeEnum(ShippingCostType),
-  optionType: z.nativeEnum(ShippingOptionType),
+  costType: z.nativeEnum(ShippingCostType).optional(),
+  optionType: z.nativeEnum(ShippingOptionType).optional(),
+  insuranceFee: amountSchema.optional(), // DEPRECATED but in API
+  insuranceOffered: z.boolean().optional(), // DEPRECATED but in API
   packageHandlingCost: amountSchema.optional(),
   rateTableId: z.string().optional(),
+  shippingDiscountProfileId: z.string().optional(),
+  shippingPromotionOffered: z.boolean().optional(),
   shippingServices: z.array(shippingServiceSchema).optional(),
 });
 
@@ -186,18 +190,18 @@ export const createFulfillmentPolicyOutputSchema = z.object({
 // ============================================================================
 
 const paymentMethodSchema = z.object({
-  paymentMethodType: z.string(),
-  brands: z.array(z.string()).optional(),
+  paymentMethodType: z.string().optional(),
+  brands: z.array(z.string()).optional(), // DEPRECATED
   recipientAccountReference: z.object({
     referenceId: z.string().optional(),
     referenceType: z.string().optional(),
-  }).optional(),
+  }).optional(), // DEPRECATED
 });
 
 const depositSchema = z.object({
-  depositAmount: amountSchema.optional(),
-  depositType: z.nativeEnum(DepositType).optional(),
+  amount: amountSchema.optional(), // Fixed from depositAmount
   dueIn: timeDurationSchema.optional(),
+  paymentMethods: z.array(paymentMethodSchema).optional(), // DEPRECATED but in API
 });
 
 export const paymentPolicySchema = z.object({
@@ -275,10 +279,16 @@ export const returnPolicyResponseSchema = z.object({
   categoryTypes: z.array(categoryTypeSchema).optional(),
   description: z.string().optional(),
   extendedHolidayReturnsOffered: z.boolean().optional(),
+  internationalOverride: z.object({
+    returnMethod: z.string().optional(),
+    returnPeriod: timeDurationSchema.optional(),
+    returnsAccepted: z.boolean().optional(),
+    returnShippingCostPayer: z.string().optional(),
+  }).optional(),
   marketplaceId: z.string().optional(),
   name: z.string().optional(),
   refundMethod: z.string().optional(),
-  restockingFeePercentage: z.string().optional(),
+  restockingFeePercentage: z.string().optional(), // DEPRECATED
   returnInstructions: z.string().optional(),
   returnMethod: z.string().optional(),
   returnPeriod: timeDurationSchema.optional(),
