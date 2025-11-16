@@ -398,7 +398,7 @@ describe('Tools Layer', () => {
         userAccessTokenExpiry: Date.now() + 3600000, // 1 hour from now
         userRefreshTokenExpiry: Date.now() + 18 * 30 * 24 * 60 * 60 * 1000, // 18 months
         scope: 'https://api.ebay.com/oauth/api_scope/sell.inventory',
-      })
+      });
       mockAuthClient.appAccessToken = 'test-app-token-xyz';
       mockAuthClient.appAccessTokenExpiry = Date.now() + 7200000; // 2 hours
 

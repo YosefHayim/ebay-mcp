@@ -14,7 +14,7 @@ const mockOAuthClient = {
 };
 
 vi.mock('@/auth/oauth.js', () => ({
-  EbayOAuthClient: vi.fn(function (this: any) {
+  EbayOAuthClient: vi.fn(function (this: unknown) {
     return mockOAuthClient;
   }),
 }));
@@ -26,6 +26,15 @@ describe('EbayApiClient Unit Tests', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     nock.cleanAll();
+
+    // Disable proxy to prevent axios from using it
+    delete process.env.HTTP_PROXY;
+    delete process.env.HTTPS_PROXY;
+    delete process.env.http_proxy;
+    delete process.env.https_proxy;
+
+    // Enable nock to intercept HTTP requests
+    nock.disableNetConnect();
 
     config = {
       clientId: 'test_client_id',
@@ -47,6 +56,11 @@ describe('EbayApiClient Unit Tests', () => {
 
     apiClient = new EbayApiClient(config);
     await apiClient.initialize();
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+    nock.enableNetConnect();
   });
 
   describe('Rate Limiting', () => {

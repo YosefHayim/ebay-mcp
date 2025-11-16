@@ -23,6 +23,14 @@ describe('EbayOAuthClient', () => {
     delete process.env.EBAY_USER_REFRESH_TOKEN;
     delete process.env.EBAY_USER_ACCESS_TOKEN;
     delete process.env.EBAY_APP_ACCESS_TOKEN;
+    // Disable proxy to prevent axios from using it
+    delete process.env.HTTP_PROXY;
+    delete process.env.HTTPS_PROXY;
+    delete process.env.http_proxy;
+    delete process.env.https_proxy;
+
+    // Enable nock to intercept HTTP requests
+    nock.disableNetConnect();
 
     // Default config
     config = {
@@ -37,6 +45,7 @@ describe('EbayOAuthClient', () => {
 
   afterEach(() => {
     cleanupMocks();
+    nock.enableNetConnect();
   });
 
   describe('initialize', () => {

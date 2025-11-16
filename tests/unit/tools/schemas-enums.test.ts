@@ -580,9 +580,9 @@ describe('Zod Schema Enum Validation', () => {
       try {
         timeDurationSchema.parse(invalidData);
         expect.fail('Should have thrown validation error');
-      } catch (error: any) {
-        expect(error.errors).toBeDefined();
-        expect(error.errors[0].path).toContain('unit');
+      } catch (error: unknown) {
+        expect((error as { errors: Array<{ path: string[] }> }).errors).toBeDefined();
+        expect((error as { errors: Array<{ path: string[] }> }).errors[0].path).toContain('unit');
       }
     });
 

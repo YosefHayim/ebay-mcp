@@ -594,6 +594,159 @@ This server has been tested and verified with the following MCP clients:
 
 ## 💻 Development
 
+> **New to the project?** Check out our [Developer Quick Start](#developer-quick-start) below!
+
+### Developer Quick Start
+
+Want to contribute to the eBay API MCP Server? Follow these steps to get your development environment up and running:
+
+#### 1. Prerequisites
+
+Ensure you have the following installed:
+- **Node.js** >= 18.0.0 (check with `node --version`)
+- **npm** or **pnpm** package manager
+- **Git** for version control
+- **eBay Developer Account** ([sign up here](https://developer.ebay.com/)) for API credentials
+- A code editor (VS Code recommended with TypeScript/ESLint extensions)
+
+#### 2. Fork & Clone
+
+```bash
+# Fork the repository on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/ebay-api-mcp-server.git
+cd ebay-api-mcp-server
+
+# Add upstream remote to sync with the main repository
+git remote add upstream https://github.com/YosefHayim/ebay-api-mcp-server.git
+```
+
+#### 3. Install Dependencies
+
+```bash
+npm install
+# or
+pnpm install
+```
+
+This will:
+- Install all project dependencies
+- Run the build automatically (via `postinstall` hook)
+- Attempt to configure MCP clients (will skip if `.env` doesn't exist)
+
+#### 4. Set Up Environment
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your eBay developer credentials
+# Get your credentials from: https://developer.ebay.com/my/keys
+```
+
+Required environment variables:
+```bash
+EBAY_CLIENT_ID=your_client_id_here
+EBAY_CLIENT_SECRET=your_client_secret_here
+EBAY_ENVIRONMENT=sandbox  # Use sandbox for development
+EBAY_REDIRECT_URI=your_runame_here
+```
+
+#### 5. Build the Project
+
+```bash
+npm run build
+```
+
+This compiles TypeScript to JavaScript in the `build/` directory.
+
+#### 6. Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (recommended for development)
+npm run test:watch
+
+# Run tests with UI dashboard
+npm run test:ui
+
+# Check test coverage
+npm run test:coverage
+```
+
+#### 7. Start Development
+
+```bash
+# Run the MCP server in development mode (STDIO)
+npm run dev
+
+# Or run the HTTP server with OAuth support
+npm run dev:http
+
+# Or watch TypeScript compilation
+npm run watch
+```
+
+#### 8. Test Your Changes Locally
+
+To test your changes with an MCP client (Claude Desktop, etc.):
+
+```bash
+# 1. Build your changes
+npm run build
+
+# 2. Update MCP client configuration to point to your local build
+npm run auto-setup
+
+# 3. Restart your MCP client
+
+# 4. Test using the MCP Inspector (optional)
+npx @modelcontextprotocol/inspector node build/index.js
+```
+
+#### 9. Code Quality Checks
+
+Before committing, ensure your code passes all quality checks:
+
+```bash
+# Run all checks (typecheck + lint + format)
+npm run check
+
+# Or run individually:
+npm run typecheck  # Type check without emitting
+npm run lint       # Lint code
+npm run format     # Format code with Prettier
+```
+
+#### 10. Make Your Changes
+
+```bash
+# Create a feature branch
+git checkout -b feature/your-feature-name
+
+# Make your changes...
+
+# Run tests and quality checks
+npm run check && npm test
+
+# Commit using Conventional Commits format
+git commit -m "feat: add your feature description"
+
+# Push to your fork
+git push origin feature/your-feature-name
+```
+
+#### 11. Submit a Pull Request
+
+1. Go to your fork on GitHub
+2. Click "New Pull Request"
+3. Select your feature branch
+4. Fill out the PR template
+5. Submit for review
+
+For more detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ### Project Structure
 
 ```
@@ -603,34 +756,249 @@ ebay-api-mcp-server/
 │   ├── server-http.ts          # HTTP MCP server with OAuth 2.1
 │   ├── api/                    # eBay API implementations
 │   │   ├── client.ts           # HTTP client with interceptors
-│   │   ├── account-management/ # Account APIs
-│   │   ├── listing-management/ # Inventory APIs
-│   │   ├── order-management/   # Fulfillment APIs
-│   │   ├── marketing-and-promotions/ # Marketing APIs
-│   │   └── ...
+│   │   ├── index.ts            # API facade/entry point
+│   │   ├── account-management/ # Account API implementations
+│   │   ├── listing-management/ # Inventory API implementations
+│   │   ├── order-management/   # Fulfillment API implementations
+│   │   ├── marketing-and-promotions/ # Marketing API implementations
+│   │   ├── analytics-and-report/ # Analytics API implementations
+│   │   ├── communication/      # Communication API implementations
+│   │   ├── listing-metadata/   # Metadata API implementations
+│   │   └── other/              # Other API implementations
 │   ├── auth/                   # OAuth & token management
 │   │   ├── oauth.ts            # OAuth client with auto-refresh
-│   │   └── ...
+│   │   └── token-manager.ts    # Token storage and management
 │   ├── tools/                  # MCP tool definitions
 │   │   ├── definitions/        # Modular tool schemas by category
-│   │   └── index.ts            # Tool dispatcher
-│   ├── types/                  # TypeScript types
-│   │   ├── ebay.ts             # Core types
-│   │   └── sell_*.ts           # OpenAPI-generated types
-│   └── utils/                  # Zod validation schemas
-├── docs/                       # Documentation
+│   │   │   ├── account/        # Account management tools
+│   │   │   ├── inventory/      # Inventory management tools
+│   │   │   ├── fulfillment/    # Order fulfillment tools
+│   │   │   ├── marketing/      # Marketing tools
+│   │   │   └── ...
+│   │   └── index.ts            # Tool dispatcher and registry
+│   ├── scripts/                # Build and utility scripts
+│   │   ├── auto-setup.ts       # Automatic MCP client configuration
+│   │   ├── interactive-setup.ts # Interactive CLI setup wizard
+│   │   ├── test-endpoints.ts   # Endpoint testing utility
+│   │   ├── download-specs.ts   # Download OpenAPI specifications
+│   │   └── generate-types.sh   # Generate TypeScript types from OpenAPI
+│   ├── types/                  # TypeScript types and enums
+│   │   ├── ebay.ts             # Core eBay types
+│   │   ├── ebay-enums.ts       # Native TypeScript enums
+│   │   ├── sell_*.ts           # OpenAPI-generated types
+│   │   └── ...
+│   ├── utils/                  # Zod validation schemas
+│   │   ├── account-management/ # Account API validators
+│   │   ├── communication/      # Communication API validators
+│   │   ├── order-management/   # Order API validators
+│   │   └── ...
+│   └── config/                 # Configuration management
+│       └── env.ts              # Environment variable handling
+├── docs/                       # Documentation and specifications
 │   ├── auth/                   # OAuth & authentication guides
-│   └── sell-apps/              # OpenAPI specifications
-├── scripts/                    # Build and setup scripts
-│   └── generate-types.sh       # Generate TypeScript types from OpenAPI specs
+│   ├── sell-apps/              # OpenAPI specifications for Sell APIs
+│   ├── buy-apps/               # OpenAPI specifications for Buy APIs
+│   ├── enums/                  # Enum documentation
+│   └── application-settings/   # Application settings docs
 ├── tests/                      # Test suite
-│   ├── unit/                   # Unit tests
-│   ├── integration/            # Integration tests
-│   └── e2e/                    # End-to-end tests
-├── build/                      # Compiled JavaScript
-├── .env.example                # Environment template
-└── package.json                # Dependencies & scripts
+│   ├── unit/                   # Unit tests for individual components
+│   ├── integration/            # Integration tests for API interactions
+│   └── helpers/                # Test utilities and mocks
+├── build/                      # Compiled JavaScript output (gitignored)
+├── .env.example                # Environment variable template
+├── .env                        # Your local environment (gitignored)
+├── package.json                # Dependencies & npm scripts
+├── tsconfig.json               # TypeScript configuration
+├── vitest.config.ts            # Vitest test configuration
+└── eslint.config.js            # ESLint configuration
 ```
+
+### Architecture Overview
+
+The project follows a modular, layered architecture:
+
+1. **Entry Point Layer** (`src/index.ts`, `src/server-http.ts`)
+   - STDIO MCP server for local clients (Claude Desktop, etc.)
+   - HTTP server with OAuth 2.1 for web-based integrations
+
+2. **Tools Layer** (`src/tools/`)
+   - MCP tool definitions organized by API category
+   - Zod schemas for input validation
+   - Tool dispatcher for routing tool calls
+
+3. **API Layer** (`src/api/`)
+   - eBay API client implementations
+   - HTTP client with authentication interceptors
+   - Request/response handling and error management
+   - Organized by eBay API categories
+
+4. **Auth Layer** (`src/auth/`)
+   - OAuth 2.0 client with PKCE support
+   - Token management (access, refresh, app tokens)
+   - Automatic token refresh
+   - Token persistence via environment variables
+
+5. **Types Layer** (`src/types/`)
+   - OpenAPI-generated TypeScript interfaces
+   - Native TypeScript enums for constants
+   - Custom type definitions
+
+6. **Validation Layer** (`src/utils/`)
+   - Zod schemas for API request validation
+   - Input sanitization and type coercion
+   - Error handling utilities
+
+### Adding New eBay API Endpoints
+
+Want to add support for a new eBay API endpoint? Follow this guide:
+
+#### 1. Find the OpenAPI Specification
+
+Locate the OpenAPI spec in `docs/sell-apps/` or download it:
+
+```bash
+npm run download:specs
+```
+
+#### 2. Generate TypeScript Types (if needed)
+
+If the API category is new, generate types:
+
+```bash
+npm run generate:types
+```
+
+This runs `src/scripts/generate-types.sh` which uses `openapi-typescript`.
+
+#### 3. Create the API Implementation
+
+Create a new method in the appropriate API class in `src/api/[category]/`:
+
+```typescript
+// Example: src/api/listing-management/inventory.ts
+import { z } from 'zod';
+import type { InventoryItem } from '@/types/sell_inventory.js';
+
+export class EbayInventoryApi {
+  /**
+   * Get inventory item by SKU
+   * @param sku - The seller-defined SKU
+   * @returns The inventory item details
+   */
+  async getInventoryItem(sku: string): Promise<InventoryItem> {
+    return this.client.get(`/sell/inventory/v1/inventory_item/${sku}`);
+  }
+}
+```
+
+#### 4. Create Zod Validation Schema
+
+Add validation in `src/utils/[category]/`:
+
+```typescript
+// Example: src/utils/inventory/schemas.ts
+import { z } from 'zod';
+
+export const getInventoryItemSchema = z.object({
+  sku: z.string()
+    .min(1, 'SKU is required')
+    .max(50, 'SKU must be 50 characters or less')
+    .describe('The seller-defined SKU for the inventory item'),
+});
+```
+
+#### 5. Create MCP Tool Definition
+
+Add tool definition in `src/tools/definitions/[category]/`:
+
+```typescript
+// Example: src/tools/definitions/inventory/get-inventory-item.ts
+import { getInventoryItemSchema } from '@/utils/inventory/schemas.js';
+
+export const getInventoryItemTool = {
+  name: 'ebay_get_inventory_item',
+  description: 'Get details of a specific inventory item by SKU',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      sku: {
+        type: 'string',
+        description: 'The seller-defined SKU of the inventory item',
+      },
+    },
+    required: ['sku'],
+  },
+  handler: async (args: unknown) => {
+    const { sku } = getInventoryItemSchema.parse(args);
+    const api = new EbayInventoryApi(client);
+    const item = await api.getInventoryItem(sku);
+    return { content: [{ type: 'text', text: JSON.stringify(item, null, 2) }] };
+  },
+};
+```
+
+#### 6. Register the Tool
+
+Add the tool to `src/tools/index.ts`:
+
+```typescript
+import { getInventoryItemTool } from './definitions/inventory/get-inventory-item.js';
+
+export const tools = [
+  // ... existing tools
+  getInventoryItemTool,
+];
+```
+
+#### 7. Write Tests
+
+Create unit tests in `tests/unit/api/[category]/`:
+
+```typescript
+// Example: tests/unit/api/inventory.test.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { EbayInventoryApi } from '@/api/listing-management/inventory.js';
+
+describe('EbayInventoryApi', () => {
+  describe('getInventoryItem', () => {
+    it('should fetch inventory item by SKU', async () => {
+      // Test implementation
+    });
+
+    it('should validate SKU format', async () => {
+      // Validation test
+    });
+
+    it('should handle API errors', async () => {
+      // Error handling test
+    });
+  });
+});
+```
+
+#### 8. Update Documentation
+
+- Update README.md with the new tool in the [Available Tools](#available-tools) section
+- Add JSDoc comments to your code
+- Update CHANGELOG.md with your changes
+
+#### 9. Test Your Implementation
+
+```bash
+# Run type checking
+npm run typecheck
+
+# Run linting
+npm run lint:fix
+
+# Run tests
+npm test
+
+# Test the endpoint manually
+npm run test:endpoints
+```
+
+For more examples, browse existing API implementations in `src/api/` and tool definitions in `src/tools/definitions/`.
 
 ### Available Scripts
 

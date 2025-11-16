@@ -21,7 +21,7 @@ const mockOAuthClient = {
 };
 
 vi.mock('../../../src/auth/oauth.js', () => ({
-  EbayOAuthClient: vi.fn(function (this: any) {
+  EbayOAuthClient: vi.fn(function (this: unknown) {
     return mockOAuthClient;
   }),
 }));
@@ -29,10 +29,25 @@ vi.mock('../../../src/auth/oauth.js', () => ({
 describe('EbayApiClient Integration Tests', () => {
   let apiClient: EbayApiClient;
   let config: EbayConfig;
+  let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     cleanupMocks();
+
+    // Enable nock and disable real HTTP requests
+    nock.disableNetConnect();
+
+    // Store and clear environment variables to prevent loading from .env
+    originalEnv = process.env;
+    process.env = { ...originalEnv };
+    delete process.env.EBAY_USER_REFRESH_TOKEN;
+    delete process.env.EBAY_USER_ACCESS_TOKEN;
+    // Disable proxy to prevent axios from using it
+    delete process.env.HTTP_PROXY;
+    delete process.env.HTTPS_PROXY;
+    delete process.env.http_proxy;
+    delete process.env.https_proxy;
 
     config = {
       clientId: 'test_client_id',
@@ -52,6 +67,9 @@ describe('EbayApiClient Integration Tests', () => {
 
   afterEach(() => {
     cleanupMocks();
+    nock.enableNetConnect();
+    // Restore environment variables
+    process.env = originalEnv;
   });
 
   describe('HTTP GET Requests', () => {

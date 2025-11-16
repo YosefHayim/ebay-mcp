@@ -3,8 +3,6 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import type { EbayConfig } from '@/types/ebay.js';
-import { version } from 'os';
-import { title } from 'process';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 
 config();
@@ -274,7 +272,6 @@ export const mcpConfig: Implementation = {
   name: 'eBay API Model Context Protocol Server',
   version: '1.4.0',
   title: 'eBay API Model Context Protocol Server',
-  description: 'Access eBay APIs to manage listings, orders, and inventory.',
   websiteUrl: 'https://github.com/ebay/ebay-mcp-server',
   icons: [
     {
