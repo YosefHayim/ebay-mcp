@@ -85,7 +85,7 @@ export class InventoryApi {
     try {
       return await this.client.put<void>(`${this.basePath}/inventory_item/${sku}`, inventoryItem, {
         headers: {
-          'Content-Language': 'en_US',
+          'Content-Language': 'en-US',
         },
       });
     } catch (error) {
@@ -129,7 +129,7 @@ export class InventoryApi {
         requests,
         {
           headers: {
-            'Content-Language': 'en_US',
+            'Content-Language': 'en-US',
           },
         }
       );
@@ -219,7 +219,7 @@ export class InventoryApi {
         compatibility,
         {
           headers: {
-            'Content-Language': 'en_US',
+            'Content-Language': 'en-US',
           },
         }
       );
@@ -294,7 +294,7 @@ export class InventoryApi {
         inventoryItemGroup,
         {
           headers: {
-            'Content-Language': 'en_US',
+            'Content-Language': 'en-US',
           },
         }
       );
@@ -555,7 +555,7 @@ export class InventoryApi {
     try {
       return await this.client.post<CreateOfferResponse>(`${this.basePath}/offer`, offer, {
         headers: {
-          'Content-Language': 'en_US',
+          'Content-Language': 'en-US',
         },
       });
     } catch (error) {
@@ -581,7 +581,7 @@ export class InventoryApi {
     try {
       return await this.client.put(`${this.basePath}/offer/${offerId}`, offer, {
         headers: {
-          'Content-Language': 'en_US',
+          'Content-Language': 'en-US',
         },
       });
     } catch (error) {
@@ -660,7 +660,7 @@ export class InventoryApi {
     try {
       return await this.client.post(`${this.basePath}/bulk_create_offer`, requests, {
         headers: {
-          'Content-Language': 'en_US',
+          'Content-Language': 'en-US',
         },
       });
     } catch (error) {

@@ -83,4 +83,54 @@ export class FulfillmentApi {
   async issueRefund(orderId: string, refund: IssueRefundRequest): Promise<Refund> {
     return await this.client.post<Refund>(`${this.basePath}/order/${orderId}/issue_refund`, refund);
   }
+
+  /**
+   * Get payment dispute summaries
+   * Note: This method delegates to the DisputeApi
+   */
+  async getPaymentDisputeSummaries(params?: {
+    order_id?: string;
+    buyer_username?: string;
+    open_date_from?: string;
+    open_date_to?: string;
+    payment_dispute_status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<unknown> {
+    return await this.client.get(`${this.basePath}/payment_dispute_summary`, params);
+  }
+
+  /**
+   * Get payment dispute activities
+   * Note: This method delegates to the DisputeApi
+   */
+  async getActivities(paymentDisputeId: string): Promise<unknown> {
+    return await this.client.get(`${this.basePath}/payment_dispute/${paymentDisputeId}/activity`);
+  }
+
+  /**
+   * Get payment dispute details
+   * Note: This method delegates to the DisputeApi
+   */
+  async getPaymentDispute(paymentDisputeId: string): Promise<unknown> {
+    return await this.client.get(`${this.basePath}/payment_dispute/${paymentDisputeId}`);
+  }
+
+  /**
+   * Get shipping quote
+   */
+  async getShippingQuote(request: {
+    rateTableId?: string;
+    shippingAddress?: unknown;
+    lineItems?: unknown[];
+  }): Promise<unknown> {
+    return await this.client.post(`${this.basePath}/shipping_quote`, request);
+  }
+
+  /**
+   * Get cancellation details for an order
+   */
+  async getCancellation(orderId: string, cancellationId: string): Promise<unknown> {
+    return await this.client.get(`${this.basePath}/order/${orderId}/cancellation/${cancellationId}`);
+  }
 }

@@ -366,6 +366,7 @@ class EndpointTester {
       shippingOptions: [
         {
           optionType: 'DOMESTIC' as const,
+          costType: 'FLAT_RATE' as const,
           shippingServices: [
             {
               shippingCarrierCode: 'USPS',
@@ -438,15 +439,8 @@ class EndpointTester {
       name: `Test Payment ${Date.now()}`,
       marketplaceId: 'EBAY_US',
       categoryTypes: [{ name: 'ALL_EXCLUDING_MOTORS_VEHICLES' as const }],
-      paymentMethods: [
-        {
-          paymentMethodType: 'PAYPAL' as const,
-          recipientAccountReference: {
-            referenceId: 'test@example.com',
-            referenceType: 'PAYPAL_EMAIL' as const,
-          },
-        },
-      ],
+      // eBay Managed Payments is now the default - no paymentMethods array needed
+      immediatePay: true,
     };
 
     let createdPaymentPolicyId: string | undefined;
@@ -567,6 +561,7 @@ class EndpointTester {
       name: `Test Custom ${Date.now()}`,
       policyType: 'PRODUCT_COMPLIANCE' as const,
       description: 'Test custom policy',
+      label: 'Test Label',
     };
 
     let createdCustomPolicyId: string | undefined;
@@ -1882,7 +1877,7 @@ class EndpointTester {
       'Analytics',
       'getSellerStandardsProfile',
       'GET /sell/analytics/v1/seller_standards_profile',
-      () => this.api.analytics.getSellerStandardsProfile('LATE_SHIPMENT_RATE', 'CURRENT')
+      () => this.api.analytics.getSellerStandardsProfile('COMPLIANCE', 'CURRENT')
     );
     await this.testEndpoint(
       'Analytics',

@@ -50,7 +50,8 @@ export class TaxonomyApi {
    */
   async getItemAspectsForCategory(categoryTreeId: string, categoryId: string) {
     return await this.client.get(
-      `${this.basePath}/category_tree/${categoryTreeId}/get_item_aspects_for_category/${categoryId}`
+      `${this.basePath}/category_tree/${categoryTreeId}/get_item_aspects_for_category`,
+      { category_id: categoryId }
     );
   }
 

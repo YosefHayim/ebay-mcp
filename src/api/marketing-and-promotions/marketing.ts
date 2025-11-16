@@ -788,6 +788,25 @@ export class MarketingApi {
   }
 
   /**
+   * Get promotion summary (alias for getPromotionSummaryReport)
+   */
+  async getPromotionSummary(marketplaceId: string): Promise<SummaryReportResponse> {
+    return this.getPromotionSummaryReport(marketplaceId);
+  }
+
+  /**
+   * Get promotion reports (alias for getPromotionReport)
+   */
+  async getPromotionReports(
+    marketplaceId: string,
+    promotionStatus?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<PromotionsReportPagedCollection> {
+    return this.getPromotionReport(marketplaceId, promotionStatus, limit, offset);
+  }
+
+  /**
    * Get targeting for a campaign
    */
   async getTargeting(campaignId: string): Promise<TargetingResponse> {

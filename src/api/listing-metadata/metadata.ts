@@ -592,4 +592,32 @@ export class MetadataApi {
       );
     }
   }
+
+  /**
+   * Get product compliance policies
+   * Endpoint: GET /marketplace/{marketplace_id}/get_product_compliance_policies
+   * @throws Error if marketplaceId is missing or invalid
+   */
+  async getProductCompliancePolicies(marketplaceId: string, filter?: string) {
+    if (!marketplaceId || typeof marketplaceId !== 'string') {
+      throw new Error('marketplaceId is required and must be a string');
+    }
+
+    if (filter !== undefined && typeof filter !== 'string') {
+      throw new Error('filter must be a string when provided');
+    }
+
+    try {
+      const params: Record<string, string> = {};
+      if (filter) params.filter = filter;
+      return await this.client.get(
+        `${this.basePath}/marketplace/${marketplaceId}/get_product_compliance_policies`,
+        params
+      );
+    } catch (error) {
+      throw new Error(
+        `Failed to get product compliance policies: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
 }

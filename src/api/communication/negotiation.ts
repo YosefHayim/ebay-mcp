@@ -75,4 +75,32 @@ export class NegotiationApi {
     if (offset) params.offset = offset;
     return await this.client.get(`${this.basePath}/offer`, params);
   }
+
+  /**
+   * Get offers for listing (alias for getOffersToBuyers)
+   * Endpoint: GET /offer
+   * @throws Error if the request fails
+   */
+  async getOffersForListing(filter?: string, limit?: number, offset?: number) {
+    return this.getOffersToBuyers(filter, limit, offset);
+  }
+
+  /**
+   * Get a specific offer
+   * Endpoint: GET /offer/{offerId}
+   * @throws Error if required parameters are missing or invalid
+   */
+  async getOffer(offerId: string) {
+    if (!offerId || typeof offerId !== 'string') {
+      throw new Error('offerId is required and must be a string');
+    }
+
+    try {
+      return await this.client.get(`${this.basePath}/offer/${offerId}`);
+    } catch (error) {
+      throw new Error(
+        `Failed to get offer: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
 }

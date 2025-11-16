@@ -37,4 +37,11 @@ export class ComplianceApi {
       listing_violation_id: listingViolationId,
     });
   }
+
+  /**
+   * Get compliance snapshot (alias for getListingViolations)
+   */
+  async getComplianceSnapshot(complianceType?: string, offset?: number, limit?: number) {
+    return this.getListingViolations(complianceType, offset, limit);
+  }
 }
