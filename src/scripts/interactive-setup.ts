@@ -384,64 +384,115 @@ async function validateAndGenerateTokens(
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function detectAndConfigureLLMClients(): Promise<void> {
-  console.log(chalk.bold.cyan('\n🔍 Detecting LLM Clients...\n'));
+  console.log(chalk.bold.cyan('\n┌─────────────────────────────────────────────────────────────┐'));
+  console.log(chalk.bold.cyan('│  🤖 LLM Client Detection & Configuration                   │'));
+  console.log(chalk.bold.cyan('└─────────────────────────────────────────────────────────────┘\n'));
 
   const clients = detectLLMClients();
   const detectedClients = clients.filter((c) => c.detected);
 
   if (detectedClients.length === 0) {
-    console.log(chalk.yellow('⚠️  No LLM clients detected on this system.\n'));
-    console.log(chalk.gray('   Supported clients: Claude Desktop, Cline (VSCode), Continue.dev'));
-    console.log(chalk.gray('   You can manually configure your MCP client later.\n'));
+    console.log(chalk.yellow('⚠️  No compatible LLM clients detected on your system.\n'));
+    console.log(chalk.white('Supported clients:'));
+    console.log(chalk.gray('  • Claude Desktop    (Anthropic\'s desktop app)'));
+    console.log(chalk.gray('  • Cline             (VSCode extension)'));
+    console.log(chalk.gray('  • Continue.dev      (VSCode/JetBrains extension)\n'));
+    console.log(chalk.cyan('💡 You can manually configure your MCP client later.'));
+    console.log(chalk.gray('   See: https://github.com/YosefHayim/ebay-api-mcp-server#setup\n'));
     return;
   }
 
-  console.log(chalk.green(`Found ${detectedClients.length} LLM client(s):\n`));
+  const clientCount = detectedClients.length;
+  const plural = clientCount === 1 ? 'client' : 'clients';
+  console.log(chalk.green.bold(`✓ Found ${clientCount} compatible ${plural} on your system:\n`));
+
+  // Display each client in a nice box
   for (const client of detectedClients) {
-    const status = client.configExists
-      ? chalk.yellow('[Configured]')
-      : chalk.gray('[Not Configured]');
-    console.log(`  ${chalk.cyan('•')} ${client.displayName} ${status}`);
+    const boxWidth = 61;
+    const topBorder = chalk.gray('┌─') + chalk.white(client.displayName) + chalk.gray('─'.repeat(boxWidth - client.displayName.length - 3) + '┐');
+
+    console.log(topBorder);
+
+    // Status line
+    const statusIcon = chalk.green('✓');
+    const statusText = 'Installed';
+    console.log(chalk.gray('│ ') + chalk.gray('Status:    ') + statusIcon + ' ' + chalk.white(statusText) + ' '.repeat(boxWidth - 23) + chalk.gray('│'));
+
+    // Config status line
+    const configIcon = client.configExists ? chalk.yellow('⚠') : chalk.gray('○');
+    const configText = client.configExists ? chalk.yellow('Already configured') : chalk.gray('Not configured');
+    const configPadding = client.configExists ? 39 : 43;
+    console.log(chalk.gray('│ ') + chalk.gray('Config:    ') + configIcon + ' ' + configText + ' '.repeat(boxWidth - configPadding) + chalk.gray('│'));
+
+    // Path line (truncated if too long)
+    const maxPathLength = boxWidth - 14;
+    let displayPath = client.configPath;
+    if (displayPath.length > maxPathLength) {
+      displayPath = '...' + displayPath.substring(displayPath.length - maxPathLength + 3);
+    }
+    console.log(chalk.gray('│ ') + chalk.gray('Path:      ') + chalk.dim(displayPath) + ' '.repeat(boxWidth - displayPath.length - 13) + chalk.gray('│'));
+
+    console.log(chalk.gray('└' + '─'.repeat(boxWidth - 1) + '┘\n'));
   }
 
-  console.log('');
+  // Ask user which clients to configure
+  console.log(chalk.white.bold('Configure eBay MCP for these clients?\n'));
+  console.log(chalk.gray('  💡 Recommended: Select clients that are ') + chalk.yellow('not configured') + chalk.gray(' yet'));
+  console.log(chalk.gray('  📝 Use ') + chalk.cyan('Space') + chalk.gray(' to select, ') + chalk.cyan('Enter') + chalk.gray(' to confirm\n'));
 
   const response = await prompts({
     type: 'multiselect',
     name: 'selectedClients',
-    message: 'Which LLM clients would you like to configure?',
-    choices: detectedClients.map((client) => ({
-      title: client.displayName,
-      value: client.name,
-      selected: !client.configExists,
-    })),
-    hint: 'Space to select, Enter to confirm',
+    message: 'Select clients to configure:',
+    choices: detectedClients.map((client) => {
+      const statusBadge = client.configExists
+        ? chalk.yellow(' [Already configured]')
+        : chalk.green(' [Recommended]');
+      return {
+        title: client.displayName + statusBadge,
+        value: client.name,
+        selected: !client.configExists, // Auto-select unconfigured clients
+      };
+    }),
+    hint: '← → or Space to toggle • Enter to confirm',
+    instructions: false,
   });
 
   if (!response.selectedClients || response.selectedClients.length === 0) {
-    console.log(chalk.gray('\n  Skipping LLM client configuration.\n'));
+    console.log(chalk.gray('\n⏭️  Skipping LLM client configuration.\n'));
     return;
   }
 
-  console.log(chalk.bold.cyan('\n⚙️  Configuring LLM Clients...\n'));
+  // Configure selected clients
+  console.log(chalk.bold.cyan('\n┌─────────────────────────────────────────────────────────────┐'));
+  console.log(chalk.bold.cyan('│  ⚙️  Configuring Selected Clients                           │'));
+  console.log(chalk.bold.cyan('└─────────────────────────────────────────────────────────────┘\n'));
 
   for (const clientName of response.selectedClients) {
     const client = detectedClients.find((c) => c.name === clientName);
     if (!client) continue;
 
+    console.log(chalk.cyan(`Configuring ${client.displayName}...`));
+
     const success = configureLLMClient(clientName, PROJECT_ROOT);
 
     if (success) {
-      console.log(chalk.green(`  ✓ ${client.displayName} configured successfully`));
-      console.log(chalk.gray(`    Config: ${client.configPath}\n`));
+      console.log(chalk.green(`  ✓ Successfully configured ${client.displayName}`));
+      console.log(chalk.gray(`  📁 Config file: ${client.configPath}`));
+      console.log(chalk.dim(`  🔗 MCP server added to configuration\n`));
     } else {
       console.log(chalk.red(`  ✗ Failed to configure ${client.displayName}`));
-      console.log(chalk.yellow(`    Please configure manually at: ${client.configPath}\n`));
+      console.log(chalk.yellow(`  ⚠️  Manual setup required`));
+      console.log(chalk.gray(`  📄 Config path: ${client.configPath}\n`));
     }
   }
 
-  console.log(chalk.bold.green('✨ LLM client configuration complete!'));
-  console.log(chalk.gray('   Remember to restart your LLM client for changes to take effect.\n'));
+  // Success message
+  console.log(chalk.bold.green('✨ LLM client configuration complete!\n'));
+  console.log(chalk.white.bold('📌 Next Steps:\n'));
+  console.log(chalk.gray('  1. ') + chalk.white('Restart') + chalk.gray(' your LLM client(s) to load the new configuration'));
+  console.log(chalk.gray('  2. The ') + chalk.cyan('eBay MCP server') + chalk.gray(' should appear in the MCP tools list'));
+  console.log(chalk.gray('  3. Try asking: ') + chalk.cyan('"Show me my eBay user information"') + chalk.gray('\n'));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
