@@ -910,7 +910,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Thanks to all the amazing people who have contributed to this project!
 
 <a href="https://github.com/YosefHayim/ebay-api-mcp-server/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=YosefHayim/ebay-api-mcp-server" alt="Contributors" />
+  <img src="https://contrib.rocks/image?repo=YosefHayim/ebay-mcp-server" alt="Contributors" />
 </a>
 
 ---
