@@ -11,8 +11,6 @@ services:
       - .env
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
     healthcheck:
       test: ["CMD", "node", "-e", "process.exit(0)"]
       interval: 30s
@@ -23,11 +21,6 @@ services:
       - ./logs:/app/logs
     networks:
       - ebay-mcp-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 networks:
   ebay-mcp-network:
