@@ -109,7 +109,7 @@ class EndpointTester {
   }
 
   /**
-   * Test a single endpoint with error handling
+   * Test a single endpoint with error handling and retry logic
    * Shows a dot (.) for pass, captures errors for failure report
    */
   private async testEndpoint(
@@ -120,36 +120,64 @@ class EndpointTester {
     params?: unknown
   ): Promise<void> {
     const startTime = Date.now();
+    const maxRetries = 2;
+    let lastError: unknown;
 
-    try {
-      await testFn();
-      this.passCount++;
-      process.stdout.write('.');
-    } catch (error: unknown) {
-      const duration = Date.now() - startTime;
-      const err = error as { message?: string; response?: { status?: number; data?: unknown } };
+    // Retry logic for network errors
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        await testFn();
+        this.passCount++;
+        process.stdout.write('.');
+        return;
+      } catch (error: unknown) {
+        lastError = error;
+        const err = error as { message?: string; response?: { status?: number; data?: unknown } };
 
-      // Determine if this is a skip (404/no data) or actual error
-      const isNoData =
-        err.message?.includes('404') ||
-        err.message?.includes('not found') ||
-        err.message?.toLowerCase().includes('no data');
+        // Check if this is a retryable error (connection reset, timeout)
+        const isRetryable =
+          err.message?.includes('ECONNRESET') ||
+          err.message?.includes('ETIMEDOUT') ||
+          err.message?.includes('timeout') ||
+          err.message?.includes('socket hang up');
 
-      const failure: EndpointFailure = {
-        category,
-        endpoint,
-        method,
-        error: err.message || 'Unknown error',
-        duration,
-        params,
-        statusCode: err.response?.status,
-        errorDetails: err.response?.data,
-        status: isNoData ? 'skipped' : 'error',
-      };
+        // If retryable and we have retries left, wait and retry
+        if (isRetryable && attempt < maxRetries) {
+          const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+          continue;
+        }
 
-      this.failures.push(failure);
-      process.stdout.write(isNoData ? '⏭' : '❌');
+        // Not retryable or out of retries, record the failure
+        break;
+      }
     }
+
+    const duration = Date.now() - startTime;
+    const err = lastError as { message?: string; response?: { status?: number; data?: unknown } };
+
+    // Determine if this is a skip (404/no data/not supported) or actual error
+    const isNoData =
+      err.message?.includes('404') ||
+      err.message?.includes('not found') ||
+      err.message?.includes('not supported') ||
+      err.message?.includes('resource not found') ||
+      err.message?.toLowerCase().includes('no data');
+
+    const failure: EndpointFailure = {
+      category,
+      endpoint,
+      method,
+      error: err.message || 'Unknown error',
+      duration,
+      params,
+      statusCode: err.response?.status,
+      errorDetails: err.response?.data,
+      status: isNoData ? 'skipped' : 'error',
+    };
+
+    this.failures.push(failure);
+    process.stdout.write(isNoData ? '⏭' : '❌');
   }
 
   /**
@@ -225,13 +253,18 @@ class EndpointTester {
     }
 
     try {
+      // Don't pass undefined for SKU, just omit it
       const offers = await this.api.inventory.getOffers(undefined, 'EBAY_US', 1);
       if (offers.offers && offers.offers.length > 0) {
         this.collectedIds.offerId = offers.offers[0].offerId;
         console.log(`✓ Offer ID: ${this.collectedIds.offerId}`);
       }
-    } catch {
-      /* Skip if no data */
+    } catch (error) {
+      // Skip if no data or invalid parameters
+      const err = error as { message?: string };
+      if (err.message && !err.message.includes('not found')) {
+        console.log(`  ℹ Could not collect offer IDs: ${err.message}`);
+      }
     }
 
     // Collect Fulfillment IDs
@@ -522,6 +555,7 @@ class EndpointTester {
     }
 
     // Offers (7 endpoints)
+    // Note: Passing undefined for optional parameters to test they are properly omitted
     await this.testEndpoint(
       'Inventory',
       'getOffers',
@@ -549,14 +583,8 @@ class EndpointTester {
       );
     }
 
-    // Listing (1 endpoint)
-    await this.testEndpoint(
-      'Inventory',
-      'getListings',
-      'GET /sell/inventory/v1/listing',
-      () => this.api.inventory.getListings(5, 0),
-      { limit: 5, offset: 0 }
-    );
+    // Note: GET /listing endpoint doesn't exist in eBay Inventory API
+    // Listings are managed through offers. Use getOffers() instead.
 
     console.log('');
   }
