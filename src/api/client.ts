@@ -85,6 +85,17 @@ export class EbayApiClient {
         // Record the request
         this.rateLimitTracker.recordRequest();
 
+        // Debug logging: Log outgoing request details
+        console.error('\n🔍 [REQUEST DEBUG]');
+        console.error(`  Method: ${config.method?.toUpperCase()}`);
+        console.error(`  URL: ${config.baseURL}${config.url}`);
+        if (config.params && Object.keys(config.params).length > 0) {
+          console.error(`  Query Params: ${JSON.stringify(config.params, null, 2)}`);
+        }
+        if (config.data) {
+          console.error(`  Request Body: ${JSON.stringify(config.data, null, 2)}`);
+        }
+
         return config;
       },
       (error) => console.error(error)
@@ -97,8 +108,16 @@ export class EbayApiClient {
         const remaining = response.headers['x-ebay-c-ratelimit-remaining'];
         const limit = response.headers['x-ebay-c-ratelimit-limit'];
 
+        // Debug logging: Log response details
+        console.error('\n✅ [RESPONSE DEBUG]');
+        console.error(`  Status: ${response.status} ${response.statusText}`);
         if (remaining && limit) {
-          console.error(`eBay Rate Limit: ${remaining}/${limit} remaining`);
+          console.error(`  Rate Limit: ${remaining}/${limit} remaining`);
+        }
+        if (response.data) {
+          const dataStr = JSON.stringify(response.data, null, 2);
+          const preview = dataStr.length > 500 ? dataStr.substring(0, 500) + '...' : dataStr;
+          console.error(`  Response Data: ${preview}`);
         }
 
         return response;
@@ -106,6 +125,23 @@ export class EbayApiClient {
       async (error: AxiosError) => {
         const axiosError = error;
         const config = axiosError.config as AxiosConfigWithRetry | undefined;
+
+        // Debug logging: Log error response details
+        if (axiosError.response) {
+          console.error('\n❌ [ERROR RESPONSE DEBUG]');
+          console.error(`  Status: ${axiosError.response.status} ${axiosError.response.statusText}`);
+          console.error(`  URL: ${config?.baseURL}${config?.url}`);
+          if (axiosError.response.data) {
+            console.error(`  Error Data: ${JSON.stringify(axiosError.response.data, null, 2)}`);
+          }
+        } else if (axiosError.request) {
+          console.error('\n❌ [NO RESPONSE DEBUG]');
+          console.error(`  Request was made but no response received`);
+          console.error(`  URL: ${config?.baseURL}${config?.url}`);
+        } else {
+          console.error('\n❌ [REQUEST ERROR DEBUG]');
+          console.error(`  Error: ${axiosError.message}`);
+        }
 
         // Handle authentication errors (401 Unauthorized)
         if (axiosError.response?.status === 401) {
