@@ -148,10 +148,16 @@ export class EbayOAuthClient {
     // Store tokens in memory with default expiry
     // Access tokens typically expire in 2 hours (7200 seconds)
     // Refresh tokens typically expire in 18 months
+    const now = Date.now();
     this.userTokens = {
+      clientId: this.config.clientId,
+      clientSecret: this.config.clientSecret,
+      redirectUri: this.config.redirectUri,
       userAccessToken: accessToken,
       userRefreshToken: refreshToken,
       tokenType: 'Bearer',
+      userAccessTokenExpiry: now + 7200 * 1000, // Default 2 hours
+      userRefreshTokenExpiry: now + 18 * 30 * 24 * 60 * 60 * 1000, // Default 18 months
     };
   }
 
@@ -240,6 +246,9 @@ export class EbayOAuthClient {
       // Store the user tokens in memory
       const now = Date.now();
       this.userTokens = {
+        clientId: this.config.clientId,
+        clientSecret: this.config.clientSecret,
+        redirectUri: this.config.redirectUri,
         userAccessToken: tokenData.access_token,
         userRefreshToken: tokenData.refresh_token,
         tokenType: tokenData.token_type,
@@ -299,6 +308,9 @@ export class EbayOAuthClient {
       // Update tokens in memory
       const now = Date.now();
       this.userTokens = {
+        clientId: this.config.clientId,
+        clientSecret: this.config.clientSecret,
+        redirectUri: this.config.redirectUri,
         userAccessToken: tokenData.access_token,
         userRefreshToken: tokenData.refresh_token || this.userTokens.userRefreshToken, // Use new refresh token if provided
         tokenType: tokenData.token_type,

@@ -49,7 +49,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       policyTypes: getCustomPoliciesInputSchema.shape.policyTypes,
     },
-    outputSchema: customPolicyResponseSchema,
   },
 
   // ============================================================================
@@ -62,7 +61,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       marketplaceId: getFulfillmentPoliciesInputSchema.shape.marketplaceId,
     },
-    outputSchema: getFulfillmentPoliciesOutputSchema,
   },
   {
     name: 'ebay_create_fulfillment_policy',
@@ -71,7 +69,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       policy: createFulfillmentPolicyInputSchema.shape.policy,
     },
-    outputSchema: createFulfillmentPolicyOutputSchema,
   },
   {
     name: 'ebay_get_fulfillment_policy',
@@ -79,7 +76,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
     },
-    outputSchema: fulfillmentPolicyResponseSchema,
   },
   {
     name: 'ebay_get_fulfillment_policy_by_name',
@@ -88,7 +84,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
       marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID'),
       name: z.string().describe('Policy name'),
     },
-    outputSchema: fulfillmentPolicyResponseSchema,
   },
   {
     name: 'ebay_update_fulfillment_policy',
@@ -97,7 +92,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
       fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
       policy: createFulfillmentPolicyInputSchema.shape.policy,
     },
-    outputSchema: createFulfillmentPolicyOutputSchema,
   },
   {
     name: 'ebay_delete_fulfillment_policy',
@@ -105,12 +99,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
     },
-    outputSchema: z.object({
-      success: z.boolean().optional(),
-      warnings: z.array(z.object({
-        message: z.string().optional(),
-      })).optional(),
-    }),
   },
 
   // ============================================================================
@@ -122,7 +110,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       marketplaceId: getPaymentPoliciesInputSchema.shape.marketplaceId,
     },
-    outputSchema: getPaymentPoliciesOutputSchema,
   },
   {
     name: 'ebay_create_payment_policy',
@@ -130,7 +117,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       policy: createPaymentPolicyInputSchema.shape.policy,
     },
-    outputSchema: createPaymentPolicyOutputSchema,
   },
 
   // ============================================================================
@@ -142,7 +128,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       marketplaceId: getReturnPoliciesInputSchema.shape.marketplaceId,
     },
-    outputSchema: getReturnPoliciesOutputSchema,
   },
   {
     name: 'ebay_create_return_policy',
@@ -150,7 +135,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       policy: createReturnPolicyInputSchema.shape.policy,
     },
-    outputSchema: createReturnPolicyOutputSchema,
   },
 
   // ============================================================================
@@ -162,7 +146,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     inputSchema: {
       countryCode: z.string().describe('Required: Two-letter ISO 3166-1 country code'),
     },
-    outputSchema: getSalesTaxesOutputSchema,
   },
   {
     name: 'ebay_get_sales_tax',
@@ -171,7 +154,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
       countryCode: z.string().describe('Two-letter ISO 3166 country code'),
       jurisdictionId: z.string().describe('Tax jurisdiction ID'),
     },
-    outputSchema: salesTaxSchema,
   },
 
   // ============================================================================
@@ -181,20 +163,17 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
     name: 'ebay_get_kyc',
     description: 'Get seller KYC (Know Your Customer) status',
     inputSchema: {},
-    outputSchema: kycOutputSchema,
   },
   {
     name: 'ebay_get_opted_in_programs',
     description: 'Get seller programs the account is opted into',
     inputSchema: {},
-    outputSchema: programsOutputSchema,
   },
   {
     name: 'ebay_get_privileges',
     description:
       "Get seller's current set of privileges, including whether or not the seller's eBay registration has been completed, as well as the details of their site-wide sellingLimit (the maximum dollar value and quantity of items a seller can sell per day).\n\nRequired OAuth Scope: sell.account.readonly or sell.account",
     inputSchema: {},
-    outputSchema: privilegesOutputSchema,
   },
 ];
 
