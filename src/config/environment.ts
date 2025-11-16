@@ -276,7 +276,7 @@ export function getAuthUrl(
  */
 export function getOAuthAuthorizationUrl(
   clientId: string,
-  redirectUri: string,
+  redirectUri: string, // MUST be eBay RuName, NOT a URL
   environment: 'production' | 'sandbox',
   scopes?: string[],
   locale?: string,
@@ -323,7 +323,7 @@ export function getOAuthAuthorizationUrl(
 
 export const mcpConfig: Implementation = {
   name: 'eBay API Model Context Protocol Server',
-  version: '1.4.0',
+  version: '1.4.2',
   title: 'eBay API Model Context Protocol Server',
   websiteUrl: 'https://github.com/ebay/ebay-mcp-server',
   icons: [

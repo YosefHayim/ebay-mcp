@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2025-01-16
+
+### Fixed
+- **CRITICAL: OAuth Authorization URL Fix** - Resolved `unauthorized_client` error
+  - Changed authorization endpoint from `auth.ebay.com` to `auth2.ebay.com` (correct eBay OAuth 2.0 endpoint)
+  - Fixed production endpoint: `https://auth2.ebay.com/oauth2/authorize`
+  - Fixed sandbox endpoint: `https://auth2.sandbox.ebay.com/oauth2/authorize`
+  - Added required `hd` parameter to authorization URL (eBay OAuth requirement)
+  - Added `state` parameter (always included, following OAuth 2.0 best practices)
+
+### Added
+- **Comprehensive eBay RuName Documentation**
+  - Added detailed inline documentation explaining eBay's RuName requirement
+  - RuName is a special identifier (NOT a traditional URL) required for `redirect_uri` parameter
+  - Format example: `"YourName-AppName-xxxxx-xxxxxx"` (e.g., `"yosef_sabag-yosefsab-saasds-eduelsdtr"`)
+  - Added instructions on how to obtain RuName from eBay Developer Portal
+  - Documented common `unauthorized_client` error cause and resolution
+  - Each application has separate RuNames for Sandbox and Production environments
+
+### Changed
+- **OAuth Parameter Handling**
+  - `redirect_uri` parameter now documented as requiring eBay RuName instead of URL
+  - Enhanced code comments to prevent `unauthorized_client` error
+  - Improved scopes handling documentation (scopes are optional - eBay auto-grants based on keyset)
+  - Updated function signature documentation with RuName requirements
+
+### Testing
+- **Test Suite Updates**
+  - Updated all 21 OAuth URL generation tests to use `auth2.ebay.com` endpoint
+  - Added validation for `hd` parameter in tests
+  - Updated state parameter tests (now always included, even if empty)
+  - Fixed test parameter ordering for state parameter
+  - All tests passing (21/21)
+
+### Quality
+- **Type Safety**
+  - Added inline comments to `EbayConfig.redirectUri` documenting RuName requirement
+  - Improved code documentation to prevent common OAuth integration mistakes
+
+### Migration Guide
+**Important:** If you're experiencing `unauthorized_client` errors:
+
+1. **Get your RuName:**
+   - Log in to eBay Developer Portal (developer.ebay.com)
+   - Navigate to: Application Keys > User Token
+   - Click "User Tokens" link next to your Client ID
+   - Copy your RuName exactly (format: `YourName-AppName-xxxxx-xxxxxx`)
+
+2. **Update your configuration:**
+   - Use the RuName value (NOT a URL) for `EBAY_REDIRECT_URI` in your `.env` file
+   - Example: `EBAY_REDIRECT_URI=yosef_sabag-yosefsab-saasds-eduelsdtr`
+   - Do NOT use URLs like `http://localhost:3000/callback`
+
+3. **Regenerate OAuth URL:**
+   - Call `ebay_generate_user_consent_url` tool with your RuName
+   - The generated URL will now work correctly
+
 ## [1.4.0] - 2025-01-13
 
 ### Changed
