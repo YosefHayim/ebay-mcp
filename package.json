@@ -1,6 +1,6 @@
 {
 	"name": "ebay-mcp",
-	"version": "1.4.3",
+	"version": "1.4.4",
 	"description": "MCP server for eBay APIs - provides access to eBay developer functionality through MCP (Model Context Protocol)",
 	"type": "module",
 	"main": "build/index.js",
