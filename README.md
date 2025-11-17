@@ -30,9 +30,10 @@ This is an **open-source project** provided "as is" without warranty of any kind
   - Any other direct or indirect damages
 
 - **eBay API Usage:** This project is an unofficial third-party implementation and is **NOT affiliated with, endorsed by, or sponsored by eBay Inc.** You are solely responsible for:
-  - Complying with [eBay's API Terms of Use](https://developer.ebay.com/join/api_license_agreement)
+  - Complying with [eBay's API Terms of Use](https://developer.ebay.com/join/api-license-agreement)
   - Ensuring your usage stays within eBay's rate limits and policies
   - Managing your eBay Developer credentials securely
+  - Understanding and complying with [eBay's data handling requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html)
   - Any actions performed through the API
 
 - **Use at Your Own Risk:** This software is provided for educational and development purposes. Users must:
@@ -554,6 +555,9 @@ If you're still experiencing issues:
 ### Documentation
 
 - [eBay Developer Portal](https://developer.ebay.com/) - API documentation and credentials
+- [eBay API License Agreement](https://developer.ebay.com/join/api-license-agreement) - Terms of use and compliance requirements
+- [eBay Data Handling Requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html) - Important data protection and privacy guidelines
+- [eBay API Status](https://developer.ebay.com/support/api-status) - Real-time API health and status
 - [MCP Documentation](https://modelcontextprotocol.io/) - Model Context Protocol specification
 - [OAuth Setup Guide](docs/auth/) - Detailed authentication configuration
 - [Contributing Guidelines](CONTRIBUTING.md) - How to contribute to this project
