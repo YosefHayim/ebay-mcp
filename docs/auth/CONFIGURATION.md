@@ -29,7 +29,7 @@ These credentials are obtained from the [eBay Developer Portal](https://develope
 #### `EBAY_CLIENT_ID`
 
 - **Description:** Your eBay App ID (also called Client ID)
-- **Where to Find:** 
+- **Where to Find:**
   1. Log in to [eBay Developer Portal](https://developer.ebay.com/)
   2. Navigate to **My Account** → **Keys & Tokens**
   3. Find your application's **App ID (Client ID)**
@@ -140,21 +140,25 @@ These variables are automatically managed by the server. You should **NOT** set 
 **Rate Limits:** 1,000 requests per day
 
 **Setup Required:**
+
 - `EBAY_CLIENT_ID`
 - `EBAY_CLIENT_SECRET`
 - `EBAY_ENVIRONMENT`
 
 **How It Works:**
+
 1. Server automatically requests an app-level access token using client credentials
 2. Token is cached and automatically refreshed when expired
 3. No user interaction required
 
 **Advantages:**
+
 - Simple setup (just Client ID and Secret)
 - No OAuth flow required
 - Automatic token management
 
 **Disadvantages:**
+
 - Lower rate limits (1,000 requests/day)
 - Limited to application-level permissions
 
@@ -165,6 +169,7 @@ These variables are automatically managed by the server. You should **NOT** set 
 **Rate Limits:** 10,000-50,000 requests per day (varies by account type)
 
 **Setup Required:**
+
 - `EBAY_CLIENT_ID`
 - `EBAY_CLIENT_SECRET`
 - `EBAY_REDIRECT_URI` (RuName)
@@ -172,17 +177,20 @@ These variables are automatically managed by the server. You should **NOT** set 
 - `EBAY_USER_REFRESH_TOKEN` (obtained through OAuth flow)
 
 **How It Works:**
+
 1. Generate OAuth authorization URL
 2. User authorizes the application
 3. Exchange authorization code for access and refresh tokens
 4. Server automatically refreshes access tokens using the refresh token
 
 **Advantages:**
+
 - Higher rate limits (10,000-50,000 requests/day)
 - User-level permissions
 - Long-term authentication (refresh tokens last ~18 months)
 
 **Disadvantages:**
+
 - Requires initial OAuth flow setup
 - User must authorize the application
 
@@ -193,6 +201,7 @@ This section provides a step-by-step guide for obtaining user tokens through the
 ### Prerequisites
 
 Before starting the OAuth flow, ensure you have:
+
 - ✅ `EBAY_CLIENT_ID` set in your `.env` file
 - ✅ `EBAY_CLIENT_SECRET` set in your `.env` file
 - ✅ `EBAY_REDIRECT_URI` (RuName) set in your `.env` file
@@ -205,15 +214,18 @@ Before starting the OAuth flow, ensure you have:
 Ask your AI assistant to generate an OAuth authorization URL:
 
 **Example Request:**
+
 > "Can you help me set up OAuth authentication for my eBay account? Please generate the authorization URL."
 
 **What Happens:**
+
 - The AI assistant uses the `ebay_get_oauth_url` tool
 - The tool reads your `EBAY_CLIENT_ID`, `EBAY_REDIRECT_URI`, and `EBAY_ENVIRONMENT` from your `.env` file
 - An authorization URL is generated with the appropriate scopes for your environment
 
 **Response:**
 The assistant will provide you with:
+
 - An authorization URL (e.g., `https://signin.sandbox.ebay.com/signin?ru=...`)
 - Instructions to open the URL in your browser
 - Information about the scopes being requested
@@ -230,13 +242,15 @@ The assistant will provide you with:
 After authorization, eBay will redirect you to your redirect URI with an authorization code:
 
 **What You'll See:**
+
 - The URL will contain a `code` parameter, e.g.:
   ```
   https://your-redirect-uri?code=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
   ```
 - You may also see a `state` parameter (if provided)
 
-**Important:** 
+**Important:**
+
 - The authorization code is **short-lived** (typically expires in 10 minutes)
 - Copy the entire `code` value from the URL
 - If you see the code in the URL fragment (after `#`), make sure to copy everything after `code=`
@@ -246,9 +260,11 @@ After authorization, eBay will redirect you to your redirect URI with an authori
 Provide the authorization code to your AI assistant:
 
 **Example Request:**
+
 > "Here's my authorization code: `v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...` Please exchange it for tokens."
 
 **What Happens:**
+
 - The AI assistant uses the `ebay_set_user_tokens` or `ebay_set_user_tokens_with_expiry` tool
 - Internally, the server calls `exchangeCodeForToken()` method
 - The server exchanges the authorization code for:
@@ -258,12 +274,14 @@ Provide the authorization code to your AI assistant:
   - Granted scopes
 
 **Automatic Token Persistence:**
+
 - The server automatically saves the `EBAY_USER_REFRESH_TOKEN` to your `.env` file
 - The `EBAY_USER_ACCESS_TOKEN` is also saved (but will be refreshed automatically)
 - You'll see a confirmation message indicating tokens were saved
 
 **Response:**
 The assistant will confirm:
+
 - ✅ Token exchange successful
 - ✅ Refresh token saved to `.env` file
 - ✅ Access token automatically refreshed and ready to use
@@ -273,6 +291,7 @@ The assistant will confirm:
 After the OAuth flow completes, verify your configuration:
 
 **Check Your `.env` File:**
+
 ```bash
 # You should now see:
 EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
@@ -283,9 +302,11 @@ EBAY_USER_ACCESS_TOKEN=v^1.1#a^1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 Ask your AI assistant to check token status:
 
 **Example Request:**
+
 > "Can you check the status of my eBay authentication tokens?"
 
 The assistant will use the `ebay_get_token_status` tool to verify:
+
 - ✅ User tokens are configured
 - ✅ Access token is valid
 - ✅ Refresh token is available
@@ -374,9 +395,11 @@ Once `EBAY_USER_REFRESH_TOKEN` is set in your `.env` file, the server automatica
 If you need to manually refresh your access token:
 
 **Example Request:**
+
 > "Please refresh my eBay access token."
 
 The AI assistant will use the `ebay_refresh_access_token` tool to:
+
 - Check if a refresh token is available
 - Refresh the access token
 - Update the `.env` file
@@ -387,9 +410,11 @@ The AI assistant will use the `ebay_refresh_access_token` tool to:
 Check the current status of your tokens:
 
 **Example Request:**
+
 > "What's the status of my eBay authentication tokens?"
 
 The assistant will use the `ebay_get_token_status` tool to show:
+
 - Current authentication method (user tokens vs client credentials)
 - Token validity
 - Expiry information
@@ -400,9 +425,11 @@ The assistant will use the `ebay_get_token_status` tool to show:
 Validate token expiry times and get recommendations:
 
 **Example Request:**
+
 > "Check if my tokens are expiring soon."
 
 The assistant can use the `ebay_validate_token_expiry` tool to:
+
 - Check if tokens are expired or expiring soon
 - Provide recommendations (refresh access token, re-authorize, etc.)
 - Show exact expiry dates
@@ -412,9 +439,11 @@ The assistant can use the `ebay_validate_token_expiry` tool to:
 To clear all stored tokens and start fresh:
 
 **Example Request:**
+
 > "Clear all my eBay authentication tokens."
 
 The assistant will use the `ebay_clear_tokens` tool to:
+
 - Remove all tokens from memory
 - Clear tokens from `.env` file (optional, depending on implementation)
 - Require re-authentication for subsequent API calls
@@ -473,6 +502,7 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 **Problem:** Client ID is missing or not set correctly.
 
 **Solution:**
+
 1. Verify your `.env` file exists in the project root
 2. Check that `EBAY_CLIENT_ID` is set (no quotes needed)
 3. Ensure there are no extra spaces around the `=` sign
@@ -483,6 +513,7 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 **Problem:** `EBAY_REDIRECT_URI` is missing or incorrect.
 
 **Solution:**
+
 1. Verify your RuName in the [eBay Developer Portal](https://developer.ebay.com/my/auth)
 2. Ensure `EBAY_REDIRECT_URI` is set to your RuName (not a full URL)
 3. The RuName should look like: `YourAppId-YourAppId-abc-def-ghi`
@@ -492,12 +523,14 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 **Problem:** Authorization code exchange failed.
 
 **Common Causes:**
+
 - Authorization code expired (codes expire in ~10 minutes)
 - Invalid authorization code
 - Mismatched redirect URI
 - Invalid client credentials
 
 **Solution:**
+
 1. Generate a new authorization URL and try again
 2. Ensure you copy the **entire** code value from the redirect URL
 3. Verify your `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, and `EBAY_REDIRECT_URI` are correct
@@ -508,11 +541,13 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 **Problem:** Refresh token is invalid or expired.
 
 **Common Causes:**
+
 - Refresh token expired (typically after 18 months)
 - Refresh token was revoked
 - Invalid refresh token format
 
 **Solution:**
+
 1. Run `npm run diagnose` to check token status
 2. If the refresh token is expired, complete the OAuth flow again to get a new one
 3. Verify the refresh token format starts with `v^1.1#`
@@ -523,6 +558,7 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 **Problem:** You've exceeded your daily API request limit.
 
 **Solution:**
+
 1. **Upgrade to User Token Authentication:**
    - Complete the OAuth flow to get user tokens
    - User tokens provide 10,000-50,000 requests/day vs 1,000 for client credentials
@@ -541,6 +577,7 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 **Problem:** Tokens are not being saved to the `.env` file.
 
 **Solution:**
+
 1. Verify the `.env` file exists and is writable
 2. Check file permissions (should be readable/writable by the process)
 3. Ensure the `.env` file is in the project root directory
@@ -557,6 +594,7 @@ npm run diagnose
 ```
 
 This interactive tool checks:
+
 - Environment variable configuration
 - eBay API connectivity
 - Authentication status
