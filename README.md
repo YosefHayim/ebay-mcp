@@ -176,6 +176,8 @@ Restart your MCP client (Claude Desktop, etc.) and start using eBay tools throug
 
 ## Configuration
 
+> 📖 **For a comprehensive configuration guide with detailed explanations of all environment variables, OAuth flow steps, and troubleshooting, see [Configuration Documentation](docs/auth/CONFIGURATION.md).**
+
 ### Environment Variables
 
 Create a `.env` file with your eBay credentials:
@@ -203,7 +205,7 @@ EBAY_USER_REFRESH_TOKEN=your_refresh_token
 - Add `EBAY_USER_REFRESH_TOKEN` to `.env` after OAuth flow
 - Tokens refresh automatically
 
-For detailed OAuth setup, see the [OAuth documentation](docs/auth/).
+For detailed OAuth setup and comprehensive configuration guide, see the [Configuration Documentation](docs/auth/CONFIGURATION.md).
 
 ### MCP Client Compatibility
 
