@@ -7,9 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2025-01-08
+
+### Added
+
+- **Developer Analytics API** - 6 new endpoints for developer tools
+  - `ebay_get_rate_limits` - Get application rate limits
+  - `ebay_get_user_rate_limits` - Get user-specific rate limits
+  - `ebay_register_client` - Register third-party financial application (Open Banking/PSD2)
+  - `ebay_get_signing_keys` - Get all signing keys
+  - `ebay_create_signing_key` - Create new signing keypair
+  - `ebay_get_signing_key` - Get specific signing key by ID
+
+- **SKU Location Mapping** - 2 new inventory endpoints
+  - `ebay_create_or_replace_sku_location_mapping` - Map SKU to inventory locations
+  - `ebay_delete_sku_location_mapping` - Remove SKU location mapping
+
+- **Marketing API Enhancement**
+  - `ebay_delete_ads_by_inventory_reference` - Delete ads by inventory reference
+
+- **Communication/Notification Tools** - 25+ new tool definitions
+  - Destination CRUD operations
+  - Subscription management (CRUD, enable, disable, test)
+  - Subscription filters
+  - Topics management
+  - Public key retrieval
+  - Conversation management
+  - Feedback operations
+
+- **Payment Dispute Evidence** - 11 tool handlers wired up
+
+- **GitHub Action: Weekly API Sync** - Automated weekly check for eBay API changes
+  - Runs every Monday at 9:00 AM UTC
+  - Downloads latest OpenAPI specs
+  - Generates coverage report
+  - Creates GitHub issue if new endpoints are detected
+  - Can be triggered manually via workflow_dispatch
+
+- **Unit Tests** - 41 new tests
+  - Developer API tests (25 tests)
+  - SKU Location Mapping tests (14 tests)
+  - Marketing API tests (2 tests)
+
+### Changed
+
+- **Tool Count:** Increased from 275+ to **339 tools**
+- **Test Count:** Increased to **914+ passing tests**
+- **API Coverage:** 82.5% (293 of 355 eBay API endpoints)
+- Updated README with accurate tool counts and descriptions
+
+### Fixed
+
+- Connected payment dispute evidence handlers to tool definitions
+
 ## [1.4.6] - 2025-01-19
 
 ### Added
+
 - **New OAuth Tool: `ebay_exchange_authorization_code`** - Exchange eBay authorization code for access and refresh tokens
   - Automatically URL-decodes authorization codes when needed
   - Returns masked token data for security
@@ -17,11 +71,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes comprehensive unit tests (5 new tests)
 
 ### Changed
+
 - **README Updated** - Updated tool count from 230+ to 275+ tools
 
 ## [1.4.2] - 2025-01-16
 
 ### Fixed
+
 - **CRITICAL: OAuth Authorization URL Fix** - Resolved `unauthorized_client` error
   - Changed authorization endpoint from `auth.ebay.com` to `auth2.ebay.com` (correct eBay OAuth 2.0 endpoint)
   - Fixed production endpoint: `https://auth2.ebay.com/oauth2/authorize`
@@ -30,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `state` parameter (always included, following OAuth 2.0 best practices)
 
 ### Added
+
 - **Comprehensive eBay RuName Documentation**
   - Added detailed inline documentation explaining eBay's RuName requirement
   - RuName is a special identifier (NOT a traditional URL) required for `redirect_uri` parameter
@@ -39,6 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Each application has separate RuNames for Sandbox and Production environments
 
 ### Changed
+
 - **OAuth Parameter Handling**
   - `redirect_uri` parameter now documented as requiring eBay RuName instead of URL
   - Enhanced code comments to prevent `unauthorized_client` error
@@ -46,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated function signature documentation with RuName requirements
 
 ### Testing
+
 - **Test Suite Updates**
   - Updated all 21 OAuth URL generation tests to use `auth2.ebay.com` endpoint
   - Added validation for `hd` parameter in tests
@@ -54,11 +113,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All tests passing (21/21)
 
 ### Quality
+
 - **Type Safety**
   - Added inline comments to `EbayConfig.redirectUri` documenting RuName requirement
   - Improved code documentation to prevent common OAuth integration mistakes
 
 ### Migration Guide
+
 **Important:** If you're experiencing `unauthorized_client` errors:
 
 1. **Get your RuName:**
@@ -79,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.4.0] - 2025-01-13
 
 ### Changed
+
 - **Documentation Consolidation**: Streamlined all documentation into single README.md
   - Removed redundant README files from API subdirectories (`src/api/*/README.md`)
   - Removed TODO files from API subdirectories (`src/api/*/TODO.md`)
@@ -90,6 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All documentation now centralized in single, comprehensive README.md
 
 ### Added
+
 - **API Coverage Section**: Comprehensive endpoint coverage analysis integrated into README.md
   - Overall: 99.1% complete (110/111 eBay Sell API endpoints)
   - Account API: 97.3% (36/37 endpoints)
@@ -109,6 +172,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.0] - 2025-01-13
 
 ### Added
+
 - **Interactive Setup Wizard**: Beautiful CLI tool for easy configuration
   - eBay-branded ASCII logo with brand colors (red, blue, yellow, green)
   - Step-by-step guided prompts for all credentials and tokens
@@ -120,6 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New npm script: `npm run setup`
 
 ### Changed
+
 - **Documentation Cleanup**: Removed non-standard markdown files following open source best practices
   - Removed `CLAUDE.md` (internal development guide)
   - Removed `docs/AUTO-SETUP.md` (redundant with INTERACTIVE_SETUP.md)
@@ -136,6 +201,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added link to Interactive Setup Guide in documentation section
 
 ### Dependencies
+
 - Added `chalk@^5.6.2` for terminal styling
 - Added `prompts@^2.4.2` for interactive CLI prompts
 - Added `@types/prompts@^2.4.9` for TypeScript types
@@ -143,6 +209,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.3] - 2025-01-13
 
 ### Changed
+
 - **Documentation Updates**: Updated tool counts throughout documentation
   - README.md: Updated from 140 to 230+ tools in all references
   - Tool category breakdown updated with accurate counts (Account: 40, Inventory: 34, Marketing: 77, etc.)
@@ -154,6 +221,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2025-01-13
 
 ### Added
+
 - **Complete eDelivery API Implementation** (24 new endpoints)
   - **Cost & Preferences**: `getActualCosts`, `getAddressPreferences`, `createAddressPreference`, `getConsignPreferences`, `createConsignPreference`
   - **Agents & Services**: `getAgents`, `getBatteryQualifications`, `getDropoffSites`, `getShippingServices`
@@ -168,16 +236,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complete input validation for all endpoint parameters
 
 ### Changed
+
 - **Test Suite Enhancements**
   - Added 24 comprehensive unit tests for all eDelivery API endpoints
   - Improved test coverage across integration and unit test files
   - Enhanced error handling tests for API client and OAuth flows
 
 ### Documentation
+
 - **Updated TODO.md**: Marked all 24 eDelivery endpoints as complete
 - Comprehensive documentation for eDelivery API usage patterns
 
 ### Fixed
+
 - **Auto-Setup Token Configuration**: Fixed MCP client configurations to include all token environment variables
   - `EBAY_USER_REFRESH_TOKEN`, `EBAY_USER_ACCESS_TOKEN`, and `EBAY_APP_ACCESS_TOKEN` now automatically included
   - Resolves "Access token is missing" error when using Claude Desktop and other MCP clients
@@ -190,18 +261,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.1] - 2025-01-13
 
 ### Fixed
+
 - **CI/CD Pipeline**: Fixed YAML syntax error in `.github/workflows/ci.yml`
   - Corrected indentation on line 66 (`version: 10` now properly aligned with 2 spaces)
   - Ensures GitHub Actions workflows execute without validation errors
   - All workflows validated and confirmed working
 
 ### Quality Improvements
+
 - Improved CI/CD reliability with proper YAML formatting
 - All GitHub Actions workflows now pass validation
 
 ## [1.2.0] - 2025-01-12
 
 ### Changed
+
 - **Token Management Refactoring** (BREAKING CHANGE)
   - Migrated from file-based (`.ebay-mcp-tokens.json`) to environment-only (`.env`) token storage
   - Tokens now loaded exclusively from `EBAY_USER_REFRESH_TOKEN` environment variable
@@ -218,12 +292,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **BREAKING CHANGE**: Token storage moved from `.ebay-mcp-tokens.json` to `.env` file.
 
 **Steps to Migrate:**
+
 1. Add `EBAY_USER_REFRESH_TOKEN=v^1.1#...` to your `.env` file
 2. Remove any existing `.ebay-mcp-tokens.json` files
 3. Restart your MCP server
 4. Tokens will automatically refresh on startup
 
 **Benefits:**
+
 - Simpler deployment (no file management)
 - Better security (tokens in `.env`, not committed to git)
 - Automatic refresh ensures valid tokens
@@ -231,6 +307,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.8] - 2025-01-12
 
 ### Added
+
 - **Critical Documentation Suite** (2000+ lines total)
   - Added `PERFORMANCE.md` (400+ lines): Comprehensive performance optimization guide covering rate limiting strategies, caching patterns, connection pooling, memory optimization, benchmarks, and production tuning
   - Added `EXAMPLES.md` (500+ lines): Real-world workflow examples including complete listing creation, order fulfillment, marketing campaigns, analytics, and integration patterns
@@ -248,6 +325,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper copyright attribution: "Copyright (c) 2025 Yosef Hayim Sabag"
 
 ### Changed
+
 - **Project Status** (`CLAUDE.md`)
   - Updated "Infrastructure & Tooling" section to reflect completion of all 9 enhancement items
   - Moved .editorconfig, .nvmrc, Dependabot, FUNDING.yml, and LICENSE from "Future Enhancements" to "Infrastructure & Tooling" (marked complete ✅)
@@ -261,6 +339,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive documentation suite now covers performance, examples, migration, and monitoring
 
 ### Fixed
+
 - **Dependabot Configuration**: Fixed YAML validation errors
   - Changed timezone from "UTC" to "Etc/UTC" (IANA timezone format requirement)
   - Removed unsupported "reviewers" field (Dependabot only supports "assignees")
@@ -269,12 +348,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.7] - 2025-01-12
 
 ### Removed
+
 - **GitHub Actions**: Removed Prettier and ESLint linting workflow
   - Removed `.github/workflows/lint.yml` to streamline CI/CD pipeline
   - Linting and formatting still available via npm scripts (`npm run lint`, `npm run format:check`)
   - Reduces CI overhead while maintaining local development quality checks
 
 ### Changed
+
 - **CI/CD Optimization**: Simplified GitHub Actions workflow by removing redundant lint checks
   - Main CI workflow still runs typecheck, tests, and builds
   - Developers encouraged to use `npm run check` locally before pushing
@@ -282,6 +363,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.4] - 2025-01-12
 
 ### Added
+
 - **Comprehensive Enum Type System** (`src/types/ebay-enums.ts`)
   - Added 33 TypeScript native enums covering all eBay API domains
   - Core business enums: MarketplaceId (41 values), Condition (17 values), FormatType, OrderPaymentStatus, CampaignStatus
@@ -306,6 +388,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes implementation priorities, usage examples, and migration guide
 
 ### Changed
+
 - **Tool Definitions Enhanced** (`src/tools/tool-definitions.ts`)
   - Updated 19 tool input schemas to use native enum types via `z.nativeEnum()`
   - Improved auto-completion and compile-time validation for tool parameters
@@ -314,12 +397,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved module structure for better tree-shaking and IDE support
 
 ### Quality Improvements
+
 - **Test Suite Expansion**: 870 tests (up from 784) across 26 test files
 - **Function Coverage**: Maintained at 99%+
 - **Type Safety**: Eliminated string literal types in favor of native enums for better refactoring safety
 - **Developer Experience**: IDE auto-completion now suggests valid enum values across all eBay API parameters
 
 ### Development Statistics
+
 - **Total Commits**: 167 (up from 141)
 - **Enum Types Implemented**: 33 core enums
 - **Test Coverage Added**: 86 new enum tests (49 structure + 37 validation)
@@ -328,6 +413,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.3] - 2025-11-12
 
 ### Fixed
+
 - **Marketing API Test Suite**: Fixed 11 failing tests in `tests/unit/api/marketing.test.ts`
   - Fixed `updateAdGroupBids` test: Added missing `adGroupId` parameter and corrected endpoint path
   - Fixed `updateAdGroupKeywords` test: Added missing `adGroupId` parameter and corrected endpoint path
@@ -336,12 +422,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated mocks to return `void` for methods with `Promise<void>` return type
 
 ### Quality Improvements
+
 - All 784 tests now passing (100% test suite health)
 - Function coverage: 99.17% (exceeds 91% threshold)
 - Line coverage: 85.18% (exceeds 83% threshold)
 - Improved test reliability and accuracy for eBay Marketing API operations
 
 ### Added
+
 - **Automated MCP Client Setup Script** (`scripts/setup-mcp-clients.sh`)
   - Auto-detects and configures Claude Desktop, Gemini CLI, and ChatGPT Desktop
   - Interactive credential collection (eBay Client ID, Secret, Environment, optional Redirect URI)
@@ -365,11 +453,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Usage examples and requirements
 
 ### Changed
+
 - README.md Installation section now prioritizes automated setup over manual configuration
 - Usage section reorganized to emphasize automated approach while maintaining manual options
 - Quick Start section completely restructured for better user onboarding experience
 
 ### Developer Experience
+
 - Reduced time-to-first-run from ~10 minutes (manual) to ~2 minutes (automated)
 - Eliminated common configuration errors (relative paths, missing environment variables)
 - Single command setup: `./scripts/setup-mcp-clients.sh`
@@ -377,6 +467,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.2] - 2025-11-11
 
 ### Changed
+
 - **Package size optimization**: Reduced unpacked size from 6.68 MB to 3.6 MB (-46%)
 - **Package file optimization**: Reduced total files from 666 to 135 (-80%)
 - Created `.npmignore` to exclude development files, source maps, and duplicate type directories
@@ -384,11 +475,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed type generation script to output flat structure (no duplicate `openapi-schemas/` directory)
 
 ### Technical Improvements
+
 - Added `sourceMap: false` and `declarationMap: false` to `tsconfig.json`
 - Updated `scripts/generate-types.sh` to prevent duplicate type file generation
 - Added missing eDelivery schema to type generation script
 
 ### Performance Impact
+
 - Faster npm install times due to 46% smaller package
 - Reduced disk space usage for consumers
 - Maintained all functionality and IDE support (`.d.ts` files still included)
@@ -396,12 +489,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2025-11-11
 
 ### Fixed
+
 - Corrected GitHub repository URLs in package.json (changed from placeholder `/user/` to actual `/YosefHayim/`)
 - Fixed repository, homepage, and bugs URLs to point to correct GitHub account
 
 ## [1.1.0] - 2025-11-11
 
 ### Added
+
 - GitHub Actions CI/CD pipeline with automated testing and linting
 - 90% test coverage enforcement in CI
 - Dual package manager support (npm and pnpm)
@@ -410,16 +505,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Weekly automated dependency updates via GitHub Actions
 
 ### Changed
+
 - Updated all npm scripts to be package manager agnostic
 - Enhanced documentation with parallel installation instructions
 - Weekly dependency updates for security and stability
 
 ### Fixed
+
 - GitHub Actions CI configuration to use pnpm correctly
 - Removed invalid `types` dependency from devDependencies
 - Fixed hardcoded pnpm commands in package.json scripts
 
 ### Development
+
 - Total commits: 141 since initial release
 - Test suite: 533 tests across 17 test files
 - Code coverage: >90% on critical paths
@@ -428,6 +526,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-11-09
 
 ### Added
+
 - Initial production release
 - Complete MCP server implementation with 170+ eBay API tools
 - Full coverage of 9 eBay API categories:
@@ -479,6 +578,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Type generation from OpenAPI specs
 
 ### Technical Specifications
+
 - **Runtime**: Node.js 18.0.0 or higher
 - **Language**: TypeScript 5.9.3 (ES2022 modules)
 - **MCP SDK**: @modelcontextprotocol/sdk v1.21.1
@@ -489,6 +589,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **JWT**: jose v6.1.1, jsonwebtoken v9.0.2
 
 ### Dependencies
+
 ```json
 {
   "@modelcontextprotocol/sdk": "^1.21.1",
@@ -506,16 +607,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-| Version | Date       | Commits | Key Changes                                    |
-|---------|------------|---------|------------------------------------------------|
-| 1.2.1   | 2025-01-13 | 176     | CI/CD YAML syntax fix                          |
-| 1.2.0   | 2025-01-12 | 167+    | Cloudflare Workers, .env-only token management |
-| 1.1.8   | 2025-01-12 | 167     | Critical documentation suite (2000+ lines)     |
-| 1.1.4   | 2025-01-12 | 167     | Comprehensive enum type system, 870 tests      |
-| 1.1.3   | 2025-11-12 | 141+    | Marketing test fixes, automated setup          |
-| 1.1.2   | 2025-11-11 | 141     | Package optimization (-46% size)               |
-| 1.1.1   | 2025-11-11 | 141     | GitHub URL corrections                         |
-| 1.1.0   | 2025-11-11 | 141     | CI/CD, dual package managers, enhancements     |
+| Version | Date       | Commits | Key Changes                                      |
+| ------- | ---------- | ------- | ------------------------------------------------ |
+| 1.2.1   | 2025-01-13 | 176     | CI/CD YAML syntax fix                            |
+| 1.2.0   | 2025-01-12 | 167+    | Cloudflare Workers, .env-only token management   |
+| 1.1.8   | 2025-01-12 | 167     | Critical documentation suite (2000+ lines)       |
+| 1.1.4   | 2025-01-12 | 167     | Comprehensive enum type system, 870 tests        |
+| 1.1.3   | 2025-11-12 | 141+    | Marketing test fixes, automated setup            |
+| 1.1.2   | 2025-11-11 | 141     | Package optimization (-46% size)                 |
+| 1.1.1   | 2025-11-11 | 141     | GitHub URL corrections                           |
+| 1.1.0   | 2025-11-11 | 141     | CI/CD, dual package managers, enhancements       |
 | 1.0.0   | 2025-11-09 | -       | Initial production release, complete feature set |
 
 ## Development Statistics
@@ -536,6 +637,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This is a **minor version update** with no breaking changes. All existing functionality remains compatible.
 
 **New Features:**
+
 1. You can now use either npm or pnpm as your package manager
 2. CI/CD pipeline automatically runs tests on pull requests
 3. Dependencies are kept up-to-date weekly
@@ -553,6 +655,7 @@ pnpm update ebay-mcp@1.1.0
 ## Contributing
 
 When contributing to this project, please:
+
 1. Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
 2. Update this CHANGELOG.md with your changes
 3. Ensure all tests pass (`npm test` or `pnpm test`)
