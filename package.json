@@ -13,6 +13,7 @@
     "start": "node build/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "setup": "tsx src/scripts/setup.ts",
     "sync": "tsx src/scripts/dev-sync.ts",
     "diagnose": "tsx src/scripts/diagnostics.ts",
