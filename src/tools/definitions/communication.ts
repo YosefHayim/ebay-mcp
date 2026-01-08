@@ -153,12 +153,226 @@ export const communicationTools: ToolDefinition[] = [
       destination: notificationDestinationSchema.describe('Destination configuration'),
     },
   },
+  // Notification API - Destination CRUD
+  {
+    name: 'ebay_get_notification_destination',
+    description: 'Get a specific notification destination by ID',
+    inputSchema: {
+      destination_id: z.string().describe('The unique identifier for the destination'),
+    },
+  },
+  {
+    name: 'ebay_update_notification_destination',
+    description: 'Update a notification destination',
+    inputSchema: {
+      destination_id: z.string().describe('The unique identifier for the destination'),
+      delivery_config: z
+        .object({
+          endpoint: z.string().optional().describe('HTTPS endpoint URL'),
+          verification_token: z
+            .string()
+            .optional()
+            .describe('Verification token (32-80 characters)'),
+        })
+        .optional()
+        .describe('Delivery configuration'),
+      name: z.string().optional().describe('Destination name'),
+      status: z.string().optional().describe('Status: ENABLED or DISABLED'),
+    },
+  },
+  {
+    name: 'ebay_delete_notification_destination',
+    description: 'Delete a notification destination',
+    inputSchema: {
+      destination_id: z.string().describe('The unique identifier for the destination'),
+    },
+  },
+  // Notification API - Subscription CRUD
+  {
+    name: 'ebay_get_notification_subscriptions',
+    description: 'Get all notification subscriptions (paginated)',
+    inputSchema: {
+      limit: z.string().optional().describe('Maximum number of subscriptions to return'),
+      continuation_token: z.string().optional().describe('Token for pagination'),
+    },
+  },
+  {
+    name: 'ebay_create_notification_subscription',
+    description: 'Create a notification subscription',
+    inputSchema: {
+      destination_id: z.string().optional().describe('The destination endpoint ID'),
+      payload: z
+        .object({
+          delivery_protocol: z.string().optional().describe('Delivery protocol (HTTPS)'),
+          format: z.string().optional().describe('Payload format (JSON)'),
+          schema_version: z.string().optional().describe('Schema version'),
+        })
+        .optional()
+        .describe('Payload configuration'),
+      status: z.string().optional().describe('Status: ENABLED or DISABLED'),
+      topic_id: z.string().optional().describe('The notification topic ID'),
+    },
+  },
+  {
+    name: 'ebay_get_notification_subscription',
+    description: 'Get a specific notification subscription by ID',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+    },
+  },
+  {
+    name: 'ebay_update_notification_subscription',
+    description: 'Update a notification subscription',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+      destination_id: z.string().optional().describe('The destination endpoint ID'),
+      payload: z
+        .object({
+          delivery_protocol: z.string().optional().describe('Delivery protocol'),
+          format: z.string().optional().describe('Payload format'),
+          schema_version: z.string().optional().describe('Schema version'),
+        })
+        .optional()
+        .describe('Payload configuration'),
+      status: z.string().optional().describe('Status: ENABLED or DISABLED'),
+    },
+  },
+  {
+    name: 'ebay_delete_notification_subscription',
+    description: 'Delete a notification subscription',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+    },
+  },
+  {
+    name: 'ebay_disable_notification_subscription',
+    description: 'Disable a notification subscription',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+    },
+  },
+  {
+    name: 'ebay_enable_notification_subscription',
+    description: 'Enable a notification subscription',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+    },
+  },
+  {
+    name: 'ebay_test_notification_subscription',
+    description: 'Test a notification subscription by sending a test message',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+    },
+  },
+  // Notification API - Subscription Filters
+  {
+    name: 'ebay_create_notification_subscription_filter',
+    description: 'Create a filter for a notification subscription',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+      filter_schema: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe('JSON Schema document to filter notifications'),
+    },
+  },
+  {
+    name: 'ebay_get_notification_subscription_filter',
+    description: 'Get a specific subscription filter',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+      filter_id: z.string().describe('The unique identifier for the filter'),
+    },
+  },
+  {
+    name: 'ebay_delete_notification_subscription_filter',
+    description: 'Delete a subscription filter',
+    inputSchema: {
+      subscription_id: z.string().describe('The unique identifier for the subscription'),
+      filter_id: z.string().describe('The unique identifier for the filter'),
+    },
+  },
+  // Notification API - Topics
+  {
+    name: 'ebay_get_notification_topic',
+    description: 'Get a specific notification topic by ID',
+    inputSchema: {
+      topic_id: z.string().describe('The unique identifier for the topic'),
+    },
+  },
+  {
+    name: 'ebay_get_notification_topics',
+    description: 'Get all available notification topics (paginated)',
+    inputSchema: {
+      limit: z.string().optional().describe('Maximum number of topics to return'),
+      continuation_token: z.string().optional().describe('Token for pagination'),
+    },
+  },
+  // Notification API - Public Key
+  {
+    name: 'ebay_get_notification_public_key',
+    description: 'Get a public key for verifying notification signatures',
+    inputSchema: {
+      public_key_id: z.string().describe('The unique identifier for the public key'),
+    },
+  },
+  // Message API - Conversations
+  {
+    name: 'ebay_get_conversations',
+    description: 'Get all buyer-seller conversations (paginated)',
+    inputSchema: {
+      filter: z.string().optional().describe('Filter criteria for conversations'),
+      limit: z.number().optional().describe('Number of conversations to return'),
+      offset: z.number().optional().describe('Number of conversations to skip'),
+    },
+  },
+  {
+    name: 'ebay_get_conversation',
+    description: 'Get a specific conversation by ID',
+    inputSchema: {
+      conversation_id: z.string().describe('The unique identifier for the conversation'),
+    },
+  },
+  {
+    name: 'ebay_bulk_update_conversation',
+    description: 'Bulk update multiple conversations (read status, flagged, etc.)',
+    inputSchema: {
+      conversations: z
+        .array(
+          z.object({
+            conversation_id: z.string().describe('The conversation ID'),
+            read: z.boolean().optional().describe('Mark as read/unread'),
+            flagged: z.boolean().optional().describe('Mark as flagged/unflagged'),
+          })
+        )
+        .describe('Array of conversations to update'),
+    },
+  },
+  {
+    name: 'ebay_update_conversation',
+    description: 'Update a single conversation (read status, flagged, etc.)',
+    inputSchema: {
+      conversation_id: z.string().describe('The conversation ID'),
+      read: z.boolean().optional().describe('Mark as read/unread'),
+      flagged: z.boolean().optional().describe('Mark as flagged/unflagged'),
+    },
+  },
   // Feedback API
   {
     name: 'ebay_get_feedback',
-    description: 'Get feedback for a transaction',
+    description: 'Get feedback for a user by type',
     inputSchema: {
-      transactionId: z.string().describe('The transaction ID'),
+      user_id: z.string().describe('The eBay username of the user'),
+      feedback_type: z.string().describe('Type: FEEDBACK_RECEIVED or FEEDBACK_SENT'),
+      feedback_id: z.string().optional().describe('Filter by specific feedback ID'),
+      filter: z.string().optional().describe('Filter criteria'),
+      limit: z.string().optional().describe('Maximum number of feedback items to return'),
+      listing_id: z.string().optional().describe('Filter by listing ID'),
+      offset: z.string().optional().describe('Number of items to skip'),
+      order_line_item_id: z.string().optional().describe('Filter by order line item ID'),
+      sort: z.string().optional().describe('Sort order'),
+      transaction_id: z.string().optional().describe('Filter by transaction ID'),
     },
   },
   {
@@ -177,5 +391,36 @@ export const communicationTools: ToolDefinition[] = [
       properties: {},
       description: 'Success response',
     } as OutputArgs,
+  },
+  {
+    name: 'ebay_get_awaiting_feedback',
+    description: 'Get transactions awaiting feedback from the seller',
+    inputSchema: {
+      filter: z.string().optional().describe('Filter criteria'),
+      limit: z.string().optional().describe('Maximum number of items to return (25-200)'),
+      offset: z.string().optional().describe('Number of items to skip'),
+      sort: z.string().optional().describe('Sort order'),
+    },
+  },
+  {
+    name: 'ebay_respond_to_feedback',
+    description: 'Respond to feedback received from a buyer',
+    inputSchema: {
+      feedback_id: z.string().optional().describe('The feedback ID being responded to'),
+      recipient_user_id: z.string().optional().describe('The user ID of the feedback provider'),
+      response_text: z
+        .string()
+        .optional()
+        .describe('The response text content (max 500 characters)'),
+      response_type: z.string().optional().describe('The response type: REPLY or FOLLOW_UP'),
+    },
+  },
+  {
+    name: 'ebay_get_feedback_rating_summary',
+    description: 'Get feedback rating summary for a user',
+    inputSchema: {
+      user_id: z.string().describe('The eBay username of the user'),
+      filter: z.string().describe('Filter with required ratingType parameter'),
+    },
   },
 ];

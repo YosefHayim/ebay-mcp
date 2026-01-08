@@ -5,6 +5,7 @@ import { FeedbackApi } from '@/api/communication/feedback.js';
 import { MessageApi } from '@/api/communication/message.js';
 import { NegotiationApi } from '@/api/communication/negotiation.js';
 import { NotificationApi } from '@/api/communication/notification.js';
+import { DeveloperApi } from '@/api/developer/developer.js';
 import { InventoryApi } from '@/api/listing-management/inventory.js';
 import { MetadataApi } from '@/api/listing-metadata/metadata.js';
 import { TaxonomyApi } from '@/api/listing-metadata/taxonomy.js';
@@ -44,6 +45,7 @@ export class EbaySellerApi {
   public vero: VeroApi;
   public translation: TranslationApi;
   public edelivery: EDeliveryApi;
+  public developer: DeveloperApi;
 
   constructor(config: EbayConfig) {
     this.client = new EbayApiClient(config);
@@ -67,6 +69,7 @@ export class EbaySellerApi {
     this.vero = new VeroApi(this.client);
     this.translation = new TranslationApi(this.client);
     this.edelivery = new EDeliveryApi(this.client);
+    this.developer = new DeveloperApi(this.client);
   }
 
   /**
@@ -93,14 +96,8 @@ export class EbaySellerApi {
   /**
    * Set user access and refresh tokens
    */
-  async setUserTokens(
-    accessToken: string,
-    refreshToken: string,
-  ): Promise<void> {
-    await this.client.setUserTokens(
-      accessToken,
-      refreshToken,
-    );
+  async setUserTokens(accessToken: string, refreshToken: string): Promise<void> {
+    await this.client.setUserTokens(accessToken, refreshToken);
   }
 
   /**
@@ -137,3 +134,4 @@ export * from '@/api/other/edelivery.js';
 export * from '@/api/other/identity.js';
 export * from '@/api/other/translation.js';
 export * from '@/api/other/vero.js';
+export * from '@/api/developer/developer.js';

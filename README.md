@@ -1,4 +1,5 @@
 # eBay API MCP Server
+
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/ebay-mcp)](https://www.npmjs.com/package/ebay-mcp)
@@ -114,13 +115,7 @@ Run the interactive setup wizard:
 npm run setup
 ```
 
-Or manually configure:
-
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-npm run auto-setup
-```
+Or configure manually by copying `.env.example` to `.env` and editing your credentials.
 
 ### 4. Configure MCP Client
 
@@ -356,103 +351,54 @@ Here are some common tasks you can accomplish with the eBay MCP server:
 - npm or pnpm
 - eBay Developer Account
 
-### Setup
+### Quick Start for Contributors
 
 ```bash
-# Fork and clone the repository
 git clone https://github.com/YOUR_USERNAME/ebay-mcp.git
 cd ebay-mcp
-
-# Install dependencies
 npm install
-
-# Set up environment
-cp .env.example .env
-# Edit .env with your credentials
-
-# Build and test
+npm run setup      # Interactive setup wizard
 npm run build
 npm test
 ```
 
-### Development Commands
+### Commands Reference
+
+| Command            | Description                                        |
+| ------------------ | -------------------------------------------------- |
+| `npm run build`    | Compile TypeScript to JavaScript                   |
+| `npm start`        | Run the MCP server                                 |
+| `npm run dev`      | Run server with hot reload                         |
+| `npm test`         | Run test suite                                     |
+| `npm run setup`    | Interactive setup wizard                           |
+| `npm run sync`     | Sync specs, generate types, find missing endpoints |
+| `npm run diagnose` | Check configuration and connectivity               |
+| `npm run check`    | Run typecheck + lint + format check                |
+| `npm run fix`      | Auto-fix lint and format issues                    |
+
+### Adding New API Endpoints
+
+When eBay releases new API endpoints, use the sync tool to identify what's missing:
 
 ```bash
-npm run dev              # Run STDIO server
-npm run dev:http         # Run HTTP server
-npm run test             # Run tests
-npm run test:watch       # Run tests in watch mode
-npm run typecheck        # Type-check code
-npm run lint             # Lint code
-npm run format           # Format code
+npm run sync
 ```
 
-### Docker Support
+This single command will:
 
-Run the server in a containerized environment:
+1. Download latest OpenAPI specs from eBay
+2. Generate TypeScript types from specs
+3. Analyze which endpoints are implemented
+4. Report missing endpoints that need tools
 
-```bash
-# Build the Docker image
-npm run docker:build
+**Workflow for adding a new endpoint:**
 
-# Start the container
-npm run docker:up
-
-# View logs
-npm run docker:logs
-
-# Stop the container
-npm run docker:down
-
-# Restart the container
-npm run docker:restart
-```
-
-**Docker Compose Configuration:**
-
-The server can be run with Docker Compose for easy deployment:
-
-```bash
-docker-compose up -d
-```
-
-Environment variables should be configured in `.env` file before running Docker commands. The container will automatically use your `.env` configuration.
-
-**Use Cases for Docker:**
-
-- Production deployments
-- Consistent development environments
-- CI/CD pipelines
-- Isolated testing environments
-
-### HTTP Server Mode
-
-In addition to the default STDIO transport for MCP clients, the server can run in HTTP mode for testing and debugging:
-
-```bash
-# Development
-npm run dev:http
-
-# Production
-npm run start:http
-```
-
-**HTTP Mode Features:**
-
-- RESTful API endpoints for all tools
-- Interactive API documentation
-- Useful for testing tools without an MCP client
-- CORS support for web applications
-- Helmet security headers
-
-**When to Use HTTP Mode:**
-
-- Testing individual tools during development
-- Building custom integrations
-- Debugging API responses
-- Creating web-based interfaces
-
-**Note:** STDIO mode (default) is recommended for MCP client integration (Claude Desktop, etc.). HTTP mode is primarily for development and custom integrations.
+1. Run `npm run sync` to identify missing endpoints
+2. Check `dev-sync-report.json` for the full list
+3. Create a new tool in `src/tools/definitions/`
+4. Add the API method in `src/api/`
+5. Write tests in `tests/`
+6. Run `npm run check && npm test`
 
 ### Project Structure
 
@@ -463,11 +409,20 @@ ebay-mcp/
 │   ├── api/               # eBay API implementations
 │   ├── auth/              # OAuth & token management
 │   ├── tools/             # MCP tool definitions
-│   ├── types/             # TypeScript types
-│   └── utils/             # Validation schemas
+│   ├── types/             # TypeScript types (auto-generated)
+│   ├── scripts/           # CLI tools (setup, sync, diagnose)
+│   └── utils/             # Shared utilities
+├── docs/                  # OpenAPI specs (auto-downloaded)
 ├── tests/                 # Test suite
-├── docs/                  # Documentation
 └── build/                 # Compiled output
+```
+
+### Docker Support
+
+```bash
+docker-compose up -d       # Start container
+docker-compose logs -f     # View logs
+docker-compose down        # Stop container
 ```
 
 For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -540,7 +495,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 1. Verify you're using the correct environment (sandbox vs production)
 2. Ensure you have proper permissions/scopes for the operation
 3. Check eBay API status: https://developer.ebay.com/support/api-status
-4. Run `npm run diagnose:export` to generate a diagnostic report
+4. Run `npm run diagnose` to check your configuration
 5. Review the [eBay API documentation](https://developer.ebay.com/docs) for endpoint requirements
 
 ### Diagnostic Tools

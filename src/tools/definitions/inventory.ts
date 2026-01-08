@@ -423,11 +423,10 @@ export const inventoryTools: ToolDefinition[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
   },
-  // Listing Locations
   {
     name: 'ebay_get_listing_locations',
     description:
-      'Get inventory locations for a specific listing.\n\nRequired OAuth Scope: sell.inventory.readonly or sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory.readonly',
+      'Get inventory locations for a specific listing (SKU location mapping).\n\nRequired OAuth Scope: sell.inventory.readonly or sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory.readonly',
     inputSchema: {
       listingId: z.string().describe('The listing ID'),
       sku: z.string().describe('The seller-defined SKU'),
@@ -437,7 +436,47 @@ export const inventoryTools: ToolDefinition[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
   },
-  // Inventory Item Group Publishing
+  {
+    name: 'ebay_create_or_replace_sku_location_mapping',
+    description:
+      'Create or replace SKU location mapping for a listing. Maps a SKU to multiple fulfillment center locations.\n\nRequired OAuth Scope: sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory',
+    inputSchema: {
+      listingId: z.string().describe('The listing ID'),
+      sku: z.string().describe('The seller-defined SKU'),
+      locationMapping: z
+        .object({
+          locationDetails: z
+            .array(
+              z.object({
+                merchantLocationKey: z.string().describe('The fulfillment center location key'),
+                quantity: z.number().optional().describe('Available quantity at this location'),
+              })
+            )
+            .describe('Array of location details with quantities'),
+        })
+        .passthrough()
+        .describe('Location mapping configuration'),
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {},
+      description: 'Empty response on success (HTTP 204)',
+    } as OutputArgs,
+  },
+  {
+    name: 'ebay_delete_sku_location_mapping',
+    description:
+      'Delete SKU location mapping for a listing. Removes all fulfillment center location mappings for a SKU.\n\nRequired OAuth Scope: sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory',
+    inputSchema: {
+      listingId: z.string().describe('The listing ID'),
+      sku: z.string().describe('The seller-defined SKU'),
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {},
+      description: 'Empty response on success (HTTP 204)',
+    } as OutputArgs,
+  },
   {
     name: 'ebay_publish_offer_by_inventory_item_group',
     description:

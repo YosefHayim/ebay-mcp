@@ -21,6 +21,7 @@ import { metadataTools } from './metadata.js';
 import { taxonomyTools } from './taxonomy.js';
 import { communicationTools } from './communication.js';
 import { otherApiTools } from './other.js';
+import { developerTools } from './developer.js';
 
 // Export individual categories
 export {
@@ -34,6 +35,7 @@ export {
   taxonomyTools,
   communicationTools,
   otherApiTools,
+  developerTools,
 };
 
 // Export all tools as a single array
@@ -48,6 +50,7 @@ export const allTools = [
   ...taxonomyTools,
   ...communicationTools,
   ...otherApiTools,
+  ...developerTools,
 ];
 
 // Export types

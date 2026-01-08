@@ -839,4 +839,125 @@ describe('InventoryApi', () => {
       ).rejects.toThrow('Failed to withdraw offer by inventory item group: Withdraw failed');
     });
   });
+
+  describe('createOrReplaceSkuLocationMapping', () => {
+    it('should create or replace SKU location mapping', async () => {
+      const locationMapping = {
+        shipToLocationAvailability: {
+          quantity: 50,
+          availabilityDistributions: [
+            {
+              merchantLocationKey: 'WAREHOUSE_1',
+              quantity: 30,
+            },
+            {
+              merchantLocationKey: 'WAREHOUSE_2',
+              quantity: 20,
+            },
+          ],
+        },
+      };
+      vi.mocked(client.put).mockResolvedValue(undefined);
+
+      await api.createOrReplaceSkuLocationMapping('LISTING-123', 'SKU-456', locationMapping);
+
+      expect(client.put).toHaveBeenCalledWith(
+        '/sell/inventory/v1/listing/LISTING-123/sku/SKU-456/locations',
+        locationMapping,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    });
+
+    it('should throw error when listingId is empty', async () => {
+      await expect(
+        api.createOrReplaceSkuLocationMapping('', 'SKU-456', { quantity: 10 })
+      ).rejects.toThrow('listingId is required and must be a string');
+    });
+
+    it('should throw error when listingId is null', async () => {
+      await expect(
+        api.createOrReplaceSkuLocationMapping(null as any, 'SKU-456', { quantity: 10 })
+      ).rejects.toThrow('listingId is required and must be a string');
+    });
+
+    it('should throw error when sku is empty', async () => {
+      await expect(
+        api.createOrReplaceSkuLocationMapping('LISTING-123', '', { quantity: 10 })
+      ).rejects.toThrow('sku is required and must be a string');
+    });
+
+    it('should throw error when sku is null', async () => {
+      await expect(
+        api.createOrReplaceSkuLocationMapping('LISTING-123', null as any, { quantity: 10 })
+      ).rejects.toThrow('sku is required and must be a string');
+    });
+
+    it('should throw error when locationMapping is missing', async () => {
+      await expect(
+        api.createOrReplaceSkuLocationMapping('LISTING-123', 'SKU-456', undefined as any)
+      ).rejects.toThrow('locationMapping is required and must be an object');
+    });
+
+    it('should throw error when locationMapping is not an object', async () => {
+      await expect(
+        api.createOrReplaceSkuLocationMapping('LISTING-123', 'SKU-456', 'invalid' as any)
+      ).rejects.toThrow('locationMapping is required and must be an object');
+    });
+
+    it('should handle API errors when creating location mapping', async () => {
+      vi.mocked(client.put).mockRejectedValue(new Error('API Error'));
+
+      await expect(
+        api.createOrReplaceSkuLocationMapping('LISTING-123', 'SKU-456', { quantity: 10 })
+      ).rejects.toThrow('Failed to create or replace SKU location mapping: API Error');
+    });
+  });
+
+  describe('deleteSkuLocationMapping', () => {
+    it('should delete SKU location mapping', async () => {
+      vi.mocked(client.delete).mockResolvedValue(undefined);
+
+      await api.deleteSkuLocationMapping('LISTING-123', 'SKU-456');
+
+      expect(client.delete).toHaveBeenCalledWith(
+        '/sell/inventory/v1/listing/LISTING-123/sku/SKU-456/locations'
+      );
+    });
+
+    it('should throw error when listingId is empty', async () => {
+      await expect(api.deleteSkuLocationMapping('', 'SKU-456')).rejects.toThrow(
+        'listingId is required and must be a string'
+      );
+    });
+
+    it('should throw error when listingId is null', async () => {
+      await expect(api.deleteSkuLocationMapping(null as any, 'SKU-456')).rejects.toThrow(
+        'listingId is required and must be a string'
+      );
+    });
+
+    it('should throw error when sku is empty', async () => {
+      await expect(api.deleteSkuLocationMapping('LISTING-123', '')).rejects.toThrow(
+        'sku is required and must be a string'
+      );
+    });
+
+    it('should throw error when sku is null', async () => {
+      await expect(api.deleteSkuLocationMapping('LISTING-123', null as any)).rejects.toThrow(
+        'sku is required and must be a string'
+      );
+    });
+
+    it('should handle API errors when deleting location mapping', async () => {
+      vi.mocked(client.delete).mockRejectedValue(new Error('Delete failed'));
+
+      await expect(api.deleteSkuLocationMapping('LISTING-123', 'SKU-456')).rejects.toThrow(
+        'Failed to delete SKU location mapping: Delete failed'
+      );
+    });
+  });
 });

@@ -265,6 +265,17 @@ export const marketingTools: ToolDefinition[] = [
     }) as OutputArgs,
   },
   {
+    name: 'ebay_delete_ads_by_inventory_reference',
+    description: 'Delete ads by inventory reference for a CPS campaign.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      inventoryReferenceId: z.string().describe('SKU or inventory item group key'),
+      inventoryReferenceType: z
+        .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+        .describe('Reference type'),
+    },
+  },
+  {
     name: 'ebay_bulk_delete_ads_by_listing_id',
     description: 'Delete multiple ads by listing ID. CPS campaigns only.',
     inputSchema: {
@@ -1173,6 +1184,398 @@ export const marketingTools: ToolDefinition[] = [
       limit: limitSchema,
       offset: offsetSchema,
       marketplaceId: z.string().optional().describe('Marketplace ID'),
+    },
+  },
+
+  // ========================================
+  // CAMPAIGN MANAGEMENT - ADDITIONAL (7 tools)
+  // ========================================
+  {
+    name: 'ebay_delete_campaign',
+    description: 'Permanently delete a marketing campaign. This action cannot be undone.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_launch_campaign',
+    description: 'Launch a campaign to start running ads. Campaign must be in PENDING status.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_find_campaign_by_ad_reference',
+    description: 'Find a campaign by listing ID or inventory reference.',
+    inputSchema: {
+      inventoryReferenceId: z.string().optional().describe('SKU or inventory item group key'),
+      inventoryReferenceType: z
+        .enum(['INVENTORY_ITEM', 'INVENTORY_ITEM_GROUP'])
+        .optional()
+        .describe('Reference type'),
+      listingId: z.string().optional().describe('eBay listing ID'),
+    },
+    outputSchema: zodToJsonSchema(campaignSchema, {
+      name: 'CampaignResponse',
+      $refStrategy: 'none',
+    }) as OutputArgs,
+  },
+  {
+    name: 'ebay_setup_quick_campaign',
+    description: 'Create a quick campaign with simplified setup. Ideal for getting started fast.',
+    inputSchema: {
+      quickCampaign: z
+        .object({
+          campaignName: z.string().describe('Campaign name'),
+          marketplaceId: z.nativeEnum(MarketplaceId).describe('Marketplace ID'),
+          fundingStrategy: z
+            .object({
+              fundingModel: z.enum(['COST_PER_SALE', 'COST_PER_CLICK']).describe('Funding model'),
+              bidPercentage: z.string().optional().describe('Bid percentage (e.g., "10.5")'),
+            })
+            .describe('Funding strategy'),
+        })
+        .describe('Quick campaign configuration'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_suggest_budget',
+    description: 'Get budget suggestions for a campaign based on expected performance.',
+    inputSchema: {
+      campaignId: z.string().optional().describe('Campaign ID to get budget suggestions for'),
+    },
+  },
+  {
+    name: 'ebay_suggest_items',
+    description: 'Get item suggestions for a campaign. Returns items that could perform well.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+    },
+  },
+  {
+    name: 'ebay_suggest_max_cpc',
+    description: 'Get maximum CPC bid suggestions for ads based on competition.',
+    inputSchema: {
+      suggestionRequest: z
+        .object({
+          listingIds: z.array(z.string()).optional().describe('Listing IDs to get suggestions for'),
+        })
+        .describe('CPC suggestion request'),
+    },
+  },
+
+  // ========================================
+  // CAMPAIGN STRATEGY (3 tools)
+  // ========================================
+  {
+    name: 'ebay_update_ad_rate_strategy',
+    description: 'Update the ad rate strategy for a CPS campaign.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      strategy: z
+        .object({
+          bidPercentage: z.string().describe('New bid percentage (e.g., "10.5")'),
+        })
+        .describe('Ad rate strategy'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_update_bidding_strategy',
+    description: 'Update the bidding strategy for a CPC campaign.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      strategy: z
+        .object({
+          biddingStrategyType: z
+            .enum(['FIXED', 'DYNAMIC'])
+            .optional()
+            .describe('Bidding strategy type'),
+        })
+        .describe('Bidding strategy'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_update_campaign_budget',
+    description: 'Update the daily budget for a campaign.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      budget: z
+        .object({
+          amount: z.string().describe('Budget amount'),
+          currency: z.string().describe('Currency code (e.g., USD)'),
+        })
+        .describe('Campaign budget'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+
+  // ========================================
+  // AD GROUP - UPDATE (1 tool)
+  // ========================================
+  {
+    name: 'ebay_update_ad_group',
+    description: 'Update an ad group configuration.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      adGroupId: adGroupIdSchema,
+      updateData: z
+        .object({
+          name: z.string().optional().describe('New ad group name'),
+          defaultBid: z
+            .object({
+              amount: z.string().describe('Default bid amount'),
+              currency: z.string().describe('Currency code'),
+            })
+            .optional()
+            .describe('New default bid'),
+        })
+        .describe('Ad group update data'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+
+  // ========================================
+  // KEYWORD - CAMPAIGN LEVEL (3 tools)
+  // ========================================
+  {
+    name: 'ebay_update_keyword',
+    description: 'Update a keyword configuration.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      keywordId: keywordIdSchema,
+      updateData: z
+        .object({
+          keywordText: z.string().optional().describe('New keyword text'),
+          matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).optional().describe('New match type'),
+          bid: z
+            .object({
+              amount: z.string().describe('Bid amount'),
+              currency: z.string().describe('Currency code'),
+            })
+            .optional()
+            .describe('New keyword bid'),
+        })
+        .describe('Keyword update data'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_bulk_create_campaign_keyword',
+    description: 'Bulk create keywords at the campaign level.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      keywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                keywordText: z.string().describe('Keyword text'),
+                matchType: z.enum(['BROAD', 'PHRASE', 'EXACT']).describe('Match type'),
+                bid: z
+                  .object({
+                    amount: z.string(),
+                    currency: z.string(),
+                  })
+                  .optional(),
+              })
+            )
+            .describe('Array of keyword creation requests'),
+        })
+        .describe('Bulk keyword creation request'),
+    },
+  },
+  {
+    name: 'ebay_bulk_update_campaign_keyword',
+    description: 'Bulk update keywords at the campaign level.',
+    inputSchema: {
+      campaignId: campaignIdSchema,
+      keywords: z
+        .object({
+          requests: z
+            .array(
+              z.object({
+                keywordId: z.string().describe('Keyword ID'),
+                keywordText: z.string().optional().describe('New keyword text'),
+                matchType: z
+                  .enum(['BROAD', 'PHRASE', 'EXACT'])
+                  .optional()
+                  .describe('New match type'),
+                bid: z
+                  .object({
+                    amount: z.string(),
+                    currency: z.string(),
+                  })
+                  .optional(),
+              })
+            )
+            .describe('Array of keyword update requests'),
+        })
+        .describe('Bulk keyword update request'),
+    },
+  },
+
+  // ========================================
+  // REPORTING - ADDITIONAL (2 tools)
+  // ========================================
+  {
+    name: 'ebay_get_report',
+    description: 'Download a completed report by report ID.',
+    inputSchema: {
+      reportId: reportIdSchema,
+    },
+  },
+  {
+    name: 'ebay_delete_report_task',
+    description: 'Delete a report task. Only completed or failed tasks can be deleted.',
+    inputSchema: {
+      reportTaskId: reportTaskIdSchema,
+    },
+    outputSchema: genericSuccessSchema,
+  },
+
+  // ========================================
+  // PROMOTIONS - MARKDOWN (4 tools)
+  // ========================================
+  {
+    name: 'ebay_create_item_price_markdown_promotion',
+    description: 'Create an item price markdown promotion (sale pricing).',
+    inputSchema: {
+      promotion: z
+        .object({
+          name: z.string().describe('Promotion name'),
+          marketplaceId: z.nativeEnum(MarketplaceId).describe('Marketplace ID'),
+          startDate: z.string().describe('Start date (ISO 8601 format)'),
+          endDate: z.string().describe('End date (ISO 8601 format)'),
+          discountPercentage: z.string().optional().describe('Discount percentage (e.g., "20")'),
+        })
+        .describe('Markdown promotion configuration'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_get_item_price_markdown_promotion',
+    description: 'Get details of a specific item price markdown promotion.',
+    inputSchema: {
+      promotionId: promotionIdSchema,
+    },
+  },
+  {
+    name: 'ebay_update_item_price_markdown_promotion',
+    description: 'Update an existing item price markdown promotion.',
+    inputSchema: {
+      promotionId: promotionIdSchema,
+      promotion: z.record(z.unknown()).describe('Updated promotion configuration'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_delete_item_price_markdown_promotion',
+    description: 'Delete an item price markdown promotion.',
+    inputSchema: {
+      promotionId: promotionIdSchema,
+    },
+    outputSchema: genericSuccessSchema,
+  },
+
+  // ========================================
+  // PROMOTIONS - ADDITIONAL (3 tools)
+  // ========================================
+  {
+    name: 'ebay_get_listing_set',
+    description: 'Get the listing set (items included) for a promotion.',
+    inputSchema: {
+      promotionId: promotionIdSchema,
+    },
+  },
+  {
+    name: 'ebay_pause_promotion',
+    description: 'Pause a running promotion. Can be resumed later.',
+    inputSchema: {
+      promotionId: promotionIdSchema,
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_resume_promotion',
+    description: 'Resume a paused promotion.',
+    inputSchema: {
+      promotionId: promotionIdSchema,
+    },
+    outputSchema: genericSuccessSchema,
+  },
+
+  // ========================================
+  // EMAIL CAMPAIGNS (8 tools)
+  // ========================================
+  {
+    name: 'ebay_get_email_campaigns',
+    description: 'Get all email marketing campaigns.',
+    inputSchema: {
+      limit: limitSchema,
+      offset: offsetSchema,
+    },
+  },
+  {
+    name: 'ebay_create_email_campaign',
+    description: 'Create a new email marketing campaign.',
+    inputSchema: {
+      emailCampaign: z
+        .object({
+          campaignName: z.string().describe('Email campaign name'),
+          marketplaceId: z.nativeEnum(MarketplaceId).describe('Marketplace ID'),
+          subject: z.string().optional().describe('Email subject line'),
+        })
+        .describe('Email campaign configuration'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_get_email_campaign',
+    description: 'Get details of a specific email campaign.',
+    inputSchema: {
+      emailCampaignId: z.string().describe('Email campaign ID'),
+    },
+  },
+  {
+    name: 'ebay_update_email_campaign',
+    description: 'Update an existing email campaign.',
+    inputSchema: {
+      emailCampaignId: z.string().describe('Email campaign ID'),
+      emailCampaign: z.record(z.unknown()).describe('Updated email campaign configuration'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_delete_email_campaign',
+    description: 'Delete an email campaign.',
+    inputSchema: {
+      emailCampaignId: z.string().describe('Email campaign ID'),
+    },
+    outputSchema: genericSuccessSchema,
+  },
+  {
+    name: 'ebay_get_email_audiences',
+    description: 'Get available audiences for email campaigns.',
+    inputSchema: {},
+  },
+  {
+    name: 'ebay_get_email_preview',
+    description: 'Get a preview of an email campaign.',
+    inputSchema: {
+      emailCampaignId: z.string().describe('Email campaign ID'),
+    },
+  },
+  {
+    name: 'ebay_get_email_report',
+    description: 'Get performance report for email campaigns.',
+    inputSchema: {
+      limit: limitSchema,
+      offset: offsetSchema,
     },
   },
 ];

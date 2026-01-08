@@ -728,7 +728,7 @@ export class InventoryApi {
   }
 
   /**
-   * Get listing's inventory locations
+   * Get listing's inventory locations (SKU location mapping)
    * Endpoint: GET /listing/{listingId}/sku/{sku}/locations
    * @throws Error if required parameters are missing or invalid
    */
@@ -745,6 +745,55 @@ export class InventoryApi {
     } catch (error) {
       throw new Error(
         `Failed to get listing locations: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  async createOrReplaceSkuLocationMapping(
+    listingId: string,
+    sku: string,
+    locationMapping: Record<string, unknown>
+  ): Promise<void> {
+    if (!listingId || typeof listingId !== 'string') {
+      throw new Error('listingId is required and must be a string');
+    }
+    if (!sku || typeof sku !== 'string') {
+      throw new Error('sku is required and must be a string');
+    }
+    if (!locationMapping || typeof locationMapping !== 'object') {
+      throw new Error('locationMapping is required and must be an object');
+    }
+
+    try {
+      return await this.client.put(
+        `${this.basePath}/listing/${listingId}/sku/${sku}/locations`,
+        locationMapping,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    } catch (error) {
+      throw new Error(
+        `Failed to create or replace SKU location mapping: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  async deleteSkuLocationMapping(listingId: string, sku: string): Promise<void> {
+    if (!listingId || typeof listingId !== 'string') {
+      throw new Error('listingId is required and must be a string');
+    }
+    if (!sku || typeof sku !== 'string') {
+      throw new Error('sku is required and must be a string');
+    }
+
+    try {
+      return await this.client.delete(`${this.basePath}/listing/${listingId}/sku/${sku}/locations`);
+    } catch (error) {
+      throw new Error(
+        `Failed to delete SKU location mapping: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }

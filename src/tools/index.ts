@@ -4,6 +4,7 @@ import {
   accountTools,
   analyticsTools,
   communicationTools,
+  developerTools,
   fulfillmentTools,
   inventoryTools,
   marketingTools,
@@ -78,6 +79,7 @@ export function getToolDefinitions(): ToolDefinition[] {
     ...taxonomyTools,
     ...communicationTools,
     ...otherApiTools,
+    ...developerTools,
   ];
 }
 
@@ -396,25 +398,25 @@ export async function executeTool(
             : 'Not available',
           accessTokenExpiry: internalTokens?.userAccessTokenExpiry
             ? {
-              timestamp: internalTokens.userAccessTokenExpiry,
-              date: new Date(internalTokens.userAccessTokenExpiry).toISOString(),
-              expired: Date.now() >= internalTokens.userAccessTokenExpiry,
-            }
+                timestamp: internalTokens.userAccessTokenExpiry,
+                date: new Date(internalTokens.userAccessTokenExpiry).toISOString(),
+                expired: Date.now() >= internalTokens.userAccessTokenExpiry,
+              }
             : 'Not available',
           refreshTokenExpiry: internalTokens?.userRefreshTokenExpiry
             ? {
-              timestamp: internalTokens.userRefreshTokenExpiry,
-              date: new Date(internalTokens.userRefreshTokenExpiry).toISOString(),
-              expired: Date.now() >= internalTokens.userRefreshTokenExpiry,
-            }
+                timestamp: internalTokens.userRefreshTokenExpiry,
+                date: new Date(internalTokens.userRefreshTokenExpiry).toISOString(),
+                expired: Date.now() >= internalTokens.userRefreshTokenExpiry,
+              }
             : 'Not available',
           appToken: appToken ? maskToken(appToken) : 'Not cached',
           appTokenExpiry: appTokenExpiry
             ? {
-              timestamp: appTokenExpiry,
-              date: new Date(appTokenExpiry).toISOString(),
-              expired: Date.now() >= appTokenExpiry,
-            }
+                timestamp: appTokenExpiry,
+                date: new Date(appTokenExpiry).toISOString(),
+                expired: Date.now() >= appTokenExpiry,
+              }
             : 'Not available',
         },
         status: {
@@ -494,12 +496,12 @@ export async function executeTool(
             : 'Not available',
           accessTokenExpiry: internalTokens?.userAccessTokenExpiry
             ? {
-              timestamp: internalTokens.userAccessTokenExpiry,
-              date: new Date(internalTokens.userAccessTokenExpiry).toISOString(),
-              expiresInSeconds: Math.floor(
-                (internalTokens.userAccessTokenExpiry - Date.now()) / 1000
-              ),
-            }
+                timestamp: internalTokens.userAccessTokenExpiry,
+                date: new Date(internalTokens.userAccessTokenExpiry).toISOString(),
+                expiresInSeconds: Math.floor(
+                  (internalTokens.userAccessTokenExpiry - Date.now()) / 1000
+                ),
+              }
             : 'Not available',
           tokenInfo: api.getTokenInfo(),
         };
@@ -754,11 +756,19 @@ export async function executeTool(
     case 'ebay_bulk_migrate_listing':
       return await api.inventory.bulkMigrateListing(args.requests as Record<string, unknown>);
 
-    // Listing Locations
     case 'ebay_get_listing_locations':
       return await api.inventory.getListingLocations(args.listingId as string, args.sku as string);
-
-    // Inventory Item Group Publishing
+    case 'ebay_create_or_replace_sku_location_mapping':
+      return await api.inventory.createOrReplaceSkuLocationMapping(
+        args.listingId as string,
+        args.sku as string,
+        args.locationMapping as Record<string, unknown>
+      );
+    case 'ebay_delete_sku_location_mapping':
+      return await api.inventory.deleteSkuLocationMapping(
+        args.listingId as string,
+        args.sku as string
+      );
     case 'ebay_publish_offer_by_inventory_item_group':
       return await api.inventory.publishOfferByInventoryItemGroup(
         args.request as Record<string, unknown>
@@ -786,6 +796,57 @@ export async function executeTool(
       return await api.fulfillment.issueRefund(
         args.orderId as string,
         args.refundData as Record<string, unknown>
+      );
+
+    case 'ebay_get_shipping_fulfillments':
+      return await api.fulfillment.getShippingFulfillments(args.orderId as string);
+    case 'ebay_get_shipping_fulfillment':
+      return await api.fulfillment.getShippingFulfillment(
+        args.orderId as string,
+        args.fulfillmentId as string
+      );
+    case 'ebay_get_payment_dispute_summaries':
+      return await api.dispute.getPaymentDisputeSummaries({
+        order_id: args.orderFilter as string | undefined,
+        buyer_username: args.buyerFilter as string | undefined,
+        payment_dispute_status: args.openFilter ? 'OPEN' : undefined,
+        limit: args.limit as number | undefined,
+        offset: args.offset as number | undefined,
+      });
+    case 'ebay_get_payment_dispute':
+      return await api.dispute.getPaymentDispute(args.paymentDisputeId as string);
+    case 'ebay_get_payment_dispute_activities':
+      return await api.dispute.getActivities(args.paymentDisputeId as string);
+    case 'ebay_accept_payment_dispute':
+      return await api.dispute.acceptPaymentDispute(
+        args.paymentDisputeId as string,
+        args.returnAddress as Record<string, unknown> | undefined
+      );
+    case 'ebay_contest_payment_dispute':
+      return await api.dispute.contestPaymentDispute(
+        args.paymentDisputeId as string,
+        args.returnAddress as Record<string, unknown> | undefined
+      );
+    case 'ebay_add_payment_dispute_evidence':
+      return await api.dispute.addEvidence(
+        args.paymentDisputeId as string,
+        args as Record<string, unknown>
+      );
+    case 'ebay_update_payment_dispute_evidence':
+      return await api.dispute.updateEvidence(
+        args.paymentDisputeId as string,
+        args as Record<string, unknown>
+      );
+    case 'ebay_upload_payment_dispute_evidence_file':
+      return await api.dispute.uploadEvidenceFile(
+        args.paymentDisputeId as string,
+        args.file as ArrayBuffer
+      );
+    case 'ebay_fetch_payment_dispute_evidence_content':
+      return await api.dispute.fetchEvidenceContent(
+        args.paymentDisputeId as string,
+        args.evidenceId as string,
+        args.fileId as string
       );
 
     // Marketing - Campaign Management
@@ -834,6 +895,11 @@ export async function executeTool(
         args.campaignId as string,
         args.ads as Record<string, unknown>
       );
+    case 'ebay_delete_ads_by_inventory_reference':
+      return await api.marketing.deleteAdsByInventoryReference(args.campaignId as string, {
+        inventoryReferenceId: args.inventoryReferenceId,
+        inventoryReferenceType: args.inventoryReferenceType,
+      });
     case 'ebay_bulk_delete_ads_by_listing_id':
       return await api.marketing.bulkDeleteAdsByListingId(
         args.campaignId as string,
@@ -1160,6 +1226,110 @@ export async function executeTool(
       );
     case 'ebay_get_promotion_summary_report':
       return await api.marketing.getPromotionSummaryReport(args.marketplaceId as string);
+
+    case 'ebay_delete_campaign':
+      return await api.marketing.deleteCampaign(args.campaignId as string);
+    case 'ebay_launch_campaign':
+      return await api.marketing.launchCampaign(args.campaignId as string);
+    case 'ebay_find_campaign_by_ad_reference':
+      return await api.marketing.findCampaignByAdReference(
+        args.inventoryReferenceId as string | undefined,
+        args.inventoryReferenceType as string | undefined,
+        args.listingId as string | undefined
+      );
+    case 'ebay_setup_quick_campaign':
+      return await api.marketing.setupQuickCampaign(args.quickCampaign as Record<string, unknown>);
+    case 'ebay_suggest_budget':
+      return await api.marketing.suggestBudget(args.campaignId as string | undefined);
+    case 'ebay_suggest_items':
+      return await api.marketing.suggestItems(args.campaignId as string);
+    case 'ebay_suggest_max_cpc':
+      return await api.marketing.suggestMaxCpc(args.suggestionRequest as Record<string, unknown>);
+    case 'ebay_update_ad_rate_strategy':
+      return await api.marketing.updateAdRateStrategy(
+        args.campaignId as string,
+        args.strategy as Record<string, unknown>
+      );
+    case 'ebay_update_bidding_strategy':
+      return await api.marketing.updateBiddingStrategy(
+        args.campaignId as string,
+        args.strategy as Record<string, unknown>
+      );
+    case 'ebay_update_campaign_budget':
+      return await api.marketing.updateCampaignBudget(
+        args.campaignId as string,
+        args.budget as Record<string, unknown>
+      );
+    case 'ebay_update_ad_group':
+      return await api.marketing.updateAdGroup(
+        args.campaignId as string,
+        args.adGroupId as string,
+        args.updateData as Record<string, unknown>
+      );
+    case 'ebay_update_keyword':
+      return await api.marketing.updateKeyword(
+        args.campaignId as string,
+        args.keywordId as string,
+        args.updateData as Record<string, unknown>
+      );
+    case 'ebay_bulk_create_campaign_keyword':
+      return await api.marketing.bulkCreateKeyword(
+        args.campaignId as string,
+        args.keywords as Record<string, unknown>
+      );
+    case 'ebay_bulk_update_campaign_keyword':
+      return await api.marketing.bulkUpdateKeyword(
+        args.campaignId as string,
+        args.keywords as Record<string, unknown>
+      );
+    case 'ebay_get_report':
+      return await api.marketing.getReport(args.reportId as string);
+    case 'ebay_delete_report_task':
+      return await api.marketing.deleteReportTask(args.reportTaskId as string);
+    case 'ebay_create_item_price_markdown_promotion':
+      return await api.marketing.createItemPriceMarkdownPromotion(
+        args.promotion as Record<string, unknown>
+      );
+    case 'ebay_get_item_price_markdown_promotion':
+      return await api.marketing.getItemPriceMarkdownPromotion(args.promotionId as string);
+    case 'ebay_update_item_price_markdown_promotion':
+      return await api.marketing.updateItemPriceMarkdownPromotion(
+        args.promotionId as string,
+        args.promotion as Record<string, unknown>
+      );
+    case 'ebay_delete_item_price_markdown_promotion':
+      return await api.marketing.deleteItemPriceMarkdownPromotion(args.promotionId as string);
+    case 'ebay_get_listing_set':
+      return await api.marketing.getListingSet(args.promotionId as string);
+    case 'ebay_pause_promotion':
+      return await api.marketing.pausePromotion(args.promotionId as string);
+    case 'ebay_resume_promotion':
+      return await api.marketing.resumePromotion(args.promotionId as string);
+    case 'ebay_get_email_campaigns':
+      return await api.marketing.getEmailCampaigns(
+        args.limit as number | undefined,
+        args.offset as number | undefined
+      );
+    case 'ebay_create_email_campaign':
+      return await api.marketing.createEmailCampaign(args.emailCampaign as Record<string, unknown>);
+    case 'ebay_get_email_campaign':
+      return await api.marketing.getEmailCampaign(args.emailCampaignId as string);
+    case 'ebay_update_email_campaign':
+      return await api.marketing.updateEmailCampaign(
+        args.emailCampaignId as string,
+        args.emailCampaign as Record<string, unknown>
+      );
+    case 'ebay_delete_email_campaign':
+      return await api.marketing.deleteEmailCampaign(args.emailCampaignId as string);
+    case 'ebay_get_email_audiences':
+      return await api.marketing.getAudiences();
+    case 'ebay_get_email_preview':
+      return await api.marketing.getEmailPreview(args.emailCampaignId as string);
+    case 'ebay_get_email_report':
+      return await api.marketing.getEmailReport(
+        args.limit as number | undefined,
+        args.offset as number | undefined
+      );
 
     // Recommendation
     case 'ebay_find_listing_recommendations':
@@ -1649,7 +1819,6 @@ export async function executeTool(
       return await api.edelivery.createComplaint(args.complaintRequest as Record<string, unknown>);
 
     case 'SearchClaudeCodeDocs':
-      // Placeholder implementation for SearchClaudeCodeDocs
       return {
         content: [
           {
@@ -1658,6 +1827,32 @@ export async function executeTool(
           },
         ],
       };
+
+    // Developer API - Rate Limits
+    case 'ebay_get_rate_limits':
+      return await api.developer.getRateLimits(
+        args.apiContext as string | undefined,
+        args.apiName as string | undefined
+      );
+    case 'ebay_get_user_rate_limits':
+      return await api.developer.getUserRateLimits(
+        args.apiContext as string | undefined,
+        args.apiName as string | undefined
+      );
+
+    // Developer API - Client Registration
+    case 'ebay_register_client':
+      return await api.developer.registerClient(args.clientSettings as Record<string, unknown>);
+
+    // Developer API - Signing Keys
+    case 'ebay_get_signing_keys':
+      return await api.developer.getSigningKeys();
+    case 'ebay_create_signing_key':
+      return await api.developer.createSigningKey(
+        args.signingKeyCipher ? { signingKeyCipher: args.signingKeyCipher as string } : undefined
+      );
+    case 'ebay_get_signing_key':
+      return await api.developer.getSigningKey(args.signingKeyId as string);
 
     default:
       throw new Error(`Unknown tool: ${toolName}`);

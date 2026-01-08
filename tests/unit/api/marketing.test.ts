@@ -590,6 +590,38 @@ describe('MarketingApi', () => {
       );
       expect(result).toEqual(mockResponse);
     });
+
+    it('should delete ads by inventory reference', async () => {
+      const request = {
+        inventoryReferenceId: 'ref-001',
+        inventoryReferenceType: 'INVENTORY_ITEM',
+      };
+
+      vi.spyOn(mockClient, 'post').mockResolvedValue(undefined);
+
+      await marketingApi.deleteAdsByInventoryReference('campaign-001', request);
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/sell/marketing/v1/ad_campaign/campaign-001/delete_ads_by_inventory_reference',
+        request
+      );
+    });
+
+    it('should delete ads by inventory reference with INVENTORY_ITEM_GROUP type', async () => {
+      const request = {
+        inventoryReferenceId: 'group-001',
+        inventoryReferenceType: 'INVENTORY_ITEM_GROUP',
+      };
+
+      vi.spyOn(mockClient, 'post').mockResolvedValue(undefined);
+
+      await marketingApi.deleteAdsByInventoryReference('campaign-002', request);
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/sell/marketing/v1/ad_campaign/campaign-002/delete_ads_by_inventory_reference',
+        request
+      );
+    });
   });
 
   describe('Ad Group Management', () => {

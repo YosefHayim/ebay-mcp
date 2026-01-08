@@ -1,0 +1,380 @@
+{
+  "specsDownloaded": 0,
+  "typesGenerated": 21,
+  "endpointsInSpecs": 355,
+  "toolsImplemented": 293,
+  "missingEndpoints": [
+    {
+      "path": "/awaiting_feedback",
+      "method": "GET",
+      "operationId": "getItemsAwaitingFeedback",
+      "summary": ""
+    },
+    {
+      "path": "/feedback",
+      "method": "POST",
+      "operationId": "leaveFeedback",
+      "summary": ""
+    },
+    {
+      "path": "/config",
+      "method": "GET",
+      "operationId": "getConfig",
+      "summary": ""
+    },
+    {
+      "path": "/config",
+      "method": "PUT",
+      "operationId": "updateConfig",
+      "summary": ""
+    },
+    {
+      "path": "/destination",
+      "method": "GET",
+      "operationId": "getDestinations",
+      "summary": ""
+    },
+    {
+      "path": "/destination",
+      "method": "POST",
+      "operationId": "createDestination",
+      "summary": ""
+    },
+    {
+      "path": "/destination/{destination_id}",
+      "method": "GET",
+      "operationId": "getDestination",
+      "summary": ""
+    },
+    {
+      "path": "/destination/{destination_id}",
+      "method": "PUT",
+      "operationId": "updateDestination",
+      "summary": ""
+    },
+    {
+      "path": "/destination/{destination_id}",
+      "method": "DELETE",
+      "operationId": "deleteDestination",
+      "summary": ""
+    },
+    {
+      "path": "/public_key/{public_key_id}",
+      "method": "GET",
+      "operationId": "getPublicKey",
+      "summary": ""
+    },
+    {
+      "path": "/subscription",
+      "method": "GET",
+      "operationId": "getSubscriptions",
+      "summary": ""
+    },
+    {
+      "path": "/subscription",
+      "method": "POST",
+      "operationId": "createSubscription",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}/filter",
+      "method": "POST",
+      "operationId": "createSubscriptionFilter",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}",
+      "method": "PUT",
+      "operationId": "updateSubscription",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}",
+      "method": "DELETE",
+      "operationId": "deleteSubscription",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}/filter/{filter_id}",
+      "method": "GET",
+      "operationId": "getSubscriptionFilter",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}/filter/{filter_id}",
+      "method": "DELETE",
+      "operationId": "deleteSubscriptionFilter",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}/disable",
+      "method": "POST",
+      "operationId": "disableSubscription",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}/enable",
+      "method": "POST",
+      "operationId": "enableSubscription",
+      "summary": ""
+    },
+    {
+      "path": "/subscription/{subscription_id}/test",
+      "method": "POST",
+      "operationId": "testSubscription",
+      "summary": ""
+    },
+    {
+      "path": "/topic/{topic_id}",
+      "method": "GET",
+      "operationId": "getTopic",
+      "summary": ""
+    },
+    {
+      "path": "/topic",
+      "method": "GET",
+      "operationId": "getTopics",
+      "summary": ""
+    },
+    {
+      "path": "/find_eligible_items",
+      "method": "GET",
+      "operationId": "findEligibleItems",
+      "summary": ""
+    },
+    {
+      "path": "/inventory_item/{sku}",
+      "method": "PUT",
+      "operationId": "createOrReplaceInventoryItem",
+      "summary": ""
+    },
+    {
+      "path": "/listing/{listingId}/sku/{sku}/locations",
+      "method": "GET",
+      "operationId": "getSkuLocationMapping",
+      "summary": ""
+    },
+    {
+      "path": "/location/{merchantLocationKey}",
+      "method": "POST",
+      "operationId": "createInventoryLocation",
+      "summary": ""
+    },
+    {
+      "path": "/location/{merchantLocationKey}/update_location_details",
+      "method": "POST",
+      "operationId": "updateInventoryLocation",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/ad",
+      "method": "POST",
+      "operationId": "createAdByListingId",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/ad/{ad_id}/update_bid",
+      "method": "POST",
+      "operationId": "updateBid",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/bulk_create_keyword",
+      "method": "POST",
+      "operationId": "bulkCreateKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/bulk_update_keyword",
+      "method": "POST",
+      "operationId": "bulkUpdateKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/bulk_create_negative_keyword",
+      "method": "POST",
+      "operationId": "bulkCreateNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/bulk_update_negative_keyword",
+      "method": "POST",
+      "operationId": "bulkUpdateNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword",
+      "method": "GET",
+      "operationId": "getNegativeKeywords",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword",
+      "method": "POST",
+      "operationId": "createNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword/{negative_keyword_id}",
+      "method": "GET",
+      "operationId": "getNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword/{negative_keyword_id}",
+      "method": "PUT",
+      "operationId": "updateNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/ad_report_metadata",
+      "method": "GET",
+      "operationId": "getReportMetadata",
+      "summary": ""
+    },
+    {
+      "path": "/ad_report_metadata/{report_type}",
+      "method": "GET",
+      "operationId": "getReportMetadataForReportType",
+      "summary": ""
+    },
+    {
+      "path": "/promotion_report",
+      "method": "GET",
+      "operationId": "getPromotionReports",
+      "summary": ""
+    },
+    {
+      "path": "/email_campaign/audience",
+      "method": "GET",
+      "operationId": "getAudiences",
+      "summary": ""
+    },
+    {
+      "path": "/payment_dispute/{payment_dispute_id}/fetch_evidence_content",
+      "method": "GET",
+      "operationId": "fetchEvidenceContent",
+      "summary": "Get Payment Dispute Evidence File"
+    },
+    {
+      "path": "/payment_dispute/{payment_dispute_id}/activity",
+      "method": "GET",
+      "operationId": "getActivities",
+      "summary": "Get Payment Dispute Activity"
+    },
+    {
+      "path": "/payment_dispute/{payment_dispute_id}/upload_evidence_file",
+      "method": "POST",
+      "operationId": "uploadEvidenceFile",
+      "summary": "Upload an Evidence File"
+    },
+    {
+      "path": "/payment_dispute/{payment_dispute_id}/add_evidence",
+      "method": "POST",
+      "operationId": "addEvidence",
+      "summary": "Add an Evidence File"
+    },
+    {
+      "path": "/payment_dispute/{payment_dispute_id}/update_evidence",
+      "method": "POST",
+      "operationId": "updateEvidence",
+      "summary": "Update evidence"
+    },
+    {
+      "path": "/package/{order_line_item_id}/item",
+      "method": "GET",
+      "operationId": "getPackagesByLineItemID",
+      "summary": ""
+    },
+    {
+      "path": "/services",
+      "method": "GET",
+      "operationId": "getServices",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/ad",
+      "method": "POST",
+      "operationId": "createAdByListingId",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/ad/{ad_id}/update_bid",
+      "method": "POST",
+      "operationId": "updateBid",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/bulk_create_keyword",
+      "method": "POST",
+      "operationId": "bulkCreateKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/ad_campaign/{campaign_id}/bulk_update_keyword",
+      "method": "POST",
+      "operationId": "bulkUpdateKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/bulk_create_negative_keyword",
+      "method": "POST",
+      "operationId": "bulkCreateNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/bulk_update_negative_keyword",
+      "method": "POST",
+      "operationId": "bulkUpdateNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword",
+      "method": "GET",
+      "operationId": "getNegativeKeywords",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword",
+      "method": "POST",
+      "operationId": "createNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword/{negative_keyword_id}",
+      "method": "GET",
+      "operationId": "getNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/negative_keyword/{negative_keyword_id}",
+      "method": "PUT",
+      "operationId": "updateNegativeKeyword",
+      "summary": ""
+    },
+    {
+      "path": "/ad_report_metadata",
+      "method": "GET",
+      "operationId": "getReportMetadata",
+      "summary": ""
+    },
+    {
+      "path": "/ad_report_metadata/{report_type}",
+      "method": "GET",
+      "operationId": "getReportMetadataForReportType",
+      "summary": ""
+    },
+    {
+      "path": "/promotion_report",
+      "method": "GET",
+      "operationId": "getPromotionReports",
+      "summary": ""
+    },
+    {
+      "path": "/email_campaign/audience",
+      "method": "GET",
+      "operationId": "getAudiences",
+      "summary": ""
+    }
+  ]
+}

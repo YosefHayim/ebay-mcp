@@ -319,9 +319,6 @@ export class MarketingApi {
     );
   }
 
-  /**
-   * Bulk delete ads by inventory reference
-   */
   async bulkDeleteAdsByInventoryReference(
     campaignId: string,
     body: BulkDeleteAdsByInventoryReferenceRequest
@@ -332,9 +329,15 @@ export class MarketingApi {
     );
   }
 
-  /**
-   * Bulk delete ads by listing id
-   */
+  async deleteAdsByInventoryReference(
+    campaignId: string,
+    body: Record<string, unknown>
+  ): Promise<void> {
+    return await this.client.post<void>(
+      `${this.basePath}/ad_campaign/${campaignId}/delete_ads_by_inventory_reference`,
+      body
+    );
+  }
   async bulkDeleteAdsByListingId(
     campaignId: string,
     body: BulkDeleteAdRequest
@@ -791,7 +794,7 @@ export class MarketingApi {
    * Get promotion summary (alias for getPromotionSummaryReport)
    */
   async getPromotionSummary(marketplaceId: string): Promise<SummaryReportResponse> {
-    return this.getPromotionSummaryReport(marketplaceId);
+    return await this.getPromotionSummaryReport(marketplaceId);
   }
 
   /**
@@ -803,7 +806,7 @@ export class MarketingApi {
     limit?: number,
     offset?: number
   ): Promise<PromotionsReportPagedCollection> {
-    return this.getPromotionReport(marketplaceId, promotionStatus, limit, offset);
+    return await this.getPromotionReport(marketplaceId, promotionStatus, limit, offset);
   }
 
   /**
@@ -1043,6 +1046,316 @@ export class MarketingApi {
     return await this.client.put<BaseResponse>(
       `${this.basePath}/ad_group/${adGroupId}/negative_keyword/${negativeKeywordId}`,
       body
+    );
+  }
+
+  /**
+   * Delete a campaign
+   */
+  async deleteCampaign(campaignId: string): Promise<void> {
+    return await this.client.delete<void>(`${this.basePath}/ad_campaign/${campaignId}`);
+  }
+
+  /**
+   * Launch a campaign
+   */
+  async launchCampaign(campaignId: string): Promise<void> {
+    return await this.client.post<void>(`${this.basePath}/ad_campaign/${campaignId}/launch`, {});
+  }
+
+  /**
+   * Find campaign by ad reference
+   */
+  async findCampaignByAdReference(
+    inventoryReferenceId?: string,
+    inventoryReferenceType?: string,
+    listingId?: string
+  ): Promise<Campaign> {
+    const params: Record<string, string> = {};
+    if (inventoryReferenceId) params.inventory_reference_id = inventoryReferenceId;
+    if (inventoryReferenceType) params.inventory_reference_type = inventoryReferenceType;
+    if (listingId) params.listing_id = listingId;
+    return await this.client.get<Campaign>(
+      `${this.basePath}/ad_campaign/find_campaign_by_ad_reference`,
+      params
+    );
+  }
+
+  /**
+   * Setup quick campaign
+   */
+  async setupQuickCampaign(body: Record<string, unknown>): Promise<BaseResponse> {
+    return await this.client.post<BaseResponse>(
+      `${this.basePath}/ad_campaign/setup_quick_campaign`,
+      body
+    );
+  }
+
+  /**
+   * Suggest budget for a campaign
+   */
+  async suggestBudget(campaignId?: string): Promise<Record<string, unknown>> {
+    const params: Record<string, string> = {};
+    if (campaignId) params.campaign_id = campaignId;
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/ad_campaign/suggest_budget`,
+      params
+    );
+  }
+
+  /**
+   * Suggest items for a campaign
+   */
+  async suggestItems(campaignId: string): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/ad_campaign/${campaignId}/suggest_items`
+    );
+  }
+
+  /**
+   * Suggest max CPC for ads
+   */
+  async suggestMaxCpc(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return await this.client.post<Record<string, unknown>>(
+      `${this.basePath}/ad_campaign/suggest_max_cpc`,
+      body
+    );
+  }
+
+  /**
+   * Update ad rate strategy for a campaign
+   */
+  async updateAdRateStrategy(campaignId: string, body: Record<string, unknown>): Promise<void> {
+    return await this.client.post<void>(
+      `${this.basePath}/ad_campaign/${campaignId}/update_ad_rate_strategy`,
+      body
+    );
+  }
+
+  /**
+   * Update bidding strategy for a campaign
+   */
+  async updateBiddingStrategy(campaignId: string, body: Record<string, unknown>): Promise<void> {
+    return await this.client.post<void>(
+      `${this.basePath}/ad_campaign/${campaignId}/update_bidding_strategy`,
+      body
+    );
+  }
+
+  /**
+   * Update campaign budget
+   */
+  async updateCampaignBudget(campaignId: string, body: Record<string, unknown>): Promise<void> {
+    return await this.client.post<void>(
+      `${this.basePath}/ad_campaign/${campaignId}/update_campaign_budget`,
+      body
+    );
+  }
+
+  /**
+   * Update an ad group
+   */
+  async updateAdGroup(
+    campaignId: string,
+    adGroupId: string,
+    body: Record<string, unknown>
+  ): Promise<void> {
+    return await this.client.put<void>(
+      `${this.basePath}/ad_campaign/${campaignId}/ad_group/${adGroupId}`,
+      body
+    );
+  }
+
+  /**
+   * Update a keyword
+   */
+  async updateKeyword(
+    campaignId: string,
+    keywordId: string,
+    body: Record<string, unknown>
+  ): Promise<void> {
+    return await this.client.put<void>(
+      `${this.basePath}/ad_campaign/${campaignId}/keyword/${keywordId}`,
+      body
+    );
+  }
+
+  /**
+   * Bulk create keywords (campaign level)
+   */
+  async bulkCreateKeyword(
+    campaignId: string,
+    body: Record<string, unknown>
+  ): Promise<BulkCreateKeywordsResponse> {
+    return await this.client.post<BulkCreateKeywordsResponse>(
+      `${this.basePath}/ad_campaign/${campaignId}/bulk_create_keyword`,
+      body
+    );
+  }
+
+  /**
+   * Bulk update keywords (campaign level)
+   */
+  async bulkUpdateKeyword(
+    campaignId: string,
+    body: Record<string, unknown>
+  ): Promise<BulkUpdateKeywordBidsResponse> {
+    return await this.client.post<BulkUpdateKeywordBidsResponse>(
+      `${this.basePath}/ad_campaign/${campaignId}/bulk_update_keyword`,
+      body
+    );
+  }
+
+  /**
+   * Get a report by ID
+   */
+  async getReport(reportId: string): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(`${this.basePath}/ad_report/${reportId}`);
+  }
+
+  /**
+   * Delete a report task
+   */
+  async deleteReportTask(reportTaskId: string): Promise<void> {
+    return await this.client.delete<void>(`${this.basePath}/ad_report_task/${reportTaskId}`);
+  }
+
+  /**
+   * Create an item price markdown promotion
+   */
+  async createItemPriceMarkdownPromotion(body: Record<string, unknown>): Promise<BaseResponse> {
+    return await this.client.post<BaseResponse>(`${this.basePath}/item_price_markdown`, body);
+  }
+
+  /**
+   * Get an item price markdown promotion
+   */
+  async getItemPriceMarkdownPromotion(promotionId: string): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/item_price_markdown/${promotionId}`
+    );
+  }
+
+  /**
+   * Update an item price markdown promotion
+   */
+  async updateItemPriceMarkdownPromotion(
+    promotionId: string,
+    body: Record<string, unknown>
+  ): Promise<BaseResponse> {
+    return await this.client.put<BaseResponse>(
+      `${this.basePath}/item_price_markdown/${promotionId}`,
+      body
+    );
+  }
+
+  /**
+   * Delete an item price markdown promotion
+   */
+  async deleteItemPriceMarkdownPromotion(promotionId: string): Promise<void> {
+    return await this.client.delete<void>(`${this.basePath}/item_price_markdown/${promotionId}`);
+  }
+
+  /**
+   * Get listing set for a promotion
+   */
+  async getListingSet(promotionId: string): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/promotion/${promotionId}/get_listing_set`
+    );
+  }
+
+  /**
+   * Pause a promotion
+   */
+  async pausePromotion(promotionId: string): Promise<void> {
+    return await this.client.post<void>(`${this.basePath}/promotion/${promotionId}/pause`, {});
+  }
+
+  /**
+   * Resume a promotion
+   */
+  async resumePromotion(promotionId: string): Promise<void> {
+    return await this.client.post<void>(`${this.basePath}/promotion/${promotionId}/resume`, {});
+  }
+
+  /**
+   * Get email campaigns
+   */
+  async getEmailCampaigns(limit?: number, offset?: number): Promise<Record<string, unknown>> {
+    const params: Record<string, string | number> = {};
+    if (limit) params.limit = limit;
+    if (offset) params.offset = offset;
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/email_campaign`,
+      params
+    );
+  }
+
+  /**
+   * Create an email campaign
+   */
+  async createEmailCampaign(body: Record<string, unknown>): Promise<BaseResponse> {
+    return await this.client.post<BaseResponse>(`${this.basePath}/email_campaign`, body);
+  }
+
+  /**
+   * Get an email campaign
+   */
+  async getEmailCampaign(emailCampaignId: string): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/email_campaign/${emailCampaignId}`
+    );
+  }
+
+  /**
+   * Update an email campaign
+   */
+  async updateEmailCampaign(
+    emailCampaignId: string,
+    body: Record<string, unknown>
+  ): Promise<BaseResponse> {
+    return await this.client.put<BaseResponse>(
+      `${this.basePath}/email_campaign/${emailCampaignId}`,
+      body
+    );
+  }
+
+  /**
+   * Delete an email campaign
+   */
+  async deleteEmailCampaign(emailCampaignId: string): Promise<void> {
+    return await this.client.delete<void>(`${this.basePath}/email_campaign/${emailCampaignId}`);
+  }
+
+  /**
+   * Get email campaign audiences
+   */
+  async getAudiences(): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/email_campaign/audience`
+    );
+  }
+
+  /**
+   * Get email preview for a campaign
+   */
+  async getEmailPreview(emailCampaignId: string): Promise<Record<string, unknown>> {
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/email_campaign/${emailCampaignId}/email_preview`
+    );
+  }
+
+  /**
+   * Get email campaign report
+   */
+  async getEmailReport(limit?: number, offset?: number): Promise<Record<string, unknown>> {
+    const params: Record<string, string | number> = {};
+    if (limit) params.limit = limit;
+    if (offset) params.offset = offset;
+    return await this.client.get<Record<string, unknown>>(
+      `${this.basePath}/email_campaign/report`,
+      params
     );
   }
 }
