@@ -51,7 +51,7 @@ export class EbayOAuthClient {
   private appAccessTokenExpiry = 0;
   private userTokens: StoredTokenData | null = null;
 
-  constructor(private config: EbayConfig) { }
+  constructor(private config: EbayConfig) {}
 
   /**
    * Initialize user tokens from environment variables only
@@ -62,7 +62,6 @@ export class EbayOAuthClient {
     const envAccessToken = process.env.EBAY_USER_ACCESS_TOKEN;
     const envAppToken = process.env.EBAY_APP_ACCESS_TOKEN ?? '';
     const locale = this.config?.locale || LocaleEnum.en_US;
-
 
     if (envRefreshToken) {
       console.log('📝 Loading refresh token, access token and app to env file...');
@@ -90,7 +89,7 @@ export class EbayOAuthClient {
         await this.refreshUserToken();
         console.log('✅ Access token refreshed successfully from .env configuration.');
 
-        await this.getOrRefreshAppAccessToken()
+        await this.getOrRefreshAppAccessToken();
       } catch (error) {
         console.error(
           '❌ Failed to refresh access token:',
@@ -177,7 +176,7 @@ export class EbayOAuthClient {
     accessToken: string,
     refreshToken: string,
     accessTokenExpiry?: number,
-    refreshTokenExpiry?: number,
+    refreshTokenExpiry?: number
   ): void {
     // Store tokens in memory with default expiry
     // Access tokens typically expire in 2 hours (7200 seconds)
@@ -190,8 +189,8 @@ export class EbayOAuthClient {
       userAccessToken: accessToken,
       userRefreshToken: refreshToken,
       tokenType: 'Bearer',
-      userAccessTokenExpiry: accessTokenExpiry ?? (now + 7200 * 1000), // Default 2 hours
-      userRefreshTokenExpiry: refreshTokenExpiry ?? (now + 18 * 30 * 24 * 60 * 60 * 1000), // Default 18 months
+      userAccessTokenExpiry: accessTokenExpiry ?? now + 7200 * 1000, // Default 2 hours
+      userRefreshTokenExpiry: refreshTokenExpiry ?? now + 18 * 30 * 24 * 60 * 60 * 1000, // Default 18 months
     };
 
     // Update .env file with new tokens
@@ -372,7 +371,10 @@ export class EbayOAuthClient {
       };
 
       // If eBay provided a new refresh token, update it too
-      if (tokenData.refresh_token && tokenData.refresh_token !== process.env.EBAY_USER_REFRESH_TOKEN) {
+      if (
+        tokenData.refresh_token &&
+        tokenData.refresh_token !== process.env.EBAY_USER_REFRESH_TOKEN
+      ) {
         envUpdates.EBAY_USER_REFRESH_TOKEN = tokenData.refresh_token;
         // New refresh token updated silently
       }

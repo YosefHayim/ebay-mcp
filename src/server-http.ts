@@ -176,52 +176,49 @@ async function createApp(): Promise<express.Application> {
     const ebayConfig = getEbayConfig();
     const api = new EbaySellerApi(ebayConfig);
 
-    const server = new McpServer(
-      {
-        name: 'ebay-mcp',
-        version: '1.4.0',
-        title: 'eBay API MCP Server',
-        websiteUrl: 'https://coming-soon.com',
-        icons: [
-          {
-            src: './icons/16x16.png',
-            mimeType: 'image/png',
-            sizes: ['16x16'],
-          },
-          {
-            src: './icons/32x32.png',
-            mimeType: 'image/png',
-            sizes: ['32x32'],
-          },
-          {
-            src: './icons/48x48.png',
-            mimeType: 'image/png',
-            sizes: ['48x48'],
-          },
-          {
-            src: './icons/128x128.png',
-            mimeType: 'image/png',
-            sizes: ['128x128'],
-          },
-          {
-            src: './icons/256x256.png',
-            mimeType: 'image/png',
-            sizes: ['256x256'],
-          },
-          {
-            src: './icons/512x512.png',
-            mimeType: 'image/png',
-            sizes: ['512x512'],
-          },
-          {
-            src: './icons/1024x1024.png',
-            mimeType: 'image/png',
-            sizes: ['1024x1024'],
-          }
-        ],
-      },
-
-    );
+    const server = new McpServer({
+      name: 'ebay-mcp',
+      version: '1.4.0',
+      title: 'eBay API MCP Server',
+      websiteUrl: 'https://coming-soon.com',
+      icons: [
+        {
+          src: './icons/16x16.png',
+          mimeType: 'image/png',
+          sizes: ['16x16'],
+        },
+        {
+          src: './icons/32x32.png',
+          mimeType: 'image/png',
+          sizes: ['32x32'],
+        },
+        {
+          src: './icons/48x48.png',
+          mimeType: 'image/png',
+          sizes: ['48x48'],
+        },
+        {
+          src: './icons/128x128.png',
+          mimeType: 'image/png',
+          sizes: ['128x128'],
+        },
+        {
+          src: './icons/256x256.png',
+          mimeType: 'image/png',
+          sizes: ['256x256'],
+        },
+        {
+          src: './icons/512x512.png',
+          mimeType: 'image/png',
+          sizes: ['512x512'],
+        },
+        {
+          src: './icons/1024x1024.png',
+          mimeType: 'image/png',
+          sizes: ['1024x1024'],
+        },
+      ],
+    });
 
     // Register tools
     const tools = getToolDefinitions();

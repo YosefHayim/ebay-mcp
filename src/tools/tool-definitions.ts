@@ -69,17 +69,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Search',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'fetch',
@@ -92,17 +92,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Fetch',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_oauth_url',
@@ -128,17 +128,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get OAuth URL',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_set_user_tokens',
@@ -153,17 +153,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Set User Tokens',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_token_status',
@@ -175,17 +175,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Token Status',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_clear_tokens',
@@ -197,17 +197,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Clear Tokens',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_convert_date_to_timestamp',
@@ -225,17 +225,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Convert Date to Timestamp',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_validate_token_expiry',
@@ -258,17 +258,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Validate Token Expiry',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_set_user_tokens_with_expiry',
@@ -302,17 +302,17 @@ export const chatGptTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Set User Tokens with Expiry',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'chat',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -331,17 +331,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Custom Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_fulfillment_policies',
@@ -355,17 +355,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Fulfillment Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_payment_policies',
@@ -378,17 +378,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Payment Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_return_policies',
@@ -401,17 +401,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Return Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   // Fulfillment Policy CRUD
   {
@@ -426,17 +426,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Fulfillment Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_fulfillment_policy',
@@ -449,17 +449,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Fulfillment Policy',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_fulfillment_policy_by_name',
@@ -473,17 +473,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Fulfillment Policy by Name',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_fulfillment_policy',
@@ -497,17 +497,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Fulfillment Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_fulfillment_policy',
@@ -520,17 +520,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Fulfillment Policy',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   // Payment Policy CRUD
   {
@@ -544,17 +544,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Payment Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_payment_policy',
@@ -567,17 +567,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Payment Policy',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_payment_policy_by_name',
@@ -591,17 +591,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Payment Policy by Name',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_payment_policy',
@@ -615,17 +615,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Payment Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_payment_policy',
@@ -638,17 +638,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Payment Policy',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   // Return Policy CRUD
   {
@@ -662,17 +662,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Return Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_return_policy',
@@ -685,17 +685,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Return Policy',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_return_policy_by_name',
@@ -709,17 +709,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Return Policy by Name',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_return_policy',
@@ -733,17 +733,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Return Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_return_policy',
@@ -756,17 +756,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Return Policy',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   // Custom Policy CRUD
   {
@@ -780,17 +780,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Custom Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_custom_policy',
@@ -803,17 +803,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Custom Policy',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_custom_policy',
@@ -827,17 +827,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Custom Policy',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_custom_policy',
@@ -850,17 +850,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Custom Policy',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   // KYC, Payments, Programs, Sales Tax, Subscription
   {
@@ -872,17 +872,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get KYC',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_opt_in_to_payments_program',
@@ -896,17 +896,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Opt In to Payments Program',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_payments_program_status',
@@ -920,17 +920,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Payments Program Status',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_rate_tables',
@@ -941,17 +941,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Rate Tables',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_or_replace_sales_tax',
@@ -966,17 +966,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create or Replace Sales Tax',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_create_or_replace_sales_tax',
@@ -989,17 +989,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Create or Replace Sales Tax',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_sales_tax',
@@ -1013,17 +1013,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Sales Tax',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_sales_tax',
@@ -1037,17 +1037,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Sales Tax',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_sales_taxes',
@@ -1060,17 +1060,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Sales Taxes',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_subscription',
@@ -1083,17 +1083,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Subscription',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_opt_in_to_program',
@@ -1106,17 +1106,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Opt In to Program',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_opt_out_of_program',
@@ -1129,17 +1129,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Opt Out of Program',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_opted_in_programs',
@@ -1150,17 +1150,17 @@ export const accountTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Opted In Programs',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'account',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -1178,17 +1178,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Inventory Items',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_inventory_item',
@@ -1202,17 +1202,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Inventory Item',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_inventory_item',
@@ -1227,17 +1227,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Inventory Item',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_offers',
@@ -1252,17 +1252,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Offers',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_offer',
@@ -1277,17 +1277,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Offer',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_publish_offer',
@@ -1300,17 +1300,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Publish Offer',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_create_or_replace_inventory_item',
@@ -1323,17 +1323,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Create or Replace Inventory Item',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_get_inventory_item',
@@ -1357,17 +1357,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Get Inventory Item',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_update_price_quantity',
@@ -1380,17 +1380,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Update Price Quantity',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_product_compatibility',
@@ -1403,17 +1403,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Product Compatibility',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_or_replace_product_compatibility',
@@ -1427,17 +1427,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create or Replace Product Compatibility',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_product_compatibility',
@@ -1450,17 +1450,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Product Compatibility',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_inventory_item_group',
@@ -1473,17 +1473,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Inventory Item Group',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_or_replace_inventory_item_group',
@@ -1497,17 +1497,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create or Replace Inventory Item Group',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_inventory_item_group',
@@ -1520,17 +1520,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Inventory Item Group',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_inventory_locations',
@@ -1544,17 +1544,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Inventory Locations',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_inventory_location',
@@ -1567,17 +1567,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Inventory Location',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_or_replace_inventory_location',
@@ -1591,17 +1591,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Or Replace Inventory Location',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_inventory_location',
@@ -1614,17 +1614,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Inventory Location',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_disable_inventory_location',
@@ -1637,17 +1637,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Disable Inventory Location',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_enable_inventory_location',
@@ -1660,17 +1660,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Enable Inventory Location',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_location_details',
@@ -1684,17 +1684,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Location Details',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_offer',
@@ -1707,17 +1707,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Offer',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_offer',
@@ -1731,17 +1731,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Offer',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_delete_offer',
@@ -1754,17 +1754,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Delete Offer',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_withdraw_offer',
@@ -1777,17 +1777,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Withdraw Offer',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_create_offer',
@@ -1800,17 +1800,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Create Offer',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_publish_offer',
@@ -1823,17 +1823,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Publish Offer',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_listing_fees',
@@ -1846,17 +1846,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Listing Fees',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_bulk_migrate_listing',
@@ -1869,17 +1869,17 @@ export const inventoryTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Bulk Migrate Listing',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'inventory',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -1901,17 +1901,17 @@ export const fulfillmentTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Orders',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'fulfillment',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_order',
@@ -1925,17 +1925,17 @@ export const fulfillmentTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Order',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'fulfillment',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_shipping_fulfillment',
@@ -1952,17 +1952,17 @@ export const fulfillmentTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Shipping Fulfillment',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'fulfillment',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_issue_refund',
@@ -2030,17 +2030,17 @@ export const fulfillmentTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Issue Refund',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'fulfillment',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -2061,17 +2061,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Campaigns',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_campaign',
@@ -2084,17 +2084,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Campaign',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_pause_campaign',
@@ -2108,17 +2108,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Pause Campaign',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_resume_campaign',
@@ -2132,17 +2132,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Resume Campaign',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_end_campaign',
@@ -2155,17 +2155,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'End Campaign',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_campaign_identification',
@@ -2184,17 +2184,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Campaign Identification',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_clone_campaign',
@@ -2244,17 +2244,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Clone Campaign',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_promotions',
@@ -2268,17 +2268,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Promotions',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_find_listing_recommendations',
@@ -2298,17 +2298,17 @@ export const marketingTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Find Listing Recommendations',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'marketing',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -2327,17 +2327,17 @@ export const analyticsTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Traffic Report',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'analytics',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_find_seller_standards_profiles',
@@ -2348,17 +2348,17 @@ export const analyticsTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Find Seller Standards Profiles',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'analytics',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_seller_standards_profile',
@@ -2372,17 +2372,17 @@ export const analyticsTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Seller Standards Profile',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'analytics',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_customer_service_metric',
@@ -2397,17 +2397,17 @@ export const analyticsTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Customer Service Metric',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'analytics',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -2424,17 +2424,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Automotive Parts Compatibility Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_category_policies',
@@ -2448,17 +2448,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Category Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_extended_producer_responsibility_policies',
@@ -2472,17 +2472,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Extended Producer Responsibility Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_hazardous_materials_labels',
@@ -2495,17 +2495,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Hazardous Materials Labels',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_item_condition_policies',
@@ -2519,17 +2519,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Item Condition Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_listing_structure_policies',
@@ -2543,17 +2543,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Listing Structure Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_negotiated_price_policies',
@@ -2567,17 +2567,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Negotiated Price Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_product_safety_labels',
@@ -2590,17 +2590,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Product Safety Labels',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_regulatory_policies',
@@ -2614,17 +2614,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Regulatory Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_shipping_cost_type_policies',
@@ -2638,17 +2638,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Shipping Cost Type Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_classified_ad_policies',
@@ -2662,17 +2662,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Classified Ad Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_currencies',
@@ -2685,17 +2685,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Currencies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_listing_type_policies',
@@ -2709,17 +2709,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Listing Type Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_motors_listing_policies',
@@ -2733,17 +2733,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Motors Listing Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_shipping_policies',
@@ -2757,17 +2757,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Shipping Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_site_visibility_policies',
@@ -2781,17 +2781,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Site Visibility Policies',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_compatibilities_by_specification',
@@ -2806,17 +2806,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Compatibilities By Specification',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_compatibility_property_names',
@@ -2831,17 +2831,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Compatibility Property Names',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_compatibility_property_values',
@@ -2856,17 +2856,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Compatibility Property Values',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_multi_compatibility_property_values',
@@ -2881,17 +2881,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Multi Compatibility Property Values',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_product_compatibilities',
@@ -2904,17 +2904,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Product Compatibilities',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_sales_tax_jurisdictions',
@@ -2927,17 +2927,17 @@ export const metadataTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Sales Tax Jurisdictions',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'metadata',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -2953,17 +2953,17 @@ export const taxonomyTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Default Category Tree Id',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'taxonomy',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_category_tree',
@@ -2976,17 +2976,17 @@ export const taxonomyTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Category Tree',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'taxonomy',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_category_suggestions',
@@ -3000,17 +3000,17 @@ export const taxonomyTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Category Suggestions',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'taxonomy',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_item_aspects_for_category',
@@ -3024,17 +3024,17 @@ export const taxonomyTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Item Aspects For Category',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'taxonomy',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -3052,17 +3052,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Offers To Buyers',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_send_offer_to_interested_buyers',
@@ -3076,17 +3076,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Send Offer To Interested Buyers',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_search_messages',
@@ -3101,17 +3101,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Search Messages',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_message',
@@ -3124,17 +3124,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Message',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_send_message',
@@ -3201,17 +3201,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Send Message',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_reply_to_message',
@@ -3225,17 +3225,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Reply To Message',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_notification_config',
@@ -3246,17 +3246,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Notification Config',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_update_notification_config',
@@ -3269,17 +3269,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Update Notification Config',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_notification_destination',
@@ -3292,17 +3292,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Notification Destination',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_feedback',
@@ -3315,17 +3315,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Feedback',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_leave_feedback_for_buyer',
@@ -3338,17 +3338,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Leave Feedback For Buyer',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_feedback_summary',
@@ -3359,17 +3359,17 @@ export const communicationTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Feedback Summary',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'communication',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -3383,17 +3383,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get User',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_listing_violations',
@@ -3408,17 +3408,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Listing Violations',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_listing_violations_summary',
@@ -3431,17 +3431,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Listing Violations Summary',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_suppress_violation',
@@ -3454,17 +3454,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Suppress Violation',
-      destructiveHint: true
+      destructiveHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_vero_report',
@@ -3480,17 +3480,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Vero Report',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_vero_report',
@@ -3503,17 +3503,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Vero Report',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_vero_report_items',
@@ -3529,17 +3529,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Vero Report Items',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_vero_reason_code',
@@ -3553,17 +3553,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Vero Reason Code',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_vero_reason_codes',
@@ -3575,17 +3575,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Vero Reason Codes',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_translate',
@@ -3603,17 +3603,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Translate',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_create_shipping_quote',
@@ -3626,17 +3626,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Create Shipping Quote',
-      idempotentHint: true
+      idempotentHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
   {
     name: 'ebay_get_shipping_quote',
@@ -3649,17 +3649,17 @@ export const otherApiTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Get Shipping Quote',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'other',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];
 
@@ -3676,16 +3676,16 @@ export const claudeTools: ToolDefinition[] = [
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        data: { type: 'object' }
-      }
+        data: { type: 'object' },
+      },
     },
     annotations: {
       title: 'Searchclaudecodedocs',
-      readOnlyHint: true
+      readOnlyHint: true,
     },
     _meta: {
       category: 'claude',
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+    },
   },
 ];

@@ -86,9 +86,7 @@ function parseArgs(): CLIArgs {
     diagnose: args.includes('--diagnose') || args.includes('-d'),
     firstTime: args.includes('--first-time') || args.includes('-f'),
     skipChecks: args.includes('--skip-checks'),
-    environment: envArg
-      ? (envArg.split('=')[1] as 'sandbox' | 'production')
-      : undefined,
+    environment: envArg ? (envArg.split('=')[1] as 'sandbox' | 'production') : undefined,
   };
 }
 
@@ -98,9 +96,7 @@ function showHelp() {
   console.log(chalk.gray('  npx ebay-mcp [options]\n'));
   console.log(chalk.white('Options:'));
   console.log(chalk.yellow('  --help, -h           ') + chalk.gray('Show this help message'));
-  console.log(
-    chalk.yellow('  --diagnose, -d       ') + chalk.gray('Run system diagnostics')
-  );
+  console.log(chalk.yellow('  --diagnose, -d       ') + chalk.gray('Run system diagnostics'));
   console.log(
     chalk.yellow('  --first-time, -f     ') + chalk.gray('Show first-time developer guide')
   );
@@ -108,8 +104,7 @@ function showHelp() {
     chalk.yellow('  --skip-checks        ') + chalk.gray('Skip pre-flight security checks')
   );
   console.log(
-    chalk.yellow('  --env=ENV            ') +
-    chalk.gray('Set environment (sandbox|production)')
+    chalk.yellow('  --env=ENV            ') + chalk.gray('Set environment (sandbox|production)')
   );
   console.log(
     chalk.yellow('  (no options)         ') + chalk.gray('Run interactive setup wizard\n')
@@ -290,9 +285,7 @@ async function acquireRefreshToken(
   }
 }
 
-async function validateAndGenerateTokens(
-  config: Record<string, string>
-): Promise<boolean> {
+async function validateAndGenerateTokens(config: Record<string, string>): Promise<boolean> {
   console.log(chalk.bold.cyan('\n🔄 Validating Credentials & Generating Tokens...\n'));
 
   try {
@@ -341,7 +334,6 @@ async function validateAndGenerateTokens(
         console.log(userInfo);
         console.log('');
       }
-
 
       // Display scope verification
       const authClient = api.getAuthClient();
@@ -395,7 +387,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
   if (detectedClients.length === 0) {
     console.log(chalk.yellow('⚠️  No compatible LLM clients detected on your system.\n'));
     console.log(chalk.white('Supported clients:'));
-    console.log(chalk.gray('  • Claude Desktop    (Anthropic\'s desktop app)'));
+    console.log(chalk.gray("  • Claude Desktop    (Anthropic's desktop app)"));
     console.log(chalk.gray('  • Cline             (VSCode extension)'));
     console.log(chalk.gray('  • Continue.dev      (VSCode/JetBrains extension)\n'));
     console.log(chalk.cyan('💡 You can manually configure your MCP client later.'));
@@ -410,20 +402,41 @@ async function detectAndConfigureLLMClients(): Promise<void> {
   // Display each client in a nice box
   for (const client of detectedClients) {
     const boxWidth = 61;
-    const topBorder = chalk.gray('┌─') + chalk.white(client.displayName) + chalk.gray('─'.repeat(boxWidth - client.displayName.length - 3) + '┐');
+    const topBorder =
+      chalk.gray('┌─') +
+      chalk.white(client.displayName) +
+      chalk.gray('─'.repeat(boxWidth - client.displayName.length - 3) + '┐');
 
     console.log(topBorder);
 
     // Status line
     const statusIcon = chalk.green('✓');
     const statusText = 'Installed';
-    console.log(chalk.gray('│ ') + chalk.gray('Status:    ') + statusIcon + ' ' + chalk.white(statusText) + ' '.repeat(boxWidth - 23) + chalk.gray('│'));
+    console.log(
+      chalk.gray('│ ') +
+        chalk.gray('Status:    ') +
+        statusIcon +
+        ' ' +
+        chalk.white(statusText) +
+        ' '.repeat(boxWidth - 23) +
+        chalk.gray('│')
+    );
 
     // Config status line
     const configIcon = client.configExists ? chalk.yellow('⚠') : chalk.gray('○');
-    const configText = client.configExists ? chalk.yellow('Already configured') : chalk.gray('Not configured');
+    const configText = client.configExists
+      ? chalk.yellow('Already configured')
+      : chalk.gray('Not configured');
     const configPadding = client.configExists ? 39 : 43;
-    console.log(chalk.gray('│ ') + chalk.gray('Config:    ') + configIcon + ' ' + configText + ' '.repeat(boxWidth - configPadding) + chalk.gray('│'));
+    console.log(
+      chalk.gray('│ ') +
+        chalk.gray('Config:    ') +
+        configIcon +
+        ' ' +
+        configText +
+        ' '.repeat(boxWidth - configPadding) +
+        chalk.gray('│')
+    );
 
     // Path line (truncated if too long)
     const maxPathLength = boxWidth - 14;
@@ -431,15 +444,31 @@ async function detectAndConfigureLLMClients(): Promise<void> {
     if (displayPath.length > maxPathLength) {
       displayPath = '...' + displayPath.substring(displayPath.length - maxPathLength + 3);
     }
-    console.log(chalk.gray('│ ') + chalk.gray('Path:      ') + chalk.dim(displayPath) + ' '.repeat(boxWidth - displayPath.length - 13) + chalk.gray('│'));
+    console.log(
+      chalk.gray('│ ') +
+        chalk.gray('Path:      ') +
+        chalk.dim(displayPath) +
+        ' '.repeat(boxWidth - displayPath.length - 13) +
+        chalk.gray('│')
+    );
 
     console.log(chalk.gray('└' + '─'.repeat(boxWidth - 1) + '┘\n'));
   }
 
   // Ask user which clients to configure
   console.log(chalk.white.bold('Configure eBay MCP for these clients?\n'));
-  console.log(chalk.gray('  💡 Recommended: Select clients that are ') + chalk.yellow('not configured') + chalk.gray(' yet'));
-  console.log(chalk.gray('  📝 Use ') + chalk.cyan('Space') + chalk.gray(' to select, ') + chalk.cyan('Enter') + chalk.gray(' to confirm\n'));
+  console.log(
+    chalk.gray('  💡 Recommended: Select clients that are ') +
+      chalk.yellow('not configured') +
+      chalk.gray(' yet')
+  );
+  console.log(
+    chalk.gray('  📝 Use ') +
+      chalk.cyan('Space') +
+      chalk.gray(' to select, ') +
+      chalk.cyan('Enter') +
+      chalk.gray(' to confirm\n')
+  );
 
   const response = await prompts({
     type: 'multiselect',
@@ -491,9 +520,21 @@ async function detectAndConfigureLLMClients(): Promise<void> {
   // Success message
   console.log(chalk.bold.green('✨ LLM client configuration complete!\n'));
   console.log(chalk.white.bold('📌 Next Steps:\n'));
-  console.log(chalk.gray('  1. ') + chalk.white('Restart') + chalk.gray(' your LLM client(s) to load the new configuration'));
-  console.log(chalk.gray('  2. The ') + chalk.cyan('eBay MCP server') + chalk.gray(' should appear in the MCP tools list'));
-  console.log(chalk.gray('  3. Try asking: ') + chalk.cyan('"Show me my eBay user information"') + chalk.gray('\n'));
+  console.log(
+    chalk.gray('  1. ') +
+      chalk.white('Restart') +
+      chalk.gray(' your LLM client(s) to load the new configuration')
+  );
+  console.log(
+    chalk.gray('  2. The ') +
+      chalk.cyan('eBay MCP server') +
+      chalk.gray(' should appear in the MCP tools list')
+  );
+  console.log(
+    chalk.gray('  3. Try asking: ') +
+      chalk.cyan('"Show me my eBay user information"') +
+      chalk.gray('\n')
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -578,15 +619,15 @@ function displayQuickStart(): void {
   console.log(chalk.bold.white('Resources:\n'));
   console.log(
     chalk.gray('  📖 Documentation: ') +
-    chalk.blue.underline('https://github.com/YosefHayim/ebay-mcp#readme')
+      chalk.blue.underline('https://github.com/YosefHayim/ebay-mcp#readme')
   );
   console.log(
     chalk.gray('  🐛 Report Issues:  ') +
-    chalk.blue.underline('https://github.com/YosefHayim/ebay-mcp/issues')
+      chalk.blue.underline('https://github.com/YosefHayim/ebay-mcp/issues')
   );
   console.log(
     chalk.gray('  💬 Get Support:    ') +
-    chalk.blue.underline('https://github.com/YosefHayim/ebay-mcp/discussions\n')
+      chalk.blue.underline('https://github.com/YosefHayim/ebay-mcp/discussions\n')
   );
 }
 
@@ -738,7 +779,7 @@ async function runInteractiveSetup(args: CLIArgs) {
     message: 'How would you like to obtain your refresh token?',
     choices: [
       { title: '🔄 Interactive OAuth Flow (Recommended)', value: 'interactive' },
-      { title: '📝 Manual OAuth Flow (I\'ll get it myself)', value: 'manual' },
+      { title: "📝 Manual OAuth Flow (I'll get it myself)", value: 'manual' },
       { title: '✏️  I already have a refresh token', value: 'existing' },
       { title: '⏭️  Skip (configure later)', value: 'skip' },
     ],
@@ -755,10 +796,7 @@ async function runInteractiveSetup(args: CLIArgs) {
   };
 
   if (tokenMethod.method === 'interactive' || tokenMethod.method === 'manual') {
-    const token = await acquireRefreshToken(
-      ebayConfig,
-      tokenMethod.method === 'interactive'
-    );
+    const token = await acquireRefreshToken(ebayConfig, tokenMethod.method === 'interactive');
 
     if (token) {
       refreshToken = token;

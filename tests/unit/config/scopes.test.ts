@@ -242,7 +242,14 @@ describe('Scope Validation', () => {
     it('should include state parameter when provided', () => {
       const state = 'random_state_12345';
 
-      const url = getOAuthAuthorizationUrl(clientId, redirectUri, 'production', undefined, undefined, state);
+      const url = getOAuthAuthorizationUrl(
+        clientId,
+        redirectUri,
+        'production',
+        undefined,
+        undefined,
+        state
+      );
 
       // Decode the ru parameter to check state
       const ruMatch = /ru=([^&]+)/.exec(url);

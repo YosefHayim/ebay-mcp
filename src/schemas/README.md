@@ -75,7 +75,7 @@ import { getInventoryItemInputSchema, getInventoryItemOutputSchema } from '@/sch
 
 // Validate input
 const input = getInventoryItemInputSchema.parse({
-  sku: 'ABC123'
+  sku: 'ABC123',
 });
 
 // Validate output
@@ -106,6 +106,7 @@ const tool = {
 Schemas for managing seller account settings, business policies, and programs.
 
 **Endpoints Covered:**
+
 - Custom Policies (PRODUCT_COMPLIANCE, TAKE_BACK)
 - Fulfillment Policies (shipping rules, handling time)
 - Payment Policies (payment methods, immediate pay)
@@ -116,6 +117,7 @@ Schemas for managing seller account settings, business policies, and programs.
 - Privileges (selling limits and permissions)
 
 **Key Schemas:**
+
 - `getFulfillmentPoliciesInputSchema` / `getFulfillmentPoliciesOutputSchema`
 - `createPaymentPolicyInputSchema` / `createPaymentPolicyOutputSchema`
 - `getReturnPoliciesInputSchema` / `getReturnPoliciesOutputSchema`
@@ -125,6 +127,7 @@ Schemas for managing seller account settings, business policies, and programs.
 Schemas for inventory items, offers, locations, and product compatibility.
 
 **Endpoints Covered:**
+
 - Inventory Items (create, read, update, delete)
 - Offers (pricing, availability, publishing)
 - Inventory Locations (warehouses, stores)
@@ -133,6 +136,7 @@ Schemas for inventory items, offers, locations, and product compatibility.
 - Bulk Operations (batch processing)
 
 **Key Schemas:**
+
 - `getInventoryItemsInputSchema` / `getInventoryItemsOutputSchema`
 - `createOfferInputSchema` / `createOfferOutputSchema`
 - `publishOfferInputSchema` / `publishOfferOutputSchema`
@@ -143,12 +147,14 @@ Schemas for inventory items, offers, locations, and product compatibility.
 Schemas for messages, feedback, notifications, and negotiations.
 
 **Endpoints Covered:**
+
 - Message API (conversations, messages)
 - Feedback API (leave feedback, respond to feedback)
 - Notification API (destinations, subscriptions, topics)
 - Negotiation API (offers to buyers)
 
 **Key Schemas:**
+
 - `sendMessageInputSchema` / `sendMessageOutputSchema`
 - `leaveFeedbackInputSchema` / `leaveFeedbackOutputSchema`
 - `createNotificationSubscriptionInputSchema` / `createNotificationSubscriptionOutputSchema`
@@ -159,12 +165,14 @@ Schemas for messages, feedback, notifications, and negotiations.
 Schemas for order management, shipping, refunds, and payment disputes.
 
 **Endpoints Covered:**
+
 - Orders (retrieve, filter orders)
 - Shipping Fulfillment (create, track shipments)
 - Refunds (issue refunds)
 - Payment Disputes (manage buyer disputes)
 
 **Key Schemas:**
+
 - `getOrdersInputSchema` / `getOrdersOutputSchema`
 - `createShippingFulfillmentInputSchema` / `createShippingFulfillmentOutputSchema`
 - `issueRefundInputSchema` / `issueRefundOutputSchema`
@@ -175,6 +183,7 @@ Schemas for order management, shipping, refunds, and payment disputes.
 Schemas for advertising campaigns, ads, keywords, promotions, and recommendations.
 
 **Endpoints Covered (71 total):**
+
 - Campaign Management (create, update, pause, resume, end campaigns)
 - Ad Operations (single and bulk operations for creating, updating, deleting ads)
 - Ad Group Management (create, update, get ad groups)
@@ -187,6 +196,7 @@ Schemas for advertising campaigns, ads, keywords, promotions, and recommendation
 - Recommendations
 
 **Key Schemas:**
+
 - `createCampaignInputSchema` / `createCampaignOutputSchema`
 - `createAdInputSchema` / `createAdOutputSchema`
 - `bulkCreateAdsInputSchema` / `bulkCreateAdsOutputSchema`
@@ -199,11 +209,13 @@ Schemas for advertising campaigns, ads, keywords, promotions, and recommendation
 Schemas for marketplace policies and product compatibility.
 
 **Endpoints Covered (23 total):**
+
 - Marketplace Policies (automotive compatibility, category policies, EPR, hazmat labels, item conditions, listing structure, negotiated price, product safety, regulatory, return policy metadata, shipping cost types, classified ads, currencies, listing types, motors, shipping policies, site visibility)
 - Compatibility (by specification, property names/values, multi-property values, product compatibilities)
 - Sales Tax Jurisdictions
 
 **Key Schemas:**
+
 - `getCategoryPoliciesOutputSchema`
 - `getItemConditionPoliciesOutputSchema`
 - `getCompatibilityPropertyNamesOutputSchema`
@@ -215,11 +227,13 @@ Schemas for marketplace policies and product compatibility.
 Schemas for reports, metrics, and seller performance tracking.
 
 **Endpoints Covered (4 total):**
+
 - Traffic Reports (analyze listing views and search impressions)
 - Seller Standards Profiles (monitor seller performance)
 - Customer Service Metrics (track customer service quality)
 
 **Key Schemas:**
+
 - `getTrafficReportInputSchema` / `getTrafficReportOutputSchema`
 - `getSellerStandardsProfileOutputSchema`
 - `getCustomerServiceMetricOutputSchema`
@@ -229,11 +243,13 @@ Schemas for reports, metrics, and seller performance tracking.
 Schemas for category navigation, suggestions, and product aspects.
 
 **Endpoints Covered (4 total):**
+
 - Category Tree (get category hierarchy)
 - Category Suggestions (find appropriate categories for items)
 - Item Aspects (get required/recommended aspects for categories)
 
 **Key Schemas:**
+
 - `getCategoryTreeOutputSchema`
 - `getCategorySuggestionsInputSchema` / `getCategorySuggestionsOutputSchema`
 - `getItemAspectsForCategoryOutputSchema`
@@ -243,6 +259,7 @@ Schemas for category navigation, suggestions, and product aspects.
 Schemas for identity, compliance, VERO, translation, and international shipping.
 
 **Endpoints Covered (40 total):**
+
 - Commerce Identity API (user information)
 - Sell Compliance API (listing violations, suppression)
 - Commerce VERO API (intellectual property rights reporting)
@@ -250,6 +267,7 @@ Schemas for identity, compliance, VERO, translation, and international shipping.
 - Sell eDelivery International Shipping API (shipping quotes, packages, labels, tracking)
 
 **Key Schemas:**
+
 - `getUserOutputSchema`
 - `getListingViolationsOutputSchema`
 - `createVeroReportInputSchema` / `createVeroReportOutputSchema`
@@ -321,7 +339,7 @@ import { getInventoryItemInputSchema } from '@/schemas';
 describe('Inventory Schemas', () => {
   it('should validate correct input', () => {
     const result = getInventoryItemInputSchema.safeParse({
-      sku: 'TEST-SKU-123'
+      sku: 'TEST-SKU-123',
     });
     expect(result.success).toBe(true);
   });

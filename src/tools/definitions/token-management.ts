@@ -198,7 +198,8 @@ export const tokenManagementTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Token exchange response including access token, refresh token, and expiry times',
+      description:
+        'Token exchange response including access token, refresh token, and expiry times',
     } as OutputArgs,
   },
 ];

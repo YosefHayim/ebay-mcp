@@ -82,4 +82,3 @@ export function getAllJsonSchemas() {
  * Type representing all available JSON schemas
  */
 export type AllJsonSchemas = ReturnType<typeof getAllJsonSchemas>;
-

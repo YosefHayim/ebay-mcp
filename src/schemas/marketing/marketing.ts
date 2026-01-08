@@ -30,10 +30,14 @@ export const errorSchema = z.object({
   subdomain: z.string().optional(),
   inputRefIds: z.array(z.string()).optional(),
   outputRefIds: z.array(z.string()).optional(),
-  parameters: z.array(z.object({
-    name: z.string().optional(),
-    value: z.string().optional(),
-  })).optional(),
+  parameters: z
+    .array(
+      z.object({
+        name: z.string().optional(),
+        value: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const errorParameterSchema = z.object({
@@ -493,11 +497,15 @@ export const bulkCreateKeywordResponseSchema = z.object({
 });
 
 export const bulkUpdateKeywordRequestSchema = z.object({
-  requests: z.array(z.object({
-    keywordId: z.string(),
-    bid: amountSchema.optional(),
-    keywordStatus: z.string().optional(),
-  })).optional(),
+  requests: z
+    .array(
+      z.object({
+        keywordId: z.string(),
+        bid: amountSchema.optional(),
+        keywordStatus: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const bulkUpdateKeywordResponseSchema = z.object({
@@ -572,10 +580,14 @@ export const bulkCreateNegativeKeywordResponseSchema = z.object({
 });
 
 export const bulkUpdateNegativeKeywordRequestSchema = z.object({
-  requests: z.array(z.object({
-    negativeKeywordId: z.string(),
-    negativeKeywordStatus: z.string().optional(),
-  })).optional(),
+  requests: z
+    .array(
+      z.object({
+        negativeKeywordId: z.string(),
+        negativeKeywordStatus: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const bulkUpdateNegativeKeywordResponseSchema = z.object({
@@ -629,10 +641,14 @@ export const targetedKeywordsPagedCollectionSchema = z.object({
 });
 
 export const targetingItemsSchema = z.object({
-  inventoryCriterion: z.array(z.object({
-    inventoryItems: z.array(marketingInventoryItemSchema).optional(),
-    listingIds: z.array(z.string()).optional(),
-  })).optional(),
+  inventoryCriterion: z
+    .array(
+      z.object({
+        inventoryItems: z.array(marketingInventoryItemSchema).optional(),
+        listingIds: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
 });
 
 // ============================================================================
@@ -843,13 +859,15 @@ export const inventoryCriterionSchema = z.object({
   inventoryCriterionType: z.string().optional(),
   inventoryItems: z.array(marketingInventoryItemSchema).optional(),
   listingIds: z.array(z.string()).optional(),
-  ruleCriteria: z.object({
-    excludeInventoryItems: z.array(marketingInventoryItemSchema).optional(),
-    excludeListingIds: z.array(z.string()).optional(),
-    markupInventoryItems: z.array(marketingInventoryItemSchema).optional(),
-    markupListingIds: z.array(z.string()).optional(),
-    selectionRules: z.array(selectionRuleSchema).optional(),
-  }).optional(),
+  ruleCriteria: z
+    .object({
+      excludeInventoryItems: z.array(marketingInventoryItemSchema).optional(),
+      excludeListingIds: z.array(z.string()).optional(),
+      markupInventoryItems: z.array(marketingInventoryItemSchema).optional(),
+      markupListingIds: z.array(z.string()).optional(),
+      selectionRules: z.array(selectionRuleSchema).optional(),
+    })
+    .optional(),
 });
 
 export const couponConfigurationSchema = z.object({
@@ -1131,14 +1149,19 @@ export const findListingRecommendationRequestSchema = z.object({
 
 // Input Schemas for Find Listing Recommendations
 export const findListingRecommendationsInputSchema = z.object({
-  filter: z.string().optional()
+  filter: z
+    .string()
+    .optional()
     .describe('Filter by recommendation types (e.g., recommendationTypes:{AD})'),
-  limit: z.string().optional()
+  limit: z
+    .string()
+    .optional()
     .describe('Maximum number of ads to return per page (default: 10, max: 500)'),
-  offset: z.string().optional()
+  offset: z
+    .string()
+    .optional()
     .describe('Number of ads to skip before returning results (default: 0)'),
-  'X-EBAY-C-MARKETPLACE-ID': z.string()
-    .describe('eBay marketplace ID where items are listed'),
+  'X-EBAY-C-MARKETPLACE-ID': z.string().describe('eBay marketplace ID where items are listed'),
   body: findListingRecommendationRequestSchema.optional(),
 });
 
@@ -1161,17 +1184,29 @@ export const aspectSchema = z.object({
 export function getMarketingJsonSchemas() {
   return {
     // Campaign Management
-    getCampaignsOutput: zodToJsonSchema(campaignPagedCollectionResponseSchema, 'getCampaignsOutput'),
+    getCampaignsOutput: zodToJsonSchema(
+      campaignPagedCollectionResponseSchema,
+      'getCampaignsOutput'
+    ),
     getCampaignDetails: zodToJsonSchema(campaignSchema, 'getCampaignDetails'),
     createCampaignInput: zodToJsonSchema(createCampaignRequestSchema, 'createCampaignInput'),
-    createCampaignOutput: zodToJsonSchema(z.object({
-      campaignId: z.string().optional(),
-      warnings: z.array(errorSchema).optional()
-    }), 'createCampaignOutput'),
+    createCampaignOutput: zodToJsonSchema(
+      z.object({
+        campaignId: z.string().optional(),
+        warnings: z.array(errorSchema).optional(),
+      }),
+      'createCampaignOutput'
+    ),
     cloneCampaignInput: zodToJsonSchema(cloneCampaignRequestSchema, 'cloneCampaignInput'),
     updateCampaignInput: zodToJsonSchema(updateCampaignRequestSchema, 'updateCampaignInput'),
-    updateCampaignBudgetInput: zodToJsonSchema(updateCampaignBudgetRequestSchema, 'updateCampaignBudgetInput'),
-    updateBidPercentageInput: zodToJsonSchema(updateBidPercentageRequestSchema, 'updateBidPercentageInput'),
+    updateCampaignBudgetInput: zodToJsonSchema(
+      updateCampaignBudgetRequestSchema,
+      'updateCampaignBudgetInput'
+    ),
+    updateBidPercentageInput: zodToJsonSchema(
+      updateBidPercentageRequestSchema,
+      'updateBidPercentageInput'
+    ),
 
     // Ad Group Management
     getAdGroupsOutput: zodToJsonSchema(adGroupPagedCollectionResponseSchema, 'getAdGroupsOutput'),
@@ -1184,12 +1219,21 @@ export function getMarketingJsonSchemas() {
     getAdDetails: zodToJsonSchema(adSchema, 'getAdDetails'),
     createAdInput: zodToJsonSchema(createAdRequestSchema, 'createAdInput'),
     createAdOutput: zodToJsonSchema(adResponseSchema, 'createAdOutput'),
-    createAdsByInventoryReferenceInput: zodToJsonSchema(createAdsByInventoryReferenceRequestSchema, 'createAdsByInventoryReferenceInput'),
-    createAdsByInventoryReferenceOutput: zodToJsonSchema(createAdsByInventoryReferenceResponseSchema, 'createAdsByInventoryReferenceOutput'),
+    createAdsByInventoryReferenceInput: zodToJsonSchema(
+      createAdsByInventoryReferenceRequestSchema,
+      'createAdsByInventoryReferenceInput'
+    ),
+    createAdsByInventoryReferenceOutput: zodToJsonSchema(
+      createAdsByInventoryReferenceResponseSchema,
+      'createAdsByInventoryReferenceOutput'
+    ),
     updateAdStatusInput: zodToJsonSchema(updateAdStatusRequestSchema, 'updateAdStatusInput'),
     bulkCreateAdsInput: zodToJsonSchema(bulkCreateAdRequestSchema, 'bulkCreateAdsInput'),
     bulkCreateAdsOutput: zodToJsonSchema(bulkAdResponseSchema, 'bulkCreateAdsOutput'),
-    bulkUpdateAdStatusInput: zodToJsonSchema(bulkUpdateAdStatusRequestSchema, 'bulkUpdateAdStatusInput'),
+    bulkUpdateAdStatusInput: zodToJsonSchema(
+      bulkUpdateAdStatusRequestSchema,
+      'bulkUpdateAdStatusInput'
+    ),
     bulkDeleteAdsInput: zodToJsonSchema(bulkDeleteAdRequestSchema, 'bulkDeleteAdsInput'),
 
     // Keyword Management
@@ -1198,26 +1242,59 @@ export function getMarketingJsonSchemas() {
     createKeywordInput: zodToJsonSchema(createKeywordRequestSchema, 'createKeywordInput'),
     createKeywordOutput: zodToJsonSchema(keywordResponseSchema, 'createKeywordOutput'),
     updateKeywordInput: zodToJsonSchema(updateKeywordRequestSchema, 'updateKeywordInput'),
-    bulkCreateKeywordsInput: zodToJsonSchema(bulkCreateKeywordRequestSchema, 'bulkCreateKeywordsInput'),
-    bulkCreateKeywordsOutput: zodToJsonSchema(bulkCreateKeywordResponseSchema, 'bulkCreateKeywordsOutput'),
-    bulkUpdateKeywordsInput: zodToJsonSchema(bulkUpdateKeywordRequestSchema, 'bulkUpdateKeywordsInput'),
+    bulkCreateKeywordsInput: zodToJsonSchema(
+      bulkCreateKeywordRequestSchema,
+      'bulkCreateKeywordsInput'
+    ),
+    bulkCreateKeywordsOutput: zodToJsonSchema(
+      bulkCreateKeywordResponseSchema,
+      'bulkCreateKeywordsOutput'
+    ),
+    bulkUpdateKeywordsInput: zodToJsonSchema(
+      bulkUpdateKeywordRequestSchema,
+      'bulkUpdateKeywordsInput'
+    ),
 
     // Negative Keyword Management
-    getNegativeKeywordsOutput: zodToJsonSchema(negativeKeywordPagedCollectionResponseSchema, 'getNegativeKeywordsOutput'),
+    getNegativeKeywordsOutput: zodToJsonSchema(
+      negativeKeywordPagedCollectionResponseSchema,
+      'getNegativeKeywordsOutput'
+    ),
     getNegativeKeywordDetails: zodToJsonSchema(negativeKeywordSchema, 'getNegativeKeywordDetails'),
-    createNegativeKeywordInput: zodToJsonSchema(createNegativeKeywordRequestSchema, 'createNegativeKeywordInput'),
-    createNegativeKeywordOutput: zodToJsonSchema(negativeKeywordResponseSchema, 'createNegativeKeywordOutput'),
-    updateNegativeKeywordInput: zodToJsonSchema(updateNegativeKeywordRequestSchema, 'updateNegativeKeywordInput'),
-    bulkCreateNegativeKeywordsInput: zodToJsonSchema(bulkCreateNegativeKeywordRequestSchema, 'bulkCreateNegativeKeywordsInput'),
-    bulkCreateNegativeKeywordsOutput: zodToJsonSchema(bulkCreateNegativeKeywordResponseSchema, 'bulkCreateNegativeKeywordsOutput'),
+    createNegativeKeywordInput: zodToJsonSchema(
+      createNegativeKeywordRequestSchema,
+      'createNegativeKeywordInput'
+    ),
+    createNegativeKeywordOutput: zodToJsonSchema(
+      negativeKeywordResponseSchema,
+      'createNegativeKeywordOutput'
+    ),
+    updateNegativeKeywordInput: zodToJsonSchema(
+      updateNegativeKeywordRequestSchema,
+      'updateNegativeKeywordInput'
+    ),
+    bulkCreateNegativeKeywordsInput: zodToJsonSchema(
+      bulkCreateNegativeKeywordRequestSchema,
+      'bulkCreateNegativeKeywordsInput'
+    ),
+    bulkCreateNegativeKeywordsOutput: zodToJsonSchema(
+      bulkCreateNegativeKeywordResponseSchema,
+      'bulkCreateNegativeKeywordsOutput'
+    ),
 
     // Suggestions
-    suggestBidsOutput: zodToJsonSchema(z.object({
-      suggestedBids: z.array(suggestedBidsSchema).optional()
-    }), 'suggestBidsOutput'),
-    suggestKeywordsOutput: zodToJsonSchema(z.object({
-      suggestedKeywords: z.array(suggestedKeywordsSchema).optional()
-    }), 'suggestKeywordsOutput'),
+    suggestBidsOutput: zodToJsonSchema(
+      z.object({
+        suggestedBids: z.array(suggestedBidsSchema).optional(),
+      }),
+      'suggestBidsOutput'
+    ),
+    suggestKeywordsOutput: zodToJsonSchema(
+      z.object({
+        suggestedKeywords: z.array(suggestedKeywordsSchema).optional(),
+      }),
+      'suggestKeywordsOutput'
+    ),
     suggestBudgetOutput: zodToJsonSchema(suggestBudgetResponseSchema, 'suggestBudgetOutput'),
     suggestMaxCpcInput: zodToJsonSchema(suggestMaxCpcRequestSchema, 'suggestMaxCpcInput'),
     suggestMaxCpcOutput: zodToJsonSchema(suggestMaxCpcResponseSchema, 'suggestMaxCpcOutput'),
@@ -1225,10 +1302,13 @@ export function getMarketingJsonSchemas() {
     // Reporting
     getReportMetadataOutput: zodToJsonSchema(reportMetadatasSchema, 'getReportMetadataOutput'),
     createReportTaskInput: zodToJsonSchema(createReportTaskSchema, 'createReportTaskInput'),
-    createReportTaskOutput: zodToJsonSchema(z.object({
-      reportTaskId: z.string().optional(),
-      href: z.string().optional()
-    }), 'createReportTaskOutput'),
+    createReportTaskOutput: zodToJsonSchema(
+      z.object({
+        reportTaskId: z.string().optional(),
+        href: z.string().optional(),
+      }),
+      'createReportTaskOutput'
+    ),
     getReportTasksOutput: zodToJsonSchema(reportTaskPagedCollectionSchema, 'getReportTasksOutput'),
     getReportTaskDetails: zodToJsonSchema(reportTaskSchema, 'getReportTaskDetails'),
     getSummaryReportOutput: zodToJsonSchema(summaryReportResponseSchema, 'getSummaryReportOutput'),
@@ -1237,28 +1317,64 @@ export function getMarketingJsonSchemas() {
     getPromotionsOutput: zodToJsonSchema(promotionsPagedCollectionSchema, 'getPromotionsOutput'),
     getPromotionDetails: zodToJsonSchema(itemPromotionResponseSchema, 'getPromotionDetails'),
     createItemPromotionInput: zodToJsonSchema(itemPromotionSchema, 'createItemPromotionInput'),
-    createItemPromotionOutput: zodToJsonSchema(z.object({
-      promotionId: z.string().optional(),
-      href: z.string().optional()
-    }), 'createItemPromotionOutput'),
+    createItemPromotionOutput: zodToJsonSchema(
+      z.object({
+        promotionId: z.string().optional(),
+        href: z.string().optional(),
+      }),
+      'createItemPromotionOutput'
+    ),
     updateItemPromotionInput: zodToJsonSchema(itemPromotionSchema, 'updateItemPromotionInput'),
-    getPromotionListingsOutput: zodToJsonSchema(itemsPagedCollectionSchema, 'getPromotionListingsOutput'),
-    getPromotionReportsOutput: zodToJsonSchema(promotionsReportPagedCollectionSchema, 'getPromotionReportsOutput'),
-    createItemPriceMarkdownInput: zodToJsonSchema(itemPriceMarkdownSchema, 'createItemPriceMarkdownInput'),
+    getPromotionListingsOutput: zodToJsonSchema(
+      itemsPagedCollectionSchema,
+      'getPromotionListingsOutput'
+    ),
+    getPromotionReportsOutput: zodToJsonSchema(
+      promotionsReportPagedCollectionSchema,
+      'getPromotionReportsOutput'
+    ),
+    createItemPriceMarkdownInput: zodToJsonSchema(
+      itemPriceMarkdownSchema,
+      'createItemPriceMarkdownInput'
+    ),
 
     // Email Campaigns
-    createEmailCampaignInput: zodToJsonSchema(createEmailCampaignRequestSchema, 'createEmailCampaignInput'),
-    createEmailCampaignOutput: zodToJsonSchema(createEmailCampaignResponseSchema, 'createEmailCampaignOutput'),
-    getEmailCampaignsOutput: zodToJsonSchema(getEmailCampaignsResponseSchema, 'getEmailCampaignsOutput'),
-    getEmailCampaignDetails: zodToJsonSchema(getEmailCampaignResponseSchema, 'getEmailCampaignDetails'),
-    getEmailCampaignAudiencesOutput: zodToJsonSchema(getEmailCampaignAudiencesResponseSchema, 'getEmailCampaignAudiencesOutput'),
+    createEmailCampaignInput: zodToJsonSchema(
+      createEmailCampaignRequestSchema,
+      'createEmailCampaignInput'
+    ),
+    createEmailCampaignOutput: zodToJsonSchema(
+      createEmailCampaignResponseSchema,
+      'createEmailCampaignOutput'
+    ),
+    getEmailCampaignsOutput: zodToJsonSchema(
+      getEmailCampaignsResponseSchema,
+      'getEmailCampaignsOutput'
+    ),
+    getEmailCampaignDetails: zodToJsonSchema(
+      getEmailCampaignResponseSchema,
+      'getEmailCampaignDetails'
+    ),
+    getEmailCampaignAudiencesOutput: zodToJsonSchema(
+      getEmailCampaignAudiencesResponseSchema,
+      'getEmailCampaignAudiencesOutput'
+    ),
     getEmailPreviewOutput: zodToJsonSchema(getEmailPreviewResponseSchema, 'getEmailPreviewOutput'),
     getEmailReportOutput: zodToJsonSchema(getEmailReportResponseSchema, 'getEmailReportOutput'),
 
     // Recommendations
-    findListingRecommendationsInput: zodToJsonSchema(findListingRecommendationsInputSchema, 'findListingRecommendationsInput'),
-    findListingRecommendationsOutput: zodToJsonSchema(pagedListingRecommendationCollectionSchema, 'findListingRecommendationsOutput'),
-    listingRecommendationDetails: zodToJsonSchema(listingRecommendationSchema, 'listingRecommendationDetails'),
+    findListingRecommendationsInput: zodToJsonSchema(
+      findListingRecommendationsInputSchema,
+      'findListingRecommendationsInput'
+    ),
+    findListingRecommendationsOutput: zodToJsonSchema(
+      pagedListingRecommendationCollectionSchema,
+      'findListingRecommendationsOutput'
+    ),
+    listingRecommendationDetails: zodToJsonSchema(
+      listingRecommendationSchema,
+      'listingRecommendationDetails'
+    ),
 
     // Quick Setup
     quickSetupInput: zodToJsonSchema(quickSetupRequestSchema, 'quickSetupInput'),

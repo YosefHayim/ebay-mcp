@@ -2,8 +2,9 @@ name: Publish Package
 
 on:
   push:
+    branches: [main]
     tags:
-      - "v*.*.*" # Trigger on semantic version tags like v1.0.0
+      - 'v*.*.*' # Trigger on semantic version tags like v1.0.0
 
 permissions:
   id-token: write # Required for provenance
@@ -25,9 +26,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          registry-url: "https://registry.npmjs.org"
-          cache: "pnpm"
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
 
       - name: Get pnpm store directory
         shell: bash
@@ -59,5 +60,3 @@ jobs:
 
       - name: Publish to npm
         run: pnpm publish --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

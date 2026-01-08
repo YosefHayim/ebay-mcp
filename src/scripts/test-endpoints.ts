@@ -274,7 +274,11 @@ class EndpointTester {
       // Skip if no data or invalid parameters - this is expected in sandbox
       const err = error as { message?: string };
       // Only log if it's not a common sandbox error
-      if (err.message && !err.message.includes('not found') && !err.message.includes('invalid value for a SKU')) {
+      if (
+        err.message &&
+        !err.message.includes('not found') &&
+        !err.message.includes('invalid value for a SKU')
+      ) {
         console.log(`  ℹ Could not collect offer IDs: ${err.message}`);
       }
     }
@@ -995,7 +999,11 @@ class EndpointTester {
     );
 
     // Test CREATE offer (requires policy IDs from account)
-    if (this.collectedIds.fulfillmentPolicyId && this.collectedIds.paymentPolicyId && this.collectedIds.returnPolicyId) {
+    if (
+      this.collectedIds.fulfillmentPolicyId &&
+      this.collectedIds.paymentPolicyId &&
+      this.collectedIds.returnPolicyId
+    ) {
       const testOffer = {
         sku: testSku,
         marketplaceId: 'EBAY_US',
@@ -1145,7 +1153,11 @@ class EndpointTester {
         'Inventory',
         'getListingLocations',
         'GET /sell/inventory/v1/listing/{listingId}/sku/{sku}/locations',
-        () => this.api.inventory.getListingLocations('test-listing-id', this.collectedIds.inventoryItemSku!),
+        () =>
+          this.api.inventory.getListingLocations(
+            'test-listing-id',
+            this.collectedIds.inventoryItemSku!
+          ),
         { listingId: 'test-listing-id', sku: this.collectedIds.inventoryItemSku }
       );
     }
@@ -1548,8 +1560,7 @@ class EndpointTester {
         'Marketing',
         'bulkUpdateAdsStatus',
         'POST /sell/marketing/v1/ad_campaign/{campaign_id}/bulk_update_ads_status',
-        () =>
-          this.api.marketing.bulkUpdateAdsStatus(createdCampaignId!, { requests: [] } as any),
+        () => this.api.marketing.bulkUpdateAdsStatus(createdCampaignId!, { requests: [] } as any),
         { campaign_id: createdCampaignId }
       );
 
@@ -1577,8 +1588,7 @@ class EndpointTester {
         'Marketing',
         'bulkCreateKeyword',
         'POST /sell/marketing/v1/ad_campaign/{campaign_id}/bulk_create_keyword',
-        () =>
-          this.api.marketing.bulkCreateKeyword(createdCampaignId!, { keywords: [] } as any),
+        () => this.api.marketing.bulkCreateKeyword(createdCampaignId!, { keywords: [] } as any),
         { campaign_id: createdCampaignId }
       );
 
@@ -1586,8 +1596,7 @@ class EndpointTester {
         'Marketing',
         'bulkUpdateKeyword',
         'POST /sell/marketing/v1/ad_campaign/{campaign_id}/bulk_update_keyword',
-        () =>
-          this.api.marketing.bulkUpdateKeyword(createdCampaignId!, { keywords: [] } as any),
+        () => this.api.marketing.bulkUpdateKeyword(createdCampaignId!, { keywords: [] } as any),
         { campaign_id: createdCampaignId }
       );
 

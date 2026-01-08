@@ -29,10 +29,14 @@ const errorSchema = z.object({
   category: z.string().optional(),
   message: z.string().optional(),
   longMessage: z.string().optional(),
-  parameters: z.array(z.object({
-    name: z.string().optional(),
-    value: z.string().optional(),
-  })).optional(),
+  parameters: z
+    .array(
+      z.object({
+        name: z.string().optional(),
+        value: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 const timeDurationSchema = z.object({
@@ -61,8 +65,12 @@ const regionSetSchema = z.object({
 
 // Input
 export const getCustomPoliciesInputSchema = z.object({
-  policyTypes: z.string().optional()
-    .describe('Comma-delimited list of policy types to retrieve (e.g., PRODUCT_COMPLIANCE, TAKE_BACK)'),
+  policyTypes: z
+    .string()
+    .optional()
+    .describe(
+      'Comma-delimited list of policy types to retrieve (e.g., PRODUCT_COMPLIANCE, TAKE_BACK)'
+    ),
 });
 
 // Output
@@ -161,8 +169,7 @@ export const fulfillmentPolicyResponseSchema = z.object({
 });
 
 export const getFulfillmentPoliciesInputSchema = z.object({
-  marketplaceId: z.nativeEnum(MarketplaceId)
-    .describe('eBay marketplace ID (e.g., EBAY_US)'),
+  marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID (e.g., EBAY_US)'),
 });
 
 export const getFulfillmentPoliciesOutputSchema = z.object({
@@ -192,10 +199,12 @@ export const createFulfillmentPolicyOutputSchema = z.object({
 const paymentMethodSchema = z.object({
   paymentMethodType: z.string().optional(),
   brands: z.array(z.string()).optional(), // DEPRECATED
-  recipientAccountReference: z.object({
-    referenceId: z.string().optional(),
-    referenceType: z.string().optional(),
-  }).optional(), // DEPRECATED
+  recipientAccountReference: z
+    .object({
+      referenceId: z.string().optional(),
+      referenceType: z.string().optional(),
+    })
+    .optional(), // DEPRECATED
 });
 
 const depositSchema = z.object({
@@ -231,8 +240,7 @@ export const paymentPolicyResponseSchema = z.object({
 });
 
 export const getPaymentPoliciesInputSchema = z.object({
-  marketplaceId: z.nativeEnum(MarketplaceId)
-    .describe('eBay marketplace ID'),
+  marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID'),
 });
 
 export const getPaymentPoliciesOutputSchema = z.object({
@@ -279,12 +287,14 @@ export const returnPolicyResponseSchema = z.object({
   categoryTypes: z.array(categoryTypeSchema).optional(),
   description: z.string().optional(),
   extendedHolidayReturnsOffered: z.boolean().optional(),
-  internationalOverride: z.object({
-    returnMethod: z.string().optional(),
-    returnPeriod: timeDurationSchema.optional(),
-    returnsAccepted: z.boolean().optional(),
-    returnShippingCostPayer: z.string().optional(),
-  }).optional(),
+  internationalOverride: z
+    .object({
+      returnMethod: z.string().optional(),
+      returnPeriod: timeDurationSchema.optional(),
+      returnsAccepted: z.boolean().optional(),
+      returnShippingCostPayer: z.string().optional(),
+    })
+    .optional(),
   marketplaceId: z.string().optional(),
   name: z.string().optional(),
   refundMethod: z.string().optional(),
@@ -298,8 +308,7 @@ export const returnPolicyResponseSchema = z.object({
 });
 
 export const getReturnPoliciesInputSchema = z.object({
-  marketplaceId: z.nativeEnum(MarketplaceId)
-    .describe('eBay marketplace ID'),
+  marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID'),
 });
 
 export const getReturnPoliciesOutputSchema = z.object({
@@ -352,10 +361,14 @@ export const programRequestSchema = z.object({
 });
 
 export const programsOutputSchema = z.object({
-  programs: z.array(z.object({
-    programType: z.string().optional(),
-    programStatus: z.string().optional(),
-  })).optional(),
+  programs: z
+    .array(
+      z.object({
+        programType: z.string().optional(),
+        programStatus: z.string().optional(),
+      })
+    )
+    .optional(),
   warnings: z.array(errorSchema).optional(),
 });
 
@@ -374,10 +387,12 @@ export const kycOutputSchema = z.object({
 // ============================================================================
 
 export const privilegesOutputSchema = z.object({
-  sellingLimit: z.object({
-    amount: amountSchema.optional(),
-    quantity: z.number().optional(),
-  }).optional(),
+  sellingLimit: z
+    .object({
+      amount: amountSchema.optional(),
+      quantity: z.number().optional(),
+    })
+    .optional(),
   qualifiesForSelling: z.boolean().optional(),
   sellerRegistrationCompleted: z.boolean().optional(),
   warnings: z.array(errorSchema).optional(),
@@ -395,28 +410,70 @@ export function getAccountManagementJsonSchemas() {
     // Custom Policies
     getCustomPoliciesInput: zodToJsonSchema(getCustomPoliciesInputSchema, 'getCustomPoliciesInput'),
     getCustomPoliciesOutput: zodToJsonSchema(customPolicyResponseSchema, 'getCustomPoliciesOutput'),
-    createCustomPolicyInput: zodToJsonSchema(createCustomPolicyInputSchema, 'createCustomPolicyInput'),
-    createCustomPolicyOutput: zodToJsonSchema(createCustomPolicyOutputSchema, 'createCustomPolicyOutput'),
+    createCustomPolicyInput: zodToJsonSchema(
+      createCustomPolicyInputSchema,
+      'createCustomPolicyInput'
+    ),
+    createCustomPolicyOutput: zodToJsonSchema(
+      createCustomPolicyOutputSchema,
+      'createCustomPolicyOutput'
+    ),
 
     // Fulfillment Policies
-    getFulfillmentPoliciesInput: zodToJsonSchema(getFulfillmentPoliciesInputSchema, 'getFulfillmentPoliciesInput'),
-    getFulfillmentPoliciesOutput: zodToJsonSchema(getFulfillmentPoliciesOutputSchema, 'getFulfillmentPoliciesOutput'),
-    createFulfillmentPolicyInput: zodToJsonSchema(createFulfillmentPolicyInputSchema, 'createFulfillmentPolicyInput'),
-    createFulfillmentPolicyOutput: zodToJsonSchema(createFulfillmentPolicyOutputSchema, 'createFulfillmentPolicyOutput'),
-    fulfillmentPolicyDetails: zodToJsonSchema(fulfillmentPolicyResponseSchema, 'fulfillmentPolicyDetails'),
+    getFulfillmentPoliciesInput: zodToJsonSchema(
+      getFulfillmentPoliciesInputSchema,
+      'getFulfillmentPoliciesInput'
+    ),
+    getFulfillmentPoliciesOutput: zodToJsonSchema(
+      getFulfillmentPoliciesOutputSchema,
+      'getFulfillmentPoliciesOutput'
+    ),
+    createFulfillmentPolicyInput: zodToJsonSchema(
+      createFulfillmentPolicyInputSchema,
+      'createFulfillmentPolicyInput'
+    ),
+    createFulfillmentPolicyOutput: zodToJsonSchema(
+      createFulfillmentPolicyOutputSchema,
+      'createFulfillmentPolicyOutput'
+    ),
+    fulfillmentPolicyDetails: zodToJsonSchema(
+      fulfillmentPolicyResponseSchema,
+      'fulfillmentPolicyDetails'
+    ),
 
     // Payment Policies
-    getPaymentPoliciesInput: zodToJsonSchema(getPaymentPoliciesInputSchema, 'getPaymentPoliciesInput'),
-    getPaymentPoliciesOutput: zodToJsonSchema(getPaymentPoliciesOutputSchema, 'getPaymentPoliciesOutput'),
-    createPaymentPolicyInput: zodToJsonSchema(createPaymentPolicyInputSchema, 'createPaymentPolicyInput'),
-    createPaymentPolicyOutput: zodToJsonSchema(createPaymentPolicyOutputSchema, 'createPaymentPolicyOutput'),
+    getPaymentPoliciesInput: zodToJsonSchema(
+      getPaymentPoliciesInputSchema,
+      'getPaymentPoliciesInput'
+    ),
+    getPaymentPoliciesOutput: zodToJsonSchema(
+      getPaymentPoliciesOutputSchema,
+      'getPaymentPoliciesOutput'
+    ),
+    createPaymentPolicyInput: zodToJsonSchema(
+      createPaymentPolicyInputSchema,
+      'createPaymentPolicyInput'
+    ),
+    createPaymentPolicyOutput: zodToJsonSchema(
+      createPaymentPolicyOutputSchema,
+      'createPaymentPolicyOutput'
+    ),
     paymentPolicyDetails: zodToJsonSchema(paymentPolicyResponseSchema, 'paymentPolicyDetails'),
 
     // Return Policies
     getReturnPoliciesInput: zodToJsonSchema(getReturnPoliciesInputSchema, 'getReturnPoliciesInput'),
-    getReturnPoliciesOutput: zodToJsonSchema(getReturnPoliciesOutputSchema, 'getReturnPoliciesOutput'),
-    createReturnPolicyInput: zodToJsonSchema(createReturnPolicyInputSchema, 'createReturnPolicyInput'),
-    createReturnPolicyOutput: zodToJsonSchema(createReturnPolicyOutputSchema, 'createReturnPolicyOutput'),
+    getReturnPoliciesOutput: zodToJsonSchema(
+      getReturnPoliciesOutputSchema,
+      'getReturnPoliciesOutput'
+    ),
+    createReturnPolicyInput: zodToJsonSchema(
+      createReturnPolicyInputSchema,
+      'createReturnPolicyInput'
+    ),
+    createReturnPolicyOutput: zodToJsonSchema(
+      createReturnPolicyOutputSchema,
+      'createReturnPolicyOutput'
+    ),
     returnPolicyDetails: zodToJsonSchema(returnPolicyResponseSchema, 'returnPolicyDetails'),
 
     // Sales Tax

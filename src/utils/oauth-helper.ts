@@ -15,7 +15,7 @@ export interface OAuthCallbackResult {
 
 /**
  * Generate terminal hyperlink (if supported)
-*/
+ */
 function hyperlink(text: string, url: string): string {
   return `\u001B]8;;${url}\u0007${text}\u001B]8;;\u0007`;
 }
@@ -242,13 +242,8 @@ export async function interactiveOAuthFlow(
   console.log(chalk.bold.white('📋 Step 1: Authorize the Application\n'));
   console.log(chalk.gray('Open this URL in your browser:\n'));
 
-
-
-  console.log(
-    chalk.blue.underline(
-      hyperlink(authUrl.substring(0, 20) + '...', authUrl)
-    )
-  ); console.log('');
+  console.log(chalk.blue.underline(hyperlink(authUrl.substring(0, 20) + '...', authUrl)));
+  console.log('');
 
   console.log(chalk.gray('Waiting for authorization...'));
   console.log(chalk.gray('(This window will update automatically after you authorize)\n'));
@@ -260,7 +255,9 @@ export async function interactiveOAuthFlow(
   server.close();
 
   if (result.error) {
-    console.log(chalk.red(`\n✗ Authorization failed: ${result.errorDescription || result.error}\n`));
+    console.log(
+      chalk.red(`\n✗ Authorization failed: ${result.errorDescription || result.error}\n`)
+    );
     return null;
   }
 
@@ -303,9 +300,7 @@ export function displayManualOAuthInstructions(
   console.log(chalk.white('Step 4: Exchange Code for Tokens\n'));
   console.log(chalk.gray('  • Use the code to get your refresh token'));
   console.log(chalk.gray('  • This can be done through the MCP tool: ebay_exchange_auth_code'));
-  console.log(
-    chalk.gray('  • Or paste the code in the setup wizard when prompted\n')
-  );
+  console.log(chalk.gray('  • Or paste the code in the setup wizard when prompted\n'));
 }
 
 /**
@@ -350,7 +345,7 @@ It's a reference name that eBay associates with your redirect URI.
  */
 export function displayFirstTimeDeveloperGuide(): void {
   console.log(chalk.bold.cyan('\n🆕 First-Time eBay Developer Guide\n'));
-  console.log(chalk.white('Welcome! Here\'s how to get started:\n'));
+  console.log(chalk.white("Welcome! Here's how to get started:\n"));
 
   console.log(chalk.bold.yellow('Step 1: Create eBay Developer Account\n'));
   console.log(chalk.gray('  1. Visit: ') + chalk.blue.underline('https://developer.ebay.com/'));
@@ -383,6 +378,6 @@ export function displayFirstTimeDeveloperGuide(): void {
   console.log(chalk.gray('  Option A: Use this setup wizard (recommended)'));
   console.log(chalk.gray('  Option B: Manual OAuth flow through eBay Developer Portal\n'));
 
-  console.log(chalk.green.bold('✅ Once you have these, you\'re ready to continue!\n'));
+  console.log(chalk.green.bold("✅ Once you have these, you're ready to continue!\n"));
   console.log(chalk.gray('Press Enter to continue when you have your credentials ready...'));
 }

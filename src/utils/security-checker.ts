@@ -230,9 +230,7 @@ export function checkGitTracking(projectRoot: string): SecurityCheckResult {
 /**
  * Run all security checks
  */
-export async function runSecurityChecks(
-  projectRoot: string
-): Promise<SecurityCheckResult[]> {
+export async function runSecurityChecks(projectRoot: string): Promise<SecurityCheckResult[]> {
   const results: SecurityCheckResult[] = [];
 
   // Synchronous checks

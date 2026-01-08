@@ -10,10 +10,11 @@
  * Usage: npm run auto-setup (or runs automatically after npm install)
  */
 
-import { config } from 'dotenv';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { homedir, platform } from 'os';
-import { join, dirname } from 'path';
+
+import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
 
 // Load environment variables

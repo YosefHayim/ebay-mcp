@@ -237,9 +237,7 @@ async function displayAuthenticationTest(config: EbayConfig): Promise<void> {
 /**
  * Generate diagnostic report
  */
-async function generateDiagnosticReport(
-  exportPath?: string
-): Promise<DiagnosticReport> {
+async function generateDiagnosticReport(exportPath?: string): Promise<DiagnosticReport> {
   const envPath = join(PROJECT_ROOT, '.env');
   const envVars = parseEnvFile(envPath);
 
@@ -355,10 +353,7 @@ async function runDiagnostics(exportReport = false): Promise<void> {
         const tokenInfo = authClient.getTokenInfo();
 
         if (tokenInfo.scopeInfo) {
-          displayScopeVerification(
-            tokenInfo.scopeInfo.tokenScopes,
-            config.environment
-          );
+          displayScopeVerification(tokenInfo.scopeInfo.tokenScopes, config.environment);
         }
       } catch {
         console.log(chalk.yellow('⚠️  Could not verify token scopes\n'));
@@ -374,9 +369,7 @@ async function runDiagnostics(exportReport = false): Promise<void> {
 
   console.log(chalk.bold.green('✅ Diagnostics complete!\n'));
   console.log(chalk.gray('For more help, visit:'));
-  console.log(
-    chalk.blue.underline('  https://github.com/YosefHayim/ebay-mcp#troubleshooting\n')
-  );
+  console.log(chalk.blue.underline('  https://github.com/YosefHayim/ebay-mcp#troubleshooting\n'));
 }
 
 // CLI handler

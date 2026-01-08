@@ -131,6 +131,8 @@ export class FulfillmentApi {
    * Get cancellation details for an order
    */
   async getCancellation(orderId: string, cancellationId: string): Promise<unknown> {
-    return await this.client.get(`${this.basePath}/order/${orderId}/cancellation/${cancellationId}`);
+    return await this.client.get(
+      `${this.basePath}/order/${orderId}/cancellation/${cancellationId}`
+    );
   }
 }

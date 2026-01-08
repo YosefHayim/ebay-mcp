@@ -190,13 +190,28 @@ const getTrafficReportInputSchema = z.object({
 export function getAnalyticsJsonSchemas() {
   return {
     // Customer Service Metrics
-    getCustomerServiceMetricInput: zodToJsonSchema(getCustomerServiceMetricInputSchema, 'getCustomerServiceMetricInput'),
-    getCustomerServiceMetricOutput: zodToJsonSchema(getCustomerServiceMetricResponseSchema, 'getCustomerServiceMetricOutput'),
+    getCustomerServiceMetricInput: zodToJsonSchema(
+      getCustomerServiceMetricInputSchema,
+      'getCustomerServiceMetricInput'
+    ),
+    getCustomerServiceMetricOutput: zodToJsonSchema(
+      getCustomerServiceMetricResponseSchema,
+      'getCustomerServiceMetricOutput'
+    ),
 
     // Seller Standards Profiles
-    findSellerStandardsProfilesOutput: zodToJsonSchema(findSellerStandardsProfilesResponseSchema, 'findSellerStandardsProfilesOutput'),
-    getSellerStandardsProfileInput: zodToJsonSchema(getSellerStandardsProfileInputSchema, 'getSellerStandardsProfileInput'),
-    getSellerStandardsProfileOutput: zodToJsonSchema(standardsProfileSchema, 'getSellerStandardsProfileOutput'),
+    findSellerStandardsProfilesOutput: zodToJsonSchema(
+      findSellerStandardsProfilesResponseSchema,
+      'findSellerStandardsProfilesOutput'
+    ),
+    getSellerStandardsProfileInput: zodToJsonSchema(
+      getSellerStandardsProfileInputSchema,
+      'getSellerStandardsProfileInput'
+    ),
+    getSellerStandardsProfileOutput: zodToJsonSchema(
+      standardsProfileSchema,
+      'getSellerStandardsProfileOutput'
+    ),
 
     // Traffic Reports
     getTrafficReportInput: zodToJsonSchema(getTrafficReportInputSchema, 'getTrafficReportInput'),

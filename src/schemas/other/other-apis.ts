@@ -59,9 +59,11 @@ const correctiveRecommendationsSchema = z.object({
   complianceDetail: z.string().optional(),
   complianceDetailDescription: z.string().optional(),
   correctiveActionDetails: z.string().optional(),
-  productRecommendation: z.object({
-    epid: z.string().optional(),
-  }).optional(),
+  productRecommendation: z
+    .object({
+      epid: z.string().optional(),
+    })
+    .optional(),
 });
 
 const variationDetailsSchema = z.object({
@@ -73,22 +75,32 @@ const complianceDetailSchema = z.object({
   complianceState: z.string().optional(),
   complianceType: z.string().optional(),
   message: z.string().optional(),
-  reasons: z.array(z.object({
-    complianceDetailType: z.string().optional(),
-    message: z.string().optional(),
-    variation: variationDetailsSchema.optional(),
-    violationData: z.array(nameValueListSchema).optional(),
-  })).optional(),
+  reasons: z
+    .array(
+      z.object({
+        complianceDetailType: z.string().optional(),
+        message: z.string().optional(),
+        variation: variationDetailsSchema.optional(),
+        violationData: z.array(nameValueListSchema).optional(),
+      })
+    )
+    .optional(),
   correctiveRecommendations: correctiveRecommendationsSchema.optional(),
 });
 
 const complianceSummaryInfoSchema = z.object({
-  complianceSummary: z.object({
-    violationSummaries: z.array(z.object({
-      complianceType: z.string().optional(),
-      listingCount: z.number().int().optional(),
-    })).optional(),
-  }).optional(),
+  complianceSummary: z
+    .object({
+      violationSummaries: z
+        .array(
+          z.object({
+            complianceType: z.string().optional(),
+            listingCount: z.number().int().optional(),
+          })
+        )
+        .optional(),
+    })
+    .optional(),
 });
 
 const complianceViolationSchema = z.object({
@@ -176,11 +188,15 @@ const veroReportItemsRequestSchema = z.object({
 });
 
 const veroReportItemsResponseSchema = z.object({
-  reportedListings: z.array(z.object({
-    itemId: z.string().optional(),
-    statusCode: z.number().int().optional(),
-    statusMessage: z.string().optional(),
-  })).optional(),
+  reportedListings: z
+    .array(
+      z.object({
+        itemId: z.string().optional(),
+        statusCode: z.number().int().optional(),
+        statusMessage: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 const veroReportedListingSchema = z.object({
@@ -218,9 +234,11 @@ const contactSchema = z.object({
   contactAddress: addressSchema.optional(),
   email: z.string().optional(),
   fullName: z.string().optional(),
-  primaryPhone: z.object({
-    phoneNumber: z.string().optional(),
-  }).optional(),
+  primaryPhone: z
+    .object({
+      phoneNumber: z.string().optional(),
+    })
+    .optional(),
 });
 
 const dimensionsSchema = z.object({
@@ -246,10 +264,14 @@ const lineItemInputSchema = z.object({
 });
 
 const createShippingQuoteRequestSchema = z.object({
-  orders: z.array(z.object({
-    lineItems: z.array(lineItemInputSchema).optional(),
-    orderId: z.string().optional(),
-  })).optional(),
+  orders: z
+    .array(
+      z.object({
+        lineItems: z.array(lineItemInputSchema).optional(),
+        orderId: z.string().optional(),
+      })
+    )
+    .optional(),
   shippingDestination: contactSchema.optional(),
 });
 
@@ -263,12 +285,16 @@ const rateSchema = z.object({
 });
 
 const packageSchema = z.object({
-  lineItems: z.array(z.object({
-    itemId: z.string().optional(),
-    lineItemId: z.string().optional(),
-    orderId: z.string().optional(),
-    quantity: z.number().int().optional(),
-  })).optional(),
+  lineItems: z
+    .array(
+      z.object({
+        itemId: z.string().optional(),
+        lineItemId: z.string().optional(),
+        orderId: z.string().optional(),
+        quantity: z.number().int().optional(),
+      })
+    )
+    .optional(),
   packageDetails: packageDetailsSchema.optional(),
   packageId: z.string().optional(),
   rates: z.array(rateSchema).optional(),
@@ -313,10 +339,14 @@ const purchasedRateSchema = z.object({
 const shipmentSchema = z.object({
   creationDate: z.string().optional(),
   labels: z.array(labelSchema).optional(),
-  packages: z.array(z.object({
-    packageId: z.string().optional(),
-    trackingNumber: z.string().optional(),
-  })).optional(),
+  packages: z
+    .array(
+      z.object({
+        packageId: z.string().optional(),
+        trackingNumber: z.string().optional(),
+      })
+    )
+    .optional(),
   rate: purchasedRateSchema.optional(),
   shipFromAddress: contactSchema.optional(),
   shipmentId: z.string().optional(),
@@ -374,10 +404,22 @@ export function getOtherApisJsonSchemas() {
     getUserConsentOutput: zodToJsonSchema(getUserConsentResponseSchema, 'getUserConsentOutput'),
 
     // Sell Compliance API
-    getComplianceSummaryOutput: zodToJsonSchema(complianceSummaryInfoSchema, 'getComplianceSummaryOutput'),
-    getListingViolationsInput: zodToJsonSchema(getListingViolationsInputSchema, 'getListingViolationsInput'),
-    getListingViolationsOutput: zodToJsonSchema(listingViolationSummaryResponseSchema, 'getListingViolationsOutput'),
-    suppressViolationInput: zodToJsonSchema(suppressViolationRequestSchema, 'suppressViolationInput'),
+    getComplianceSummaryOutput: zodToJsonSchema(
+      complianceSummaryInfoSchema,
+      'getComplianceSummaryOutput'
+    ),
+    getListingViolationsInput: zodToJsonSchema(
+      getListingViolationsInputSchema,
+      'getListingViolationsInput'
+    ),
+    getListingViolationsOutput: zodToJsonSchema(
+      listingViolationSummaryResponseSchema,
+      'getListingViolationsOutput'
+    ),
+    suppressViolationInput: zodToJsonSchema(
+      suppressViolationRequestSchema,
+      'suppressViolationInput'
+    ),
 
     // Commerce Translation API
     translateInput: zodToJsonSchema(translateRequestSchema, 'translateInput'),
@@ -386,12 +428,24 @@ export function getOtherApisJsonSchemas() {
     // Commerce VERO API
     reportItemsInput: zodToJsonSchema(veroReportItemsRequestSchema, 'reportItemsInput'),
     reportItemsOutput: zodToJsonSchema(veroReportItemsResponseSchema, 'reportItemsOutput'),
-    getVeroReportedListingsInput: zodToJsonSchema(getVeroReportedListingsInputSchema, 'getVeroReportedListingsInput'),
-    getVeroReportedListingsOutput: zodToJsonSchema(veroReportedListingsResponseSchema, 'getVeroReportedListingsOutput'),
+    getVeroReportedListingsInput: zodToJsonSchema(
+      getVeroReportedListingsInputSchema,
+      'getVeroReportedListingsInput'
+    ),
+    getVeroReportedListingsOutput: zodToJsonSchema(
+      veroReportedListingsResponseSchema,
+      'getVeroReportedListingsOutput'
+    ),
 
     // Sell eDelivery International Shipping API
-    createShippingQuoteInput: zodToJsonSchema(createShippingQuoteRequestSchema, 'createShippingQuoteInput'),
-    createShippingQuoteOutput: zodToJsonSchema(createShippingQuoteResponseSchema, 'createShippingQuoteOutput'),
+    createShippingQuoteInput: zodToJsonSchema(
+      createShippingQuoteRequestSchema,
+      'createShippingQuoteInput'
+    ),
+    createShippingQuoteOutput: zodToJsonSchema(
+      createShippingQuoteResponseSchema,
+      'createShippingQuoteOutput'
+    ),
     purchaseLabelInput: zodToJsonSchema(purchaseLabelRequestSchema, 'purchaseLabelInput'),
     purchaseLabelOutput: zodToJsonSchema(purchaseLabelResponseSchema, 'purchaseLabelOutput'),
     getShipmentOutput: zodToJsonSchema(getShipmentResponseSchema, 'getShipmentOutput'),
@@ -411,7 +465,10 @@ export function getOtherApisJsonSchemas() {
     // Compliance Types
     complianceViolation: zodToJsonSchema(complianceViolationSchema, 'complianceViolation'),
     complianceDetail: zodToJsonSchema(complianceDetailSchema, 'complianceDetail'),
-    correctiveRecommendations: zodToJsonSchema(correctiveRecommendationsSchema, 'correctiveRecommendations'),
+    correctiveRecommendations: zodToJsonSchema(
+      correctiveRecommendationsSchema,
+      'correctiveRecommendations'
+    ),
     variationDetails: zodToJsonSchema(variationDetailsSchema, 'variationDetails'),
     nameValueList: zodToJsonSchema(nameValueListSchema, 'nameValueList'),
 

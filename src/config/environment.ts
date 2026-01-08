@@ -244,7 +244,7 @@ export function getAuthUrl(
   prompt?: 'login' | 'consent',
   responseType?: 'code',
   state?: string,
-  scopes?: string[],
+  scopes?: string[]
 ): string;
 export function getAuthUrl(
   clientIdOrEnvironment: string | 'production' | 'sandbox',
@@ -254,10 +254,13 @@ export function getAuthUrl(
   prompt: 'login' | 'consent' = 'login',
   responseType: 'code' = 'code',
   state?: string,
-  scopes?: string[],
+  scopes?: string[]
 ): string {
   // If only one argument and it's an environment, return the token endpoint
-  if (arguments.length === 1 && (clientIdOrEnvironment === 'production' || clientIdOrEnvironment === 'sandbox')) {
+  if (
+    arguments.length === 1 &&
+    (clientIdOrEnvironment === 'production' || clientIdOrEnvironment === 'sandbox')
+  ) {
     return `${getBaseUrl(clientIdOrEnvironment)}/identity/v1/oauth2/token`;
   }
 
@@ -267,11 +270,14 @@ export function getAuthUrl(
   const scope = getDefaultScopes(env);
 
   if (!(clientId && redirectUri)) {
-    console.error("clientId, redirectUri (RuName), and scope are required,please initialize the class properly.");
-    return ''
+    console.error(
+      'clientId, redirectUri (RuName), and scope are required,please initialize the class properly.'
+    );
+    return '';
   }
 
-  const authDomain = env === 'production' ? 'https://auth.ebay.com' : 'https://auth.sandbox.ebay.com';
+  const authDomain =
+    env === 'production' ? 'https://auth.ebay.com' : 'https://auth.sandbox.ebay.com';
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
