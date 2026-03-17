@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import { MessageReferenceType, FeedbackRating } from '@/types/ebay-enums.js';
 
 /**

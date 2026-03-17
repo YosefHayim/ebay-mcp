@@ -12,6 +12,9 @@ describe('Environment Configuration', () => {
   beforeEach(() => {
     // Create a fresh copy of process.env for each test
     process.env = { ...originalEnv };
+    // Remove any .env-file-loaded EBAY_ENVIRONMENT so tests that expect the
+    // sandbox default are not affected by a production value in .env
+    delete process.env.EBAY_ENVIRONMENT;
   });
 
   afterEach(() => {

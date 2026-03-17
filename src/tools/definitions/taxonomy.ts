@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 
 export interface OutputArgs {
   [x: string]: unknown;
@@ -19,7 +19,7 @@ export interface ToolAnnotations {
 
 export interface ToolDefinition {
   name: string;
-  description: string;
+  description?: string;
   inputSchema: Record<string, z.ZodTypeAny>;
   title?: string;
   outputSchema?: OutputArgs;
@@ -39,7 +39,6 @@ export const taxonomyTools: ToolDefinition[] = [
         categoryTreeId: { type: 'string' },
         categoryTreeVersion: { type: 'string' },
       },
-      description: 'Default category tree ID response',
     } as OutputArgs,
   },
   {
@@ -55,7 +54,6 @@ export const taxonomyTools: ToolDefinition[] = [
         categoryTreeVersion: { type: 'string' },
         rootCategoryNode: { type: 'object' },
       },
-      description: 'Category tree details',
     } as OutputArgs,
   },
   {
@@ -70,7 +68,6 @@ export const taxonomyTools: ToolDefinition[] = [
       properties: {
         categorySuggestions: { type: 'array' },
       },
-      description: 'Category suggestions response',
     } as OutputArgs,
   },
   {
@@ -85,7 +82,6 @@ export const taxonomyTools: ToolDefinition[] = [
       properties: {
         aspects: { type: 'array' },
       },
-      description: 'Item aspects for category',
     } as OutputArgs,
   },
 ];

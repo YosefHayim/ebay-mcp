@@ -10,25 +10,21 @@ import { z } from 'zod';
 // Reusable schema for filter parameter
 const filterSchema = z
   .string({
-    message: 'Filter must be a string',
-    invalid_type_error: 'filter must be a string',
-    description: 'Filter criteria for the query',
+    error: 'filter must be a string',
   })
   .optional();
 
 // Reusable schema for limit parameter (string in API)
 const limitSchema = z
   .string({
-    invalid_type_error: 'limit must be a string',
-    description: 'Maximum number of items to return (1-200)',
+    error: 'limit must be a string',
   })
   .optional();
 
 // Reusable schema for offset parameter (string in API)
 const offsetSchema = z
   .string({
-    invalid_type_error: 'offset must be a string',
-    description: 'Number of items to skip',
+    error: 'offset must be a string',
   })
   .optional();
 
@@ -43,8 +39,7 @@ export const findEligibleItemsSchema = z.object({
   offset: offsetSchema,
   marketplace_id: z
     .string({
-      invalid_type_error: 'marketplace_id must be a string',
-      description: 'The eBay marketplace ID (X-EBAY-C-MARKETPLACE-ID header)',
+      error: 'marketplace_id must be a string',
     })
     .optional(),
 });
@@ -58,14 +53,12 @@ export const findEligibleItemsSchema = z.object({
 export const sendOfferToInterestedBuyersSchema = z.object({
   allow_counter_offer: z
     .boolean({
-      invalid_type_error: 'allow_counter_offer must be a boolean',
-      description: 'Whether to allow counter-offers (currently must be false)',
+      error: 'allow_counter_offer must be a boolean',
     })
     .optional(),
   message: z
     .string({
-      invalid_type_error: 'message must be a string',
-      description: 'Seller-defined message to buyers (max 2000 characters)',
+      error: 'message must be a string',
     })
     .max(2000, 'message must be 2000 characters or less')
     .optional(),
@@ -74,14 +67,12 @@ export const sendOfferToInterestedBuyersSchema = z.object({
       {
         unit: z
           .string({
-            invalid_type_error: 'unit must be a string',
-            description: 'Time unit (currently must be DAY)',
+            error: 'unit must be a string',
           })
           .optional(),
         value: z
           .number({
-            invalid_type_error: 'value must be a number',
-            description: 'Duration value (currently must be 2)',
+            error: 'value must be a number',
           })
           .int({
             message: 'value must be an integer',
@@ -89,8 +80,7 @@ export const sendOfferToInterestedBuyersSchema = z.object({
           .optional(),
       },
       {
-        invalid_type_error: 'offer_duration must be an object',
-        description: 'Duration the offer is valid (default: 2 days)',
+        error: 'offer_duration must be an object',
       }
     )
     .optional(),
@@ -99,14 +89,12 @@ export const sendOfferToInterestedBuyersSchema = z.object({
       z.object({
         discount_percentage: z
           .string({
-            invalid_type_error: 'discount_percentage must be a string',
-            description: 'Percentage discount (minimum 5)',
+            error: 'discount_percentage must be a string',
           })
           .optional(),
         listing_id: z
           .string({
-            invalid_type_error: 'listing_id must be a string',
-            description: 'The unique eBay listing ID',
+            error: 'listing_id must be a string',
           })
           .optional(),
         price: z
@@ -114,27 +102,23 @@ export const sendOfferToInterestedBuyersSchema = z.object({
             {
               currency: z
                 .string({
-                  invalid_type_error: 'currency must be a string',
-                  description: '3-letter ISO 4217 currency code',
+                  error: 'currency must be a string',
                 })
                 .optional(),
               value: z
                 .string({
-                  invalid_type_error: 'value must be a string',
-                  description: 'The monetary amount',
+                  error: 'value must be a string',
                 })
                 .optional(),
             },
             {
-              invalid_type_error: 'price must be an object',
-              description: 'The discounted price',
+              error: 'price must be an object',
             }
           )
           .optional(),
         quantity: z
           .number({
-            invalid_type_error: 'quantity must be a number',
-            description: 'Number of items (all-or-nothing offer)',
+            error: 'quantity must be a number',
           })
           .int({
             message: 'quantity must be an integer',
@@ -142,15 +126,13 @@ export const sendOfferToInterestedBuyersSchema = z.object({
           .optional(),
       }),
       {
-        invalid_type_error: 'offered_items must be an array',
-        description: 'Array of items to offer (currently limited to one item)',
+        error: 'offered_items must be an array',
       }
     )
     .optional(),
   marketplace_id: z
     .string({
-      invalid_type_error: 'marketplace_id must be a string',
-      description: 'The eBay marketplace ID (X-EBAY-C-MARKETPLACE-ID header)',
+      error: 'marketplace_id must be a string',
     })
     .optional(),
 });

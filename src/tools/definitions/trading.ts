@@ -32,7 +32,7 @@ export const tradingTools: ToolDefinition[] = [
       'Create a new fixed-price listing.\n\nUses the Trading API (AddFixedPriceItem). Requires complete item details.\n\nRequired: User OAuth token.',
     inputSchema: {
       item: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .describe(
           'Item details object. Required fields: Title, PrimaryCategory.CategoryID, StartPrice, ConditionID, Country, Currency, DispatchTimeMax, ListingDuration, ListingType ("FixedPriceItem"), Quantity, SKU.'
         ),
@@ -46,7 +46,7 @@ export const tradingTools: ToolDefinition[] = [
     inputSchema: {
       itemId: z.string().describe('The eBay item ID to revise'),
       fields: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .describe(
           'Fields to update (e.g., { "Quantity": 10, "StartPrice": 14.99 })'
         ),
@@ -79,7 +79,7 @@ export const tradingTools: ToolDefinition[] = [
     inputSchema: {
       itemId: z.string().describe('The eBay item ID to relist'),
       modifications: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .optional()
         .describe(
           'Optional fields to change when relisting (e.g., { "Quantity": 20 })'

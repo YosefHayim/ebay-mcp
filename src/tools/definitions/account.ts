@@ -1,6 +1,6 @@
 import { MarketplaceId } from '@/types/ebay-enums.js';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import {
   bulkSalesTaxRequestSchema,
   customPolicySchema,
@@ -32,7 +32,7 @@ import { OutputArgs, ToolAnnotations } from '../tool-definitions.js';
 
 export interface ToolDefinition {
   name: string;
-  description: string;
+  description?: string;
   inputSchema: Record<string, z.ZodTypeAny>;
   title?: string;
   outputSchema?: OutputArgs;
@@ -145,7 +145,6 @@ export const accountTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   // Payment Policy CRUD
@@ -204,7 +203,6 @@ export const accountTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   // Return Policy CRUD
@@ -263,7 +261,6 @@ export const accountTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   // Custom Policy CRUD
@@ -310,7 +307,6 @@ export const accountTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   // KYC, Payments, Programs, Sales Tax, Subscription

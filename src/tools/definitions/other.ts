@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import { shippingQuoteRequestSchema, veroReportDataSchema } from '../schemas.js';
 import { OutputArgs, ToolAnnotations } from '../tool-definitions.js';
 
@@ -118,7 +118,7 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_get_actual_costs',
     description: 'Get actual costs for shipped packages',
     inputSchema: {
-      params: z.record(z.string()).optional().describe('Query parameters (e.g., package_id)'),
+      params: z.record(z.string(), z.string()).optional().describe('Query parameters (e.g., package_id)'),
     },
   },
   {
@@ -130,7 +130,7 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_create_address_preference',
     description: 'Create an address preference for international shipping',
     inputSchema: {
-      addressPreference: z.record(z.unknown()).describe('Address preference data'),
+      addressPreference: z.record(z.string(), z.unknown()).describe('Address preference data'),
     },
   },
   {
@@ -142,7 +142,7 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_create_consign_preference',
     description: 'Create a consign preference for international shipping',
     inputSchema: {
-      consignPreference: z.record(z.unknown()).describe('Consign preference data'),
+      consignPreference: z.record(z.string(), z.unknown()).describe('Consign preference data'),
     },
   },
   // eDelivery API - Agents & Services
@@ -150,28 +150,28 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_get_agents',
     description: 'Get available shipping agents for international shipping',
     inputSchema: {
-      params: z.record(z.string()).optional().describe('Query parameters (e.g., country)'),
+      params: z.record(z.string(), z.string()).optional().describe('Query parameters (e.g., country)'),
     },
   },
   {
     name: 'ebay_get_battery_qualifications',
     description: 'Get battery qualifications for international shipping',
     inputSchema: {
-      params: z.record(z.string()).optional().describe('Query parameters (e.g., battery_type)'),
+      params: z.record(z.string(), z.string()).optional().describe('Query parameters (e.g., battery_type)'),
     },
   },
   {
     name: 'ebay_get_dropoff_sites',
     description: 'Get available dropoff sites for international shipping',
     inputSchema: {
-      params: z.record(z.string()).describe('Query parameters (postal_code, country required)'),
+      params: z.record(z.string(), z.string()).describe('Query parameters (postal_code, country required)'),
     },
   },
   {
     name: 'ebay_get_shipping_services',
     description: 'Get available shipping services for international shipping',
     inputSchema: {
-      params: z.record(z.string()).optional().describe('Query parameters (e.g., country)'),
+      params: z.record(z.string(), z.string()).optional().describe('Query parameters (e.g., country)'),
     },
   },
   // eDelivery API - Bundles
@@ -179,7 +179,7 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_create_bundle',
     description: 'Create a bundle of packages for international shipping',
     inputSchema: {
-      bundleRequest: z.record(z.unknown()).describe('Bundle creation data'),
+      bundleRequest: z.record(z.string(), z.unknown()).describe('Bundle creation data'),
     },
   },
   {
@@ -208,7 +208,7 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_create_package',
     description: 'Create a package for international shipping',
     inputSchema: {
-      packageRequest: z.record(z.unknown()).describe('Package creation data'),
+      packageRequest: z.record(z.string(), z.unknown()).describe('Package creation data'),
     },
   },
   {
@@ -258,21 +258,21 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_bulk_cancel_packages',
     description: 'Cancel multiple packages in one request',
     inputSchema: {
-      bulkCancelRequest: z.record(z.unknown()).describe('Bulk cancel request data'),
+      bulkCancelRequest: z.record(z.string(), z.unknown()).describe('Bulk cancel request data'),
     },
   },
   {
     name: 'ebay_bulk_confirm_packages',
     description: 'Confirm multiple packages in one request',
     inputSchema: {
-      bulkConfirmRequest: z.record(z.unknown()).describe('Bulk confirm request data'),
+      bulkConfirmRequest: z.record(z.string(), z.unknown()).describe('Bulk confirm request data'),
     },
   },
   {
     name: 'ebay_bulk_delete_packages',
     description: 'Delete multiple packages in one request',
     inputSchema: {
-      bulkDeleteRequest: z.record(z.unknown()).describe('Bulk delete request data'),
+      bulkDeleteRequest: z.record(z.string(), z.unknown()).describe('Bulk delete request data'),
     },
   },
   // eDelivery API - Labels & Tracking
@@ -280,21 +280,21 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_get_labels',
     description: 'Get shipping labels for packages',
     inputSchema: {
-      params: z.record(z.string()).optional().describe('Query parameters (e.g., package_id)'),
+      params: z.record(z.string(), z.string()).optional().describe('Query parameters (e.g., package_id)'),
     },
   },
   {
     name: 'ebay_get_handover_sheet',
     description: 'Get handover sheet for packages',
     inputSchema: {
-      params: z.record(z.string()).optional().describe('Query parameters (e.g., bundle_id)'),
+      params: z.record(z.string(), z.string()).optional().describe('Query parameters (e.g., bundle_id)'),
     },
   },
   {
     name: 'ebay_get_tracking',
     description: 'Get tracking information for packages',
     inputSchema: {
-      params: z.record(z.string()).describe('Query parameters (tracking_number required)'),
+      params: z.record(z.string(), z.string()).describe('Query parameters (tracking_number required)'),
     },
   },
   // eDelivery API - Other
@@ -302,12 +302,11 @@ export const otherApiTools: ToolDefinition[] = [
     name: 'ebay_create_complaint',
     description: 'Create a complaint for international shipping issues',
     inputSchema: {
-      complaintRequest: z.record(z.unknown()).describe('Complaint request data'),
+      complaintRequest: z.record(z.string(), z.unknown()).describe('Complaint request data'),
     },
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Success response',
     } as OutputArgs,
   },
 ];
@@ -323,7 +322,6 @@ export const claudeTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Success response',
     } as OutputArgs,
   },
 ];

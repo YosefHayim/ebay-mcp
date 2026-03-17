@@ -1,7 +1,7 @@
 {
-  "name": "ebay-mcp",
-  "version": "1.7.5",
-  "description": "Local MCP server for eBay APIs - provides access to eBay developer functionality through MCP (Model Context Protocol)",
+  "name": "ebay-mcp-remote-edition",
+  "version": "2.0.0",
+  "description": "Remote + Local MCP server for eBay APIs - provides access to eBay developer functionality through MCP (Model Context Protocol)",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -64,15 +64,15 @@
     "dotenv": "^17.3.1",
     "dotenv-stringify": "^3.0.1",
     "express": "^5.1.0",
-    "fast-xml-parser": "^5.3.4",
+    "fast-xml-parser": "^5.5.5",
     "helmet": "^8.1.0",
     "jose": "^6.2.1",
     "jsonwebtoken": "^9.0.2",
     "prompts": "^2.4.2",
     "update-notifier": "^7.3.1",
     "winston": "^3.19.0",
-    "zod": "^3.25.76",
-    "zod-to-json-schema": "^3.24.1"
+    "zod": "^4.3.6",
+    "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

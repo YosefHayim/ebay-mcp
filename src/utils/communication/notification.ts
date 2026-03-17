@@ -10,37 +10,26 @@ import { z } from 'zod';
 // Reusable schema for limit parameter (string in API)
 const limitSchema = z
   .string({
-    invalid_type_error: 'limit must be a string',
-    description: 'Maximum number of items to return per page (10-100)',
+    error: 'limit must be a string',
   })
   .optional();
 
 // Reusable schema for continuation token parameter
 const continuationTokenSchema = z
   .string({
-    message: 'Continuation token must be a string',
-    invalid_type_error: 'continuation_token must be a string',
-    description: 'Token for pagination',
+    error: 'continuation_token must be a string',
   })
   .optional();
 
 // Reusable schema for ID parameters (required)
-const idSchema = (name: string, description: string) =>
+const idSchema = (name: string, _description?: string) =>
   z.string({
-    message: `${name} is required`,
-    required_error: `${name.toLowerCase().replace(/\s+/g, '_')} is required`,
-    invalid_type_error: `${name.toLowerCase().replace(/\s+/g, '_')} must be a string`,
-    description,
+    error: `${name.toLowerCase().replace(/\s+/g, '_')} is required and must be a string`,
   });
 
 // Reusable schema for object data parameters
-const _objectDataSchema = (name: string, description: string) =>
-  z.record(z.unknown(), {
-    message: `${name} is required`,
-    required_error: `${name.toLowerCase().replace(/\s+/g, '_')} is required`,
-    invalid_type_error: `${name.toLowerCase().replace(/\s+/g, '_')} must be an object`,
-    description,
-  });
+const _objectDataSchema = (_name: string, _description?: string) =>
+  z.record(z.string(), z.unknown());
 
 /**
  * Schema for getPublicKey method
@@ -65,8 +54,7 @@ export const getConfigSchema = z.object({});
 export const updateConfigSchema = z.object({
   alert_email: z
     .string({
-      invalid_type_error: 'alert_email must be a string',
-      description: 'Email address for Notification API alerts',
+      error: 'alert_email must be a string',
     })
     .email({
       message: 'alert_email must be a valid email address',
@@ -104,8 +92,7 @@ export const createDestinationSchema = z.object({
       {
         endpoint: z
           .string({
-            invalid_type_error: 'endpoint must be a string',
-            description: 'HTTPS endpoint URL (no internal IPs or localhost)',
+            error: 'endpoint must be a string',
           })
           .url({
             message: 'endpoint must be a valid URL',
@@ -113,8 +100,7 @@ export const createDestinationSchema = z.object({
           .optional(),
         verification_token: z
           .string({
-            invalid_type_error: 'verification_token must be a string',
-            description: 'Verification token (32-80 alphanumeric, underscore, hyphen characters)',
+            error: 'verification_token must be a string',
           })
           .min(32, 'verification_token must be at least 32 characters')
           .max(80, 'verification_token must be at most 80 characters')
@@ -125,21 +111,18 @@ export const createDestinationSchema = z.object({
           .optional(),
       },
       {
-        invalid_type_error: 'delivery_config must be an object',
-        description: 'Delivery configuration with endpoint and verification token',
+        error: 'delivery_config must be an object',
       }
     )
     .optional(),
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Seller-specified name for the destination',
+      error: 'name must be a string',
     })
     .optional(),
   status: z
     .string({
-      invalid_type_error: 'status must be a string',
-      description: 'Status: ENABLED or DISABLED',
+      error: 'status must be a string',
     })
     .optional(),
 });
@@ -156,8 +139,7 @@ export const updateDestinationSchema = z.object({
     .object({
       endpoint: z
         .string({
-          invalid_type_error: 'endpoint must be a string',
-          description: 'HTTPS endpoint URL',
+          error: 'endpoint must be a string',
         })
         .url({
           message: 'endpoint must be a valid URL',
@@ -165,8 +147,7 @@ export const updateDestinationSchema = z.object({
         .optional(),
       verification_token: z
         .string({
-          invalid_type_error: 'verification_token must be a string',
-          description: 'Verification token (32-80 characters)',
+          error: 'verification_token must be a string',
         })
         .min(32)
         .max(80)
@@ -176,14 +157,12 @@ export const updateDestinationSchema = z.object({
     .optional(),
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Destination name',
+      error: 'name must be a string',
     })
     .optional(),
   status: z
     .string({
-      invalid_type_error: 'status must be a string',
-      description: 'Status: ENABLED or DISABLED',
+      error: 'status must be a string',
     })
     .optional(),
 });
@@ -215,8 +194,7 @@ export const getSubscriptionsSchema = z.object({
 export const createSubscriptionSchema = z.object({
   destination_id: z
     .string({
-      invalid_type_error: 'destination_id must be a string',
-      description: 'The unique identifier of the destination endpoint',
+      error: 'destination_id must be a string',
     })
     .optional(),
   payload: z
@@ -224,39 +202,33 @@ export const createSubscriptionSchema = z.object({
       {
         delivery_protocol: z
           .string({
-            invalid_type_error: 'delivery_protocol must be a string',
-            description: 'Delivery protocol (currently only HTTPS is supported)',
+            error: 'delivery_protocol must be a string',
           })
           .optional(),
         format: z
           .string({
-            invalid_type_error: 'format must be a string',
-            description: 'Payload format (currently only JSON is supported)',
+            error: 'format must be a string',
           })
           .optional(),
         schema_version: z
           .string({
-            invalid_type_error: 'schema_version must be a string',
-            description: 'Schema version for the notification topic',
+            error: 'schema_version must be a string',
           })
           .optional(),
       },
       {
-        invalid_type_error: 'payload must be an object',
-        description: 'Payload configuration',
+        error: 'payload must be an object',
       }
     )
     .optional(),
   status: z
     .string({
-      invalid_type_error: 'status must be a string',
-      description: 'Status: ENABLED or DISABLED',
+      error: 'status must be a string',
     })
     .optional(),
   topic_id: z
     .string({
-      invalid_type_error: 'topic_id must be a string',
-      description: 'The unique identifier of the notification topic',
+      error: 'topic_id must be a string',
     })
     .optional(),
 });
@@ -280,36 +252,31 @@ export const updateSubscriptionSchema = z.object({
   subscription_id: idSchema('Subscription ID', 'The unique identifier for the subscription'),
   destination_id: z
     .string({
-      invalid_type_error: 'destination_id must be a string',
-      description: 'The unique identifier of the destination',
+      error: 'destination_id must be a string',
     })
     .optional(),
   payload: z
     .object({
       delivery_protocol: z
         .string({
-          invalid_type_error: 'delivery_protocol must be a string',
-          description: 'Delivery protocol',
+          error: 'delivery_protocol must be a string',
         })
         .optional(),
       format: z
         .string({
-          invalid_type_error: 'format must be a string',
-          description: 'Payload format',
+          error: 'format must be a string',
         })
         .optional(),
       schema_version: z
         .string({
-          invalid_type_error: 'schema_version must be a string',
-          description: 'Schema version',
+          error: 'schema_version must be a string',
         })
         .optional(),
     })
     .optional(),
   status: z
     .string({
-      invalid_type_error: 'status must be a string',
-      description: 'Status: ENABLED or DISABLED',
+      error: 'status must be a string',
     })
     .optional(),
 });
@@ -377,13 +344,7 @@ export const getTopicsSchema = z.object({
  */
 export const createSubscriptionFilterSchema = z.object({
   subscription_id: idSchema('Subscription ID', 'The unique identifier for the subscription'),
-  filter_schema: z
-    .record(z.unknown(), {
-      invalid_type_error: 'filter_schema must be an object',
-      description:
-        'Valid JSON Schema Core document (version 2020-12 or later) to filter notifications',
-    })
-    .optional(),
+  filter_schema: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**

@@ -207,7 +207,7 @@ export const availabilitySchema = z
 export const productSchema = z
   .object({
     title: z.string().optional(),
-    aspects: z.record(z.array(z.string())).optional(),
+    aspects: z.record(z.string(), z.array(z.string())).optional(),
     brand: z.string().optional(),
     description: z.string().optional(),
     imageUrls: z.array(z.string()).optional(),
@@ -331,7 +331,7 @@ export const productCompatibilitySchema = z
 
 export const inventoryItemGroupSchema = z
   .object({
-    aspects: z.record(z.array(z.string())),
+    aspects: z.record(z.string(), z.array(z.string())),
     description: z.string().optional(),
     imageUrls: z.array(z.string()).optional(),
     inventoryItemGroupKey: z.string(),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import { MarketplaceId } from '@/types/ebay-enums.js';
 import {
   campaignPagedCollectionResponseSchema,
@@ -16,7 +16,7 @@ import { OutputArgs, ToolAnnotations } from '../tool-definitions.js';
 
 export interface ToolDefinition {
   name: string;
-  description: string;
+  description?: string;
   inputSchema: Record<string, z.ZodTypeAny>;
   title?: string;
   outputSchema?: OutputArgs;
@@ -600,7 +600,7 @@ export const marketingTools: ToolDefinition[] = [
     inputSchema: {
       campaignId: campaignIdSchema,
       adGroupId: adGroupIdSchema,
-      updateData: z.record(z.unknown()).describe('Keyword update data'),
+      updateData: z.record(z.string(), z.unknown()).describe('Keyword update data'),
     },
   },
 
@@ -967,7 +967,7 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Create targeting configuration for a campaign.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      targeting: z.record(z.unknown()).describe('Targeting configuration'),
+      targeting: z.record(z.string(), z.unknown()).describe('Targeting configuration'),
     },
   },
   {
@@ -982,7 +982,7 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update targeting configuration for a campaign.',
     inputSchema: {
       campaignId: campaignIdSchema,
-      targeting: z.record(z.unknown()).describe('Updated targeting configuration'),
+      targeting: z.record(z.string(), z.unknown()).describe('Updated targeting configuration'),
     },
   },
 
@@ -1116,7 +1116,7 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Create a new item promotion (order discount, volume pricing, etc.).',
     inputSchema: {
       promotion: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .describe('Promotion configuration with discountRules, inventoryCriterion, etc.'),
     },
   },
@@ -1125,7 +1125,7 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update an existing item promotion.',
     inputSchema: {
       promotionId: promotionIdSchema,
-      promotion: z.record(z.unknown()).describe('Updated promotion configuration'),
+      promotion: z.record(z.string(), z.unknown()).describe('Updated promotion configuration'),
     },
   },
   {
@@ -1469,7 +1469,7 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update an existing item price markdown promotion.',
     inputSchema: {
       promotionId: promotionIdSchema,
-      promotion: z.record(z.unknown()).describe('Updated promotion configuration'),
+      promotion: z.record(z.string(), z.unknown()).describe('Updated promotion configuration'),
     },
     outputSchema: genericSuccessSchema,
   },
@@ -1546,7 +1546,7 @@ export const marketingTools: ToolDefinition[] = [
     description: 'Update an existing email campaign.',
     inputSchema: {
       emailCampaignId: z.string().describe('Email campaign ID'),
-      emailCampaign: z.record(z.unknown()).describe('Updated email campaign configuration'),
+      emailCampaign: z.record(z.string(), z.unknown()).describe('Updated email campaign configuration'),
     },
     outputSchema: genericSuccessSchema,
   },

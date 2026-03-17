@@ -12,25 +12,21 @@ import { z } from 'zod';
 // Reusable schema for filter parameter
 const filterSchema = z
   .string({
-    message: 'Filter must be a string',
-    invalid_type_error: 'filter must be a string',
-    description: 'Filter criteria for the query (e.g., date range)',
+    error: 'filter must be a string',
   })
   .optional();
 
 // Reusable schema for limit parameter (string in API)
 const limitSchema = z
   .string({
-    invalid_type_error: 'limit must be a string',
-    description: 'Maximum number of items to return',
+    error: 'limit must be a string',
   })
   .optional();
 
 // Reusable schema for offset parameter (string in API)
 const offsetSchema = z
   .string({
-    invalid_type_error: 'offset must be a string',
-    description: 'Number of items to skip',
+    error: 'offset must be a string',
   })
   .optional();
 
@@ -40,13 +36,7 @@ const offsetSchema = z
  * Body: VeroReportItemsRequest - report data
  */
 export const createVeroReportSchema = z.object({
-  report_data: z.record(z.unknown(), {
-    message: 'Report data is required',
-    required_error: 'report_data is required',
-    invalid_type_error: 'report_data must be an object',
-    description:
-      'The VeRO report data containing item details and intellectual property violation information',
-  }),
+  report_data: z.record(z.string(), z.unknown()),
 });
 
 /**
@@ -57,10 +47,7 @@ export const createVeroReportSchema = z.object({
 export const getVeroReportSchema = z.object({
   vero_report_id: z
     .string({
-      message: 'VERO report ID is required',
-      required_error: 'vero_report_id is required',
-      invalid_type_error: 'vero_report_id must be a string',
-      description: 'The unique identifier of the VERO report',
+      error: 'vero_report_id is required and must be a string',
     })
     .min(1, 'VERO report ID cannot be empty'),
 });
@@ -84,10 +71,7 @@ export const getVeroReportItemsSchema = z.object({
 export const getVeroReasonCodeSchema = z.object({
   vero_reason_code_id: z
     .string({
-      message: 'VERO reason code ID is required',
-      required_error: 'vero_reason_code_id is required',
-      invalid_type_error: 'vero_reason_code_id must be a string',
-      description: 'The unique identifier of the VERO reason code',
+      error: 'vero_reason_code_id is required and must be a string',
     })
     .min(1, 'VERO reason code ID cannot be empty'),
 });

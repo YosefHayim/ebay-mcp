@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 
 /**
  * Analytics API Schemas
@@ -31,7 +31,7 @@ const errorSchema = z.object({
 
 const valueSchema = z.object({
   applicable: z.boolean().optional(),
-  value: z.record(z.never()).optional(),
+  value: z.record(z.string(), z.never()).optional(),
 });
 
 // ============================================================================

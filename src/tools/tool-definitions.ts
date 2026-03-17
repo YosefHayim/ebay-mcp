@@ -48,7 +48,7 @@ export interface ToolAnnotations {
 
 export interface ToolDefinition {
   name: string;
-  description: string;
+  description?: string;
   inputSchema: Record<string, z.ZodTypeAny>;
   title?: string;
   outputSchema?: OutputArgs;
@@ -1051,7 +1051,7 @@ export const accountTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_sales_taxes',
-    description: 'Get all sales tax tables',
+    description: 'Get all sales tax tables for a country',
     inputSchema: {
       countryCode: z.string().optional().describe('Optional country code to filter by'),
     },
@@ -2047,7 +2047,7 @@ export const fulfillmentTools: ToolDefinition[] = [
 export const marketingTools: ToolDefinition[] = [
   {
     name: 'ebay_get_campaigns',
-    description: 'Get marketing campaigns for the seller',
+    description: 'Get all marketing campaigns for the seller',
     inputSchema: {
       campaignStatus: z
         .string()
@@ -2146,7 +2146,7 @@ export const marketingTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_end_campaign',
-    description: 'Permanently end a marketing campaign. Note: Ended campaigns cannot be restarted.',
+    description: 'Permanently end a marketing campaign. Cannot be restarted after ending.',
     inputSchema: {
       campaignId: z.string().describe('The unique campaign ID to end'),
     },
@@ -2258,7 +2258,7 @@ export const marketingTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_promotions',
-    description: 'Get promotions for the seller',
+    description: 'Get all item promotions with optional filters',
     inputSchema: {
       marketplaceId: z.nativeEnum(MarketplaceId).optional().describe('Filter by marketplace ID'),
       limit: z.number().optional().describe('Number of promotions to return'),
@@ -3306,7 +3306,7 @@ export const communicationTools: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_feedback',
-    description: 'Get feedback for a transaction',
+    description: 'Get feedback for a user by type',
     inputSchema: {
       transactionId: z.string().describe('The transaction ID'),
     },

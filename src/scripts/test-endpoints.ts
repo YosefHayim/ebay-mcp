@@ -569,7 +569,6 @@ class EndpointTester {
     const testCustomPolicy = {
       name: `Test Custom ${Date.now()}`,
       policyType: 'PRODUCT_COMPLIANCE' as const,
-      description: 'Test custom policy',
       label: 'TEST_LABEL' as const,
     };
 
@@ -602,7 +601,6 @@ class EndpointTester {
         () =>
           this.api.account.updateCustomPolicy(createdCustomPolicyId!, {
             ...testCustomPolicy,
-            description: 'Updated custom policy',
           } as any),
         { custom_policy_id: createdCustomPolicyId }
       );
@@ -763,7 +761,6 @@ class EndpointTester {
       condition: 'NEW' as const,
       product: {
         title: 'Test Product',
-        description: 'Test Description',
         aspects: {
           Brand: ['Test Brand'],
         },

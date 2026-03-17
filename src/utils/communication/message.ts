@@ -10,25 +10,21 @@ import { z } from 'zod';
 // Reusable schema for filter parameter
 const _filterSchema = z
   .string({
-    message: 'Filter must be a string',
-    invalid_type_error: 'filter must be a string',
-    description: 'Filter criteria for the query',
+    error: 'filter must be a string',
   })
   .optional();
 
 // Reusable schema for limit parameter (string in API)
 const limitSchema = z
   .string({
-    invalid_type_error: 'limit must be a string',
-    description: 'Maximum number of items to return (25-50)',
+    error: 'limit must be a string',
   })
   .optional();
 
 // Reusable schema for offset parameter (string in API)
 const offsetSchema = z
   .string({
-    invalid_type_error: 'offset must be a string',
-    description: 'Number of items to skip',
+    error: 'offset must be a string',
   })
   .optional();
 
@@ -43,27 +39,23 @@ export const bulkUpdateConversationSchema = z.object({
       z.object({
         conversation_id: z
           .string({
-            invalid_type_error: 'conversation_id must be a string',
-            description: 'The unique identifier of the conversation',
+            error: 'conversation_id must be a string',
           })
           .optional(),
         conversation_status: z
           .string({
-            invalid_type_error: 'conversation_status must be a string',
-            description: 'The updated status: ACTIVE, ARCHIVE, DELETE, READ, UNREAD',
+            error: 'conversation_status must be a string',
           })
           .optional(),
         conversation_type: z
           .string({
-            invalid_type_error: 'conversation_type must be a string',
-            description:
-              'The existing type: FROM_MEMBERS or FROM_EBAY (required but cannot be updated)',
+            error: 'conversation_type must be a string',
           })
+          .describe('The existing type: FROM_MEMBERS or FROM_EBAY (required but cannot be updated)')
           .optional(),
       }),
       {
-        invalid_type_error: 'conversations must be an array',
-        description: 'Array of conversations to update',
+        error: 'conversations must be an array',
       }
     )
     .optional(),
@@ -76,47 +68,38 @@ export const bulkUpdateConversationSchema = z.object({
  */
 export const getConversationsSchema = z.object({
   conversation_type: z.string({
-    message: 'Conversation type is required',
-    required_error: 'conversation_type is required',
-    invalid_type_error: 'conversation_type must be a string',
-    description: 'Type of conversation: FROM_EBAY or FROM_MEMBERS',
+    error: 'conversation_type is required',
   }),
   conversation_status: z
     .string({
-      invalid_type_error: 'conversation_status must be a string',
-      description: 'Filter by status: ACTIVE, ARCHIVE, DELETE, READ, UNREAD',
+      error: 'conversation_status must be a string',
     })
     .optional(),
   end_time: z
     .string({
-      invalid_type_error: 'end_time must be a string',
-      description: 'End time for retrieving conversations (ISO 8601 format)',
+      error: 'end_time must be a string',
     })
     .optional(),
   limit: limitSchema,
   offset: offsetSchema,
   other_party_username: z
     .string({
-      invalid_type_error: 'other_party_username must be a string',
-      description: 'Filter by specific eBay user',
+      error: 'other_party_username must be a string',
     })
     .optional(),
   reference_id: z
     .string({
-      invalid_type_error: 'reference_id must be a string',
-      description: 'Filter by reference ID (e.g., listing ID)',
+      error: 'reference_id must be a string',
     })
     .optional(),
   reference_type: z
     .string({
-      invalid_type_error: 'reference_type must be a string',
-      description: 'Reference type (currently only LISTING is supported)',
+      error: 'reference_type must be a string',
     })
     .optional(),
   start_time: z
     .string({
-      invalid_type_error: 'start_time must be a string',
-      description: 'Start time for retrieving conversations (ISO 8601 format)',
+      error: 'start_time must be a string',
     })
     .optional(),
 });
@@ -129,16 +112,10 @@ export const getConversationsSchema = z.object({
  */
 export const getConversationSchema = z.object({
   conversation_id: z.string({
-    message: 'Conversation ID is required',
-    required_error: 'conversation_id is required',
-    invalid_type_error: 'conversation_id must be a string',
-    description: 'The unique identifier for the conversation',
+    error: 'conversation_id is required',
   }),
   conversation_type: z.string({
-    message: 'Conversation type is required',
-    required_error: 'conversation_type is required',
-    invalid_type_error: 'conversation_type must be a string',
-    description: 'Type of conversation: FROM_EBAY or FROM_MEMBERS',
+    error: 'conversation_type is required',
   }),
   limit: limitSchema,
   offset: offsetSchema,
@@ -152,14 +129,12 @@ export const getConversationSchema = z.object({
 export const sendMessageSchema = z.object({
   conversation_id: z
     .string({
-      invalid_type_error: 'conversation_id must be a string',
-      description: 'ID of existing conversation (required if sending in existing conversation)',
+      error: 'conversation_id must be a string',
     })
     .optional(),
   email_copy_to_sender: z
     .boolean({
-      invalid_type_error: 'email_copy_to_sender must be a boolean',
-      description: 'Whether to email a copy to the sender',
+      error: 'email_copy_to_sender must be a boolean',
     })
     .optional(),
   message_media: z
@@ -167,41 +142,35 @@ export const sendMessageSchema = z.object({
       z.object({
         media_name: z
           .string({
-            invalid_type_error: 'media_name must be a string',
-            description: 'Name of the media',
+            error: 'media_name must be a string',
           })
           .optional(),
         media_type: z
           .string({
-            invalid_type_error: 'media_type must be a string',
-            description: 'Type of media: IMAGE, PDF, DOC, TXT',
+            error: 'media_type must be a string',
           })
           .optional(),
         media_url: z
           .string({
-            invalid_type_error: 'media_url must be a string',
-            description: 'HTTPS URL of the self-hosted media',
+            error: 'media_url must be a string',
           })
           .optional(),
       }),
       {
-        invalid_type_error: 'message_media must be an array',
-        description: 'Array of up to 5 media attachments',
+        error: 'message_media must be an array',
       }
     )
     .max(5, 'Maximum 5 media attachments allowed')
     .optional(),
   message_text: z
     .string({
-      invalid_type_error: 'message_text must be a string',
-      description: 'The text of the message (max 2000 characters)',
+      error: 'message_text must be a string',
     })
     .max(2000, 'message_text must be 2000 characters or less')
     .optional(),
   other_party_username: z
     .string({
-      invalid_type_error: 'other_party_username must be a string',
-      description: 'eBay username to send message to (required for new conversations)',
+      error: 'other_party_username must be a string',
     })
     .optional(),
   reference: z
@@ -209,20 +178,17 @@ export const sendMessageSchema = z.object({
       {
         reference_id: z
           .string({
-            invalid_type_error: 'reference_id must be a string',
-            description: 'The reference ID (e.g., item ID for LISTING)',
+            error: 'reference_id must be a string',
           })
           .optional(),
         reference_type: z
           .string({
-            invalid_type_error: 'reference_type must be a string',
-            description: 'The reference type (currently only LISTING is supported)',
+            error: 'reference_type must be a string',
           })
           .optional(),
       },
       {
-        invalid_type_error: 'reference must be an object',
-        description: 'Reference to associate with the conversation',
+        error: 'reference must be an object',
       }
     )
     .optional(),
@@ -236,26 +202,22 @@ export const sendMessageSchema = z.object({
 export const updateConversationSchema = z.object({
   conversation_id: z
     .string({
-      invalid_type_error: 'conversation_id must be a string',
-      description: 'The unique identifier of the conversation',
+      error: 'conversation_id must be a string',
     })
     .optional(),
   conversation_status: z
     .string({
-      invalid_type_error: 'conversation_status must be a string',
-      description: 'The updated status: ACTIVE, ARCHIVE, DELETE',
+      error: 'conversation_status must be a string',
     })
     .optional(),
   conversation_type: z
     .string({
-      invalid_type_error: 'conversation_type must be a string',
-      description: 'The existing type: FROM_MEMBERS or FROM_EBAY (required but cannot be updated)',
+      error: 'conversation_type must be a string',
     })
     .optional(),
   read: z
     .boolean({
-      invalid_type_error: 'read must be a boolean',
-      description: 'The read status to set (true = read, false = unread)',
+      error: 'read must be a boolean',
     })
     .optional(),
 });

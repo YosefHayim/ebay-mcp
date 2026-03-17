@@ -45,7 +45,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   // ============================================================================
   {
     name: 'ebay_get_custom_policies',
-    description: 'Retrieve custom policies defined for the seller account',
     inputSchema: {
       policyTypes: getCustomPoliciesInputSchema.shape.policyTypes,
     },
@@ -72,14 +71,12 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   },
   {
     name: 'ebay_get_fulfillment_policy',
-    description: 'Get a specific fulfillment policy by ID',
     inputSchema: {
       fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
     },
   },
   {
     name: 'ebay_get_fulfillment_policy_by_name',
-    description: 'Get a fulfillment policy by name',
     inputSchema: {
       marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID'),
       name: z.string().describe('Policy name'),
@@ -87,7 +84,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   },
   {
     name: 'ebay_update_fulfillment_policy',
-    description: 'Update an existing fulfillment policy',
     inputSchema: {
       fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
       policy: createFulfillmentPolicyInputSchema.shape.policy,
@@ -95,7 +91,6 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   },
   {
     name: 'ebay_delete_fulfillment_policy',
-    description: 'Delete a fulfillment policy',
     inputSchema: {
       fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
     },
@@ -106,14 +101,12 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   // ============================================================================
   {
     name: 'ebay_get_payment_policies',
-    description: 'Get payment policies for the seller',
     inputSchema: {
       marketplaceId: getPaymentPoliciesInputSchema.shape.marketplaceId,
     },
   },
   {
     name: 'ebay_create_payment_policy',
-    description: 'Create a new payment policy',
     inputSchema: {
       policy: createPaymentPolicyInputSchema.shape.policy,
     },
@@ -124,14 +117,12 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   // ============================================================================
   {
     name: 'ebay_get_return_policies',
-    description: 'Get return policies for the seller',
     inputSchema: {
       marketplaceId: getReturnPoliciesInputSchema.shape.marketplaceId,
     },
   },
   {
     name: 'ebay_create_return_policy',
-    description: 'Create a new return policy',
     inputSchema: {
       policy: createReturnPolicyInputSchema.shape.policy,
     },
@@ -142,14 +133,12 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   // ============================================================================
   {
     name: 'ebay_get_sales_taxes',
-    description: 'Get all sales tax tables for a country',
     inputSchema: {
       countryCode: z.string().describe('Required: Two-letter ISO 3166-1 country code'),
     },
   },
   {
     name: 'ebay_get_sales_tax',
-    description: 'Get sales tax table for a jurisdiction',
     inputSchema: {
       countryCode: z.string().describe('Two-letter ISO 3166 country code'),
       jurisdictionId: z.string().describe('Tax jurisdiction ID'),
@@ -161,12 +150,10 @@ export const accountToolsWithSchemas: ToolDefinition[] = [
   // ============================================================================
   {
     name: 'ebay_get_kyc',
-    description: 'Get seller KYC (Know Your Customer) status',
     inputSchema: {},
   },
   {
     name: 'ebay_get_opted_in_programs',
-    description: 'Get seller programs the account is opted into',
     inputSchema: {},
   },
   {

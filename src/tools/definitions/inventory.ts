@@ -1,6 +1,6 @@
 import { MarketplaceId } from '@/types/ebay-enums.js';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import {
   bulkInventoryItemRequestSchema,
   bulkMigrateRequestSchema,
@@ -34,7 +34,7 @@ import { OutputArgs, ToolAnnotations } from '../tool-definitions.js';
 
 export interface ToolDefinition {
   name: string;
-  description: string;
+  description?: string;
   inputSchema: Record<string, z.ZodTypeAny>;
   title?: string;
   outputSchema?: OutputArgs;
@@ -90,7 +90,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -208,7 +207,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   // Inventory Item Groups
@@ -244,7 +242,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   // Location Management
@@ -292,7 +289,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -304,7 +300,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful operation (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -316,7 +311,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful operation (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -364,7 +358,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful deletion (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -460,7 +453,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on success (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -474,7 +466,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on success (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -511,7 +502,6 @@ export const inventoryTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful withdrawal (HTTP 204)',
     } as OutputArgs,
   },
 ];

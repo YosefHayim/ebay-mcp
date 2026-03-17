@@ -8,27 +8,22 @@ import { z } from 'zod';
  */
 
 // Reusable schema for ID parameters
-const idSchema = (name: string, description: string) =>
+const idSchema = (name: string, _description: string) =>
   z.string({
-    message: `${name} is required`,
-    required_error: `${name.toLowerCase().replace(/\s+/g, '_')} is required`,
-    invalid_type_error: `${name.toLowerCase().replace(/\s+/g, '_')} must be a string`,
-    description,
+    error: `${name.toLowerCase().replace(/\s+/g, '_')} is required`,
   });
 
 // Reusable schema for optional marketplace_id parameter
 const marketplaceIdSchema = z
   .string({
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id must be a string',
   })
   .optional();
 
 // Reusable schema for optional name parameter
 const nameSchema = z
   .string({
-    invalid_type_error: 'name must be a string',
-    description: 'The policy name',
+    error: 'name must be a string',
   })
   .optional();
 
@@ -44,8 +39,7 @@ const nameSchema = z
 export const getCustomPoliciesSchema = z.object({
   policy_types: z
     .string({
-      invalid_type_error: 'policy_types must be a string',
-      description: 'Comma-delimited list of custom policy types (PRODUCT_COMPLIANCE, TAKE_BACK)',
+      error: 'policy_types must be a string',
     })
     .optional(),
 });
@@ -67,29 +61,25 @@ export const getCustomPolicySchema = z.object({
 export const createCustomPolicySchema = z.object({
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Seller-defined name for the custom policy (max 64 characters)',
+      error: 'name must be a string',
     })
     .max(64, 'name must be 64 characters or less')
     .optional(),
   label: z
     .string({
-      invalid_type_error: 'label must be a string',
-      description: 'Seller-defined label for the custom policy (max 250 characters)',
+      error: 'label must be a string',
     })
     .max(250, 'label must be 250 characters or less')
     .optional(),
   description: z
     .string({
-      invalid_type_error: 'description must be a string',
-      description: 'Seller-defined description of the custom policy (max 5000 characters)',
+      error: 'description must be a string',
     })
     .max(5000, 'description must be 5000 characters or less')
     .optional(),
   policy_type: z
     .string({
-      invalid_type_error: 'policy_type must be a string',
-      description: 'Type of custom policy: PRODUCT_COMPLIANCE or TAKE_BACK',
+      error: 'policy_type must be a string',
     })
     .optional(),
 });
@@ -107,22 +97,19 @@ export const updateCustomPolicySchema = z.object({
   ),
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Updated name for the custom policy (max 64 characters)',
+      error: 'name must be a string',
     })
     .max(64, 'name must be 64 characters or less')
     .optional(),
   label: z
     .string({
-      invalid_type_error: 'label must be a string',
-      description: 'Updated label for the custom policy (max 250 characters)',
+      error: 'label must be a string',
     })
     .max(250, 'label must be 250 characters or less')
     .optional(),
   description: z
     .string({
-      invalid_type_error: 'description must be a string',
-      description: 'Updated description of the custom policy (max 5000 characters)',
+      error: 'description must be a string',
     })
     .max(5000, 'description must be 5000 characters or less')
     .optional(),
@@ -152,9 +139,7 @@ export const deleteCustomPolicySchema = z.object({
 export const getFulfillmentPoliciesSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
 });
 
@@ -178,15 +163,11 @@ export const getFulfillmentPolicySchema = z.object({
 export const getFulfillmentPolicyByNameSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
   name: z.string({
     message: 'Policy name is required',
-    required_error: 'name is required',
-    invalid_type_error: 'name must be a string',
-    description: 'The fulfillment policy name',
+    error: 'name is required',
   }),
 });
 
@@ -201,8 +182,7 @@ export const createFulfillmentPolicySchema = z.object({
       z.object({
         name: z
           .string({
-            invalid_type_error: 'category type name must be a string',
-            description: 'Category type: ALL_EXCLUDING_MOTORS_VEHICLES or MOTORS_VEHICLES',
+            error: 'category type name must be a string',
           })
           .optional(),
       })
@@ -210,35 +190,30 @@ export const createFulfillmentPolicySchema = z.object({
     .optional(),
   description: z
     .string({
-      invalid_type_error: 'description must be a string',
-      description: 'Seller-defined description of the fulfillment policy (max 250 characters)',
+      error: 'description must be a string',
     })
     .max(250, 'description must be 250 characters or less')
     .optional(),
   freight_shipping: z
     .boolean({
-      invalid_type_error: 'freight_shipping must be a boolean',
-      description: 'Whether freight shipping is available for large items over 150 lbs',
+      error: 'freight_shipping must be a boolean',
     })
     .optional(),
   global_shipping: z
     .boolean({
-      invalid_type_error: 'global_shipping must be a boolean',
-      description: 'Whether to use Global Shipping Program (UK marketplace only)',
+      error: 'global_shipping must be a boolean',
     })
     .optional(),
   handling_time: z
     .object({
       unit: z
         .string({
-          invalid_type_error: 'unit must be a string',
-          description: 'Time unit (typically DAY)',
+          error: 'unit must be a string',
         })
         .optional(),
       value: z
         .number({
-          invalid_type_error: 'value must be a number',
-          description: 'Number of handling time units (0-20 days)',
+          error: 'value must be a number',
         })
         .int()
         .optional(),
@@ -246,29 +221,26 @@ export const createFulfillmentPolicySchema = z.object({
     .optional(),
   local_pickup: z
     .boolean({
-      invalid_type_error: 'local_pickup must be a boolean',
-      description: 'Whether local pickup is available',
+      error: 'local_pickup must be a boolean',
     })
     .optional(),
   marketplace_id: marketplaceIdSchema,
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Seller-defined name for the fulfillment policy (max 64 characters)',
+      error: 'name must be a string',
     })
     .max(64, 'name must be 64 characters or less')
     .optional(),
   pickup_drop_off: z
     .boolean({
-      invalid_type_error: 'pickup_drop_off must be a boolean',
-      description: 'Whether Click and Collect is available',
+      error: 'pickup_drop_off must be a boolean',
     })
     .optional(),
-  shipping_options: z.array(z.record(z.unknown())).optional(),
+  shipping_options: z.array(z.record(z.string(), z.unknown())).optional(),
   ship_to_locations: z
     .object({
-      region_included: z.array(z.record(z.unknown())).optional(),
-      region_excluded: z.array(z.record(z.unknown())).optional(),
+      region_included: z.array(z.record(z.string(), z.unknown())).optional(),
+      region_excluded: z.array(z.record(z.string(), z.unknown())).optional(),
     })
     .optional(),
 });
@@ -304,11 +276,11 @@ export const updateFulfillmentPolicySchema = z.object({
   marketplace_id: marketplaceIdSchema,
   name: z.string().max(64).optional(),
   pickup_drop_off: z.boolean().optional(),
-  shipping_options: z.array(z.record(z.unknown())).optional(),
+  shipping_options: z.array(z.record(z.string(), z.unknown())).optional(),
   ship_to_locations: z
     .object({
-      region_included: z.array(z.record(z.unknown())).optional(),
-      region_excluded: z.array(z.record(z.unknown())).optional(),
+      region_included: z.array(z.record(z.string(), z.unknown())).optional(),
+      region_excluded: z.array(z.record(z.string(), z.unknown())).optional(),
     })
     .optional(),
 });
@@ -337,9 +309,7 @@ export const deleteFulfillmentPolicySchema = z.object({
 export const getPaymentPoliciesSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
 });
 
@@ -360,15 +330,11 @@ export const getPaymentPolicySchema = z.object({
 export const getPaymentPolicyByNameSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
   name: z.string({
     message: 'Policy name is required',
-    required_error: 'name is required',
-    invalid_type_error: 'name must be a string',
-    description: 'The payment policy name',
+    error: 'name is required',
   }),
 });
 
@@ -387,8 +353,7 @@ export const createPaymentPolicySchema = z.object({
     .optional(),
   description: z
     .string({
-      invalid_type_error: 'description must be a string',
-      description: 'Seller-defined description of the payment policy (max 250 characters)',
+      error: 'description must be a string',
     })
     .max(250, 'description must be 250 characters or less')
     .optional(),
@@ -406,7 +371,7 @@ export const createPaymentPolicySchema = z.object({
           value: z.number().int().optional(),
         })
         .optional(),
-      payment_methods: z.array(z.record(z.unknown())).optional(),
+      payment_methods: z.array(z.record(z.string(), z.unknown())).optional(),
     })
     .optional(),
   full_payment_due_in: z
@@ -417,19 +382,17 @@ export const createPaymentPolicySchema = z.object({
     .optional(),
   immediate_pay: z
     .boolean({
-      invalid_type_error: 'immediate_pay must be a boolean',
-      description: 'Whether immediate payment is required',
+      error: 'immediate_pay must be a boolean',
     })
     .optional(),
   marketplace_id: marketplaceIdSchema,
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Seller-defined name for the payment policy (max 64 characters)',
+      error: 'name must be a string',
     })
     .max(64, 'name must be 64 characters or less')
     .optional(),
-  payment_methods: z.array(z.record(z.unknown())).optional(),
+  payment_methods: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 /**
@@ -465,7 +428,7 @@ export const updatePaymentPolicySchema = z.object({
           value: z.number().int().optional(),
         })
         .optional(),
-      payment_methods: z.array(z.record(z.unknown())).optional(),
+      payment_methods: z.array(z.record(z.string(), z.unknown())).optional(),
     })
     .optional(),
   full_payment_due_in: z
@@ -477,7 +440,7 @@ export const updatePaymentPolicySchema = z.object({
   immediate_pay: z.boolean().optional(),
   marketplace_id: marketplaceIdSchema,
   name: z.string().max(64).optional(),
-  payment_methods: z.array(z.record(z.unknown())).optional(),
+  payment_methods: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 /**
@@ -504,9 +467,7 @@ export const deletePaymentPolicySchema = z.object({
 export const getReturnPoliciesSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
 });
 
@@ -527,15 +488,11 @@ export const getReturnPolicySchema = z.object({
 export const getReturnPolicyByNameSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
   name: z.string({
     message: 'Policy name is required',
-    required_error: 'name is required',
-    invalid_type_error: 'name must be a string',
-    description: 'The return policy name',
+    error: 'name is required',
   }),
 });
 
@@ -554,15 +511,13 @@ export const createReturnPolicySchema = z.object({
     .optional(),
   description: z
     .string({
-      invalid_type_error: 'description must be a string',
-      description: 'Seller-defined description of the return policy (max 250 characters)',
+      error: 'description must be a string',
     })
     .max(250, 'description must be 250 characters or less')
     .optional(),
   extended_holiday_returns_offered: z
     .boolean({
-      invalid_type_error: 'extended_holiday_returns_offered must be a boolean',
-      description: 'Whether extended holiday returns are offered',
+      error: 'extended_holiday_returns_offered must be a boolean',
     })
     .optional(),
   international_override: z
@@ -581,34 +536,29 @@ export const createReturnPolicySchema = z.object({
   marketplace_id: marketplaceIdSchema,
   name: z
     .string({
-      invalid_type_error: 'name must be a string',
-      description: 'Seller-defined name for the return policy (max 64 characters)',
+      error: 'name must be a string',
     })
     .max(64, 'name must be 64 characters or less')
     .optional(),
   refund_method: z
     .string({
-      invalid_type_error: 'refund_method must be a string',
-      description: 'Refund method: MONEY_BACK or MERCHANDISE_CREDIT',
+      error: 'refund_method must be a string',
     })
     .optional(),
   restocking_fee_percentage: z
     .string({
-      invalid_type_error: 'restocking_fee_percentage must be a string',
-      description: 'Restocking fee percentage (10, 15, 20, or custom)',
+      error: 'restocking_fee_percentage must be a string',
     })
     .optional(),
   return_instructions: z
     .string({
-      invalid_type_error: 'return_instructions must be a string',
-      description: 'Return instructions for the buyer (max 5000 characters)',
+      error: 'return_instructions must be a string',
     })
     .max(5000, 'return_instructions must be 5000 characters or less')
     .optional(),
   return_method: z
     .string({
-      invalid_type_error: 'return_method must be a string',
-      description: 'Return method: REPLACEMENT or EXCHANGE',
+      error: 'return_method must be a string',
     })
     .optional(),
   return_period: z
@@ -619,14 +569,12 @@ export const createReturnPolicySchema = z.object({
     .optional(),
   returns_accepted: z
     .boolean({
-      invalid_type_error: 'returns_accepted must be a boolean',
-      description: 'Whether returns are accepted',
+      error: 'returns_accepted must be a boolean',
     })
     .optional(),
   return_shipping_cost_payer: z
     .string({
-      invalid_type_error: 'return_shipping_cost_payer must be a string',
-      description: 'Who pays return shipping: BUYER or SELLER',
+      error: 'return_shipping_cost_payer must be a string',
     })
     .optional(),
 });
@@ -718,15 +666,11 @@ export const getKycSchema = z.object({});
 export const optInToPaymentsProgramSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
   payments_program_type: z.string({
     message: 'Payments program type is required',
-    required_error: 'payments_program_type is required',
-    invalid_type_error: 'payments_program_type must be a string',
-    description: 'The payments program type (e.g., EBAY_PAYMENTS)',
+    error: 'payments_program_type is required',
   }),
 });
 
@@ -738,15 +682,11 @@ export const optInToPaymentsProgramSchema = z.object({
 export const getPaymentsProgramStatusSchema = z.object({
   marketplace_id: z.string({
     message: 'Marketplace ID is required',
-    required_error: 'marketplace_id is required',
-    invalid_type_error: 'marketplace_id must be a string',
-    description: 'The eBay marketplace ID',
+    error: 'marketplace_id is required',
   }),
   payments_program_type: z.string({
     message: 'Payments program type is required',
-    required_error: 'payments_program_type is required',
-    invalid_type_error: 'payments_program_type must be a string',
-    description: 'The payments program type',
+    error: 'payments_program_type is required',
   }),
 });
 
@@ -766,26 +706,20 @@ export const getRateTablesSchema = z.object({});
 export const createOrReplaceSalesTaxSchema = z.object({
   country_code: z.string({
     message: 'Country code is required',
-    required_error: 'country_code is required',
-    invalid_type_error: 'country_code must be a string',
-    description: 'Two-letter ISO 3166-1 country code',
+    error: 'country_code is required',
   }),
   jurisdiction_id: z.string({
     message: 'Jurisdiction ID is required',
-    required_error: 'jurisdiction_id is required',
-    invalid_type_error: 'jurisdiction_id must be a string',
-    description: 'State or province ID (e.g., US state abbreviation)',
+    error: 'jurisdiction_id is required',
   }),
   sales_tax_percentage: z
     .string({
-      invalid_type_error: 'sales_tax_percentage must be a string',
-      description: 'Sales tax percentage (0-100)',
+      error: 'sales_tax_percentage must be a string',
     })
     .optional(),
   shipping_and_handling_taxed: z
     .boolean({
-      invalid_type_error: 'shipping_and_handling_taxed must be a boolean',
-      description: 'Whether shipping and handling are taxed',
+      error: 'shipping_and_handling_taxed must be a boolean',
     })
     .optional(),
 });
@@ -809,8 +743,7 @@ export const bulkCreateOrReplaceSalesTaxSchema = z.object({
           .optional(),
       }),
       {
-        invalid_type_error: 'requests must be an array',
-        description: 'Array of sales tax requests',
+        error: 'requests must be an array',
       }
     )
     .optional(),
@@ -824,15 +757,11 @@ export const bulkCreateOrReplaceSalesTaxSchema = z.object({
 export const getSalesTaxSchema = z.object({
   country_code: z.string({
     message: 'Country code is required',
-    required_error: 'country_code is required',
-    invalid_type_error: 'country_code must be a string',
-    description: 'Two-letter ISO 3166-1 country code',
+    error: 'country_code is required',
   }),
   jurisdiction_id: z.string({
     message: 'Jurisdiction ID is required',
-    required_error: 'jurisdiction_id is required',
-    invalid_type_error: 'jurisdiction_id must be a string',
-    description: 'State or province ID',
+    error: 'jurisdiction_id is required',
   }),
 });
 
@@ -844,15 +773,11 @@ export const getSalesTaxSchema = z.object({
 export const deleteSalesTaxSchema = z.object({
   country_code: z.string({
     message: 'Country code is required',
-    required_error: 'country_code is required',
-    invalid_type_error: 'country_code must be a string',
-    description: 'Two-letter ISO 3166-1 country code',
+    error: 'country_code is required',
   }),
   jurisdiction_id: z.string({
     message: 'Jurisdiction ID is required',
-    required_error: 'jurisdiction_id is required',
-    invalid_type_error: 'jurisdiction_id must be a string',
-    description: 'State or province ID',
+    error: 'jurisdiction_id is required',
   }),
 });
 
@@ -864,9 +789,7 @@ export const deleteSalesTaxSchema = z.object({
 export const getSalesTaxesSchema = z.object({
   country_code: z.string({
     message: 'Country code is required',
-    required_error: 'country_code is required',
-    invalid_type_error: 'country_code must be a string',
-    description: 'Two-letter ISO 3166-1 country code',
+    error: 'country_code is required',
   }),
 });
 
@@ -878,8 +801,7 @@ export const getSalesTaxesSchema = z.object({
 export const getSubscriptionSchema = z.object({
   limit_type: z
     .string({
-      invalid_type_error: 'limit_type must be a string',
-      description: 'Type of subscription limit to retrieve',
+      error: 'limit_type must be a string',
     })
     .optional(),
 });
@@ -892,8 +814,7 @@ export const getSubscriptionSchema = z.object({
 export const optInToProgramSchema = z.object({
   program_type: z
     .string({
-      invalid_type_error: 'program_type must be a string',
-      description: 'The program type to opt into (e.g., OUT_OF_STOCK_CONTROL)',
+      error: 'program_type must be a string',
     })
     .optional(),
 });
@@ -906,8 +827,7 @@ export const optInToProgramSchema = z.object({
 export const optOutOfProgramSchema = z.object({
   program_type: z
     .string({
-      invalid_type_error: 'program_type must be a string',
-      description: 'The program type to opt out of',
+      error: 'program_type must be a string',
     })
     .optional(),
 });

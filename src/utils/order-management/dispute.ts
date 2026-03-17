@@ -10,40 +10,32 @@ import { z } from 'zod';
 // Reusable schema for payment dispute ID
 const paymentDisputeIdSchema = z.string({
   message: 'Payment dispute ID is required',
-  required_error: 'payment_dispute_id is required',
-  invalid_type_error: 'payment_dispute_id must be a string',
-  description: 'The unique identifier of the payment dispute',
+  error: 'payment_dispute_id is required',
 });
 
 // Reusable schema for evidence ID
 const evidenceIdSchema = z.string({
   message: 'Evidence ID is required',
-  required_error: 'evidence_id is required',
-  invalid_type_error: 'evidence_id must be a string',
-  description: 'The unique identifier of the evidence file set',
+  error: 'evidence_id is required',
 });
 
 // Reusable schema for file ID
 const fileIdSchema = z.string({
   message: 'File ID is required',
-  required_error: 'file_id is required',
-  invalid_type_error: 'file_id must be a string',
-  description: 'The unique identifier of an evidential file',
+  error: 'file_id is required',
 });
 
 // Reusable schema for limit parameter (number in API)
 const limitSchema = z
   .number({
-    invalid_type_error: 'limit must be a number',
-    description: 'Maximum number of payment disputes to return (default: 200, max: 200)',
+    error: 'limit must be a number',
   })
   .optional();
 
 // Reusable schema for offset parameter (number in API)
 const offsetSchema = z
   .number({
-    invalid_type_error: 'offset must be a number',
-    description: 'Number of payment disputes to skip (zero-based index)',
+    error: 'offset must be a number',
   })
   .optional();
 
@@ -85,32 +77,27 @@ export const getActivitiesSchema = z.object({
 export const getPaymentDisputeSummariesSchema = z.object({
   order_id: z
     .string({
-      invalid_type_error: 'order_id must be a string',
-      description: 'Filter by a specific order ID',
+      error: 'order_id must be a string',
     })
     .optional(),
   buyer_username: z
     .string({
-      invalid_type_error: 'buyer_username must be a string',
-      description: "Filter by buyer's eBay username",
+      error: 'buyer_username must be a string',
     })
     .optional(),
   open_date_from: z
     .string({
-      invalid_type_error: 'open_date_from must be a string',
-      description: 'Filter disputes opened on or after this date (ISO 8601 format)',
+      error: 'open_date_from must be a string',
     })
     .optional(),
   open_date_to: z
     .string({
-      invalid_type_error: 'open_date_to must be a string',
-      description: 'Filter disputes opened on or before this date (ISO 8601 format)',
+      error: 'open_date_to must be a string',
     })
     .optional(),
   payment_dispute_status: z
     .string({
-      invalid_type_error: 'payment_dispute_status must be a string',
-      description: 'Filter by dispute status (e.g., OPEN, ACTION_NEEDED, CLOSED)',
+      error: 'payment_dispute_status must be a string',
     })
     .optional(),
   limit: limitSchema,
@@ -127,8 +114,7 @@ export const contestPaymentDisputeSchema = z.object({
   payment_dispute_id: paymentDisputeIdSchema,
   note: z
     .string({
-      invalid_type_error: 'note must be a string',
-      description: 'Information about the dispute (max 1000 characters)',
+      error: 'note must be a string',
     })
     .max(1000, 'Note must not exceed 1000 characters')
     .optional(),
@@ -136,62 +122,53 @@ export const contestPaymentDisputeSchema = z.object({
     .object({
       full_name: z
         .string({
-          invalid_type_error: 'full_name must be a string',
-          description: 'Full name of the person at the return address',
+          error: 'full_name must be a string',
         })
         .optional(),
       primary_phone: z
         .object({
           phone_number: z
             .string({
-              invalid_type_error: 'phone_number must be a string',
-              description: 'Primary phone number',
+              error: 'phone_number must be a string',
             })
             .optional(),
         })
         .optional(),
       address_line1: z
         .string({
-          invalid_type_error: 'address_line1 must be a string',
-          description: 'First line of the street address',
+          error: 'address_line1 must be a string',
         })
         .optional(),
       address_line2: z
         .string({
-          invalid_type_error: 'address_line2 must be a string',
-          description: 'Second line of the street address',
+          error: 'address_line2 must be a string',
         })
         .optional(),
       city: z
         .string({
-          invalid_type_error: 'city must be a string',
-          description: 'City',
+          error: 'city must be a string',
         })
         .optional(),
       state_or_province: z
         .string({
-          invalid_type_error: 'state_or_province must be a string',
-          description: 'State or province',
+          error: 'state_or_province must be a string',
         })
         .optional(),
       postal_code: z
         .string({
-          invalid_type_error: 'postal_code must be a string',
-          description: 'Postal code',
+          error: 'postal_code must be a string',
         })
         .optional(),
       country_code: z
         .string({
-          invalid_type_error: 'country_code must be a string',
-          description: 'Two-letter ISO 3166-1 alpha-2 country code',
+          error: 'country_code must be a string',
         })
         .optional(),
     })
     .optional(),
   revision: z
     .number({
-      invalid_type_error: 'revision must be a number',
-      description: 'Revision number of the payment dispute (required)',
+      error: 'revision must be a number',
     })
     .optional(),
 });
@@ -208,62 +185,53 @@ export const acceptPaymentDisputeSchema = z.object({
     .object({
       full_name: z
         .string({
-          invalid_type_error: 'full_name must be a string',
-          description: 'Full name of the person at the return address',
+          error: 'full_name must be a string',
         })
         .optional(),
       primary_phone: z
         .object({
           phone_number: z
             .string({
-              invalid_type_error: 'phone_number must be a string',
-              description: 'Primary phone number',
+              error: 'phone_number must be a string',
             })
             .optional(),
         })
         .optional(),
       address_line1: z
         .string({
-          invalid_type_error: 'address_line1 must be a string',
-          description: 'First line of the street address',
+          error: 'address_line1 must be a string',
         })
         .optional(),
       address_line2: z
         .string({
-          invalid_type_error: 'address_line2 must be a string',
-          description: 'Second line of the street address',
+          error: 'address_line2 must be a string',
         })
         .optional(),
       city: z
         .string({
-          invalid_type_error: 'city must be a string',
-          description: 'City',
+          error: 'city must be a string',
         })
         .optional(),
       state_or_province: z
         .string({
-          invalid_type_error: 'state_or_province must be a string',
-          description: 'State or province',
+          error: 'state_or_province must be a string',
         })
         .optional(),
       postal_code: z
         .string({
-          invalid_type_error: 'postal_code must be a string',
-          description: 'Postal code',
+          error: 'postal_code must be a string',
         })
         .optional(),
       country_code: z
         .string({
-          invalid_type_error: 'country_code must be a string',
-          description: 'Two-letter ISO 3166-1 alpha-2 country code',
+          error: 'country_code must be a string',
         })
         .optional(),
     })
     .optional(),
   revision: z
     .number({
-      invalid_type_error: 'revision must be a number',
-      description: 'Revision number of the payment dispute (required)',
+      error: 'revision must be a number',
     })
     .optional(),
 });
@@ -291,8 +259,7 @@ export const addEvidenceSchema = z.object({
   payment_dispute_id: paymentDisputeIdSchema,
   evidence_type: z
     .string({
-      invalid_type_error: 'evidence_type must be a string',
-      description: 'Type of evidence (e.g., PROOF_OF_DELIVERY, PROOF_OF_AUTHENTICATION)',
+      error: 'evidence_type must be a string',
     })
     .optional(),
   files: z
@@ -300,14 +267,12 @@ export const addEvidenceSchema = z.object({
       z.object({
         file_id: z
           .string({
-            invalid_type_error: 'file_id must be a string',
-            description: 'Unique identifier of the evidence file',
+            error: 'file_id must be a string',
           })
           .optional(),
       }),
       {
-        invalid_type_error: 'files must be an array',
-        description: 'Array of evidence files',
+        error: 'files must be an array',
       }
     )
     .optional(),
@@ -316,20 +281,17 @@ export const addEvidenceSchema = z.object({
       z.object({
         item_id: z
           .string({
-            invalid_type_error: 'item_id must be a string',
-            description: 'eBay listing ID',
+            error: 'item_id must be a string',
           })
           .optional(),
         line_item_id: z
           .string({
-            invalid_type_error: 'line_item_id must be a string',
-            description: 'Unique identifier of the line item',
+            error: 'line_item_id must be a string',
           })
           .optional(),
       }),
       {
-        invalid_type_error: 'line_items must be an array',
-        description: 'Array of order line items',
+        error: 'line_items must be an array',
       }
     )
     .optional(),
@@ -345,14 +307,12 @@ export const updateEvidenceSchema = z.object({
   payment_dispute_id: paymentDisputeIdSchema,
   evidence_id: z
     .string({
-      invalid_type_error: 'evidence_id must be a string',
-      description: 'Unique identifier of the evidence set to update',
+      error: 'evidence_id must be a string',
     })
     .optional(),
   evidence_type: z
     .string({
-      invalid_type_error: 'evidence_type must be a string',
-      description: 'Type of evidence (e.g., PROOF_OF_DELIVERY, PROOF_OF_AUTHENTICATION)',
+      error: 'evidence_type must be a string',
     })
     .optional(),
   files: z
@@ -360,14 +320,12 @@ export const updateEvidenceSchema = z.object({
       z.object({
         file_id: z
           .string({
-            invalid_type_error: 'file_id must be a string',
-            description: 'Unique identifier of the evidence file',
+            error: 'file_id must be a string',
           })
           .optional(),
       }),
       {
-        invalid_type_error: 'files must be an array',
-        description: 'Array of evidence files',
+        error: 'files must be an array',
       }
     )
     .optional(),
@@ -376,20 +334,17 @@ export const updateEvidenceSchema = z.object({
       z.object({
         item_id: z
           .string({
-            invalid_type_error: 'item_id must be a string',
-            description: 'eBay listing ID',
+            error: 'item_id must be a string',
           })
           .optional(),
         line_item_id: z
           .string({
-            invalid_type_error: 'line_item_id must be a string',
-            description: 'Unique identifier of the line item',
+            error: 'line_item_id must be a string',
           })
           .optional(),
       }),
       {
-        invalid_type_error: 'line_items must be an array',
-        description: 'Array of order line items',
+        error: 'line_items must be an array',
       }
     )
     .optional(),

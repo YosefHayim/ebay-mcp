@@ -53,7 +53,6 @@ export const developerTools: ToolDefinition[] = [
         },
         error: { type: 'string' },
       },
-      description: 'Latest API status items from eBay developer feed',
     } as OutputArgs,
   },
   {
@@ -86,7 +85,6 @@ export const developerTools: ToolDefinition[] = [
           },
         },
       },
-      description: 'Rate limit data for application APIs',
     } as OutputArgs,
   },
   {
@@ -108,7 +106,6 @@ export const developerTools: ToolDefinition[] = [
       properties: {
         rateLimits: { type: 'array' },
       },
-      description: 'Rate limit data for user APIs',
     } as OutputArgs,
   },
   {
@@ -138,7 +135,6 @@ export const developerTools: ToolDefinition[] = [
         client_id_issued_at: { type: 'number' },
         client_secret_expires_at: { type: 'number' },
       },
-      description: 'Registered client details with credentials',
     } as OutputArgs,
   },
   {
@@ -164,7 +160,6 @@ export const developerTools: ToolDefinition[] = [
           },
         },
       },
-      description: 'List of signing keys',
     } as OutputArgs,
   },
   {
@@ -190,7 +185,6 @@ export const developerTools: ToolDefinition[] = [
         creationTime: { type: 'number' },
         expirationTime: { type: 'number' },
       },
-      description: 'Created signing key with private key (returned only once)',
     } as OutputArgs,
   },
   {
@@ -210,7 +204,6 @@ export const developerTools: ToolDefinition[] = [
         creationTime: { type: 'number' },
         expirationTime: { type: 'number' },
       },
-      description: 'Signing key details',
     } as OutputArgs,
   },
 ];

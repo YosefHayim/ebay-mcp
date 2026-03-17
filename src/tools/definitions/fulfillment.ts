@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import { shippingFulfillmentSchema } from '../schemas.js';
 import {
   getOrdersOutputSchema,
@@ -198,7 +198,6 @@ export const fulfillmentTools: ToolDefinition[] = [
         reason: { type: 'string' },
         amount: { type: 'object' },
       },
-      description: 'Payment dispute details',
     } as OutputArgs,
   },
   {
@@ -213,7 +212,6 @@ export const fulfillmentTools: ToolDefinition[] = [
       properties: {
         activity: { type: 'array' },
       },
-      description: 'Payment dispute activity history',
     } as OutputArgs,
   },
   {
@@ -243,7 +241,6 @@ export const fulfillmentTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful acceptance (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -268,7 +265,6 @@ export const fulfillmentTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful contest (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -306,7 +302,6 @@ export const fulfillmentTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful evidence addition (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -338,7 +333,6 @@ export const fulfillmentTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Empty response on successful evidence update (HTTP 204)',
     } as OutputArgs,
   },
   {
@@ -359,7 +353,6 @@ export const fulfillmentTools: ToolDefinition[] = [
       properties: {
         fileId: { type: 'string' },
       },
-      description: 'File upload response with file ID',
     } as OutputArgs,
   },
   {
@@ -377,7 +370,6 @@ export const fulfillmentTools: ToolDefinition[] = [
         content: { type: 'string' },
         contentType: { type: 'string' },
       },
-      description: 'File content and content type',
     } as OutputArgs,
   },
 ];

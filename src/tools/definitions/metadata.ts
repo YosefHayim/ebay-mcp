@@ -1,12 +1,12 @@
 import { MarketplaceId } from '@/types/ebay-enums.js';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from '@/utils/zod-compat.js';
 import { compatibilityDataSchema, compatibilitySpecificationSchema } from '../schemas.js';
 import { OutputArgs, ToolAnnotations } from '../tool-definitions.js';
 
 export interface ToolDefinition {
   name: string;
-  description: string;
+  description?: string;
   inputSchema: Record<string, z.ZodTypeAny>;
   title?: string;
   outputSchema?: OutputArgs;
@@ -203,7 +203,6 @@ export const metadataTools: ToolDefinition[] = [
     outputSchema: {
       type: 'object',
       properties: {},
-      description: 'Success response',
     } as OutputArgs,
   },
 ];
