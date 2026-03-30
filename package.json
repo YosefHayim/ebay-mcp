@@ -83,8 +83,8 @@
     "@types/prompts": "^2.4.9",
     "@types/supertest": "^7.2.0",
     "@types/update-notifier": "^6.0.8",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/ui": "^4.1.2",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-n": "^17.24.0",
@@ -96,8 +96,8 @@
     "tsc-alias": "^1.8.16",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0",
-    "vitest": "^4.1.0"
+    "typescript-eslint": "^8.57.2",
+    "vitest": "^4.1.2"
   },
   "packageManager": "pnpm@10.14.0",
   "engines": {
