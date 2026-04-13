@@ -70,7 +70,7 @@ jobs:
 
       - name: Check for new endpoints and create issue
         if: steps.sync.outputs.missing_count > 0
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
