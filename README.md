@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yosefhayim-ebay-mcp-badge.png)](https://mseep.ai/app/yosefhayim-ebay-mcp)
+
 # eBay API MCP Server
 
 <div align="center">
