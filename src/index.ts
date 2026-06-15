@@ -5,9 +5,7 @@ import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import { runSetup } from '@/scripts/setup.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import { serverLogger, getLogPaths } from '@/utils/logger.js';
-import { checkForUpdates } from '@/utils/version.js';
-
-checkForUpdates({ defer: true });
+import { getCachedUpdateNotice } from '@/utils/version.js';
 
 const args = process.argv.slice(2);
 if (args.includes('setup')) {
@@ -49,6 +47,13 @@ class EbayMcpServer {
 
   async run(): Promise<void> {
     serverLogger.info('Starting eBay API MCP Server');
+
+    // stdout is reserved for the MCP protocol, so a TTY update box (used by the
+    // CLIs) can't run here — surface any newer version as a stderr log line.
+    const updateNotice = getCachedUpdateNotice();
+    if (updateNotice) {
+      serverLogger.info(updateNotice);
+    }
 
     // Validate environment configuration
     const validation = validateEnvironmentConfig();
