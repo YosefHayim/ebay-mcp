@@ -21,35 +21,37 @@ npm run build     # tsc + tsc-alias → build/
 
 Other useful scripts:
 
-| Command            | Purpose                                              |
-| ------------------ | ---------------------------------------------------- |
-| `npm run dev`      | Run the server with hot reload (tsx)                 |
-| `npm run typecheck`| `tsc --noEmit`                                       |
-| `npm run fix`      | Auto-fix eslint + prettier                           |
-| `npm run setup`    | Interactive credential/OAuth/client setup wizard     |
-| `npm run sync`     | Download eBay OpenAPI specs, regenerate types, report missing endpoints |
-| `npm run diagnose` | Check configuration and connectivity                 |
+| Command             | Purpose                                                                    |
+| ------------------- | -------------------------------------------------------------------------- |
+| `npm run dev`       | Run the server with hot reload (tsx)                                       |
+| `npm run typecheck` | `tsc --noEmit`                                                             |
+| `npm run fix`       | Auto-fix eslint + prettier                                                 |
+| `npm run setup`     | Interactive credential/OAuth/client setup wizard                           |
+| `npm run sync`      | Download eBay OpenAPI specs, regenerate types, report missing endpoints    |
+| `npm run diagnose`  | Check configuration and connectivity                                       |
+| `npm run skills`    | Install AI skills (Codex / Claude Code / Cursor) for using or contributing |
 
 ## Module map (`src/`)
 
-| Path               | Owns                                                                 |
-| ------------------ | ------------------------------------------------------------------- |
-| `index.ts`         | MCP server entry point (STDIO)                                       |
-| `server-http.ts`   | HTTP transport entry point                                          |
-| `api/`             | eBay API client implementations (one area per file)                 |
-| `auth/`            | OAuth 2.0 flow and token management                                 |
-| `config/`          | Environment loading, constants, marketplace defaults                |
-| `tools/`           | MCP tool wiring — `registry.ts`, `contracts.ts`, `schemas.ts`, `tool-handlers/`, and `definitions/` (13 category files: account, inventory, fulfillment, marketing, analytics, communication, taxonomy, metadata, developer, trading, token-management, other) |
-| `schemas/`         | Shared Zod schemas                                                   |
-| `types/`           | TypeScript types — **auto-generated** from OpenAPI specs (don't hand-edit) |
-| `scripts/`         | CLI tooling: `setup.ts`, `dev-sync.ts`, `diagnostics.ts`            |
-| `utils/`           | Shared utilities (logging, http, errors)                            |
+| Path             | Owns                                                                                                                                                                                                                                                                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.ts`       | MCP server entry point (STDIO)                                                                                                                                                                                                                                                                                                               |
+| `server-http.ts` | HTTP transport entry point                                                                                                                                                                                                                                                                                                                   |
+| `api/`           | eBay API client implementations (one area per file)                                                                                                                                                                                                                                                                                          |
+| `auth/`          | OAuth 2.0 flow and token management                                                                                                                                                                                                                                                                                                          |
+| `config/`        | Environment loading, constants, marketplace defaults                                                                                                                                                                                                                                                                                         |
+| `tools/`         | MCP tool wiring — `registry.ts`, `contracts.ts`, `schemas.ts`, `define-tool.ts`, and `categories/` (13 family files that co-locate each tool definition with its handler via `defineTool`: connector, token-management, account, inventory, fulfillment, marketing, analytics, metadata, taxonomy, communication, other, developer, trading) |
+| `skills/`        | Agent-skills generator (`ebay-mcp skills`) — renders using/contributing skills for Codex, Claude Code, and Cursor                                                                                                                                                                                                                            |
+| `schemas/`       | Shared Zod schemas                                                                                                                                                                                                                                                                                                                           |
+| `types/`         | TypeScript types — **auto-generated** from OpenAPI specs (don't hand-edit)                                                                                                                                                                                                                                                                   |
+| `scripts/`       | CLI tooling: `setup.ts`, `skills.ts`, `dev-sync.ts`, `diagnostics.ts`                                                                                                                                                                                                                                                                        |
+| `utils/`         | Shared utilities (logging, http, errors)                                                                                                                                                                                                                                                                                                     |
 
 ## Adding a new API endpoint
 
 1. `npm run sync` — downloads the latest eBay specs, regenerates types, and reports missing endpoints (full list in `dev-sync-report.json`).
 2. Add the API method in `src/api/`.
-3. Add the tool definition in the matching `src/tools/definitions/<category>.ts`.
+3. Add a `defineTool({ ... handler })` entry in the matching `src/tools/categories/<family>.ts` — the definition and its handler live together; `registry.ts` derives everything from `categories/index.ts`.
 4. Add tests in `tests/`.
 5. `npm run check && npm test`.
 

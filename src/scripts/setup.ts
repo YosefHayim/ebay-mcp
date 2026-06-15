@@ -15,6 +15,8 @@ import { getOAuthAuthorizationUrl } from '../config/environment.js';
 import { startCallbackServer } from '../utils/oauth-helper.js';
 import { defineWizard, runWizard, ClackRenderer } from '../utils/setup-wizard.js';
 import { loadExistingConfig } from './setup-shared.js';
+import { runSkillsWizard } from './skills.js';
+import prompts from 'prompts';
 import { configureLLMClient, detectLLMClients } from '../utils/llm-client-detector.js';
 import { runSecurityChecks, displaySecurityResults } from '../utils/security-checker.js';
 import { validateSetup, displayRecommendations } from '../utils/setup-validator.js';
@@ -1054,6 +1056,23 @@ export async function runSetup(): Promise<void> {
   console.log(
     ui.dim('  Get Help:      ') + ui.info('https://github.com/YosefHayim/ebay-mcp/issues\n')
   );
+
+  // Optional: offer to install agent skills (Codex / Claude Code / Cursor) so the
+  // user's assistant knows how to drive the tools. Skipped in non-interactive runs.
+  if (process.stdin.isTTY) {
+    const { wantSkills } = (await prompts({
+      type: 'confirm',
+      name: 'wantSkills',
+      message:
+        'Install eBay AI skills (Codex / Claude Code / Cursor) so your assistant drives the tools faster?',
+      initial: true,
+    })) as { wantSkills?: boolean };
+    if (wantSkills) {
+      await runSkillsWizard({ fromSetup: true });
+    } else {
+      showInfo('You can install them later with: npm run skills');
+    }
+  }
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────

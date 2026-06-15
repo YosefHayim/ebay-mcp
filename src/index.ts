@@ -3,6 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { validateEnvironmentConfig } from '@/config/environment.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import { runSetup } from '@/scripts/setup.js';
+import { runSkillsWizard } from '@/scripts/skills.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import { serverLogger, getLogPaths } from '@/utils/logger.js';
 import { checkForUpdates } from '@/utils/version.js';
@@ -16,6 +17,16 @@ if (args.includes('setup')) {
     process.exit(0);
   } catch (error) {
     console.error('Setup failed:', error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
+}
+
+if (args.includes('skills')) {
+  try {
+    await runSkillsWizard();
+    process.exit(0);
+  } catch (error) {
+    console.error('Skills install failed:', error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }

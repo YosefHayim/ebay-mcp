@@ -14,24 +14,47 @@ import { developerEntries } from './developer.js';
 import { tradingEntries } from './trading.js';
 
 /**
- * Registered tool entries in registry execution order. Connector tools (`search`/
- * `fetch`) are registered ahead of the eBay API tools, matching the prior registry.
+ * A named group of registered tool entries, owned by one eBay API area (or the
+ * ChatGPT connector). This is the single source of truth for both the registry
+ * order and any feature that needs the tool catalogue grouped by family — e.g.
+ * the skills generator's live family index. `key` is the stable identifier;
+ * `title` is a short human label.
  */
-export const registeredEntries: ToolEntry[] = [
-  ...connectorEntries,
-  ...tokenManagementEntries,
-  ...accountEntries,
-  ...inventoryEntries,
-  ...fulfillmentEntries,
-  ...marketingEntries,
-  ...analyticsEntries,
-  ...metadataEntries,
-  ...taxonomyEntries,
-  ...communicationEntries,
-  ...otherEntries,
-  ...developerEntries,
-  ...tradingEntries,
+export interface ToolCategory {
+  key: string;
+  title: string;
+  entries: ToolEntry[];
+}
+
+/**
+ * Registered tool families in registry execution order. Connector tools
+ * (`search`/`fetch`) are registered ahead of the eBay API tools, matching the
+ * prior registry. {@link registeredEntries} is derived from this list, so adding
+ * a family here both registers its tools and surfaces it in the family index.
+ */
+export const toolCategories: ToolCategory[] = [
+  { key: 'connector', title: 'Connector', entries: connectorEntries },
+  { key: 'token-management', title: 'Token Management', entries: tokenManagementEntries },
+  { key: 'account', title: 'Account', entries: accountEntries },
+  { key: 'inventory', title: 'Inventory', entries: inventoryEntries },
+  { key: 'fulfillment', title: 'Fulfillment', entries: fulfillmentEntries },
+  { key: 'marketing', title: 'Marketing', entries: marketingEntries },
+  { key: 'analytics', title: 'Analytics', entries: analyticsEntries },
+  { key: 'metadata', title: 'Metadata', entries: metadataEntries },
+  { key: 'taxonomy', title: 'Taxonomy', entries: taxonomyEntries },
+  { key: 'communication', title: 'Communication', entries: communicationEntries },
+  { key: 'other', title: 'Other', entries: otherEntries },
+  { key: 'developer', title: 'Developer', entries: developerEntries },
+  { key: 'trading', title: 'Trading', entries: tradingEntries },
 ];
+
+/**
+ * Registered tool entries in registry execution order, flattened from
+ * {@link toolCategories}.
+ */
+export const registeredEntries: ToolEntry[] = toolCategories.flatMap(
+  (category) => category.entries
+);
 
 /**
  * Handler-only entries: callable via `executeTool`/`getToolHandler` but intentionally
