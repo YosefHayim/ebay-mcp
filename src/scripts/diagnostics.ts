@@ -18,6 +18,7 @@ import { displayScopeVerification, parseScopeString } from '../utils/scope-helpe
 import { readEnvironment } from './setup-shared.js';
 import { EbaySellerApi } from '../api/index.js';
 import { getErrorMessage } from '@/utils/errors.js';
+import { getUpdateInfo, getVersion } from '@/utils/version.js';
 import type { EbayConfig } from '../types/ebay.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -116,6 +117,35 @@ function displaySystemInfo(): void {
   console.log(`  ${chalk.gray('Platform:')} ${process.platform}`);
   console.log(`  ${chalk.gray('Architecture:')} ${process.arch}`);
   console.log(`  ${chalk.gray('CWD:')} ${process.cwd()}`);
+  console.log('');
+}
+
+/**
+ * Check npm for a newer published version and surface it. `diagnose` is an
+ * intentional, interactive command run by the user, so a live registry fetch is
+ * appropriate here (unlike the server hot path, which uses the cached check).
+ * A failed fetch (offline) is reported, not thrown — diagnostics should never
+ * abort on a best-effort network call.
+ */
+async function displayUpdateStatus(): Promise<void> {
+  console.log(chalk.bold.cyan('🔄 Version\n'));
+  console.log(`  ${chalk.gray('Installed:')} ${getVersion()}`);
+
+  try {
+    const info = await getUpdateInfo();
+    if (info) {
+      console.log(
+        `  ${chalk.gray('Latest:')}    ${chalk.green(info.latest)} ${chalk.yellow(`(run \`npm i -g ${info.name}\` to update)`)}`
+      );
+    } else {
+      console.log(`  ${chalk.gray('Latest:')}    ${chalk.green('up to date')}`);
+    }
+  } catch {
+    console.log(
+      `  ${chalk.gray('Latest:')}    ${chalk.dim('update check unavailable (offline?)')}`
+    );
+  }
+
   console.log('');
 }
 
@@ -271,6 +301,7 @@ async function generateDiagnosticReport(exportPath?: string): Promise<Diagnostic
 async function runDiagnostics(exportReport = false): Promise<void> {
   displayHeader();
   displaySystemInfo();
+  await displayUpdateStatus();
 
   // Security checks
   const securityResults = await runSecurityChecks(PROJECT_ROOT);

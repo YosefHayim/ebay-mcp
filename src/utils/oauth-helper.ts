@@ -56,10 +56,30 @@ export function generateAuthUrl(
 }
 
 /**
+ * Escape a string for safe interpolation into HTML text/attribute context.
+ *
+ * The callback page reflects eBay's `error` / `error_description` query params,
+ * which are attacker-controllable: a crafted `…/oauth/callback?error=<script>…`
+ * would otherwise execute in the browser (reflected XSS). Encoding the five
+ * HTML-significant characters neutralizes the markup while keeping the message
+ * legible.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Render the small HTML page the user lands on after eBay redirects back.
  *
  * @param success Whether authorization succeeded.
- * @param detail Error detail shown when `success` is false.
+ * @param detail Error detail shown when `success` is false. Caller-supplied and
+ *   potentially attacker-controlled (eBay's `error_description`), so it is
+ *   HTML-escaped before interpolation.
  */
 function renderCallbackPage(success: boolean, detail = ''): string {
   const gradient = success
@@ -72,7 +92,7 @@ function renderCallbackPage(success: boolean, detail = ''): string {
     ? `<p>You have successfully authorized the eBay MCP server.</p>
         <p>You can close this window and return to your terminal.</p>`
     : `<p>There was an error during authorization.</p>
-        <div class="detail">${detail}</div>
+        <div class="detail">${escapeHtml(detail)}</div>
         <p>Please return to your terminal and try again.</p>`;
   const autoClose = success ? '' : '<script>setTimeout(() => window.close(), 5000);</script>';
 

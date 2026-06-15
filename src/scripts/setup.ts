@@ -14,7 +14,7 @@ import { fileURLToPath } from 'url';
 import { getOAuthAuthorizationUrl } from '../config/environment.js';
 import { startCallbackServer } from '../utils/oauth-helper.js';
 import { defineWizard, runWizard, ClackRenderer } from '../utils/setup-wizard.js';
-import { loadExistingConfig } from './setup-shared.js';
+import { loadExistingConfig, quoteEnvValue } from './setup-shared.js';
 import { runSkillsWizard } from './skills.js';
 import prompts from 'prompts';
 import { configureLLMClient, detectLLMClients } from '../utils/llm-client-detector.js';
@@ -77,6 +77,20 @@ const ui = {
   error: chalk.red,
   info: chalk.cyan,
 };
+
+const DEVELOPER_NAME = 'Yosef Hayim Sabag';
+const DEVELOPER_LINKEDIN = 'https://www.linkedin.com/in/yosef-hayim-sabag/';
+
+/** Render the wizard's branding header: logo, title, and developer credit. */
+function printWizardBanner(): void {
+  console.log(LOGO);
+  console.log(
+    ui.bold.white('            MCP Server Setup Wizard by ') + ebay.blue.bold(DEVELOPER_NAME)
+  );
+  console.log(
+    ui.dim('              Contact the developer: ') + ebay.blue.underline(DEVELOPER_LINKEDIN) + '\n'
+  );
+}
 
 // ─── Business-logic helpers (preserved from original) ─────────────────────────
 
@@ -333,10 +347,10 @@ function formatDate(date: Date): string {
 function saveConfig(envConfig: Record<string, string>, environment: string): void {
   const envPath = join(PROJECT_ROOT, '.env');
   const marketplaceLine = envConfig.EBAY_MARKETPLACE_ID
-    ? `EBAY_MARKETPLACE_ID=${envConfig.EBAY_MARKETPLACE_ID}`
+    ? `EBAY_MARKETPLACE_ID=${quoteEnvValue(envConfig.EBAY_MARKETPLACE_ID)}`
     : '# EBAY_MARKETPLACE_ID=EBAY_US';
   const contentLanguageLine = envConfig.EBAY_CONTENT_LANGUAGE
-    ? `EBAY_CONTENT_LANGUAGE=${envConfig.EBAY_CONTENT_LANGUAGE}`
+    ? `EBAY_CONTENT_LANGUAGE=${quoteEnvValue(envConfig.EBAY_CONTENT_LANGUAGE)}`
     : '# EBAY_CONTENT_LANGUAGE=en-US';
   writeFileSync(
     envPath,
@@ -344,16 +358,16 @@ function saveConfig(envConfig: Record<string, string>, environment: string): voi
 # Last Updated: ${formatDate(new Date())}
 # Environment: ${environment}
 
-EBAY_CLIENT_ID=${envConfig.EBAY_CLIENT_ID || ''}
-EBAY_CLIENT_SECRET=${envConfig.EBAY_CLIENT_SECRET || ''}
-EBAY_REDIRECT_URI=${envConfig.EBAY_REDIRECT_URI || ''}
+EBAY_CLIENT_ID=${quoteEnvValue(envConfig.EBAY_CLIENT_ID || '')}
+EBAY_CLIENT_SECRET=${quoteEnvValue(envConfig.EBAY_CLIENT_SECRET || '')}
+EBAY_REDIRECT_URI=${quoteEnvValue(envConfig.EBAY_REDIRECT_URI || '')}
 EBAY_ENVIRONMENT=${environment}
 ${marketplaceLine}
 ${contentLanguageLine}
 
-EBAY_USER_REFRESH_TOKEN=${envConfig.EBAY_USER_REFRESH_TOKEN || ''}
-EBAY_USER_ACCESS_TOKEN=${envConfig.EBAY_USER_ACCESS_TOKEN || ''}
-EBAY_APP_ACCESS_TOKEN=${envConfig.EBAY_APP_ACCESS_TOKEN || ''}
+EBAY_USER_REFRESH_TOKEN=${quoteEnvValue(envConfig.EBAY_USER_REFRESH_TOKEN || '')}
+EBAY_USER_ACCESS_TOKEN=${quoteEnvValue(envConfig.EBAY_USER_ACCESS_TOKEN || '')}
+EBAY_APP_ACCESS_TOKEN=${quoteEnvValue(envConfig.EBAY_APP_ACCESS_TOKEN || '')}
 `,
     'utf-8'
   );
@@ -537,9 +551,7 @@ export async function runSetup(): Promise<void> {
 
   const args = parseArgs();
 
-  console.log(LOGO);
-  console.log(ui.bold.white('            MCP Server Setup Wizard by Yosef Hayim Sabag'));
-  console.log(ui.dim('              Powered by ') + chalk.hex('#0064D2').bold('prompts') + '\n');
+  printWizardBanner();
 
   console.log(ui.dim('  Welcome to the eBay MCP Server setup wizard!\n'));
   console.log('  This wizard will help you:\n');
@@ -653,10 +665,13 @@ export async function runSetup(): Promise<void> {
         message: 'Set up OAuth for higher API rate limits:',
         description: 'App credentials: 1,000 req/day  •  User OAuth: 10,000–50,000 req/day',
         options: [
-          { value: 'existing', label: '📝 I have a refresh token' },
-          { value: 'auto', label: '🤖 Auto-capture via local callback server (no copy-paste)' },
-          { value: 'manual', label: '🔗 Generate OAuth URL (opens browser, paste code)' },
+          {
+            value: 'manual',
+            label: '🔗 Generate OAuth URL (opens browser, paste code) — recommended',
+          },
           { value: 'code', label: '🔑 Paste authorization code (already have code)' },
+          { value: 'existing', label: '📝 I have a refresh token' },
+          { value: 'auto', label: '🤖 Auto-capture (advanced — needs a public HTTPS tunnel)' },
           { value: 'skip', label: '⏭️  Skip for now (1,000 req/day limit)' },
         ],
       },
@@ -710,10 +725,13 @@ export async function runSetup(): Promise<void> {
         if (hasToken) {
           return [
             { value: 'keep', label: '✓  Keep and verify existing token' },
-            { value: 'existing', label: '📝 Replace with a different refresh token' },
-            { value: 'auto', label: '🤖 Auto-capture via local callback server (no copy-paste)' },
-            { value: 'manual', label: '🔗 Generate OAuth URL (opens browser, paste code)' },
+            {
+              value: 'manual',
+              label: '🔗 Generate OAuth URL (opens browser, paste code) — recommended',
+            },
             { value: 'code', label: '🔑 Paste authorization code' },
+            { value: 'existing', label: '📝 Replace with a different refresh token' },
+            { value: 'auto', label: '🤖 Auto-capture (advanced — needs a public HTTPS tunnel)' },
             { value: 'skip', label: '⏭️  Skip for now' },
           ];
         }
@@ -1024,9 +1042,7 @@ export async function runSetup(): Promise<void> {
   stopSave();
   showSuccess('Configuration saved to .env\n');
 
-  console.log(LOGO);
-  console.log(ui.bold.white('            MCP Server Setup Wizard by Yosef Hayim Sabag'));
-  console.log(ui.dim('              Powered by ') + chalk.hex('#0064D2').bold('prompts') + '\n');
+  printWizardBanner();
 
   console.log(ui.bold.green('\n  🎉 Setup Complete!\n'));
   showBox('Configuration Summary', [
