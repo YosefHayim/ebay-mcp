@@ -58,7 +58,7 @@
 - [데모](#데모)
 - [구성](#구성)
 - [사용 가능한 도구](#사용-가능한-도구)
-- [대화형 UI (MCP Apps)](#대화형-ui-mcp-apps)
+- [대화형 UI (MCP Apps) — 베타](#대화형-ui-mcp-apps)
 - [사용 예시](#사용-예시)
 - [로깅 및 문제 해결](#로깅-및-문제-해결)
 - [자주 묻는 질문](#자주-묻는-질문)
@@ -204,7 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # 기본 마켓플레이스 (도구별 재정의 가능)
 EBAY_CONTENT_LANGUAGE=en-US         # 요청의 기본 콘텐츠 언어
 EBAY_USER_REFRESH_TOKEN=your_token  # 더 높은 속도 제한용
-EBAY_MCP_UI=on                      # 대화형 보기; 일반 JSON을 강제하려면 "off"로 설정
+EBAY_MCP_UI=on                      # 대화형 MCP Apps 보기(베타); 일반 JSON을 강제하려면 "off"로 설정
 ```
 
 ### 인증 및 속도 제한
@@ -256,7 +256,9 @@ EBAY_MCP_UI=on                      # 대화형 보기; 일반 JSON을 강제하
 
 ## 대화형 UI (MCP Apps)
 
-[MCP Apps](https://modelcontextprotocol.io)를 지원하는 호스트에서는 일반적인 읽기 도구가 결과를 원시 JSON 대신 대화형 보기로 — 정렬 가능한 **테이블**, 상세 **카드**, 또는 **차트** — 호스트 자체 테마를 사용해 렌더링합니다. 그 외 모든 곳에서는 완전히 동일한 도구가 일반 JSON을 반환하므로 아무것도 깨지지 않습니다.
+> **베타** — 이 기능은 새로 추가되었으며 MCP Apps 사양과 함께 발전하고 있고, 호스트 지원도 아직 확대되는 중입니다. 옵트인 방식이며 일반 JSON으로 폴백하므로 기존 클라이언트를 절대 깨뜨리지 않습니다. `EBAY_MCP_UI`로 켜고 끌 수 있습니다.
+
+[MCP Apps](https://modelcontextprotocol.io)를 지원하는 호스트에서는 일반적인 읽기 도구가 결과를 원시 JSON 대신 대화형 보기로 — 정렬 가능한 **테이블**, 상세 **카드**, 또는 **차트** — 호스트 자체 테마를 사용해 렌더링합니다. 그 외 모든 곳에서는 완전히 동일한 도구가 일반 JSON을 반환하므로 아무것도 깨지지 않습니다. 이 기능은 MCP 서버가 대화형 클라이언트에 대화형 UI를 제공할 수 있게 해주는 공식 확장인 [MCP Apps SDK (`@modelcontextprotocol/ext-apps`)](https://github.com/modelcontextprotocol/ext-apps) 위에 구축되었습니다.
 
 - **옵트인이며 호스트에 따라 제한됨.** 보기는 MCP Apps 기능을 알리는 클라이언트(예: Claude)에만 광고됩니다. 이를 지원하지 않는 호스트(예: Cursor)는 조용히 JSON을 받습니다.
 - **킬 스위치.** `EBAY_MCP_UI=off`로 설정하면 지원하는 호스트에서도 모든 곳에서 일반 JSON을 강제합니다.

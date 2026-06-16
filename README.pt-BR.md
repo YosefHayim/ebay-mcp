@@ -58,7 +58,7 @@
 - [Demonstração](#demonstração)
 - [Configuração](#configuração)
 - [Ferramentas disponíveis](#ferramentas-disponíveis)
-- [Interface interativa (MCP Apps)](#interface-interativa-mcp-apps)
+- [Interface interativa (MCP Apps) — beta](#interface-interativa-mcp-apps)
 - [Exemplos de uso](#exemplos-de-uso)
 - [Logs e solução de problemas](#logs-e-solução-de-problemas)
 - [Perguntas frequentes](#perguntas-frequentes)
@@ -204,7 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # marketplace padrão (substituível por ferramenta)
 EBAY_CONTENT_LANGUAGE=en-US         # idioma de conteúdo padrão das requisições
 EBAY_USER_REFRESH_TOKEN=your_token  # para limites de taxa mais altos
-EBAY_MCP_UI=on                      # visualizações interativas; defina "off" para forçar JSON puro
+EBAY_MCP_UI=on                      # visualizações interativas MCP Apps (beta); defina "off" para forçar JSON puro
 ```
 
 ### Autenticação e limites de taxa
@@ -256,7 +256,9 @@ Para o índice completo legível por máquina, consulte [llms.txt](llms.txt).
 
 ## Interface interativa (MCP Apps)
 
-Em hosts compatíveis com [MCP Apps](https://modelcontextprotocol.io), as ferramentas de leitura mais comuns exibem seus resultados como visualizações interativas em vez de JSON bruto — uma **tabela** ordenável, um **cartão** de detalhes ou um **gráfico** — usando o próprio tema do host. Em qualquer outro lugar, exatamente as mesmas ferramentas retornam JSON puro, então nada quebra.
+> **Beta** — este recurso é novo e evolui junto com a especificação do MCP Apps, e o suporte dos hosts ainda está sendo lançado. É opcional (opt-in) e tem fallback para JSON puro, então nunca quebra clientes existentes. Ative ou desative com `EBAY_MCP_UI`.
+
+Em hosts compatíveis com [MCP Apps](https://modelcontextprotocol.io), as ferramentas de leitura mais comuns exibem seus resultados como visualizações interativas em vez de JSON bruto — uma **tabela** ordenável, um **cartão** de detalhes ou um **gráfico** — usando o próprio tema do host. Em qualquer outro lugar, exatamente as mesmas ferramentas retornam JSON puro, então nada quebra. É construída sobre o [SDK oficial do MCP Apps (`@modelcontextprotocol/ext-apps`)](https://github.com/modelcontextprotocol/ext-apps), a extensão que permite que servidores MCP entreguem interfaces interativas a clientes conversacionais.
 
 - **Opt-in e condicionado ao host.** As visualizações só são anunciadas aos clientes que declaram a capacidade MCP Apps (por exemplo, o Claude). Hosts sem ela (por exemplo, o Cursor) recebem JSON silenciosamente.
 - **Interruptor de desligamento.** Defina `EBAY_MCP_UI=off` para forçar JSON puro em todos os lugares, mesmo em hosts compatíveis.

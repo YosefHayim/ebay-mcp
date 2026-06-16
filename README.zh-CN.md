@@ -58,7 +58,7 @@
 - [演示](#演示)
 - [配置](#配置)
 - [可用工具](#可用工具)
-- [交互式界面（MCP Apps）](#交互式界面mcp-apps)
+- [交互式界面（MCP Apps · 测试版）](#交互式界面mcp-apps)
 - [使用示例](#使用示例)
 - [日志与故障排查](#日志与故障排查)
 - [常见问题](#常见问题)
@@ -204,7 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # 默认站点（可按工具覆盖）
 EBAY_CONTENT_LANGUAGE=en-US         # 请求的默认内容语言
 EBAY_USER_REFRESH_TOKEN=your_token  # 用于更高的速率限制
-EBAY_MCP_UI=on                      # 交互式视图；设为 "off" 可强制返回纯 JSON
+EBAY_MCP_UI=on                      # 交互式 MCP Apps 视图（测试版）；设为 "off" 可强制返回纯 JSON
 ```
 
 ### 认证与速率限制
@@ -256,7 +256,9 @@ EBAY_MCP_UI=on                      # 交互式视图；设为 "off" 可强制�
 
 ## 交互式界面（MCP Apps）
 
-在支持 [MCP Apps](https://modelcontextprotocol.io) 的宿主上，常用的读取类工具会将结果渲染为交互式视图，而非原始 JSON —— 可排序的**表格**、详情**卡片**或**图表** —— 并采用宿主自身的主题。在其他任何环境中，同样的这些工具都会返回纯 JSON，因此不会出现任何问题。
+> **测试版** —— 此功能是全新的，会随 MCP Apps 规范一同演进，宿主端的支持仍在逐步推出。它需要主动启用，并会回退到纯 JSON，因此绝不会破坏现有客户端。可通过 `EBAY_MCP_UI` 开启或关闭。
+
+在支持 [MCP Apps](https://modelcontextprotocol.io) 的宿主上，常用的读取类工具会将结果渲染为交互式视图，而非原始 JSON —— 可排序的**表格**、详情**卡片**或**图表** —— 并采用宿主自身的主题。在其他任何环境中，同样的这些工具都会返回纯 JSON，因此不会出现任何问题。它基于官方的 [MCP Apps SDK (`@modelcontextprotocol/ext-apps`)](https://github.com/modelcontextprotocol/ext-apps) 构建 —— 这个扩展让 MCP 服务器能够向对话式客户端交付交互式界面。
 
 - **可选启用且受宿主限制。** 视图仅向声明了 MCP Apps 能力的客户端（例如 Claude）公布。不具备该能力的宿主（例如 Cursor）会静默地获得 JSON。
 - **紧急开关。** 设置 `EBAY_MCP_UI=off` 即可在所有环境强制返回纯 JSON，即使在具备能力的宿主上也是如此。

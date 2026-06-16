@@ -58,7 +58,7 @@
 - [Demo](#demo)
 - [Configuration](#configuration)
 - [Available tools](#available-tools)
-- [Interactive UI (MCP Apps)](#interactive-ui-mcp-apps)
+- [Interactive UI (MCP Apps) — beta](#interactive-ui-mcp-apps)
 - [Usage examples](#usage-examples)
 - [Logging & troubleshooting](#logging--troubleshooting)
 - [FAQ](#faq)
@@ -204,7 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # default marketplace (overridable per tool)
 EBAY_CONTENT_LANGUAGE=en-US         # default request content language
 EBAY_USER_REFRESH_TOKEN=your_token  # for higher rate limits
-EBAY_MCP_UI=on                      # interactive views; set "off" to force plain JSON
+EBAY_MCP_UI=on                      # interactive MCP Apps views (beta); "off" forces plain JSON
 ```
 
 ### Authentication & rate limits
@@ -256,7 +256,9 @@ For the complete machine-readable index, see [llms.txt](llms.txt).
 
 ## Interactive UI (MCP Apps)
 
-On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read tools render their results as interactive views instead of raw JSON — a sortable **table**, a detail **card**, or a **chart** — using the host's own theme. Everywhere else, the exact same tools return plain JSON, so nothing breaks.
+> **Beta** — this feature is new and evolving alongside the MCP Apps spec, and host support is still rolling out. It is opt-in and falls back to plain JSON, so it never breaks existing clients. Toggle it with `EBAY_MCP_UI` (see [Configuration](#configuration)).
+
+On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read tools render their results as interactive views instead of raw JSON — a sortable **table**, a detail **card**, or a **chart** — using the host's own theme. Everywhere else, the exact same tools return plain JSON, so nothing breaks. It is built on the official [MCP Apps SDK (`@modelcontextprotocol/ext-apps`)](https://github.com/modelcontextprotocol/ext-apps), the extension that lets MCP servers ship interactive UI to conversational clients.
 
 - **Opt-in and host-gated.** Views are advertised only to clients that announce the MCP Apps capability (e.g. Claude). Hosts without it (e.g. Cursor) silently get JSON.
 - **Kill-switch.** Set `EBAY_MCP_UI=off` to force plain JSON everywhere, even on capable hosts.
