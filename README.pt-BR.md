@@ -58,6 +58,7 @@
 - [Demonstração](#demonstração)
 - [Configuração](#configuração)
 - [Ferramentas disponíveis](#ferramentas-disponíveis)
+- [Interface interativa (MCP Apps)](#interface-interativa-mcp-apps)
 - [Exemplos de uso](#exemplos-de-uso)
 - [Logs e solução de problemas](#logs-e-solução-de-problemas)
 - [Perguntas frequentes](#perguntas-frequentes)
@@ -203,6 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # marketplace padrão (substituível por ferramenta)
 EBAY_CONTENT_LANGUAGE=en-US         # idioma de conteúdo padrão das requisições
 EBAY_USER_REFRESH_TOKEN=your_token  # para limites de taxa mais altos
+EBAY_MCP_UI=on                      # visualizações interativas; defina "off" para forçar JSON puro
 ```
 
 ### Autenticação e limites de taxa
@@ -252,6 +254,25 @@ Autoconfigurados pelo `npm run setup`. Requer Node.js ≥ 18 e o protocolo MCP 1
 
 Para o índice completo legível por máquina, consulte [llms.txt](llms.txt).
 
+## Interface interativa (MCP Apps)
+
+Em hosts compatíveis com [MCP Apps](https://modelcontextprotocol.io), as ferramentas de leitura mais comuns exibem seus resultados como visualizações interativas em vez de JSON bruto — uma **tabela** ordenável, um **cartão** de detalhes ou um **gráfico** — usando o próprio tema do host. Em qualquer outro lugar, exatamente as mesmas ferramentas retornam JSON puro, então nada quebra.
+
+- **Opt-in e condicionado ao host.** As visualizações só são anunciadas aos clientes que declaram a capacidade MCP Apps (por exemplo, o Claude). Hosts sem ela (por exemplo, o Cursor) recebem JSON silenciosamente.
+- **Interruptor de desligamento.** Defina `EBAY_MCP_UI=off` para forçar JSON puro em todos os lugares, mesmo em hosts compatíveis.
+- **Econômico em tokens.** O HTML de cada visualização é buscado uma única vez pelo host fora de banda (nunca entra no contexto do modelo); o modelo só vê um resumo de uma linha mais os dados estruturados que receberia de qualquer forma.
+- **Somente leitura.** As visualizações só acionam ferramentas de leitura (detalhar uma linha, paginar, atualizar) — elas nunca alteram seus dados do eBay.
+
+13 ferramentas de fluxos de trabalho essenciais adotam isso hoje, em três arquétipos:
+
+| Arquétipo | Ferramentas |
+| --- | --- |
+| **Tabela** | `ebay_get_orders`, `ebay_get_shipping_fulfillments`, `ebay_get_offers`, `ebay_get_inventory_items`, `ebay_get_inventory_locations`, `ebay_get_payment_dispute_summaries` |
+| **Cartão** | `ebay_get_order`, `ebay_get_offer`, `ebay_get_inventory_item`, `ebay_get_payment_dispute`, `ebay_get_seller_standards_profile` |
+| **Gráfico** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
+
+As visualizações são compiladas em HTML autocontido com `npm run build` (ou `npm run build:ui`); elas são distribuídas no pacote publicado e carregam sem nenhum acesso à rede próprio.
+
 ## Exemplos de uso
 
 Tarefas comuns, formuladas como você pediria ao seu assistente de IA:
@@ -284,6 +305,10 @@ Não. É um projeto de código aberto de terceiros não oficial. **Não tem afil
 ### Posso usar com Claude, ChatGPT ou Cursor?
 
 Sim. Funciona com Claude Desktop e Claude Code de forma nativa, com Cursor e outros IDEs com MCP, e com qualquer assistente que suporte o Model Context Protocol. O prompt de configuração em um clique acima também funciona com ChatGPT e outros assistentes.
+
+### Por que não vejo as tabelas e os gráficos interativos?
+
+As visualizações interativas do [MCP Apps](#interface-interativa-mcp-apps) só aparecem em hosts que declaram a capacidade (por exemplo, o Claude); outros clientes recebem os mesmos dados como JSON puro. Confirme também que você não definiu `EBAY_MCP_UI=off` e que as visualizações foram compiladas (`npm run build` executa `build:ui`).
 
 ### Quantas APIs e ferramentas do eBay ele cobre?
 

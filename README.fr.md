@@ -58,6 +58,7 @@
 - [Démonstration](#démonstration)
 - [Configuration](#configuration)
 - [Outils disponibles](#outils-disponibles)
+- [Interface interactive (MCP Apps)](#interface-interactive-mcp-apps)
 - [Exemples d'utilisation](#exemples-dutilisation)
 - [Journalisation et dépannage](#journalisation-et-dépannage)
 - [FAQ](#faq)
@@ -203,6 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # marketplace par défaut (modifiable par outil)
 EBAY_CONTENT_LANGUAGE=en-US         # langue de contenu par défaut des requêtes
 EBAY_USER_REFRESH_TOKEN=your_token  # pour des limites de débit plus élevées
+EBAY_MCP_UI=on                      # vues interactives ; mettez "off" pour forcer le JSON brut
 ```
 
 ### Authentification et limites de débit
@@ -252,6 +254,25 @@ Configurés automatiquement par `npm run setup`. Nécessite Node.js ≥ 18 et le
 
 Pour l'index complet lisible par machine, consultez [llms.txt](llms.txt).
 
+## Interface interactive (MCP Apps)
+
+Sur les hôtes qui prennent en charge [MCP Apps](https://modelcontextprotocol.io), les outils de lecture courants affichent leurs résultats sous forme de vues interactives plutôt qu'en JSON brut — un **tableau** triable, une **fiche** détaillée ou un **graphique** — en utilisant le thème de l'hôte lui-même. Partout ailleurs, ces mêmes outils renvoient du JSON brut, donc rien ne casse.
+
+- **Optionnel et conditionné par l'hôte.** Les vues ne sont proposées qu'aux clients qui annoncent la capacité MCP Apps (par ex. Claude). Les hôtes qui ne la prennent pas en charge (par ex. Cursor) reçoivent silencieusement du JSON.
+- **Interrupteur d'arrêt.** Mettez `EBAY_MCP_UI=off` pour forcer le JSON brut partout, même sur les hôtes compatibles.
+- **Économe en jetons.** Le HTML de chaque vue est récupéré une seule fois par l'hôte, hors bande (jamais dans le contexte du modèle) ; le modèle ne voit qu'un résumé d'une ligne, en plus des données structurées qu'il aurait reçues de toute façon.
+- **En lecture seule.** Les vues ne déclenchent jamais que des outils de lecture (explorer une ligne, paginer, actualiser) — elles ne modifient jamais vos données eBay.
+
+13 outils de flux de travail essentiels y adhèrent aujourd'hui, répartis en trois archétypes :
+
+| Archétype | Outils |
+| --- | --- |
+| **Tableau** | `ebay_get_orders`, `ebay_get_shipping_fulfillments`, `ebay_get_offers`, `ebay_get_inventory_items`, `ebay_get_inventory_locations`, `ebay_get_payment_dispute_summaries` |
+| **Fiche** | `ebay_get_order`, `ebay_get_offer`, `ebay_get_inventory_item`, `ebay_get_payment_dispute`, `ebay_get_seller_standards_profile` |
+| **Graphique** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
+
+Les vues se compilent en HTML autonome avec `npm run build` (ou `npm run build:ui`) ; elles sont incluses dans le paquet publié et se chargent sans aucun accès réseau propre.
+
 ## Exemples d'utilisation
 
 Tâches courantes, formulées comme vous les demanderiez à votre assistant IA :
@@ -284,6 +305,10 @@ Non. C'est un projet open source tiers non officiel. Il n'est **ni affilié, ni 
 ### Puis-je l'utiliser avec Claude, ChatGPT ou Cursor ?
 
 Oui. Il fonctionne nativement avec Claude Desktop et Claude Code, avec Cursor et d'autres IDE compatibles MCP, et avec tout assistant prenant en charge le Model Context Protocol. L'invite de configuration en un clic ci-dessus fonctionne aussi avec ChatGPT et d'autres assistants.
+
+### Pourquoi ne vois-je pas les tableaux et graphiques interactifs ?
+
+Les vues interactives [MCP Apps](#interface-interactive-mcp-apps) n'apparaissent que sur les hôtes qui annoncent la capacité (par ex. Claude) ; les autres clients reçoivent les mêmes données en JSON brut. Vérifiez aussi que vous n'avez pas défini `EBAY_MCP_UI=off` et que les vues sont compilées (`npm run build` exécute `build:ui`).
 
 ### Combien d'API et d'outils eBay couvre-t-il ?
 

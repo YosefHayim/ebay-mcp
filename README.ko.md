@@ -58,6 +58,7 @@
 - [데모](#데모)
 - [구성](#구성)
 - [사용 가능한 도구](#사용-가능한-도구)
+- [대화형 UI (MCP Apps)](#대화형-ui-mcp-apps)
 - [사용 예시](#사용-예시)
 - [로깅 및 문제 해결](#로깅-및-문제-해결)
 - [자주 묻는 질문](#자주-묻는-질문)
@@ -203,6 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # 기본 마켓플레이스 (도구별 재정의 가능)
 EBAY_CONTENT_LANGUAGE=en-US         # 요청의 기본 콘텐츠 언어
 EBAY_USER_REFRESH_TOKEN=your_token  # 더 높은 속도 제한용
+EBAY_MCP_UI=on                      # 대화형 보기; 일반 JSON을 강제하려면 "off"로 설정
 ```
 
 ### 인증 및 속도 제한
@@ -252,6 +254,25 @@ EBAY_USER_REFRESH_TOKEN=your_token  # 더 높은 속도 제한용
 
 전체 기계 판독 인덱스는 [llms.txt](llms.txt)를 참조하세요.
 
+## 대화형 UI (MCP Apps)
+
+[MCP Apps](https://modelcontextprotocol.io)를 지원하는 호스트에서는 일반적인 읽기 도구가 결과를 원시 JSON 대신 대화형 보기로 — 정렬 가능한 **테이블**, 상세 **카드**, 또는 **차트** — 호스트 자체 테마를 사용해 렌더링합니다. 그 외 모든 곳에서는 완전히 동일한 도구가 일반 JSON을 반환하므로 아무것도 깨지지 않습니다.
+
+- **옵트인이며 호스트에 따라 제한됨.** 보기는 MCP Apps 기능을 알리는 클라이언트(예: Claude)에만 광고됩니다. 이를 지원하지 않는 호스트(예: Cursor)는 조용히 JSON을 받습니다.
+- **킬 스위치.** `EBAY_MCP_UI=off`로 설정하면 지원하는 호스트에서도 모든 곳에서 일반 JSON을 강제합니다.
+- **토큰 절약.** 각 보기의 HTML은 호스트가 한 번만 별도 경로로 가져오며(모델의 컨텍스트로는 절대 들어가지 않음), 모델은 한 줄 요약과 어차피 받았을 구조화된 데이터만 보게 됩니다.
+- **읽기 전용.** 보기는 읽기 도구만 트리거하며(행 상세 보기, 페이지 이동, 새로 고침) — eBay 데이터를 절대 변경하지 않습니다.
+
+오늘 기준 13개의 핵심 워크플로 도구가 세 가지 원형에 걸쳐 옵트인되어 있습니다:
+
+| 원형 | 도구 |
+| --- | --- |
+| **테이블** | `ebay_get_orders`, `ebay_get_shipping_fulfillments`, `ebay_get_offers`, `ebay_get_inventory_items`, `ebay_get_inventory_locations`, `ebay_get_payment_dispute_summaries` |
+| **카드** | `ebay_get_order`, `ebay_get_offer`, `ebay_get_inventory_item`, `ebay_get_payment_dispute`, `ebay_get_seller_standards_profile` |
+| **차트** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
+
+보기는 `npm run build`(또는 `npm run build:ui`)로 자체 완결형 HTML로 빌드되며, 게시된 패키지에 포함되어 자체적인 네트워크 접근 없이 로드됩니다.
+
 ## 사용 예시
 
 AI 어시스턴트에게 묻듯이 표현한 일반적인 작업:
@@ -284,6 +305,10 @@ AI 어시스턴트에 **eBay Sell API의 100%**(270개 엔드포인트)를 포�
 ### Claude, ChatGPT, Cursor에서 사용할 수 있나요?
 
 네. Claude Desktop과 Claude Code에서 기본 지원되고, Cursor 및 기타 MCP 지원 IDE, 그리고 Model Context Protocol을 지원하는 모든 어시스턴트에서 작동합니다. 위의 원클릭 설정 프롬프트는 ChatGPT 및 다른 어시스턴트에서도 작동합니다.
+
+### 대화형 테이블과 차트가 보이지 않는 이유는 무엇인가요?
+
+대화형 [MCP Apps](#대화형-ui-mcp-apps) 보기는 해당 기능을 알리는 호스트(예: Claude)에서만 나타나며, 다른 클라이언트는 동일한 데이터를 일반 JSON으로 받습니다. 또한 `EBAY_MCP_UI=off`로 설정하지 않았는지, 그리고 보기가 빌드되어 있는지(`npm run build`가 `build:ui`를 실행함) 확인하세요.
 
 ### eBay API와 도구를 얼마나 커버하나요?
 

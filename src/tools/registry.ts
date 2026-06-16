@@ -1,11 +1,32 @@
 import { handlerOnlyEntries, registeredEntries } from '@/tools/categories/index.js';
 import type { ToolDefinition } from '@/tools/definitions/types.js';
 import type { ToolHandler } from '@/tools/tool-handlers/types.js';
+import type { ViewArchetype, ViewModel } from '@/tools/ui/view-models.js';
+
+/**
+ * Interactive-UI binding resolved onto a {@link ToolEntry} when a tool opts into
+ * the MCP Apps layer via `defineTool({ ui })`.
+ *
+ * `map` is intentionally type-erased to `(result: unknown) => ViewModel` so the
+ * entry stays non-generic and uniform across all 322 tools. The erasure is safe:
+ * `defineTool` proves, against the handler's concrete return type, that `map`
+ * produces the archetype's view model before erasing it here — so a drift between
+ * handler shape and mapper is a compile error at the call site, not a runtime
+ * surprise at this boundary. The runtime seam consumes `resourceUri` (to register
+ * and advertise the view) and `map` (to project results into `structuredContent`).
+ */
+export interface ResolvedToolUi {
+  archetype: ViewArchetype;
+  resourceUri: string;
+  map: (result: unknown) => ViewModel;
+}
 
 /** Runtime registry entry pairing a public tool definition with its executable handler. */
 export interface ToolEntry {
   definition: ToolDefinition;
   handler: ToolHandler;
+  /** Present only for tools that render an interactive view; consumed by the runtime seam. */
+  ui?: ResolvedToolUi;
 }
 
 /** Validation report for duplicate definitions and definition-handler mismatches. */

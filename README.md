@@ -58,6 +58,7 @@
 - [Demo](#demo)
 - [Configuration](#configuration)
 - [Available tools](#available-tools)
+- [Interactive UI (MCP Apps)](#interactive-ui-mcp-apps)
 - [Usage examples](#usage-examples)
 - [Logging & troubleshooting](#logging--troubleshooting)
 - [FAQ](#faq)
@@ -203,6 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # default marketplace (overridable per tool)
 EBAY_CONTENT_LANGUAGE=en-US         # default request content language
 EBAY_USER_REFRESH_TOKEN=your_token  # for higher rate limits
+EBAY_MCP_UI=on                      # interactive views; set "off" to force plain JSON
 ```
 
 ### Authentication & rate limits
@@ -252,6 +254,25 @@ Auto-configured by `npm run setup`. Requires Node.js ≥ 18 and MCP protocol 1.0
 
 For the complete machine-readable index, see [llms.txt](llms.txt).
 
+## Interactive UI (MCP Apps)
+
+On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read tools render their results as interactive views instead of raw JSON — a sortable **table**, a detail **card**, or a **chart** — using the host's own theme. Everywhere else, the exact same tools return plain JSON, so nothing breaks.
+
+- **Opt-in and host-gated.** Views are advertised only to clients that announce the MCP Apps capability (e.g. Claude). Hosts without it (e.g. Cursor) silently get JSON.
+- **Kill-switch.** Set `EBAY_MCP_UI=off` to force plain JSON everywhere, even on capable hosts.
+- **Token-cheap.** Each view's HTML is fetched once by the host out of band (never into the model's context); the model only ever sees a one-line summary plus the structured data it would have received anyway.
+- **Read-only.** Views only ever trigger read tools (drill into a row, page, refresh) — they never mutate your eBay data.
+
+13 core-workflow tools opt in today, across three archetypes:
+
+| Archetype | Tools |
+| --- | --- |
+| **Table** | `ebay_get_orders`, `ebay_get_shipping_fulfillments`, `ebay_get_offers`, `ebay_get_inventory_items`, `ebay_get_inventory_locations`, `ebay_get_payment_dispute_summaries` |
+| **Card** | `ebay_get_order`, `ebay_get_offer`, `ebay_get_inventory_item`, `ebay_get_payment_dispute`, `ebay_get_seller_standards_profile` |
+| **Chart** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
+
+The views build into self-contained HTML with `npm run build` (or `npm run build:ui`); they ship in the published package and load with no network access of their own.
+
 ## Usage examples
 
 Common tasks, phrased as you'd ask your AI assistant:
@@ -284,6 +305,10 @@ Nine clients are auto-configured by `npm run setup`: Claude Desktop, Cursor, Zed
 ### Can I use it with Claude, ChatGPT, or Cursor?
 
 Yes. It works with Claude Desktop and Claude Code out of the box, with Cursor and other MCP-enabled IDEs, and with any assistant that supports the Model Context Protocol. The one-click setup prompt above works with ChatGPT and other assistants too.
+
+### Why don't I see the interactive tables and charts?
+
+Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that announce the capability (e.g. Claude); other clients get the same data as plain JSON. Also confirm you have not set `EBAY_MCP_UI=off` and that the views are built (`npm run build` runs `build:ui`).
 
 ### How many eBay APIs and tools does it cover?
 

@@ -58,6 +58,7 @@
 - [デモ](#デモ)
 - [設定](#設定)
 - [利用可能なツール](#利用可能なツール)
+- [インタラクティブ UI（MCP Apps）](#インタラクティブ-ui-mcp-apps)
 - [使用例](#使用例)
 - [ログとトラブルシューティング](#ログとトラブルシューティング)
 - [よくある質問](#よくある質問)
@@ -203,6 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # 既定のマーケットプレイス（ツールごとに上書き可能）
 EBAY_CONTENT_LANGUAGE=en-US         # リクエストの既定コンテンツ言語
 EBAY_USER_REFRESH_TOKEN=your_token  # より高いレート制限のため
+EBAY_MCP_UI=on                      # インタラクティブ表示。プレーンな JSON を強制するには "off" に設定
 ```
 
 ### 認証とレート制限
@@ -252,6 +254,25 @@ EBAY_USER_REFRESH_TOKEN=your_token  # より高いレート制限のため
 
 完全な機械可読インデックスは [llms.txt](llms.txt) を参照してください。
 
+## インタラクティブ UI（MCP Apps）
+
+[MCP Apps](https://modelcontextprotocol.io) に対応するホストでは、よく使う読み取り系ツールが結果を生の JSON ではなくインタラクティブな表示として描画します — 並べ替え可能な **テーブル**、詳細を示す **カード**、または **チャート** — ホスト自身のテーマを用いて。それ以外の環境では、まったく同じツールがプレーンな JSON を返すため、何も壊れません。
+
+- **オプトインかつホスト依存。** 表示は、MCP Apps 機能を通知するクライアント（例：Claude）にのみ提供されます。それを持たないホスト（例：Cursor）には何も告知されず、JSON が返されます。
+- **キルスイッチ。** `EBAY_MCP_UI=off` を設定すると、対応ホストであってもどこでもプレーンな JSON を強制できます。
+- **トークン効率。** 各表示の HTML はホストが帯域外で一度だけ取得し（モデルのコンテキストに入ることは決してありません）、モデルが目にするのは 1 行の要約と、いずれにせよ受け取っていた構造化データだけです。
+- **読み取り専用。** 表示が呼び出すのは読み取り系ツールのみです（行の詳細表示、ページング、更新） — あなたの eBay データを変更することは決してありません。
+
+現在、3 つの基本タイプにわたり 13 個のコアワークフローツールがオプトインしています：
+
+| タイプ | ツール |
+| --- | --- |
+| **テーブル** | `ebay_get_orders`、`ebay_get_shipping_fulfillments`、`ebay_get_offers`、`ebay_get_inventory_items`、`ebay_get_inventory_locations`、`ebay_get_payment_dispute_summaries` |
+| **カード** | `ebay_get_order`、`ebay_get_offer`、`ebay_get_inventory_item`、`ebay_get_payment_dispute`、`ebay_get_seller_standards_profile` |
+| **チャート** | `ebay_get_traffic_report`、`ebay_get_customer_service_metric` |
+
+これらの表示は `npm run build`（または `npm run build:ui`）で自己完結型の HTML にビルドされ、公開パッケージに同梱されて、それ自体は一切のネットワークアクセスなしで読み込まれます。
+
 ## 使用例
 
 AI アシスタントに尋ねるように表現した一般的なタスク：
@@ -284,6 +305,10 @@ AI アシスタントに **eBay Sell API の 100%**（270 エンドポイント�
 ### Claude、ChatGPT、Cursor で使えますか？
 
 はい。Claude Desktop と Claude Code でそのまま動作し、Cursor やその他の MCP 対応 IDE、そして Model Context Protocol に対応するあらゆるアシスタントで利用できます。上のワンクリック設定プロンプトは ChatGPT や他のアシスタントでも機能します。
+
+### インタラクティブなテーブルやチャートが表示されないのはなぜですか？
+
+インタラクティブな [MCP Apps](#インタラクティブ-ui-mcp-apps) の表示は、その機能を通知するホスト（例：Claude）でのみ現れます。他のクライアントには同じデータがプレーンな JSON として返されます。あわせて、`EBAY_MCP_UI=off` を設定していないこと、そして表示がビルドされていること（`npm run build` が `build:ui` を実行します）を確認してください。
 
 ### eBay の API とツールはどれくらいカバーしていますか？
 

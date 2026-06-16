@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 import { EbaySellerApi } from '@/api/index.js';
 import { getEbayConfig, mcpConfig } from '@/config/environment.js';
+import { buildUiToolResult, createUiBridge, type UiBridge } from '@/mcp/ui-bridge.js';
 import { getToolEntries, type ToolEntry } from '@/tools/registry.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import { serverLogger, toolLogger } from '@/utils/logger.js';
@@ -55,11 +56,14 @@ function registerTool(
   server: McpServer,
   api: EbaySellerApi,
   entry: ToolEntry,
-  logToolExecution: boolean
+  logToolExecution: boolean,
+  ui: UiBridge
 ): void {
   const { definition, handler } = entry;
 
-  server.registerTool(
+  // Registered plainly (no UI `_meta`) so every host gets a working text tool by
+  // default; the capability gate later flips `_meta.ui` on for UI-capable clients.
+  const registered = server.registerTool(
     definition.name,
     {
       description: definition.description,
@@ -77,7 +81,9 @@ function registerTool(
           toolLogger.debug(`Tool ${definition.name} completed successfully`);
         }
 
-        return formatToolSuccess(result);
+        return ui.shouldRender(entry)
+          ? buildUiToolResult(entry.ui, result)
+          : formatToolSuccess(result);
       } catch (error) {
         const errorMessage = getErrorMessage(error);
 
@@ -89,6 +95,8 @@ function registerTool(
       }
     }
   );
+
+  ui.register(entry, registered);
 }
 
 /**
@@ -98,12 +106,17 @@ export function createEbayMcpRuntime(options: EbayMcpRuntimeOptions = {}): EbayM
   const api = options.api ?? new EbaySellerApi(getEbayConfig());
   const server = new McpServer(options.serverConfig ?? mcpConfig);
   const entries = getToolEntries();
+  const ui = createUiBridge(server, import.meta.url);
 
   serverLogger.info(`Registering ${entries.length} tools`);
 
   for (const entry of entries) {
-    registerTool(server, api, entry, options.logToolExecution ?? false);
+    registerTool(server, api, entry, options.logToolExecution ?? false, ui);
   }
+
+  // Install after registration so every UI-eligible tool is captured before the
+  // gate can flip their metadata on a UI-capable client's `initialize`.
+  ui.installCapabilityGate();
 
   return {
     api,

@@ -1,7 +1,7 @@
 {
   "name": "ebay-mcp",
   "version": "1.11.1",
-  "description": "Model Context Protocol (MCP) server that exposes 100% of eBay's Sell APIs (332 tools across 270 endpoints) to AI assistants like Claude, Cursor, and Cline, covering inventory, order fulfillment, marketing, analytics, and developer tools with OAuth authentication and refresh-token support.",
+  "description": "Model Context Protocol (MCP) server that exposes 100% of eBay's Sell APIs (322 tools across 270 endpoints) to AI assistants like Claude, Cursor, and Cline, covering inventory, order fulfillment, marketing, analytics, and developer tools with OAuth authentication and refresh-token support.",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -9,7 +9,8 @@
     "ebay-mcp": "build/index.js"
   },
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "tsc && tsc-alias && npm run build:ui",
+    "build:ui": "tsx src/scripts/build-ui.ts",
     "start": "node build/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
@@ -19,8 +20,9 @@
     "sync": "tsx src/scripts/dev-sync.ts",
     "diagnose": "tsx src/scripts/diagnostics.ts",
     "typecheck": "tsc --noEmit",
-    "check": "tsc --noEmit && eslint . && prettier --check \"src/**/*.{ts,js,json,md}\"",
-    "fix": "eslint . --fix && prettier --write \"src/**/*.{ts,js,json,md}\"",
+    "typecheck:ui": "tsc -p ui/tsconfig.json --noEmit",
+    "check": "tsc --noEmit && tsc -p ui/tsconfig.json --noEmit && eslint . && prettier --check \"{src,ui}/**/*.{ts,tsx,js,json,md,css,html}\"",
+    "fix": "eslint . --fix && prettier --write \"{src,ui}/**/*.{ts,tsx,js,json,md,css,html}\"",
     "prepare": "npm run build && husky"
   },
   "keywords": [
@@ -50,6 +52,7 @@
     "build/skills/**/*.js",
     "build/tools/**/*.js",
     "build/utils/**/*.js",
+    "build/ui/*.html",
     "build/types/index.js",
     "build/types/ebay.js",
     "build/types/ebay-enums.js",
@@ -69,6 +72,7 @@
     "url": "https://github.com/YosefHayim/ebay-mcp/issues"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "1.7.4",
     "@modelcontextprotocol/sdk": "1.29.0",
     "chalk": "^5.6.2",
     "cors": "^2.8.6",
@@ -92,6 +96,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.3",
     "@types/prompts": "^2.4.9",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@types/supertest": "^7.2.0",
     "@types/update-notifier": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.9",
@@ -104,12 +110,15 @@
     "nock": "^14.0.15",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.8.4",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "supertest": "^7.2.2",
     "tsc-alias": "^1.8.17",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.61.0",
     "vite": "^7.3.5",
+    "vite-plugin-singlefile": "2.3.3",
     "vitest": "^4.1.9"
   },
   "packageManager": "pnpm@10.14.0",

@@ -3,6 +3,13 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { defineTool } from '@/tools/define-tool.js';
 import type { OutputArgs } from '@/tools/definitions/types.js';
 import type { ToolEntry } from '@/tools/registry.js';
+import {
+  mapDisputeSummariesToTable,
+  mapDisputeToCard,
+  mapFulfillmentsToTable,
+  mapOrdersToTable,
+  mapOrderToCard,
+} from '@/tools/ui/maps.js';
 import { shippingFulfillmentSchema } from '../schemas.js';
 import {
   getOrdersOutputSchema,
@@ -32,6 +39,7 @@ export const fulfillmentEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.fulfillment.getOrders(args.filter, args.limit, args.offset),
+    ui: { archetype: 'table', map: mapOrdersToTable },
   }),
   defineTool({
     name: 'ebay_get_order',
@@ -45,6 +53,7 @@ export const fulfillmentEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.fulfillment.getOrder(args.orderId),
+    ui: { archetype: 'card', map: mapOrderToCard },
   }),
   defineTool({
     name: 'ebay_create_shipping_fulfillment',
@@ -75,6 +84,7 @@ export const fulfillmentEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.fulfillment.getShippingFulfillments(args.orderId),
+    ui: { archetype: 'table', map: mapFulfillmentsToTable },
   }),
   defineTool({
     name: 'ebay_get_shipping_fulfillment',
@@ -191,6 +201,7 @@ export const fulfillmentEntries: ToolEntry[] = [
         limit: args.limit,
         offset: args.offset,
       }),
+    ui: { archetype: 'table', map: mapDisputeSummariesToTable },
   }),
   defineTool({
     name: 'ebay_get_payment_dispute',
@@ -211,6 +222,7 @@ export const fulfillmentEntries: ToolEntry[] = [
       description: 'Payment dispute details',
     },
     handler: (api, args) => api.dispute.getPaymentDispute(args.paymentDisputeId),
+    ui: { archetype: 'card', map: mapDisputeToCard },
   }),
   defineTool({
     name: 'ebay_get_payment_dispute_activities',

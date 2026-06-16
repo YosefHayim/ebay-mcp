@@ -1,0 +1,214 @@
+/*
+ * Shared styling for the three archetype views. Colours, radii, and fonts pull
+ * from the host's MCP Apps style variables (applied by `useHostStyles`) with
+ * sensible fallbacks, so a view blends into whichever host renders it and still
+ * looks intentional standalone. `color-scheme` is set by the host theme, so the
+ * fallbacks use `light-dark()` to track the host's light/dark preference.
+ */
+
+:root {
+  --ebay-bg: var(--color-background-primary, light-dark(#ffffff, #1a1a1a));
+  --ebay-bg-alt: var(--color-background-secondary, light-dark(#f6f7f8, #242424));
+  --ebay-text: var(--color-text-primary, light-dark(#1a1a1a, #f2f2f2));
+  --ebay-text-soft: var(--color-text-secondary, light-dark(#5a5a5a, #a8a8a8));
+  --ebay-border: var(--color-border-primary, light-dark(#e2e4e7, #383838));
+  --ebay-radius: var(--border-radius-md, 8px);
+  --ebay-sans: var(--font-sans, system-ui, -apple-system, sans-serif);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: var(--ebay-sans);
+  color: var(--ebay-text);
+  background: var(--ebay-bg);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.state {
+  padding: 24px;
+  color: var(--ebay-text-soft);
+  text-align: center;
+}
+
+.state--error {
+  color: var(--color-text-danger, #d4351c);
+}
+
+.view-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.view-footnote {
+  margin-top: 10px;
+  color: var(--ebay-text-soft);
+  font-size: 12px;
+}
+
+/* Table archetype */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--ebay-border);
+  white-space: nowrap;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--ebay-text-soft);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.table td.align-right,
+.table th.align-right {
+  text-align: right;
+}
+
+.table tr.is-drillable {
+  cursor: pointer;
+}
+
+.table tr.is-drillable:hover td {
+  background: var(--ebay-bg-alt);
+}
+
+.load-more {
+  margin-top: 12px;
+  padding: 6px 14px;
+  font: inherit;
+  color: var(--ebay-text);
+  background: var(--ebay-bg-alt);
+  border: 1px solid var(--ebay-border);
+  border-radius: var(--ebay-radius);
+  cursor: pointer;
+}
+
+.load-more:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Card archetype */
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.card-subtitle {
+  color: var(--ebay-text-soft);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: var(--border-radius-full, 999px);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--ebay-bg-alt);
+  color: var(--ebay-text);
+}
+
+.badge--success {
+  background: var(--color-background-success, #e3f3e6);
+  color: var(--color-text-success, #0b6b2e);
+}
+
+.badge--warning {
+  background: var(--color-background-warning, #fdf2dc);
+  color: var(--color-text-warning, #8a5a00);
+}
+
+.badge--danger {
+  background: var(--color-background-danger, #fbe4e0);
+  color: var(--color-text-danger, #b3261e);
+}
+
+.card-section {
+  margin-bottom: 16px;
+}
+
+.card-section h2 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ebay-text-soft);
+}
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--ebay-border);
+}
+
+.field-label {
+  color: var(--ebay-text-soft);
+}
+
+.field-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Chart archetype */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.chart svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.chart-axis {
+  stroke: var(--ebay-border);
+  stroke-width: 1;
+}
+
+.chart-label {
+  fill: var(--ebay-text-soft);
+  font-size: 10px;
+}

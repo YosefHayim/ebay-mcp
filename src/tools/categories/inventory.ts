@@ -5,6 +5,13 @@ import { defineTool } from '@/tools/define-tool.js';
 import type { OutputArgs } from '@/tools/definitions/types.js';
 import type { ToolEntry } from '@/tools/registry.js';
 import {
+  mapInventoryItemsToTable,
+  mapInventoryItemToCard,
+  mapLocationsToTable,
+  mapOffersToTable,
+  mapOfferToCard,
+} from '@/tools/ui/maps.js';
+import {
   bulkInventoryItemRequestSchema,
   bulkMigrateRequestSchema,
   bulkOfferRequestSchema,
@@ -49,6 +56,7 @@ export const inventoryEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.inventory.getInventoryItems(args.limit, args.offset),
+    ui: { archetype: 'table', map: mapInventoryItemsToTable },
   }),
   defineTool({
     name: 'ebay_get_inventory_item',
@@ -62,6 +70,7 @@ export const inventoryEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.inventory.getInventoryItem(args.sku),
+    ui: { archetype: 'card', map: mapInventoryItemToCard },
   }),
   defineTool({
     name: 'ebay_create_inventory_item',
@@ -105,6 +114,7 @@ export const inventoryEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.inventory.getOffers(args.sku, args.marketplaceId, args.limit),
+    ui: { archetype: 'table', map: mapOffersToTable },
   }),
   defineTool({
     name: 'ebay_create_offer',
@@ -276,6 +286,7 @@ export const inventoryEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.inventory.getInventoryLocations(args.limit, args.offset),
+    ui: { archetype: 'table', map: mapLocationsToTable },
   }),
   defineTool({
     name: 'ebay_get_inventory_location',
@@ -368,6 +379,7 @@ export const inventoryEntries: ToolEntry[] = [
       $refStrategy: 'none',
     }) as OutputArgs,
     handler: (api, args) => api.inventory.getOffer(args.offerId),
+    ui: { archetype: 'card', map: mapOfferToCard },
   }),
   defineTool({
     name: 'ebay_update_offer',

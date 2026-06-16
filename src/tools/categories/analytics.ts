@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { defineTool } from '@/tools/define-tool.js';
 import type { ToolEntry } from '@/tools/registry.js';
+import {
+  mapCustomerServiceMetricToChart,
+  mapStandardsProfileToCard,
+  mapTrafficReportToChart,
+} from '@/tools/ui/maps.js';
 
 /** Analytics API tools for seller traffic and performance reporting. */
 export const analyticsEntries: ToolEntry[] = [
@@ -23,6 +28,7 @@ export const analyticsEntries: ToolEntry[] = [
     },
     handler: (api, args) =>
       api.analytics.getTrafficReport(args.dimension, args.filter, args.metric, args.sort),
+    ui: { archetype: 'chart', map: mapTrafficReportToChart },
   }),
   defineTool({
     name: 'ebay_find_seller_standards_profiles',
@@ -54,6 +60,7 @@ export const analyticsEntries: ToolEntry[] = [
       description: 'Seller standards profile data',
     },
     handler: (api, args) => api.analytics.getSellerStandardsProfile(args.program, args.cycle),
+    ui: { archetype: 'card', map: mapStandardsProfileToCard },
   }),
   defineTool({
     name: 'ebay_get_customer_service_metric',
@@ -76,5 +83,6 @@ export const analyticsEntries: ToolEntry[] = [
         args.evaluationType,
         args.evaluationMarketplaceId
       ),
+    ui: { archetype: 'chart', map: mapCustomerServiceMetricToChart },
   }),
 ];

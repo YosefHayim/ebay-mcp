@@ -18,6 +18,10 @@ export default tseslint.config(
       '*.config.mjs',
       'smoke-test-trading.mjs',
       'scripts/**',
+      // Browser-targeted MCP Apps views (DOM/Bundler graph) — typechecked
+      // separately via `npm run typecheck:ui` (tsconfig the flat config's
+      // type-aware rules can't see), so exclude from the Node lint project.
+      'ui/**',
       // Generated OpenAPI types
       'src/types/*.d.ts',
       'src/types/application-settings/**/*Oas3.ts',

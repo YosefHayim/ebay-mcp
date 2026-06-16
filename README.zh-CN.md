@@ -58,6 +58,7 @@
 - [演示](#演示)
 - [配置](#配置)
 - [可用工具](#可用工具)
+- [交互式界面（MCP Apps）](#交互式界面mcp-apps)
 - [使用示例](#使用示例)
 - [日志与故障排查](#日志与故障排查)
 - [常见问题](#常见问题)
@@ -203,6 +204,7 @@ EBAY_REDIRECT_URI=your_runame
 EBAY_MARKETPLACE_ID=EBAY_US         # 默认站点（可按工具覆盖）
 EBAY_CONTENT_LANGUAGE=en-US         # 请求的默认内容语言
 EBAY_USER_REFRESH_TOKEN=your_token  # 用于更高的速率限制
+EBAY_MCP_UI=on                      # 交互式视图；设为 "off" 可强制返回纯 JSON
 ```
 
 ### 认证与速率限制
@@ -252,6 +254,25 @@ EBAY_USER_REFRESH_TOKEN=your_token  # 用于更高的速率限制
 
 完整的机器可读索引见 [llms.txt](llms.txt)。
 
+## 交互式界面（MCP Apps）
+
+在支持 [MCP Apps](https://modelcontextprotocol.io) 的宿主上，常用的读取类工具会将结果渲染为交互式视图，而非原始 JSON —— 可排序的**表格**、详情**卡片**或**图表** —— 并采用宿主自身的主题。在其他任何环境中，同样的这些工具都会返回纯 JSON，因此不会出现任何问题。
+
+- **可选启用且受宿主限制。** 视图仅向声明了 MCP Apps 能力的客户端（例如 Claude）公布。不具备该能力的宿主（例如 Cursor）会静默地获得 JSON。
+- **紧急开关。** 设置 `EBAY_MCP_UI=off` 即可在所有环境强制返回纯 JSON，即使在具备能力的宿主上也是如此。
+- **节省 token。** 每个视图的 HTML 由宿主在带外只获取一次（绝不进入模型的上下文）；模型始终只看到一行摘要，外加它本就会收到的结构化数据。
+- **只读。** 视图只会触发读取类工具（深入查看某一行、翻页、刷新）—— 它们绝不会改动你的 eBay 数据。
+
+目前有 13 个核心工作流工具选择了启用，分为三种类型：
+
+| 类型 | 工具 |
+| --- | --- |
+| **表格** | `ebay_get_orders`、`ebay_get_shipping_fulfillments`、`ebay_get_offers`、`ebay_get_inventory_items`、`ebay_get_inventory_locations`、`ebay_get_payment_dispute_summaries` |
+| **卡片** | `ebay_get_order`、`ebay_get_offer`、`ebay_get_inventory_item`、`ebay_get_payment_dispute`、`ebay_get_seller_standards_profile` |
+| **图表** | `ebay_get_traffic_report`、`ebay_get_customer_service_metric` |
+
+这些视图通过 `npm run build`（或 `npm run build:ui`）构建为自包含的 HTML；它们随发布的包一同分发，加载时无需自身的任何网络访问。
+
 ## 使用示例
 
 常见任务，按你向 AI 助手提问的方式表述：
@@ -284,6 +305,10 @@ EBAY_USER_REFRESH_TOKEN=your_token  # 用于更高的速率限制
 ### 我可以将它与 Claude、ChatGPT 或 Cursor 一起使用吗？
 
 可以。它开箱即用地支持 Claude Desktop 和 Claude Code，支持 Cursor 和其他支持 MCP 的 IDE，以及任何支持 Model Context Protocol 的助手。上面的一键配置提示词也适用于 ChatGPT 和其他助手。
+
+### 为什么我看不到交互式表格和图表？
+
+交互式 [MCP Apps](#交互式界面mcp-apps) 视图仅出现在声明了该能力的宿主上（例如 Claude）；其他客户端会以纯 JSON 的形式获得相同的数据。另外请确认你没有设置 `EBAY_MCP_UI=off`，并且这些视图已经构建（`npm run build` 会运行 `build:ui`）。
 
 ### 它覆盖多少 eBay API 和工具？
 

@@ -10,8 +10,10 @@ import {
 } from '../shared/request.js';
 
 type EbayOfferDetailsWithKeys = components['schemas']['EbayOfferDetailsWithKeys'];
+type EbayOfferDetailsWithAll = components['schemas']['EbayOfferDetailsWithAll'];
 type GetInventoryItemResponse = components['schemas']['InventoryItemWithSkuLocaleGroupid'];
 type GetInventoryItemsResponse = components['schemas']['InventoryItems'];
+type GetInventoryLocationsResponse = components['schemas']['LocationResponse'];
 type CreateOfferResponse = components['schemas']['OfferResponse'];
 type GetOffersResponse = components['schemas']['Offers'];
 type PublishResponse = components['schemas']['PublishResponse'];
@@ -214,11 +216,14 @@ export class InventoryApi {
    * Endpoint: GET /location
    * @throws Error if parameters are invalid
    */
-  async getInventoryLocations(limit?: number, offset?: number): Promise<unknown> {
+  async getInventoryLocations(
+    limit?: number,
+    offset?: number
+  ): Promise<GetInventoryLocationsResponse> {
     const params = buildValidatedPaginatedParams(undefined, limit, offset);
 
     return await this.request('Failed to get inventory locations', () =>
-      this.client.get(`${this.basePath}/location`, params)
+      this.client.get<GetInventoryLocationsResponse>(`${this.basePath}/location`, params)
     );
   }
 
@@ -343,11 +348,11 @@ export class InventoryApi {
    * Endpoint: GET /offer/{offerId}
    * @throws Error if required parameters are missing or invalid
    */
-  async getOffer(offerId: string): Promise<unknown> {
+  async getOffer(offerId: string): Promise<EbayOfferDetailsWithAll> {
     requireString(offerId, 'offerId');
 
     return await this.request('Failed to get offer', () =>
-      this.client.get(`${this.basePath}/offer/${offerId}`)
+      this.client.get<EbayOfferDetailsWithAll>(`${this.basePath}/offer/${offerId}`)
     );
   }
 

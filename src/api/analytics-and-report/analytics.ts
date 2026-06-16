@@ -1,5 +1,10 @@
+import type { components } from '@/types/sell-apps/analytics-and-report/sellAnalyticsV1Oas3.js';
 import type { EbayApiClient } from '../client.js';
 import { withApiError } from '@/api/shared/request.js';
+
+type Report = components['schemas']['Report'];
+type StandardsProfile = components['schemas']['StandardsProfile'];
+type GetCustomerServiceMetricResponse = components['schemas']['GetCustomerServiceMetricResponse'];
 
 /**
  * Analytics API - Sales and traffic analytics
@@ -14,7 +19,12 @@ export class AnalyticsApi {
    * Get traffic report for listings
    * @throws Error if required parameters are missing or invalid
    */
-  async getTrafficReport(dimension: string, filter: string, metric: string, sort?: string) {
+  async getTrafficReport(
+    dimension: string,
+    filter: string,
+    metric: string,
+    sort?: string
+  ): Promise<Report> {
     // Input validation
     if (!dimension || typeof dimension !== 'string') {
       throw new Error('dimension is required and must be a string');
@@ -37,7 +47,7 @@ export class AnalyticsApi {
     if (sort) params.sort = sort;
 
     return await withApiError('Failed to get traffic report', () =>
-      this.client.get(`${this.basePath}/traffic_report`, params)
+      this.client.get<Report>(`${this.basePath}/traffic_report`, params)
     );
   }
 
@@ -57,7 +67,7 @@ export class AnalyticsApi {
    * Endpoint: GET /seller_standards_profile/{program}/{cycle}
    * @throws Error if required parameters are missing or invalid
    */
-  async getSellerStandardsProfile(program: string, cycle: string) {
+  async getSellerStandardsProfile(program: string, cycle: string): Promise<StandardsProfile> {
     // Input validation
     if (!program || typeof program !== 'string') {
       throw new Error('program is required and must be a string');
@@ -67,7 +77,9 @@ export class AnalyticsApi {
     }
 
     return await withApiError('Failed to get seller standards profile', () =>
-      this.client.get(`${this.basePath}/seller_standards_profile/${program}/${cycle}`)
+      this.client.get<StandardsProfile>(
+        `${this.basePath}/seller_standards_profile/${program}/${cycle}`
+      )
     );
   }
 
@@ -80,7 +92,7 @@ export class AnalyticsApi {
     customerServiceMetricType: string,
     evaluationType: string,
     evaluationMarketplaceId: string
-  ) {
+  ): Promise<GetCustomerServiceMetricResponse> {
     // Input validation
     if (!customerServiceMetricType || typeof customerServiceMetricType !== 'string') {
       throw new Error('customerServiceMetricType is required and must be a string');
@@ -97,7 +109,7 @@ export class AnalyticsApi {
     };
 
     return await withApiError('Failed to get customer service metric', () =>
-      this.client.get(
+      this.client.get<GetCustomerServiceMetricResponse>(
         `${this.basePath}/customer_service_metric/${customerServiceMetricType}/${evaluationType}`,
         params
       )
