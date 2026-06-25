@@ -37,11 +37,14 @@ describe('supply-chain hygiene', () => {
   });
 
   it('pins the security overrides that force patched transitives', () => {
-    // esbuild >=0.28.1 and yaml >=2.8.3 sit below vite's declared ranges; without these
-    // overrides the dev-tooling chain resolves back to vulnerable versions.
+    // esbuild >=0.28.1 and yaml >=2.8.3 sit below vite's declared ranges, and js-yaml
+    // >=4.2.0 patches GHSA-h67p-54hq-rp68 (quadratic-complexity DoS) pulled in by
+    // @redocly/openapi-core via openapi-typescript. Without these overrides the
+    // dev-tooling chain resolves back to vulnerable versions.
     expect(manifest.pnpm?.overrides).toMatchObject({
       esbuild: expect.stringContaining('0.28.1'),
       yaml: expect.stringContaining('2.8.3'),
+      'js-yaml': expect.stringContaining('4.2.0'),
     });
   });
 });
