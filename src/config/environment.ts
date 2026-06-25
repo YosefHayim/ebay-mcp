@@ -5,6 +5,7 @@ import { dirname, join } from 'path';
 import type { EbayConfig } from '@/types/ebay.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 import { LocaleEnum } from '@/types/ebay-enums.js';
+import { getToolGatingConfigError } from '@/config/tool-families.js';
 import { getVersion } from '@/utils/version.js';
 import { getErrorMessage } from '@/utils/errors.js';
 
@@ -164,6 +165,12 @@ export function validateEnvironmentConfig(): {
     warnings.push(
       'EBAY_REDIRECT_URI is not set. User OAuth flow will not work. Set this to enable user token generation.'
     );
+  }
+
+  // Validate EBAY_MCP_TOOLS (all | dynamic | comma-separated family list)
+  const toolGatingError = getToolGatingConfigError();
+  if (toolGatingError) {
+    errors.push(toolGatingError);
   }
 
   // Validate that scope files exist

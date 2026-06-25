@@ -87,6 +87,17 @@ These credentials are obtained from the [eBay Developer Portal](https://develope
 - **Default:** `en-US`
 - **Behavior:** Sent on all requests; defaults to `en-US` if unset. Per-tool overrides are not currently exposed.
 
+#### `EBAY_MCP_TOOLS`
+
+- **Description:** Controls how many tools the server advertises to the agent, to manage context-window usage
+- **Example:** `all`, `dynamic`, `inventory,fulfillment`
+- **Required:** No (optional)
+- **Default:** `all`
+- **Behavior:**
+  - `all` (or unset) — every tool is advertised at startup (original behavior).
+  - `dynamic` — only three discovery tools are advertised (`list_ebay_tools`, `enable_ebay_tools`, `disable_ebay_tools`); the agent searches the catalogue and enables tools on demand, which then appear natively. Requires a host that honors `tools/listChanged` (e.g. Claude); not suitable for hosts that ignore it.
+  - A comma-separated family list — registers **only** those families, frozen for the session; works on every host. The list is literal (ChatGPT connectors must include `connector`). Valid families: `connector`, `token-management`, `account`, `inventory`, `fulfillment`, `marketing`, `analytics`, `metadata`, `taxonomy`, `communication`, `other`, `developer`, `trading`. An unknown family name fails validation at startup.
+
 ### Required: User Refresh Token (For OAuth Flow)
 
 #### `EBAY_USER_REFRESH_TOKEN`

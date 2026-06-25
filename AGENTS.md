@@ -61,6 +61,7 @@ Other useful scripts:
 - Validate tool inputs with Zod; derive related schemas rather than duplicating fields.
 - Commit with [Conventional Commits](https://www.conventionalcommits.org/) (releases are changeset-driven).
 - Logs go to **stderr** only (stdout is reserved for the MCP protocol) — see [docs/logging.md](docs/logging.md).
+- **Tool exposure** is gated by `EBAY_MCP_TOOLS` (`all` | `dynamic` | family list). The env parsing/validation lives in `src/config/tool-families.ts` (kept free of tool-tree imports to avoid a cycle with `config/environment.ts`); the dynamic-mode discovery meta-tools and catalogue live in `src/mcp/tool-gating.ts`; `src/mcp/runtime.ts` applies the mode. Family keys must stay in sync with `toolCategories` (a unit test enforces this).
 
 ## Agent skills
 

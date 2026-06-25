@@ -205,7 +205,20 @@ EBAY_MARKETPLACE_ID=EBAY_US         # default marketplace (overridable per tool)
 EBAY_CONTENT_LANGUAGE=en-US         # default request content language
 EBAY_USER_REFRESH_TOKEN=your_token  # for higher rate limits
 EBAY_MCP_UI=on                      # interactive MCP Apps views (beta); "off" forces plain JSON
+EBAY_MCP_TOOLS=all                  # tool exposure: "all", "dynamic", or a family list (see below)
 ```
+
+### Tool exposure (`EBAY_MCP_TOOLS`)
+
+By default all tools are advertised to the agent at once. On a long conversation that catalogue is a meaningful slice of the context window, so two opt-in modes let you shrink it:
+
+| Value                       | Behavior                                                                                                                                               | Works on                                |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `all` _(default, or unset)_ | Every tool advertised at startup.                                                                                                                      | every host                              |
+| `dynamic`                   | Only three discovery tools are visible (`list_ebay_tools`, `enable_ebay_tools`, `disable_ebay_tools`). The agent searches the catalogue and loads only the tools it needs; they then appear natively. | hosts that honor `tools/listChanged` (e.g. Claude) |
+| `inventory,fulfillment,…`   | Registers **only** the named families (listed below), frozen for the session.                                                                          | every host (incl. ChatGPT, Cursor)      |
+
+The family list is literal — you get exactly what you name. ChatGPT connectors need the `connector` family (its `search`/`fetch` tools); add it explicitly, e.g. `EBAY_MCP_TOOLS=connector,inventory`. An unknown family name fails fast at startup with the valid list. Valid families: `connector`, `token-management`, `account`, `inventory`, `fulfillment`, `marketing`, `analytics`, `metadata`, `taxonomy`, `communication`, `other`, `developer`, `trading`.
 
 ### Authentication & rate limits
 
