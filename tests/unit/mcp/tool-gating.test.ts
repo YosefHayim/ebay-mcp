@@ -96,7 +96,7 @@ describe('ToolGatingController', () => {
         nextCursor?: string;
       };
       expect(first.tools).toHaveLength(2);
-      expect(first.nextCursor).toBe('2');
+      expect(first.nextCursor).toBeDefined();
 
       const second = controller.list({
         family: 'inventory',

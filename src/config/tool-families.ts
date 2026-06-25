@@ -45,11 +45,16 @@ const FAMILY_KEY_SET: ReadonlySet<string> = new Set(TOOL_FAMILY_KEYS);
  *   eBay tools on demand (requires a host that honours `tools/listChanged`).
  * - `static` — only the named families are registered, frozen for the session;
  *   works on every host, including those that ignore `listChanged`.
+ *
+ * The `static` variant's `families` is intentionally `string[]`, not
+ * `ToolFamilyKey[]`: parsing is lenient and may carry unknown tokens until
+ * {@link getToolGatingConfigError} validates them. Typing it as the narrowed key
+ * would advertise a guarantee the value does not yet hold.
  */
 export type ToolGatingMode =
   | { kind: 'all' }
   | { kind: 'dynamic' }
-  | { kind: 'static'; families: ToolFamilyKey[] };
+  | { kind: 'static'; families: string[] };
 
 /** Splits a raw `EBAY_MCP_TOOLS` list into trimmed, lowercased, non-empty tokens. */
 function parseFamilyTokens(raw: string): string[] {
@@ -75,7 +80,7 @@ export function resolveToolGatingMode(env: NodeJS.ProcessEnv = process.env): Too
   if (raw.toLowerCase() === 'dynamic') {
     return { kind: 'dynamic' };
   }
-  return { kind: 'static', families: parseFamilyTokens(raw) as ToolFamilyKey[] };
+  return { kind: 'static', families: parseFamilyTokens(raw) };
 }
 
 /**

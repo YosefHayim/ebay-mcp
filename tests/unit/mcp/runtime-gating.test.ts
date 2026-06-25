@@ -63,20 +63,20 @@ const fakeApi = { initialize: vi.fn() } as never;
 const serverConfig = { name: 'test-mcp', version: '0.0.0' };
 const inventoryCount = toolCategories.find((category) => category.key === 'inventory')!.entries
   .length;
+const META_TOOL_NAMES = ['list_ebay_tools', 'enable_ebay_tools', 'disable_ebay_tools'];
 
 describe('createEbayMcpRuntime — tool gating', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
-    process.env = { ...originalEnv };
-    delete process.env.EBAY_MCP_TOOLS;
+    // Stub only the gating key (not the whole process.env object) so dotenv-injected
+    // config from other modules survives across tests in the same worker.
+    vi.stubEnv('EBAY_MCP_TOOLS', undefined);
     vi.clearAllMocks();
     mcpMock.state.handles = [];
     mcpMock.state.constructorArgs = [];
   });
 
   afterEach(() => {
-    process.env = originalEnv;
+    vi.unstubAllEnvs();
   });
 
   it('registers the full catalogue and no meta-tools by default', async () => {
@@ -89,21 +89,21 @@ describe('createEbayMcpRuntime — tool gating', () => {
   });
 
   it('dynamic mode advertises only the 3 discovery tools and disables the rest', async () => {
-    process.env.EBAY_MCP_TOOLS = 'dynamic';
+    vi.stubEnv('EBAY_MCP_TOOLS', 'dynamic');
     const { createEbayMcpRuntime } = await import('@/mcp/runtime.js');
     createEbayMcpRuntime({ api: fakeApi, serverConfig });
 
     const total = getToolDefinitions().length;
-    expect(mcpMock.registerTool).toHaveBeenCalledTimes(total + 3);
+    expect(mcpMock.registerTool).toHaveBeenCalledTimes(total + META_TOOL_NAMES.length);
 
-    const ebayHandles = mcpMock.state.handles.slice(0, total);
-    const metaHandles = mcpMock.state.handles.slice(total);
+    // Classify by name, not registration order, so a registration-order refactor
+    // that preserves behavior does not break this test.
+    const metaNames = new Set(META_TOOL_NAMES);
+    const ebayHandles = mcpMock.state.handles.filter((handle) => !metaNames.has(handle.name));
+    const metaHandles = mcpMock.state.handles.filter((handle) => metaNames.has(handle.name));
+    expect(ebayHandles).toHaveLength(total);
     expect(ebayHandles.every((handle) => !handle.enabled)).toBe(true);
-    expect(metaHandles.map((handle) => handle.name)).toEqual([
-      'list_ebay_tools',
-      'enable_ebay_tools',
-      'disable_ebay_tools',
-    ]);
+    expect(metaHandles.map((handle) => handle.name).sort()).toEqual([...META_TOOL_NAMES].sort());
     expect(metaHandles.every((handle) => handle.enabled)).toBe(true);
 
     const [, options] = mcpMock.state.constructorArgs[0] as [unknown, { instructions?: string }];
@@ -111,7 +111,7 @@ describe('createEbayMcpRuntime — tool gating', () => {
   });
 
   it('static mode registers only the named families, frozen', async () => {
-    process.env.EBAY_MCP_TOOLS = 'inventory';
+    vi.stubEnv('EBAY_MCP_TOOLS', 'inventory');
     const { createEbayMcpRuntime } = await import('@/mcp/runtime.js');
     createEbayMcpRuntime({ api: fakeApi, serverConfig });
 
