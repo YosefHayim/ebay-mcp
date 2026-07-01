@@ -1,0 +1,37 @@
+name: Typecheck
+
+# Single-purpose, reusable (workflow_call): tsc --noEmit over src. Type results are
+# deterministic across OS/Node, so this runs single-leg (ubuntu, one Node) — no
+# matrix. The `ui/` React sources are typechecked by their own (currently
+# uncommitted) config and are intentionally out of this gate — see
+# docs/adr/current/0004-ci-workflow-architecture.md.
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    name: Type check
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check (src)
+        run: pnpm run typecheck

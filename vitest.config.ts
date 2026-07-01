@@ -41,6 +41,8 @@ export default defineConfig({
         statements: 75,
       },
     },
+    // Unit suite only. The hermetic integration suite runs via its own config —
+    // `pnpm run test:integration` (vitest.integration.config.ts) and CI's test.yml.
     include: ['tests/unit/**/*.test.ts'],
     exclude: ['node_modules', 'build', 'dist', 'tests/integration/**'],
     testTimeout: 10_000,

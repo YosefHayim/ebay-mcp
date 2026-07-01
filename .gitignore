@@ -214,3 +214,14 @@ Taskfile.yml
 !AGENTS.md
 !CLAUDE.md
 !README*.md
+
+# Tracked structure & config deliverables the broad rules above would otherwise
+# hide (those rules target local agent scratch files, not project config/docs).
+!/.github/
+!/.github/**
+!/biome.json
+!/ARCHITECTURE.md
+!/CODE-STYLE.md
+!/CONTEXT.md
+!/LANGUAGE.md
+!/PROJECT.md

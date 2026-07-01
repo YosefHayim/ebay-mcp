@@ -26,7 +26,6 @@
 		"src/types/ebay/sell/marketing-and-promotions/marketing-response-types.ts",
 		"src/types/ebay/sell/marketing-and-promotions/marketing-api-types.ts",
 		"src/types/ebay/sell/order-management/dispute-types.ts",
-		"src/api/marketing-and-promotions/marketing.ts",
 		"src/scripts/test-endpoints.ts"
 	]
 }

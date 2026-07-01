@@ -1,0 +1,36 @@
+name: Biome
+
+# Single-purpose, reusable (workflow_call): lint + format in one pass. Biome does
+# both, so there is no separate lint/format workflow. Deterministic across OS/Node,
+# so it runs single-leg (ubuntu, one Node) — no matrix.
+# See docs/adr/current/0001-formatter-biome.md.
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  biome:
+    name: Lint & format (biome ci)
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint & format (biome ci)
+        run: pnpm run check:ci

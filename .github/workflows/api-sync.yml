@@ -1,20 +1,28 @@
-name: eBay API Sync Check
+name: eBay API Sync
+
+# Merged from the former `api-status-sync.yml` (doc refresh @ 08:00) and
+# `weekly-api-sync.yml` (issue @ 09:00): one schedule, two independent jobs.
+# See docs/adr/current/0004-ci-workflow-architecture.md.
+#
+#   - update-status-doc: regenerate docs/API_STATUS.md and commit any drift.
+#   - sync-check:        run `pnpm run sync` and open an issue listing eBay
+#                        endpoints not yet exposed as tools.
 
 on:
   schedule:
-    # Runs every ~3 weeks (1st and 22nd of each month) at 9:00 AM UTC
-    - cron: '0 9 1,22 * *'
+    # Every ~3 weeks (1st and 22nd of each month) at 08:00 UTC.
+    - cron: '0 8 1,22 * *'
   workflow_dispatch:
-    # Allow manual triggering
+
+permissions:
+  contents: read
 
 jobs:
-  sync-check:
+  update-status-doc:
+    name: Refresh API status doc
     runs-on: ubuntu-latest
-
     permissions:
-      contents: read
-      issues: write
-
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -25,8 +33,53 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate API status doc
+        run: pnpm exec tsx src/scripts/update-api-status-doc.ts
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add docs/API_STATUS.md
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            git reset HEAD docs/API_STATUS.md
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/API_STATUS.md
+          git commit -m "docs: update API status snapshot [skip ci]"
+          git push
+
+  sync-check:
+    name: Check for un-exposed endpoints
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -41,20 +94,20 @@ jobs:
             ENDPOINTS_IN_SPECS=$(jq '.endpointsInSpecs' dev-sync-report.json)
             TOOLS_IMPLEMENTED=$(jq '.toolsImplemented' dev-sync-report.json)
             MISSING_COUNT=$(jq '.missingEndpoints | length' dev-sync-report.json)
-            
-            echo "endpoints_in_specs=$ENDPOINTS_IN_SPECS" >> $GITHUB_OUTPUT
-            echo "tools_implemented=$TOOLS_IMPLEMENTED" >> $GITHUB_OUTPUT
-            echo "missing_count=$MISSING_COUNT" >> $GITHUB_OUTPUT
-            
+
+            echo "endpoints_in_specs=$ENDPOINTS_IN_SPECS" >> "$GITHUB_OUTPUT"
+            echo "tools_implemented=$TOOLS_IMPLEMENTED" >> "$GITHUB_OUTPUT"
+            echo "missing_count=$MISSING_COUNT" >> "$GITHUB_OUTPUT"
+
             # Calculate coverage percentage
             if [ "$ENDPOINTS_IN_SPECS" -gt 0 ]; then
               COVERAGE=$(echo "scale=1; $TOOLS_IMPLEMENTED * 100 / $ENDPOINTS_IN_SPECS" | bc)
-              echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+              echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
             fi
-            
+
             # Get list of missing endpoints (first 20)
             MISSING_LIST=$(jq -r '.missingEndpoints[:20] | .[] | "- \(.method) \(.path) (\(.operationId))"' dev-sync-report.json)
-            
+
             # Save to file for multi-line output
             echo "$MISSING_LIST" > missing-endpoints.txt
           fi
@@ -137,7 +190,7 @@ jobs:
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
 
-            const recentIssue = existingIssues.find(issue => 
+            const recentIssue = existingIssues.find(issue =>
               new Date(issue.created_at) > weekAgo
             );
 
@@ -156,11 +209,11 @@ jobs:
 
       - name: Summary
         run: |
-          echo "## eBay API Sync Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Endpoints in Specs | ${{ steps.sync.outputs.endpoints_in_specs }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tools Implemented | ${{ steps.sync.outputs.tools_implemented }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Coverage | ${{ steps.sync.outputs.coverage }}% |" >> $GITHUB_STEP_SUMMARY
-          echo "| Missing Endpoints | ${{ steps.sync.outputs.missing_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "## eBay API Sync Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Endpoints in Specs | ${{ steps.sync.outputs.endpoints_in_specs }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Tools Implemented | ${{ steps.sync.outputs.tools_implemented }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Coverage | ${{ steps.sync.outputs.coverage }}% |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Missing Endpoints | ${{ steps.sync.outputs.missing_count }} |" >> "$GITHUB_STEP_SUMMARY"

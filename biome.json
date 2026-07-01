@@ -1,0 +1,123 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!!src/types/sell_*", "!!docs"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "useSortedKeys": "off",
+        "useSortedPackageJson": "off",
+        "useSortedAttributes": "off",
+        "organizeImports": "off"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "all",
+      "nursery": {
+        "useSortedClasses": "warn"
+      },
+      "style": {
+        "noDefaultExport": "off",
+        "noJsxLiterals": "off",
+        "useComponentExportOnlyModules": "off",
+        "noTernary": "off",
+        "useNamingConvention": "off",
+        "noMagicNumbers": "off",
+        "noCommonJs": "off",
+        "useExportsLast": "warn",
+        "noIncrementDecrement": "off",
+        "noProcessEnv": "off",
+        "noExcessiveLinesPerFile": {
+          "level": "warn",
+          "options": { "maxLines": 300 }
+        }
+      },
+      "correctness": {
+        "noNodejsModules": "off",
+        "noUndeclaredDependencies": "warn",
+        "noUndeclaredVariables": "warn",
+        "noUnresolvedImports": "off",
+        "useQwikValidLexicalScope": "off",
+        "useHookAtTopLevel": "off"
+      },
+      "performance": {
+        "useSolidForComponent": "off",
+        "noJsxPropsBind": "warn",
+        "noAwaitInLoops": "warn",
+        "useTopLevelRegex": "warn"
+      },
+      "suspicious": {
+        "noUnknownAttribute": "off",
+        "noUnnecessaryConditions": "warn",
+        "noControlCharactersInRegex": "off",
+        "noNonNullAssertedOptionalChain": "warn",
+        "noAssignInExpressions": "off",
+        "noReturnAssign": "off",
+        "noArrayIndexKey": "warn",
+        "useIterableCallbackReturn": "warn"
+      },
+      "security": {
+        "noSecrets": "warn"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "warn",
+        "noExcessiveLinesPerFunction": {
+          "level": "warn",
+          "options": { "maxLines": 60 }
+        },
+        "noVoid": "off"
+      }
+    },
+    "domains": {
+      "react": "all",
+      "test": "all",
+      "project": "all"
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/schemas/**",
+        "src/tools/definitions/**",
+        "src/tools/categories/**",
+        "src/types/**",
+        "src/scripts/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
+          },
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          }
+        }
+      }
+    }
+  ]
+}

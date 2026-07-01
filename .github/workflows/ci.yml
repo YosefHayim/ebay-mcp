@@ -1,35 +1,56 @@
 name: CI
 
+# Local gate composing the single-purpose reusable workflows
+# (biome / typecheck / test / build / report-failure) via `./` refs — each is
+# `on: workflow_call`. See docs/adr/current/0004-ci-workflow-architecture.md.
+#
+# - `CI Gate` is the single aggregated status check: require it in branch
+#   protection so a red leg blocks merges (one required check, not five).
+# - `report-failure` opens/updates a `ci-failure` issue when main goes red
+#   (never for PRs).
+
 on:
   push:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
 
+permissions:
+  contents: read
+
 jobs:
+  biome:
+    uses: ./.github/workflows/biome.yml
+
+  typecheck:
+    uses: ./.github/workflows/typecheck.yml
+
   test:
-    if: github.actor != 'dependabot[bot]'
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    uses: ./.github/workflows/test.yml
 
+  build:
+    uses: ./.github/workflows/build.yml
+
+  gate:
+    name: CI Gate
+    needs: [biome, typecheck, test, build]
+    if: always()
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Require every gate to pass
+        run: |
+          echo "biome=${{ needs.biome.result }} typecheck=${{ needs.typecheck.result }} test=${{ needs.test.result }} build=${{ needs.build.result }}"
+          test "${{ needs.biome.result }}" = "success" \
+            && test "${{ needs.typecheck.result }}" = "success" \
+            && test "${{ needs.test.result }}" = "success" \
+            && test "${{ needs.build.result }}" = "success"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run tests
-        run: pnpm test
+  report-failure:
+    name: Open issue on main failure
+    needs: [biome, typecheck, test, build]
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    uses: ./.github/workflows/report-failure.yml
