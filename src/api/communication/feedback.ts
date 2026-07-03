@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '../client.js';
+import type { EbayApiClient } from '@/api/client.js';
 import { getPaginatedWithContextError, getPathWithContextError } from './shared.js';
 import { withApiError } from '@/api/shared/request.js';
 

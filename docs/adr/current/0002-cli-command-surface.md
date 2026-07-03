@@ -1,6 +1,6 @@
 # 0002 — CLI command surface
 
-**Status:** Accepted (framework adoption staged) · 2026-07-02
+**Status:** Accepted (framework adoption staged) · 2026-07-02 · **superseded** by [0006](0006-close-style-backlog.md) — commander dropped as unused
 
 ## Context
 

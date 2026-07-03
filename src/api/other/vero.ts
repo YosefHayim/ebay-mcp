@@ -1,5 +1,5 @@
-import type { EbayApiClient } from '../client.js';
-import { buildTruthyPaginatedParams } from '../shared/query-params.js';
+import type { EbayApiClient } from '@/api/client.js';
+import { buildTruthyPaginatedParams } from '@/api/shared/query-params.js';
 import { withApiError } from '@/api/shared/request.js';
 
 /**

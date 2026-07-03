@@ -1,9 +1,8 @@
 name: Typecheck
 
-# Single-purpose, reusable (workflow_call): tsc --noEmit over src. Type results are
-# deterministic across OS/Node, so this runs single-leg (ubuntu, one Node) — no
-# matrix. The `ui/` React sources are typechecked by their own (currently
-# uncommitted) config and are intentionally out of this gate — see
+# Single-purpose, reusable (workflow_call): tsc --noEmit over src and the ui/
+# React sources. Type results are deterministic across OS/Node, so this runs
+# single-leg (ubuntu, one Node) — no matrix. See
 # docs/adr/current/0004-ci-workflow-architecture.md.
 
 on:
@@ -35,3 +34,6 @@ jobs:
 
       - name: Type check (src)
         run: pnpm run typecheck
+
+      - name: Type check (ui)
+        run: pnpm run typecheck:ui

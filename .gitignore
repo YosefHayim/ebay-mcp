@@ -220,6 +220,7 @@ Taskfile.yml
 !/.github/
 !/.github/**
 !/biome.json
+!/ui/tsconfig.json
 !/ARCHITECTURE.md
 !/CODE-STYLE.md
 !/CONTEXT.md

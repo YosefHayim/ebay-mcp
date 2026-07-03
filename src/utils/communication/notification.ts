@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { idSchema } from '../schema-helpers.js';
+import { idSchema } from '@/utils/schema-helpers.js';
 
 /**
  * Zod schemas for Notification API input validation

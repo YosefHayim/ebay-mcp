@@ -12,7 +12,7 @@ import {
   programRequestSchema,
   returnPolicySchema,
   salesTaxBaseSchema,
-} from '../schemas.js';
+} from '@/tools/schemas.js';
 import {
   customPolicyResponseSchema,
   getFulfillmentPoliciesOutputSchema,

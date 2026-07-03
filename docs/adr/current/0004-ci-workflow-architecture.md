@@ -1,6 +1,6 @@
 # 0004 — CI workflow architecture
 
-**Status:** Accepted · 2026-07-02
+**Status:** Accepted · 2026-07-02 · `ui/` gate follow-up **resolved** by [0006](0006-close-style-backlog.md)
 
 ## Context
 
@@ -42,10 +42,9 @@ Deleted: `weekly-unit-tests.yml`, `api-status-sync.yml`, `weekly-api-sync.yml`.
 
 - One required check; a red leg blocks merge; main failures are legible from an
   issue, not just the Actions log.
-- **`ui/` typecheck is deliberately out of the gate.** It needs a
-  `ui/tsconfig.json` that isn't committed, and the `ui/*.tsx` sources currently
-  don't typecheck (`class` vs `className`). Wiring `ui/` typechecking (commit a
-  config + fix the sources) is a tracked follow-up; until then `typecheck.yml`
-  covers `src` only.
+- **`ui/` typecheck** was deliberately out of the gate (uncommitted
+  `ui/tsconfig.json`; `ui/*.tsx` failed on `class` vs `className`). **Resolved
+  2026-07-04** by [0006](0006-close-style-backlog.md): the config is committed,
+  the sources fixed, and `typecheck.yml` now runs `typecheck:ui` alongside `src`.
 - Integration is hermetic (`nock`, net-connect disabled), so it's safe on every
   matrix leg.

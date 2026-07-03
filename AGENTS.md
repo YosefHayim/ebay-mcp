@@ -23,8 +23,8 @@ npm run build            # tsc + tsc-alias + UI bundle → build/  — must pass
 
 CI runs exactly these behind one **CI Gate** status check — see
 [docs/adr/current/0004-ci-workflow-architecture.md](docs/adr/current/0004-ci-workflow-architecture.md).
-(`npm run check` also typechecks `ui/`, but that leg needs a `ui/tsconfig.json`
-that isn't committed yet; prefer the split commands above until it lands.)
+The `typecheck` leg now also covers `ui/` (`npm run typecheck:ui`), so
+`npm run check` and `npm run verify` run the whole gate end-to-end.
 
 Other useful scripts:
 

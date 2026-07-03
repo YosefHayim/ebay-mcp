@@ -1,5 +1,5 @@
-import type { components } from '../../types/sell-apps/listing-management/sellInventoryV1Oas3.js';
-import type { EbayApiClient } from '../client.js';
+import type { components } from '@/types/sell-apps/listing-management/sellInventoryV1Oas3.js';
+import type { EbayApiClient } from '@/api/client.js';
 import {
   buildOptionalStringParams,
   buildValidatedPaginatedParams,
@@ -7,7 +7,7 @@ import {
   requireObject,
   requireString,
   withApiError,
-} from '../shared/request.js';
+} from '@/api/shared/request.js';
 
 type EbayOfferDetailsWithKeys = components['schemas']['EbayOfferDetailsWithKeys'];
 type EbayOfferDetailsWithAll = components['schemas']['EbayOfferDetailsWithAll'];

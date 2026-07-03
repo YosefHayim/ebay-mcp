@@ -1,6 +1,6 @@
 import type { components } from '@/types/sell-apps/order-management/sellFulfillmentV1Oas3.js';
 import { withApiError } from '@/api/shared/request.js';
-import type { EbayApiClient } from '../client.js';
+import type { EbayApiClient } from '@/api/client.js';
 
 type IssueRefundRequest = components['schemas']['IssueRefundRequest'];
 type ShippingFulfillmentDetails = components['schemas']['ShippingFulfillmentDetails'];

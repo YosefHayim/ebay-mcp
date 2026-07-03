@@ -1,5 +1,5 @@
-import type { EbayApiClient } from '../client.js';
-import { getIdentityBaseUrl } from '../../config/environment.js';
+import type { EbayApiClient } from '@/api/client.js';
+import { getIdentityBaseUrl } from '@/config/environment.js';
 import { withApiError } from '@/api/shared/request.js';
 
 /**

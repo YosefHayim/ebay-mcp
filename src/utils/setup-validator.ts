@@ -7,11 +7,11 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
-import { EbayOAuthClient } from '../auth/oauth.js';
-import { getOAuthAuthorizationUrl } from '../config/environment.js';
+import { EbayOAuthClient } from '@/auth/oauth.js';
+import { getOAuthAuthorizationUrl } from '@/config/environment.js';
 import { parseEnvFile } from './env-parser.js';
 import { getErrorMessage } from '@/utils/errors.js';
-import type { EbayConfig } from '../types/ebay.js';
+import type { EbayConfig } from '@/types/ebay.js';
 
 /**
  * Result for one setup validation test.

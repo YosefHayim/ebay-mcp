@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { MarketplaceId } from '@/types/ebay-enums.js';
 import { defineTool } from '@/tools/define-tool.js';
 import type { ToolEntry } from '@/tools/registry.js';
-import { compatibilityDataSchema, compatibilitySpecificationSchema } from '../schemas.js';
+import { compatibilityDataSchema, compatibilitySpecificationSchema } from '@/tools/schemas.js';
 
 /** Metadata API tools for marketplace, business policy, and sales tax metadata. */
 export const metadataEntries: ToolEntry[] = [

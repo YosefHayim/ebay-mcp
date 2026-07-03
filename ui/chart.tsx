@@ -44,12 +44,18 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
   const barWidth = (groupWidth * 0.8) / Math.max(1, view.series.length);
 
   return (
-    <div class="chart">
-      {view.title ? <h1 class="view-title">{view.title}</h1> : null}
+    <div className="chart">
+      {view.title ? <h1 className="view-title">{view.title}</h1> : null}
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={view.title ?? 'Chart'}>
-        <line class="chart-axis" x1={PAD.left} y1={BASELINE} x2={WIDTH - PAD.right} y2={BASELINE} />
-        <line class="chart-axis" x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={BASELINE} />
-        <text class="chart-label" x={PAD.left - 6} y={PAD.top + 4} textAnchor="end">
+        <line
+          className="chart-axis"
+          x1={PAD.left}
+          y1={BASELINE}
+          x2={WIDTH - PAD.right}
+          y2={BASELINE}
+        />
+        <line className="chart-axis" x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={BASELINE} />
+        <text className="chart-label" x={PAD.left - 6} y={PAD.top + 4} textAnchor="end">
           {maxY}
         </text>
 
@@ -85,7 +91,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
           index % stride === 0 ? (
             <text
               key={`${label}-${index}`}
-              class="chart-label"
+              className="chart-label"
               x={view.kind === 'line' ? lineX(index) : PAD.left + (index + 0.5) * groupWidth}
               y={BASELINE + 16}
               textAnchor="middle"
@@ -96,10 +102,10 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
         )}
       </svg>
 
-      <div class="chart-legend">
+      <div className="chart-legend">
         {view.series.map((series, index) => (
           <span key={series.name}>
-            <span class="chart-swatch" style={{ background: seriesColor(series, index) }} />
+            <span className="chart-swatch" style={{ background: seriesColor(series, index) }} />
             {series.name}
           </span>
         ))}

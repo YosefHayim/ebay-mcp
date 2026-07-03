@@ -111,17 +111,17 @@ export function AppShell({
   children: ReactNode;
 }): ReactNode {
   if (error) {
-    return <div class="state state--error">Unable to load view: {error.message}</div>;
+    return <div className="state state--error">Unable to load view: {error.message}</div>;
   }
   if (!isConnected) {
-    return <div class="state">Connecting…</div>;
+    return <div className="state">Connecting…</div>;
   }
   return children;
 }
 
 /** Placeholder shown when the app is connected but no view model has arrived yet. */
 export function EmptyState({ label }: { label: string }): ReactNode {
-  return <div class="state">{label}</div>;
+  return <div className="state">{label}</div>;
 }
 
 /** Turns a {@link ToolCallRef} into a concise natural-language instruction. */

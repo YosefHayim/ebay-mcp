@@ -1,6 +1,6 @@
 import type { EbayApiClient } from '@/api/client.js';
 import { withApiError } from '@/api/shared/request.js';
-import type { components } from '../../types/sell-apps/account-management/sellAccountV1Oas3.js';
+import type { components } from '@/types/sell-apps/account-management/sellAccountV1Oas3.js';
 
 type CustomPolicyCreateRequest = components['schemas']['CustomPolicyCreateRequest'];
 type CustomPolicyResponse = components['schemas']['CustomPolicyResponse'];

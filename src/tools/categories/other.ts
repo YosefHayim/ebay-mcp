@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { defineTool } from '@/tools/define-tool.js';
 import type { ToolEntry } from '@/tools/registry.js';
-import { shippingQuoteRequestSchema, veroReportDataSchema } from '../schemas.js';
+import { shippingQuoteRequestSchema, veroReportDataSchema } from '@/tools/schemas.js';
 
 /** Miscellaneous eBay API tools that do not fit the primary seller API categories. */
 export const otherEntries: ToolEntry[] = [

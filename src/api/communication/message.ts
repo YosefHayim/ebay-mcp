@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '../client.js';
+import type { EbayApiClient } from '@/api/client.js';
 import {
   assertRequiredString,
   buildPaginatedQueryParams,

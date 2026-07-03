@@ -1,6 +1,6 @@
 # 0003 — Dependency decisions
 
-**Status:** Accepted · 2026-07-02
+**Status:** Accepted · 2026-07-02 · commander add **reversed** by [0006](0006-close-style-backlog.md) (jsonwebtoken removal stands)
 
 ## Context
 

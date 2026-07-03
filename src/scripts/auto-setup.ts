@@ -16,8 +16,8 @@ import { homedir, platform } from 'os';
 
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
-import type { DetectedMCPClient, MCPServerConfig } from '../utils/llm-client-detector.js';
-import { isRecord } from '../utils/type-guards.js';
+import type { DetectedMCPClient, MCPServerConfig } from '@/utils/llm-client-detector.js';
+import { isRecord } from '@/utils/type-guards.js';
 
 // Load environment variables silently
 config({ quiet: true });

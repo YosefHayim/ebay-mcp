@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { httpRequest } from '../utils/http.js';
+import { httpRequest } from '@/utils/http.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 

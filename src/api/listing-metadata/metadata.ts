@@ -1,10 +1,10 @@
-import type { EbayApiClient } from '../client.js';
+import type { EbayApiClient } from '@/api/client.js';
 import {
   buildOptionalStringParams,
   requireObject,
   requireString,
   withApiError,
-} from '../shared/request.js';
+} from '@/api/shared/request.js';
 
 /**
  * Metadata API - Marketplace policies and configurations

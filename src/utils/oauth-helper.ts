@@ -4,8 +4,8 @@
 
 import chalk from 'chalk';
 import { createServer, type Server } from 'http';
-import type { EbayConfig } from '../types/ebay.js';
-import { getOAuthAuthorizationUrl } from '../config/environment.js';
+import type { EbayConfig } from '@/types/ebay.js';
+import { getOAuthAuthorizationUrl } from '@/config/environment.js';
 
 /**
  * Result captured from the local OAuth callback endpoint. Exactly one of `code`

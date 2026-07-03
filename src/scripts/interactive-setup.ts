@@ -32,25 +32,25 @@ import {
   runSecurityChecks,
   displaySecurityResults,
   hasCriticalFailures,
-} from '../utils/security-checker.js';
+} from '@/utils/security-checker.js';
 import {
   displayFirstTimeDeveloperGuide,
   getRuNameHelp,
   interactiveOAuthFlow,
   displayManualOAuthInstructions,
-} from '../utils/oauth-helper.js';
+} from '@/utils/oauth-helper.js';
 import {
   displayScopeCategories,
   getRecommendedScopes,
   displayScopeVerification,
-} from '../utils/scope-helper.js';
-import { detectLLMClients, configureLLMClient } from '../utils/llm-client-detector.js';
-import { validateSetup, displayRecommendations } from '../utils/setup-validator.js';
+} from '@/utils/scope-helper.js';
+import { detectLLMClients, configureLLMClient } from '@/utils/llm-client-detector.js';
+import { validateSetup, displayRecommendations } from '@/utils/setup-validator.js';
 import { loadExistingConfig, readEnvironment } from './setup-shared.js';
-import { EbaySellerApi } from '../api/index.js';
-import { EbayOAuthClient } from '../auth/oauth.js';
+import { EbaySellerApi } from '@/api/index.js';
+import { EbayOAuthClient } from '@/auth/oauth.js';
 import { getErrorMessage } from '@/utils/errors.js';
-import type { EbayConfig } from '../types/ebay.js';
+import type { EbayConfig } from '@/types/ebay.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

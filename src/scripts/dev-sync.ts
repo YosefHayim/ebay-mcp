@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import { httpRequest } from '../utils/http.js';
+import { httpRequest } from '@/utils/http.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

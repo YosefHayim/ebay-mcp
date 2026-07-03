@@ -1,6 +1,6 @@
 # 0005 — Codify the real layout; kill the fiction
 
-**Status:** Accepted · 2026-07-02
+**Status:** Accepted · 2026-07-02 · `test-endpoints.ts` **deleted** (not deferred) — see [0006](0006-close-style-backlog.md)
 
 ## Context
 

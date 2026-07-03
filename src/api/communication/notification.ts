@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '../client.js';
+import type { EbayApiClient } from '@/api/client.js';
 import {
   buildContinuationParams,
   deleteWithApiError,
@@ -8,7 +8,7 @@ import {
   requireObject,
   requireString,
   type QueryParams,
-} from '../shared/request.js';
+} from '@/api/shared/request.js';
 
 /**
  * Notification API - Event notifications and subscriptions

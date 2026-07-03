@@ -10,7 +10,7 @@ import {
   mapOrdersToTable,
   mapOrderToCard,
 } from '@/tools/ui/maps.js';
-import { shippingFulfillmentSchema } from '../schemas.js';
+import { shippingFulfillmentSchema } from '@/tools/schemas.js';
 import {
   getOrdersOutputSchema,
   getOrderOutputSchema,

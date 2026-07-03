@@ -7,21 +7,21 @@ import { randomUUID } from 'crypto';
 import type { Server } from 'http';
 
 import chalk from 'chalk';
-import { checkForUpdates } from '../utils/version.js';
-import { describeHttpError, httpRequest } from '../utils/http.js';
+import { checkForUpdates } from '@/utils/version.js';
+import { describeHttpError, httpRequest } from '@/utils/http.js';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
-import { getOAuthAuthorizationUrl } from '../config/environment.js';
-import { startCallbackServer } from '../utils/oauth-helper.js';
-import { defineWizard, runWizard, ClackRenderer } from '../utils/setup-wizard.js';
+import { getOAuthAuthorizationUrl } from '@/config/environment.js';
+import { startCallbackServer } from '@/utils/oauth-helper.js';
+import { defineWizard, runWizard, ClackRenderer } from '@/utils/setup-wizard.js';
 import { loadExistingConfig, quoteEnvValue } from './setup-shared.js';
 import { runSkillsWizard } from './skills.js';
 import prompts from 'prompts';
-import { configureLLMClient, detectLLMClients } from '../utils/llm-client-detector.js';
-import { runSecurityChecks, displaySecurityResults } from '../utils/security-checker.js';
-import { validateSetup, displayRecommendations } from '../utils/setup-validator.js';
+import { configureLLMClient, detectLLMClients } from '@/utils/llm-client-detector.js';
+import { runSecurityChecks, displaySecurityResults } from '@/utils/security-checker.js';
+import { validateSetup, displayRecommendations } from '@/utils/setup-validator.js';
 import { getErrorMessage } from '@/utils/errors.js';
-import type { EbayTokenCore } from '../types/ebay.js';
+import type { EbayTokenCore } from '@/types/ebay.js';
 
 config({ quiet: true });
 

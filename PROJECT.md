@@ -53,8 +53,9 @@ and analyse on eBay without bespoke integration code.
 - **Harden the contributor gate** — this change set adds a real CI gate (Biome +
   typecheck + test + build across an OS×Node matrix) and codified docs so
   coverage can grow without regressions.
-- **Adopt a thin CLI framework** (commander) around the existing wizards without
-  disturbing the interactive flow (ADR 0002).
+- **Keep the CLI hand-router lean** — a framework (commander) was evaluated and
+  dropped as unused; add one only when a real need justifies the dependency
+  (ADR 0002 → 0006).
 
 ## Constraints
 

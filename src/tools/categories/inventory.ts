@@ -23,7 +23,7 @@ import {
   locationSchema,
   offerSchema,
   productCompatibilitySchema,
-} from '../schemas.js';
+} from '@/tools/schemas.js';
 import {
   getInventoryItemsOutputSchema,
   getInventoryItemOutputSchema,

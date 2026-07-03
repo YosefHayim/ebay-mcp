@@ -3,7 +3,7 @@
  */
 
 import chalk from 'chalk';
-import { getDefaultScopes } from '../config/environment.js';
+import { getDefaultScopes } from '@/config/environment.js';
 
 /**
  * Group of related OAuth scopes shown in setup guidance.
