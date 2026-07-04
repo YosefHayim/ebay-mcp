@@ -212,3 +212,49 @@ body {
   fill: var(--ebay-text-soft);
   font-size: 10px;
 }
+
+/* Stat archetype */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: var(--ebay-bg-alt);
+  border: 1px solid var(--ebay-border);
+  border-radius: var(--ebay-radius);
+}
+
+.stat-label {
+  color: var(--ebay-text-soft);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-sub {
+  color: var(--ebay-text-soft);
+  font-size: 12px;
+}
+
+.stat-tile--success {
+  border-color: var(--color-text-success, #0b6b2e);
+}
+
+.stat-tile--warning {
+  border-color: var(--color-text-warning, #8a5a00);
+}
+
+.stat-tile--danger {
+  border-color: var(--color-text-danger, #b3261e);
+}

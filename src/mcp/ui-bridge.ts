@@ -80,6 +80,10 @@ export function summarizeView(view: ViewModel): string {
       const pointCount = view.series.reduce((total, series) => total + series.points.length, 0);
       return `${view.title ?? 'Chart'} (${view.kind}): ${view.series.length} series, ${pointCount} ${pointCount === 1 ? 'point' : 'points'}. Rendered as an interactive chart.`;
     }
+    case 'stat': {
+      const count = view.tiles.length;
+      return `${view.title ?? 'Metrics'}: ${count} ${count === 1 ? 'metric' : 'metrics'}. Rendered as an interactive stat grid.`;
+    }
   }
 }
 

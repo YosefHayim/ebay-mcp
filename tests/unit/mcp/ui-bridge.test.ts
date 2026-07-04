@@ -10,7 +10,12 @@ import {
   summarizeView,
 } from '@/mcp/ui-bridge.js';
 import type { ResolvedToolUi } from '@/tools/registry.js';
-import type { CardViewModel, ChartViewModel, TableViewModel } from '@/tools/ui/view-models.js';
+import type {
+  CardViewModel,
+  ChartViewModel,
+  StatViewModel,
+  TableViewModel,
+} from '@/tools/ui/view-models.js';
 
 /** Client capabilities advertising MCP Apps support for the given MIME types. */
 function uiCapabilities(mimeTypes: string[]): Record<string, unknown> {
@@ -80,6 +85,20 @@ describe('summarizeView', () => {
     };
     expect(summarizeView(view)).toBe(
       'Traffic report (line): 1 series, 2 points. Rendered as an interactive chart.',
+    );
+  });
+
+  it('summarizes a stat grid by tile count', () => {
+    const view: StatViewModel = {
+      archetype: 'stat',
+      title: 'Application rate limits',
+      tiles: [
+        { label: 'sell · inventory', value: '4,982', sub: 'of 5,000', tone: 'success' },
+        { label: 'sell · fulfillment', value: '900', sub: 'of 1,000' },
+      ],
+    };
+    expect(summarizeView(view)).toBe(
+      'Application rate limits: 2 metrics. Rendered as an interactive stat grid.',
     );
   });
 });

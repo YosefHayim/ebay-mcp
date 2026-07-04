@@ -199,6 +199,10 @@ GEMINI.md
 # Generated reports
 dev-sync-report.json
 
+# Project docs — kept out of version control per maintainer preference.
+# Files already committed stay tracked; new files under docs/ are ignored.
+/docs/
+
 # Bun lock file (project uses pnpm)
 bun.lock
 
@@ -210,7 +214,6 @@ Taskfile.yml
 .*
 *.json
 *.md
-!docs/**/*.md
 !AGENTS.md
 !CLAUDE.md
 !README*.md
@@ -220,6 +223,7 @@ Taskfile.yml
 !/.github/
 !/.github/**
 !/biome.json
+!/tsconfig.base.json
 !/ui/tsconfig.json
 !/ARCHITECTURE.md
 !/CODE-STYLE.md

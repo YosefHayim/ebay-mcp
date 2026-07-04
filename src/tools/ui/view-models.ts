@@ -19,7 +19,7 @@
  */
 
 /** The fixed set of reusable UI archetypes a tool may render into. */
-export type ViewArchetype = 'table' | 'card' | 'chart';
+export type ViewArchetype = 'table' | 'card' | 'chart' | 'stat';
 
 /**
  * A reference to a non-destructive server tool call the UI can trigger on the
@@ -69,10 +69,13 @@ export interface TableViewModel {
   footnote?: string;
 }
 
+/** Semantic colour scale shared by status pills (cards) and stat tiles. */
+export type Tone = 'neutral' | 'success' | 'warning' | 'danger';
+
 /** Coloured status pill, e.g. an order's fulfillment state. */
 export interface CardBadge {
   label: string;
-  tone?: 'neutral' | 'success' | 'warning' | 'danger';
+  tone?: Tone;
 }
 
 /** A labelled key/value shown inside a card section. */
@@ -125,16 +128,42 @@ export interface ChartViewModel {
   series: ChartSeries[];
 }
 
+/** A single headline metric rendered as a tile in a {@link StatViewModel}. */
+export interface StatTile {
+  /** What the metric measures (e.g. an API resource name). */
+  label: string;
+  /** The headline figure, pre-formatted for display. */
+  value: CellValue;
+  /** Optional secondary line under the value (e.g. `"of 5,000"`). */
+  sub?: string;
+  /** Optional tone so a tile can signal health (e.g. remaining quota). */
+  tone?: Tone;
+}
+
+/**
+ * Headline-metrics view: a responsive grid of {@link StatTile}s (API rate-limit
+ * headroom, account summaries). The compact archetype for "a handful of numbers
+ * that matter" — where a table is too heavy and a chart has nothing to plot.
+ */
+export interface StatViewModel {
+  archetype: 'stat';
+  title?: string;
+  tiles: StatTile[];
+  /** Small contextual line under the grid. */
+  footnote?: string;
+}
+
 /**
  * The data a tool ships as `structuredContent` for the host to render. A
  * discriminated union over {@link ViewArchetype}; each member is consumed by the
  * matching React app in `ui/`.
  */
-export type ViewModel = TableViewModel | CardViewModel | ChartViewModel;
+export type ViewModel = TableViewModel | CardViewModel | ChartViewModel | StatViewModel;
 
 /** Maps an archetype literal to its concrete view-model type. */
 export interface ViewModelByArchetype {
   table: TableViewModel;
   card: CardViewModel;
   chart: ChartViewModel;
+  stat: StatViewModel;
 }

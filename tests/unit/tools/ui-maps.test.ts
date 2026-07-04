@@ -19,8 +19,10 @@ import {
   mapOfferToCard,
   mapOrdersToTable,
   mapOrderToCard,
+  mapRateLimitsToStat,
   mapStandardsProfileToCard,
   mapTrafficReportToChart,
+  mapUserRateLimitsToStat,
 } from '@/tools/ui/maps.js';
 
 /**
@@ -372,5 +374,63 @@ describe('chart mappers', () => {
       { x: 'DOMESTIC', y: 10 },
       { x: 'INTERNATIONAL_MATURED_REGION', y: 4 },
     ]);
+  });
+});
+
+describe('stat mappers', () => {
+  it('maps application rate limits into one tile per resource with a headroom tone', () => {
+    const view = mapRateLimitsToStat({
+      rateLimits: [
+        {
+          apiContext: 'sell',
+          apiName: 'inventory',
+          resources: [
+            {
+              name: 'getInventoryItems',
+              rates: [{ limit: 5000, remaining: 4982, reset: '2026-07-04T00:00:00.000Z' }],
+            },
+            { name: 'createOrReplaceInventoryItem', rates: [{ limit: 5000, remaining: 300 }] },
+          ],
+        },
+      ],
+    });
+
+    expect(view.archetype).toBe('stat');
+    expect(view.title).toBe('Application rate limits');
+    expect(view.tiles).toHaveLength(2);
+    expect(view.tiles[0]).toEqual({
+      label: 'sell · inventory · getInventoryItems',
+      value: '4,982',
+      sub: 'of 5,000',
+      tone: 'success',
+    });
+    // 300 / 5000 = 0.06 → danger
+    expect(view.tiles[1].tone).toBe('danger');
+  });
+
+  it('skips resources with no rate rows and titles the user variant', () => {
+    const view = mapUserRateLimitsToStat({
+      rateLimits: [
+        {
+          apiContext: 'sell',
+          apiName: 'fulfillment',
+          resources: [
+            { name: 'noRates' },
+            { name: 'getOrders', rates: [{ limit: 1000, remaining: 200 }] },
+          ],
+        },
+      ],
+    });
+
+    expect(view.title).toBe('User rate limits');
+    expect(view.tiles).toHaveLength(1);
+    expect(view.tiles[0].label).toBe('sell · fulfillment · getOrders');
+    // 200 / 1000 = 0.2 → warning
+    expect(view.tiles[0].tone).toBe('warning');
+  });
+
+  it('falls back to a generic label and neutral tone when data is sparse', () => {
+    const view = mapRateLimitsToStat({ rateLimits: [{ resources: [{ rates: [{}] }] }] });
+    expect(view.tiles[0]).toEqual({ label: 'Resource', value: '0', sub: 'of 0', tone: 'neutral' });
   });
 });

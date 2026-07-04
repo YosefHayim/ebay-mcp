@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { defineTool } from '@/tools/define-tool.js';
+import { mapRateLimitsToStat, mapUserRateLimitsToStat } from '@/tools/ui/maps.js';
 import { getApiStatusFeed } from '@/utils/api-status-feed.js';
 import type { ToolEntry } from '@/tools/registry.js';
 
@@ -90,6 +91,7 @@ export const developerEntries: ToolEntry[] = [
       description: 'Rate limit data for application APIs',
     },
     handler: (api, args) => api.developer.getRateLimits(args.apiContext, args.apiName),
+    ui: { archetype: 'stat', map: mapRateLimitsToStat },
   }),
   defineTool({
     name: 'ebay_get_user_rate_limits',
@@ -113,6 +115,7 @@ export const developerEntries: ToolEntry[] = [
       description: 'Rate limit data for user APIs',
     },
     handler: (api, args) => api.developer.getUserRateLimits(args.apiContext, args.apiName),
+    ui: { archetype: 'stat', map: mapUserRateLimitsToStat },
   }),
   defineTool({
     name: 'ebay_register_client',

@@ -27,8 +27,12 @@ import type {
   CardViewModel,
   ChartSeries,
   ChartViewModel,
+  StatTile,
+  StatViewModel,
   TableViewModel,
+  Tone,
 } from '@/tools/ui/view-models.js';
+import type { DeveloperAnalyticsComponents } from '@/types/application-settings/developerAnalyticsV1BetaOas3.js';
 import type { components as AnalyticsSchemas } from '@/types/sell-apps/analytics-and-report/sellAnalyticsV1Oas3.js';
 import type { components as InventorySchemas } from '@/types/sell-apps/listing-management/sellInventoryV1Oas3.js';
 import type { components as FulfillmentSchemas } from '@/types/sell-apps/order-management/sellFulfillmentV1Oas3.js';
@@ -51,6 +55,8 @@ type Report = AnalyticsSchemas['schemas']['Report'];
 type StandardsProfile = AnalyticsSchemas['schemas']['StandardsProfile'];
 type GetCustomerServiceMetricResponse =
   AnalyticsSchemas['schemas']['GetCustomerServiceMetricResponse'];
+
+type RateLimitsResponse = DeveloperAnalyticsComponents['schemas']['RateLimitsResponse'];
 
 /**
  * Builds a table's contextual footnote from how many rows are shown versus the
@@ -469,5 +475,69 @@ export function mapCustomerServiceMetricToChart(
     title: 'Customer service metrics',
     kind: 'bar',
     series,
+  };
+}
+
+/**
+ * Buckets remaining API headroom into a tile tone: healthy above a quarter of
+ * the quota, warning as it drains, danger near exhaustion. A missing or zero
+ * limit is neutral — there is no meaningful ratio to colour.
+ */
+function headroomTone(remaining: number, limit: number): Tone {
+  if (limit <= 0) {
+    return 'neutral';
+  }
+  const ratio = remaining / limit;
+  if (ratio <= 0.1) {
+    return 'danger';
+  }
+  if (ratio <= 0.25) {
+    return 'warning';
+  }
+  return 'success';
+}
+
+/**
+ * Flattens a rate-limit response into one tile per API resource, showing calls
+ * remaining against the quota with a tone that reflects headroom. Shared by the
+ * application- and user-scoped rate-limit tools, which return the same shape.
+ */
+function rateLimitTiles(result: RateLimitsResponse): StatTile[] {
+  const tiles: StatTile[] = [];
+  for (const rateLimit of result.rateLimits ?? []) {
+    for (const resource of rateLimit.resources ?? []) {
+      const rate = resource.rates?.[0];
+      if (!rate) {
+        continue;
+      }
+      const remaining = rate.remaining ?? 0;
+      const limit = rate.limit ?? 0;
+      const parts = [rateLimit.apiContext, rateLimit.apiName, resource.name].filter(Boolean);
+      tiles.push({
+        label: parts.length > 0 ? parts.join(' · ') : 'Resource',
+        value: remaining.toLocaleString('en-US'),
+        sub: `of ${limit.toLocaleString('en-US')}`,
+        tone: headroomTone(remaining, limit),
+      });
+    }
+  }
+  return tiles;
+}
+
+/** Projects application rate limits into a stat grid (calls remaining per resource). */
+export function mapRateLimitsToStat(result: RateLimitsResponse): StatViewModel {
+  return {
+    archetype: 'stat',
+    title: 'Application rate limits',
+    tiles: rateLimitTiles(result),
+  };
+}
+
+/** Projects user rate limits into a stat grid (per-user calls remaining per resource). */
+export function mapUserRateLimitsToStat(result: RateLimitsResponse): StatViewModel {
+  return {
+    archetype: 'stat',
+    title: 'User rate limits',
+    tiles: rateLimitTiles(result),
   };
 }

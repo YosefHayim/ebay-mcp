@@ -194,6 +194,9 @@ https://github.com/user-attachments/assets/0173c8df-221c-4943-a4ce-cd20bce79f4b
 
 ## Configuration
 
+<details open>
+<summary><strong>Environment variables, tool exposure, auth &amp; client compatibility</strong></summary>
+
 > 📖 Full reference — every environment variable, OAuth step, and scope — is in the [Configuration Guide](docs/auth/CONFIGURATION.md). `npm run setup` writes the `.env` for you; the variables below are for reference.
 
 ```bash
@@ -245,7 +248,12 @@ Auto-configured by `npm run setup`. Requires Node.js ≥ 18 and MCP protocol 1.0
 | **Claude Code CLI**    | Terminal              | `~/.claude.json`                                                             |
 | **Amazon Q Developer** | AWS                   | `~/.aws/amazonq/mcp.json`                                                     |
 
+</details>
+
 ## Available tools
+
+<details open>
+<summary><strong>322 tools by category (100% Sell API coverage)</strong></summary>
 
 **322 tools**, 100% Sell API coverage, organized by category. Each link points to the tool definitions and handlers in [`src/tools/categories/`](src/tools/categories/):
 
@@ -267,26 +275,34 @@ Auto-configured by `npm run setup`. Requires Node.js ≥ 18 and MCP protocol 1.0
 
 For the complete machine-readable index, see [llms.txt](llms.txt).
 
+</details>
+
 ## Interactive UI (MCP Apps)
+
+<details open>
+<summary><strong>Interactive table, card, chart &amp; stat views (beta)</strong></summary>
 
 > **Beta** — this feature is new and evolving alongside the MCP Apps spec, and host support is still rolling out. It is opt-in and falls back to plain JSON, so it never breaks existing clients. Toggle it with `EBAY_MCP_UI` (see [Configuration](#configuration)).
 
-On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read tools render their results as interactive views instead of raw JSON — a sortable **table**, a detail **card**, or a **chart** — using the host's own theme. Everywhere else, the exact same tools return plain JSON, so nothing breaks. It is built on the official [MCP Apps SDK (`@modelcontextprotocol/ext-apps`)](https://github.com/modelcontextprotocol/ext-apps), the extension that lets MCP servers ship interactive UI to conversational clients.
+On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read tools render their results as interactive views instead of raw JSON — a sortable **table**, a detail **card**, a **chart**, or a **stat grid** — using the host's own theme. Everywhere else, the exact same tools return plain JSON, so nothing breaks. It is built on the official [MCP Apps SDK (`@modelcontextprotocol/ext-apps`)](https://github.com/modelcontextprotocol/ext-apps), the extension that lets MCP servers ship interactive UI to conversational clients.
 
 - **Opt-in and host-gated.** Views are advertised only to clients that announce the MCP Apps capability (e.g. Claude). Hosts without it (e.g. Cursor) silently get JSON.
 - **Kill-switch.** Set `EBAY_MCP_UI=off` to force plain JSON everywhere, even on capable hosts.
 - **Token-cheap.** Each view's HTML is fetched once by the host out of band (never into the model's context); the model only ever sees a one-line summary plus the structured data it would have received anyway.
 - **Read-only.** Views only ever trigger read tools (drill into a row, page, refresh) — they never mutate your eBay data.
 
-13 core-workflow tools opt in today, across three archetypes:
+15 core-workflow tools opt in today, across four archetypes:
 
 | Archetype | Tools |
 | --- | --- |
 | **Table** | `ebay_get_orders`, `ebay_get_shipping_fulfillments`, `ebay_get_offers`, `ebay_get_inventory_items`, `ebay_get_inventory_locations`, `ebay_get_payment_dispute_summaries` |
 | **Card** | `ebay_get_order`, `ebay_get_offer`, `ebay_get_inventory_item`, `ebay_get_payment_dispute`, `ebay_get_seller_standards_profile` |
 | **Chart** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
+| **Stat** | `ebay_get_rate_limits`, `ebay_get_user_rate_limits` |
 
 The views build into self-contained HTML with `npm run build` (or `npm run build:ui`); they ship in the published package and load with no network access of their own.
+
+</details>
 
 ## Usage examples
 
@@ -305,77 +321,131 @@ Common tasks, phrased as you'd ask your AI assistant:
 
 ## FAQ
 
-### What is the eBay MCP server?
+<details>
+<summary><strong>What is the eBay MCP server?</strong></summary>
 
 A local [Model Context Protocol](https://modelcontextprotocol.io) server that exposes **322 tools** covering **100% of eBay's Sell APIs** (270 endpoints) to AI assistants — inventory, order fulfillment, marketing, analytics, and developer tools.
 
-### Is this an official eBay product?
+</details>
+
+<details>
+<summary><strong>Is this an official eBay product?</strong></summary>
 
 No. This is an unofficial, third-party open-source project. It is **not affiliated with, authorized, or endorsed by eBay Inc.**
 
-### Which AI assistants and MCP clients are supported?
+</details>
+
+<details>
+<summary><strong>Which AI assistants and MCP clients are supported?</strong></summary>
 
 Nine clients are auto-configured by `npm run setup`: Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI, and Amazon Q Developer. Any MCP-compatible client can connect.
 
-### Can I use it with Claude, ChatGPT, or Cursor?
+</details>
+
+<details>
+<summary><strong>Can I use it with Claude, ChatGPT, or Cursor?</strong></summary>
 
 Yes. It works with Claude Desktop and Claude Code out of the box, with Cursor and other MCP-enabled IDEs, and with any assistant that supports the Model Context Protocol. The one-click setup prompt above works with ChatGPT and other assistants too.
 
-### Why don't I see the interactive tables and charts?
+</details>
+
+<details>
+<summary><strong>Why don't I see the interactive tables and charts?</strong></summary>
 
 Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that announce the capability (e.g. Claude); other clients get the same data as plain JSON. Also confirm you have not set `EBAY_MCP_UI=off` and that the views are built (`npm run build` runs `build:ui`).
 
-### How many eBay APIs and tools does it cover?
+</details>
+
+<details>
+<summary><strong>How many eBay APIs and tools does it cover?</strong></summary>
 
 322 tools across 270 unique endpoints — 100% of eBay's Sell APIs.
 
-### Is it free and open source?
+</details>
+
+<details>
+<summary><strong>Is it free and open source?</strong></summary>
 
 Yes. It is released under the [MIT license](LICENSE).
 
-### Does it run locally or in the cloud?
+</details>
+
+<details>
+<summary><strong>Does it run locally or in the cloud?</strong></summary>
 
 It runs entirely on your machine over STDIO (or local HTTP). There is no cloud relay — your eBay credentials never leave your computer.
 
-### What do I need to get started?
+</details>
+
+<details>
+<summary><strong>What do I need to get started?</strong></summary>
 
 Node.js ≥ 18, a free [eBay Developer Account](https://developer.ebay.com/) (Client ID + Client Secret), then run `npm run setup`.
 
-### What are the eBay API rate limits?
+</details>
+
+<details>
+<summary><strong>What are the eBay API rate limits?</strong></summary>
 
 Client credentials (the default) allow about 1,000 requests/day. Authenticating with a user token via OAuth raises this to 10,000–50,000 requests/day depending on your account tier.
 
-### Does it support both sandbox and production?
+</details>
+
+<details>
+<summary><strong>Does it support both sandbox and production?</strong></summary>
 
 Yes. Switch with the `EBAY_ENVIRONMENT` variable (`sandbox` or `production`).
 
-### Are my credentials and data secure?
+</details>
+
+<details>
+<summary><strong>Are my credentials and data secure?</strong></summary>
 
 Credentials are stored locally in your `.env` file and used only to call eBay directly. See [SECURITY.md](SECURITY.md) and [EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md).
 
-### How is this different from calling the eBay API directly?
+</details>
+
+<details>
+<summary><strong>How is this different from calling the eBay API directly?</strong></summary>
 
 You interact in natural language through your AI assistant. OAuth token management, automatic retries with backoff, and type-safe Zod validation are built in. See the [comparison table](#ebay-mcp-vs-the-raw-ebay-api) above.
 
-### Does it support eBay's legacy Trading API (XML)?
+</details>
+
+<details>
+<summary><strong>Does it support eBay's legacy Trading API (XML)?</strong></summary>
 
 Yes. Fixed-price listing create, revise, relist, and end operations are supported through the Trading API tools.
 
-### How do I get higher rate limits?
+</details>
+
+<details>
+<summary><strong>How do I get higher rate limits?</strong></summary>
 
 Complete the OAuth flow with `npm run setup` to authenticate with a user token (10k–50k requests/day instead of the default 1k).
 
-### What is it built with?
+</details>
+
+<details>
+<summary><strong>What is it built with?</strong></summary>
 
 TypeScript and Node.js (ESM), using the official MCP SDK, Zod for validation, and OpenAPI-generated types.
 
-### How do I update to the latest version?
+</details>
+
+<details>
+<summary><strong>How do I update to the latest version?</strong></summary>
 
 Run `npm install -g ebay-mcp@latest` (or `npm update -g ebay-mcp`).
 
-### Does it work offline?
+</details>
+
+<details>
+<summary><strong>Does it work offline?</strong></summary>
 
 No. "Runs locally" means the server process runs on your machine — it still needs an internet connection and valid credentials to reach eBay's live APIs.
+
+</details>
 
 ## Contributing
 

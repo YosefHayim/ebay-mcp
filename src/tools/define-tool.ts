@@ -7,6 +7,7 @@ import { uiArchetypes } from '@/tools/ui/archetypes.js';
 import type {
   CardViewModel,
   ChartViewModel,
+  StatViewModel,
   TableViewModel,
   ViewModel,
 } from '@/tools/ui/view-models.js';
@@ -27,7 +28,8 @@ import type {
 export type ToolUiSpec<Result> =
   | { archetype: 'table'; map: (result: Result) => TableViewModel }
   | { archetype: 'card'; map: (result: Result) => CardViewModel }
-  | { archetype: 'chart'; map: (result: Result) => ChartViewModel };
+  | { archetype: 'chart'; map: (result: Result) => ChartViewModel }
+  | { archetype: 'stat'; map: (result: Result) => StatViewModel };
 
 /**
  * Specification for a single MCP tool, co-locating its public definition with a
