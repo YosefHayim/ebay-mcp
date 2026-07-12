@@ -7,7 +7,7 @@ import { getErrorMessage } from '@/utils/errors.js';
 import { httpRequestEffect, isHttpError, type ResponseType } from '@/utils/http.js';
 import { isRecord } from '@/utils/typeGuards.js';
 import { apiLogger, logRequest, logResponse, logErrorResponse } from '@/utils/logger.js';
-import { Effect } from 'effect';
+import { Cause, Effect, Exit } from 'effect';
 
 /**
  * Per-request overrides accepted by the verb helpers ({@link EbayApiClient.get}
@@ -167,7 +167,16 @@ export class EbayApiClient {
     endpoint: string,
     options: EbayRequestOptions,
   ): Promise<T> {
-    return await Effect.runPromise(this.requestEffect<T>(method, endpoint, options));
+    // Reject with the actual tagged `EbayClientRequestError` rather than the
+    // opaque `FiberFailure` that plain `Effect.runPromise` throws on failure.
+    // Callers wrap this rejection as `EbayApiError.cause`, and the tool boundary
+    // walks `.cause` to surface eBay's real error body — a FiberFailure would
+    // seal that chain behind Effect internals and mask it as a generic message.
+    const exit = await Effect.runPromiseExit(this.requestEffect<T>(method, endpoint, options));
+    if (Exit.isSuccess(exit)) {
+      return exit.value;
+    }
+    throw Cause.squash(exit.cause);
   }
 
   /**

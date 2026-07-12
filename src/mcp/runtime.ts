@@ -12,7 +12,7 @@ import {
 } from '@/mcp/toolGating.js';
 import { buildUiToolResult, createUiBridge, type UiBridge } from '@/mcp/uiBridge.js';
 import { getToolEntries, type ToolEntry } from '@/tools/registry.js';
-import { getErrorMessage } from '@/utils/errors.js';
+import { getEbayErrorDetails } from '@/utils/errors.js';
 import { serverLogger, toolLogger } from '@/utils/logger.js';
 import { Effect } from 'effect';
 
@@ -43,24 +43,39 @@ export interface EbayMcpRuntime {
 }
 
 function formatToolSuccess(result: unknown) {
+  // eBay returns 204 No Content for several writes (opt-in, create location),
+  // which decodes to `undefined`. `JSON.stringify(undefined)` is `undefined`
+  // (not a string), and the MCP result schema requires `text` to be a string —
+  // sending it raw throws "expected string, received undefined". Represent an
+  // empty success body as an explicit success marker instead.
+  const serialized = JSON.stringify(result, null, 2);
   return {
     content: [
       {
         type: 'text' as const,
-        text: JSON.stringify(result, null, 2),
+        text: serialized ?? JSON.stringify({ success: true }, null, 2),
       },
     ],
   };
 }
 
 function formatToolFailure(error: unknown) {
-  const errorMessage = getErrorMessage(error);
+  // Surface eBay's real error payload (errorId, message, longMessage, parameters)
+  // instead of masking every failure as a single opaque message.
+  const { message, status, errors } = getEbayErrorDetails(error);
+  const payload: Record<string, unknown> = { error: message };
+  if (status !== undefined) {
+    payload.status = status;
+  }
+  if (errors !== undefined) {
+    payload.details = errors;
+  }
 
   return {
     content: [
       {
         type: 'text' as const,
-        text: JSON.stringify({ error: errorMessage }, null, 2),
+        text: JSON.stringify(payload, null, 2),
       },
     ],
     isError: true,
@@ -104,10 +119,10 @@ function registerTool(
               : formatToolSuccess(result);
           }),
           Effect.catchAll((error) => {
-            const errorMessage = getErrorMessage(error);
-
             if (logToolExecution) {
-              toolLogger.error(`Tool ${definition.name} failed`, { error: errorMessage });
+              toolLogger.error(`Tool ${definition.name} failed`, {
+                error: getEbayErrorDetails(error).message,
+              });
             }
 
             return Effect.succeed(formatToolFailure(error));
