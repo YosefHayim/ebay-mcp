@@ -103,9 +103,5 @@
   {
       "Scope": "https://api.ebay.com/oauth/api_scope",
       "Description": "View public data from eBay"
-  },
-  {
-      "Scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly",
-      "Description": "Allows readonly access to Feedback APIs."
   }
 ]
