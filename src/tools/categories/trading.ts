@@ -7,6 +7,7 @@ import {
   getListingSchema,
   relistItemSchema,
   reviseListingSchema,
+  uploadSiteHostedPicturesSchema,
 } from '@/utils/trading/trading.js';
 import { Effect } from 'effect';
 
@@ -59,5 +60,13 @@ export const tradingEntries: ToolEntry[] = [
     inputSchema: relistItemSchema.shape,
     annotations: { readOnlyHint: false },
     handler: (api, args) => Effect.runPromise(api.trading.relistItem(args)),
+  }),
+  defineTool({
+    name: 'ebay_upload_site_hosted_pictures',
+    description:
+      'Upload an image to eBay Picture Services (EPS) and get back a hosted image URL.\n\nUses the Trading API (UploadSiteHostedPictures). Supply the image as a local file path, inline base64 data, or an external URL for eBay to fetch. Returns the EPS `fullUrl` for use in PictureDetails.PictureURL when creating or revising a listing.\n\nExamples:\n- Local file: { "filePath": "/path/to/photo.jpg", "pictureName": "front" }\n- Base64: { "imageBase64": "<...>", "pictureName": "front" }\n- External URL: { "externalPictureUrl": "https://example.com/photo.jpg" }\n\nRequired: User OAuth token.',
+    inputSchema: uploadSiteHostedPicturesSchema.shape,
+    annotations: { readOnlyHint: false },
+    handler: (api, args) => Effect.runPromise(api.trading.uploadSiteHostedPictures(args)),
   }),
 ];

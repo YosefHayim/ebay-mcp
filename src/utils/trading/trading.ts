@@ -39,3 +39,27 @@ export const relistItemSchema = z.object({
     .optional()
     .describe('Optional Trading API Item fields to change while relisting'),
 });
+
+/** Input accepted by uploadSiteHostedPictures. */
+export const uploadSiteHostedPicturesSchema = z.object({
+  filePath: z
+    .string()
+    .optional()
+    .describe('Absolute path to a local image file to upload (JPEG/PNG/GIF)'),
+  imageBase64: z
+    .string()
+    .optional()
+    .describe('Base64-encoded image bytes, as an alternative to filePath'),
+  externalPictureUrl: z
+    .string()
+    .optional()
+    .describe('Public image URL for eBay to fetch instead of uploading local bytes'),
+  pictureName: z
+    .string()
+    .optional()
+    .describe('Optional name for the picture in eBay Picture Services (EPS)'),
+  pictureSet: z
+    .enum(['Standard', 'Supersize'])
+    .optional()
+    .describe('EPS picture set; Supersize enables larger hosted images'),
+});
