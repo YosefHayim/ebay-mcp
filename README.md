@@ -304,7 +304,7 @@ Auto-configured by `npm run setup`. Requires [Node.js](https://nodejs.org/en) â‰
 | [Metadata](src/tools/categories/metadata.ts) | Return policies, sales-tax jurisdictions, automotive compatibility |
 | [Taxonomy](src/tools/categories/taxonomy.ts) | Category trees, item aspects, item conditions |
 | [Other](src/tools/categories/other.ts) | Identity, VeRO, translation, and international shipping support APIs (Compliance tools report eBay decommission) |
-| [Trading (legacy XML)](src/tools/categories/trading.ts) | Fixed-price listing create, revise, relist, end |
+| [Trading (legacy XML)](src/tools/categories/trading.ts) | Fixed-price listing create, revise, relist, end; site-hosted image (EPS) upload |
 | [Developer](src/tools/categories/developer.ts) | Rate limits, signing keys, client registration |
 | [Token Management](src/tools/categories/tokenManagement.ts) | OAuth URL generation and token management |
 
