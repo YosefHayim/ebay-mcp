@@ -136,3 +136,16 @@ it('rejects uploadSiteHostedPictures when no image source is provided', async ()
 
   expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
 });
+
+it('rejects uploadSiteHostedPictures when multiple image sources are provided', async () => {
+  const api = createTradingApiMock();
+
+  await expect(
+    executeTool(api, 'ebay_upload_site_hosted_pictures', {
+      filePath: '/tmp/front.jpg',
+      externalPictureUrl: 'https://example.com/photo.jpg',
+    }),
+  ).rejects.toThrow();
+
+  expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
+});
