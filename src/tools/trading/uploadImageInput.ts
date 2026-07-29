@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { EndpointInputError } from '@/api/shared/request.js';
 import type { UploadSiteHostedPicturesApiInput } from '@/api/trading/trading.js';
@@ -19,7 +19,7 @@ export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
  * whitespace. This stops an oversized payload from exhausting memory before the
  * exact decoded-size cap runs.
  */
-const MAX_BASE64_CHARS = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 1_000_000;
+export const MAX_BASE64_CHARS = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 1_000_000;
 
 /** Standard base64 alphabet with optional padding, after whitespace is stripped. */
 const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/;
@@ -77,7 +77,7 @@ export const resolveUploadImageInput = (
   if (providedSources.length > 1) {
     return Effect.fail(
       new EndpointInputError({
-        parameter: 'filePath',
+        parameter: 'imageSource',
         message: 'Provide only one of filePath, imageBase64, or externalPictureUrl, not several',
       }),
     );
@@ -89,19 +89,39 @@ export const resolveUploadImageInput = (
 
   if (args.filePath !== undefined) {
     const filePath = args.filePath;
-    // Stat first so an oversized file is rejected before it is read into memory.
-    return Effect.tryPromise({ try: () => stat(filePath), catch: fileReadError(filePath) }).pipe(
-      Effect.flatMap((info) =>
-        info.size > MAX_IMAGE_BYTES
-          ? Effect.fail(tooLarge('filePath', info.size))
-          : Effect.tryPromise({
-              try: () => readFile(filePath),
-              catch: fileReadError(filePath),
-            }).pipe(
-              Effect.map((data) => ({ ...base, imageBytes: data, fileName: basename(filePath) })),
-            ),
-      ),
-    );
+    // Open one descriptor and read at most MAX_IMAGE_BYTES + 1 bytes from it,
+    // rejecting non-regular files. `stat` alone is not a memory bound: a FIFO or
+    // character device (e.g. /dev/zero) reports a tiny size but then blocks or
+    // streams unbounded, and a regular file can grow between stat and read.
+    return Effect.tryPromise({
+      try: async () => {
+        const handle = await open(filePath, 'r');
+        try {
+          const info = await handle.stat();
+          if (!info.isFile()) {
+            throw new EndpointInputError({
+              parameter: 'filePath',
+              message: `"${filePath}" is not a regular file`,
+            });
+          }
+          const capacity = Math.min(info.size, MAX_IMAGE_BYTES) + 1;
+          const buffer = Buffer.alloc(capacity);
+          const { bytesRead } = await handle.read(buffer, 0, capacity, 0);
+          if (bytesRead > MAX_IMAGE_BYTES) {
+            throw tooLarge('filePath', bytesRead);
+          }
+          return {
+            ...base,
+            imageBytes: buffer.subarray(0, bytesRead),
+            fileName: basename(filePath),
+          };
+        } finally {
+          await handle.close();
+        }
+      },
+      catch: (error) =>
+        error instanceof EndpointInputError ? error : fileReadError(filePath)(error),
+    });
   }
 
   if (args.imageBase64 !== undefined) {
@@ -144,7 +164,7 @@ export const resolveUploadImageInput = (
 
   return Effect.fail(
     new EndpointInputError({
-      parameter: 'filePath',
+      parameter: 'imageSource',
       message: 'Provide one of filePath, imageBase64, or externalPictureUrl to upload a picture',
     }),
   );

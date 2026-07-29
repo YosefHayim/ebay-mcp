@@ -1,7 +1,23 @@
 import { expect, it, vi } from 'vitest';
 import type { EbaySellerApi } from '@/api/index.js';
+import { EndpointInputError } from '@/api/shared/request.js';
 import { executeTool } from '@/tools/index.js';
-import { Effect } from 'effect';
+import { MAX_BASE64_CHARS, resolveUploadImageInput } from '@/tools/trading/uploadImageInput.js';
+import { Cause, Effect, Exit } from 'effect';
+
+/** Run the image resolver and return the tagged input error it fails with. */
+const expectUploadInputError = async (
+  input: Parameters<typeof resolveUploadImageInput>[0],
+): Promise<EndpointInputError> => {
+  const exit = await Effect.runPromiseExit(resolveUploadImageInput(input));
+  expect(Exit.isFailure(exit)).toBe(true);
+  if (!Exit.isFailure(exit)) {
+    throw new Error('expected the resolver to fail');
+  }
+  const error = Cause.squash(exit.cause);
+  expect(error).toBeInstanceOf(EndpointInputError);
+  return error as EndpointInputError;
+};
 
 const createTradingApiMock = (): EbaySellerApi =>
   ({
@@ -117,35 +133,33 @@ it('decodes base64 to image bytes for uploadSiteHostedPictures', async () => {
   expect(api.trading.uploadSiteHostedPictures).toHaveBeenCalledWith({ imageBytes: bytes });
 });
 
-it('rejects invalid base64 for uploadSiteHostedPictures before calling the API', async () => {
-  const api = createTradingApiMock();
+it('rejects invalid base64 with an imageBase64 input error', async () => {
+  const error = await expectUploadInputError({ imageBase64: 'not valid base64 @@@' });
 
-  await expect(
-    executeTool(api, 'ebay_upload_site_hosted_pictures', { imageBase64: 'not valid base64 @@@' }),
-  ).rejects.toThrow();
-
-  expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
+  expect(error.parameter).toBe('imageBase64');
+  expect(error.message).toMatch(/not valid base64/i);
 });
 
-it('rejects uploadSiteHostedPictures when no image source is provided', async () => {
-  const api = createTradingApiMock();
+it('rejects oversized base64 before decoding, with an imageBase64 input error', async () => {
+  const error = await expectUploadInputError({ imageBase64: 'A'.repeat(MAX_BASE64_CHARS + 1) });
 
-  await expect(
-    executeTool(api, 'ebay_upload_site_hosted_pictures', { pictureName: 'front' }),
-  ).rejects.toThrow();
-
-  expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
+  expect(error.parameter).toBe('imageBase64');
+  expect(error.message).toMatch(/too large/i);
 });
 
-it('rejects uploadSiteHostedPictures when multiple image sources are provided', async () => {
-  const api = createTradingApiMock();
+it('rejects a request with no image source using an imageSource input error', async () => {
+  const error = await expectUploadInputError({ pictureName: 'front' });
 
-  await expect(
-    executeTool(api, 'ebay_upload_site_hosted_pictures', {
-      filePath: '/tmp/front.jpg',
-      externalPictureUrl: 'https://example.com/photo.jpg',
-    }),
-  ).rejects.toThrow();
+  expect(error.parameter).toBe('imageSource');
+  expect(error.message).toMatch(/provide one of/i);
+});
 
-  expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
+it('rejects a request with multiple image sources using an imageSource input error', async () => {
+  const error = await expectUploadInputError({
+    filePath: '/tmp/front.jpg',
+    externalPictureUrl: 'https://example.com/photo.jpg',
+  });
+
+  expect(error.parameter).toBe('imageSource');
+  expect(error.message).toMatch(/only one of/i);
 });
