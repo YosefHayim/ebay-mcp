@@ -1,5 +1,4 @@
-import { readFile } from 'node:fs/promises';
-import { basename, extname } from 'node:path';
+import { extname } from 'node:path';
 import type { TradingApiClient, TradingUploadImage } from '@/api/clientTrading.js';
 import { TradingApiFailure } from '@/api/clientTradingError.js';
 import {
@@ -17,9 +16,7 @@ import type {
   getListingSchema,
   relistItemSchema,
   reviseListingSchema,
-  uploadSiteHostedPicturesSchema,
 } from '@/utils/trading/trading.js';
-import { getErrorMessage } from '@/utils/errors.js';
 import { isRecord } from '@/utils/typeGuards.js';
 import { Effect } from 'effect';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
@@ -36,8 +33,25 @@ type ReviseListingInput = InferEffectSchema<typeof reviseListingSchema>;
 type EndListingInput = InferEffectSchema<typeof endListingSchema>;
 /** Input accepted by relistItem. */
 type RelistItemInput = InferEffectSchema<typeof relistItemSchema>;
-/** Input accepted by uploadSiteHostedPictures. */
-type UploadSiteHostedPicturesInput = InferEffectSchema<typeof uploadSiteHostedPicturesSchema>;
+
+/**
+ * Image payload accepted by {@link TradingApi.uploadSiteHostedPictures}, resolved
+ * to bytes by the tool handler. The API layer never touches the filesystem: local
+ * files and base64 are read/validated at the MCP tool boundary and passed here as
+ * `imageBytes`, mirroring how {@link https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/uploadEvidenceFile uploadEvidenceFile} receives bytes.
+ */
+export interface UploadSiteHostedPicturesApiInput {
+  /** Decoded image bytes for a direct EPS upload (multipart). Mutually exclusive with `externalPictureUrl`. */
+  readonly imageBytes?: Buffer;
+  /** Original file name, used only as a fallback when the content type cannot be sniffed. */
+  readonly fileName?: string;
+  /** Public image URL for eBay to fetch instead of a direct byte upload. */
+  readonly externalPictureUrl?: string;
+  /** Optional EPS picture name. */
+  readonly pictureName?: string;
+  /** Optional EPS picture set (`Standard` | `Supersize`). */
+  readonly pictureSet?: string;
+}
 
 const asRecordArray = (value: unknown): Record<string, unknown>[] => {
   if (!Array.isArray(value)) {
@@ -63,6 +77,58 @@ const IMAGE_CONTENT_TYPES: Record<string, string> = {
 const imageContentTypeFor = (fileName: string): string =>
   IMAGE_CONTENT_TYPES[extname(fileName).toLowerCase()] ?? 'image/jpeg';
 
+/**
+ * Detect the image MIME type from the decoded bytes' magic numbers. The base64
+ * upload path carries no file name, so relying on the extension would mislabel
+ * every payload as JPEG; sniffing the real format keeps the multipart
+ * `Content-Type` accurate so eBay does not reject or mis-handle PNG/GIF/WebP.
+ */
+const sniffImageContentType = (data: Buffer): string | undefined => {
+  if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  if (
+    data.length >= 8 &&
+    data[0] === 0x89 &&
+    data[1] === 0x50 &&
+    data[2] === 0x4e &&
+    data[3] === 0x47
+  ) {
+    return 'image/png';
+  }
+  if (data.length >= 4 && data[0] === 0x47 && data[1] === 0x49 && data[2] === 0x46) {
+    return 'image/gif';
+  }
+  if (
+    data.length >= 12 &&
+    data.toString('ascii', 0, 4) === 'RIFF' &&
+    data.toString('ascii', 8, 12) === 'WEBP'
+  ) {
+    return 'image/webp';
+  }
+  if (data.length >= 2 && data[0] === 0x42 && data[1] === 0x4d) {
+    return 'image/bmp';
+  }
+  if (
+    data.length >= 4 &&
+    ((data[0] === 0x49 && data[1] === 0x49 && data[2] === 0x2a && data[3] === 0x00) ||
+      (data[0] === 0x4d && data[1] === 0x4d && data[2] === 0x00 && data[3] === 0x2a))
+  ) {
+    return 'image/tiff';
+  }
+  return undefined;
+};
+
+/** Build the multipart image part, sniffing the content type from bytes first. */
+const buildUploadImage = (bytes: Buffer, fileName: string | undefined): TradingUploadImage => {
+  const name = fileName ?? 'image.jpg';
+  return {
+    data: bytes,
+    contentType: sniffImageContentType(bytes) ?? imageContentTypeFor(name),
+    fileName: name,
+  };
+};
+
 /** Read the FullURL of the eBay-hosted picture from an UploadSiteHostedPictures response. */
 const readFullUrl = (result: Record<string, unknown>): string | undefined => {
   const details = result.SiteHostedPictureDetails;
@@ -70,66 +136,6 @@ const readFullUrl = (result: Record<string, unknown>): string | undefined => {
     return details.FullURL;
   }
   return undefined;
-};
-
-/** Fields used to resolve the binary image for an UploadSiteHostedPictures call. */
-interface UploadImageSource {
-  readonly filePath?: string;
-  readonly imageBase64?: string;
-  readonly pictureName?: string;
-}
-
-/** Resolve the multipart image bytes from a local file path or inline base64 data. */
-const resolveUploadImage = ({
-  filePath,
-  imageBase64,
-  pictureName,
-}: UploadImageSource): Effect.Effect<TradingUploadImage, EndpointInputError> => {
-  if (filePath !== undefined) {
-    const fileName = basename(filePath);
-    return Effect.tryPromise({
-      try: () => readFile(filePath),
-      catch: (error) =>
-        new EndpointInputError({
-          parameter: 'filePath',
-          message: `Failed to read image file "${filePath}": ${getErrorMessage(error)}`,
-        }),
-    }).pipe(Effect.map((data) => ({ data, contentType: imageContentTypeFor(fileName), fileName })));
-  }
-
-  if (imageBase64 !== undefined) {
-    // `Buffer.from(..., 'base64')` silently drops invalid characters and never
-    // throws, so malformed input would upload truncated/empty bytes and fail
-    // remotely with a confusing eBay error. Validate the base64 shape and the
-    // decoded length locally so callers get an actionable input error instead.
-    const normalized = imageBase64.replace(/\s+/g, '');
-    const data = Buffer.from(normalized, 'base64');
-    if (
-      normalized.length === 0 ||
-      !/^[A-Za-z0-9+/]+={0,2}$/.test(normalized) ||
-      data.length === 0
-    ) {
-      return Effect.fail(
-        new EndpointInputError({
-          parameter: 'imageBase64',
-          message: 'imageBase64 is not valid base64-encoded image data',
-        }),
-      );
-    }
-    const fileName = pictureName === undefined ? 'image.jpg' : `${pictureName}.jpg`;
-    return Effect.succeed({
-      data,
-      contentType: imageContentTypeFor(fileName),
-      fileName,
-    });
-  }
-
-  return Effect.fail(
-    new EndpointInputError({
-      parameter: 'filePath',
-      message: 'Provide one of filePath, imageBase64, or externalPictureUrl to upload a picture',
-    }),
-  );
 };
 
 /**
@@ -355,18 +361,19 @@ export class TradingApi {
   /**
    * Uploads an image to eBay Picture Services (EPS) and returns its hosted URL.
    *
-   * Wraps the Trading API `UploadSiteHostedPictures` call. Supply the image as a
-   * local `filePath`, inline `imageBase64`, or an `externalPictureUrl` for eBay to
-   * fetch. The returned `fullUrl` (also `SiteHostedPictureDetails.FullURL`) is a
-   * public EPS URL usable in `PictureDetails.PictureURL` for create/revise listing.
+   * Wraps the Trading API `UploadSiteHostedPictures` call. The image is supplied
+   * either as already-resolved `imageBytes` (the MCP tool handler reads a local
+   * file or decodes base64 at the I/O boundary) or as an `externalPictureUrl` for
+   * eBay to fetch. The returned `fullUrl` (also `SiteHostedPictureDetails.FullURL`)
+   * is a public EPS URL usable in `PictureDetails.PictureURL` for create/revise.
    *
-   * @param input - Image source (one of filePath/imageBase64/externalPictureUrl) and EPS options.
+   * @param input - Resolved image bytes or an external URL, plus EPS options.
    * @returns An Effect that succeeds with the hosted picture URL and EPS details.
    *
    * @example
    * ```ts
    * const uploaded = await Effect.runPromise(
-   *   tradingApi.uploadSiteHostedPictures({ filePath: '/tmp/front.jpg', pictureName: 'front' }),
+   *   tradingApi.uploadSiteHostedPictures({ imageBytes, fileName: 'front.jpg', pictureName: 'front' }),
    * );
    * // uploaded.fullUrl -> https://i.ebayimg.com/...
    * ```
@@ -374,39 +381,39 @@ export class TradingApi {
    * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/uploadsitehostedpictures.html
    */
   uploadSiteHostedPictures = (
-    input: UploadSiteHostedPicturesInput,
+    input: UploadSiteHostedPicturesApiInput,
   ): Effect.Effect<TradingRecordResponse, EbayApiError | EndpointInputError> => {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UploadSiteHostedPicturesInput>(input, 'input');
-      const pictureName = yield* optionalStringEffect(request.pictureName, 'pictureName');
-      const pictureSet = yield* optionalStringEffect(request.pictureSet, 'pictureSet');
-      const externalPictureUrl = yield* optionalStringEffect(
-        request.externalPictureUrl,
-        'externalPictureUrl',
-      );
-      const filePath = yield* optionalStringEffect(request.filePath, 'filePath');
-      const imageBase64 = yield* optionalStringEffect(request.imageBase64, 'imageBase64');
-
       const params: Record<string, unknown> = {
-        ...(pictureName === undefined ? {} : { PictureName: pictureName }),
-        ...(pictureSet === undefined ? {} : { PictureSet: pictureSet }),
+        ...(input.pictureName === undefined ? {} : { PictureName: input.pictureName }),
+        ...(input.pictureSet === undefined ? {} : { PictureSet: input.pictureSet }),
       };
 
-      // ExternalPictureURL is a pure-XML call (eBay fetches the URL); local bytes
-      // and base64 go through the multipart uploader.
-      const result =
-        externalPictureUrl === undefined
-          ? yield* tradingClient.uploadPicture(
-              'UploadSiteHostedPictures',
-              params,
-              yield* resolveUploadImage({ filePath, imageBase64, pictureName }),
-            )
-          : yield* tradingClient.execute('UploadSiteHostedPictures', {
-              ...params,
-              ExternalPictureURL: externalPictureUrl,
-            });
+      // ExternalPictureURL is a pure-XML call (eBay fetches the URL); resolved
+      // bytes go through the multipart uploader.
+      let result: TradingRecordResponse;
+      if (input.externalPictureUrl !== undefined) {
+        result = yield* tradingClient.execute('UploadSiteHostedPictures', {
+          ...params,
+          ExternalPictureURL: input.externalPictureUrl,
+        });
+      } else if (input.imageBytes !== undefined) {
+        result = yield* tradingClient.uploadPicture(
+          'UploadSiteHostedPictures',
+          params,
+          buildUploadImage(input.imageBytes, input.fileName),
+        );
+      } else {
+        return yield* Effect.fail(
+          new EndpointInputError({
+            parameter: 'imageBytes',
+            message:
+              'Provide one of filePath, imageBase64, or externalPictureUrl to upload a picture',
+          }),
+        );
+      }
 
       // The tool's contract is to return a usable hosted URL. eBay returns
       // SiteHostedPictureDetails.FullURL on success; if it is missing, treat it
@@ -414,7 +421,7 @@ export class TradingApi {
       // unusable `fullUrl: undefined`.
       const fullUrl = readFullUrl(result);
       if (fullUrl === undefined) {
-        const path = tradingClient.getTradingBaseUrl();
+        const path = tradingClient.getTradingEndpoint();
         return yield* Effect.fail(
           new EbayApiError({
             method: 'POST',

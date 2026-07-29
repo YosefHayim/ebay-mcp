@@ -359,6 +359,19 @@ export class TradingApiClient {
   getTradingBaseUrl = (): string => this.baseUrl;
 
   /**
+   * Return the fully-qualified Trading API endpoint URL (`<baseUrl>/ws/api.dll`)
+   * that {@link execute} and {@link uploadPicture} post to.
+   *
+   * @returns The absolute Trading API endpoint URL for the configured environment.
+   *
+   * @example
+   * ```ts
+   * const endpoint = tradingClient.getTradingEndpoint();
+   * ```
+   */
+  getTradingEndpoint = (): string => buildTradingPath(this.baseUrl);
+
+  /**
    * Execute a named Trading API call with XML request/response conversion.
    *
    * @param callName - Trading API call name, such as GetItem or AddFixedPriceItem.
@@ -428,6 +441,8 @@ export class TradingApiClient {
    *   tradingClient.uploadPicture('UploadSiteHostedPictures', { PictureName: 'front' }, image),
    * );
    * ```
+   *
+   * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/uploadsitehostedpictures.html
    */
   uploadPicture = (
     callName: string,

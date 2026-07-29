@@ -1,5 +1,6 @@
 import { defineTool } from '@/tools/defineTool.js';
 import type { ToolEntry } from '@/tools/registry.js';
+import { resolveUploadImageInput } from '@/tools/trading/uploadImageInput.js';
 import {
   createListingSchema,
   endListingSchema,
@@ -67,6 +68,14 @@ export const tradingEntries: ToolEntry[] = [
       'Upload an image to eBay Picture Services (EPS) and get back a hosted image URL.\n\nUses the Trading API (UploadSiteHostedPictures). Supply the image as a local file path, inline base64 data, or an external URL for eBay to fetch. Returns the EPS `fullUrl` for use in PictureDetails.PictureURL when creating or revising a listing.\n\nExamples:\n- Local file: { "filePath": "/path/to/photo.jpg", "pictureName": "front" }\n- Base64: { "imageBase64": "<...>", "pictureName": "front" }\n- External URL: { "externalPictureUrl": "https://example.com/photo.jpg" }\n\nRequired: User OAuth token.',
     inputSchema: uploadSiteHostedPicturesSchema.shape,
     annotations: { readOnlyHint: false },
-    handler: (api, args) => Effect.runPromise(api.trading.uploadSiteHostedPictures(args)),
+    // Resolve the image at the tool boundary (read file / decode + validate
+    // base64 / enforce the size cap), then hand the API layer only bytes or an
+    // external URL — the API layer performs no filesystem I/O.
+    handler: (api, args) =>
+      Effect.runPromise(
+        resolveUploadImageInput(args).pipe(
+          Effect.flatMap((input) => api.trading.uploadSiteHostedPictures(input)),
+        ),
+      ),
   }),
 ];

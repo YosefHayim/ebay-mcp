@@ -12,6 +12,7 @@ const createTradingApiMock = (): EbaySellerApi =>
       reviseListing: vi.fn(),
       endListing: vi.fn(),
       relistItem: vi.fn(),
+      uploadSiteHostedPictures: vi.fn(),
     },
   }) as unknown as EbaySellerApi;
 
@@ -81,4 +82,57 @@ it('passes relistItem args through unchanged', async () => {
   await executeTool(api, 'ebay_relist_item', input);
 
   expect(api.trading.relistItem).toHaveBeenCalledWith(input);
+});
+
+it('resolves an external picture URL to API input for uploadSiteHostedPictures', async () => {
+  const api = createTradingApiMock();
+
+  vi.mocked(api.trading.uploadSiteHostedPictures).mockReturnValue(
+    Effect.succeed({ fullUrl: 'https://i.ebayimg.com/x.jpg' }),
+  );
+
+  await executeTool(api, 'ebay_upload_site_hosted_pictures', {
+    externalPictureUrl: 'https://example.com/photo.jpg',
+    pictureName: 'front',
+  });
+
+  expect(api.trading.uploadSiteHostedPictures).toHaveBeenCalledWith({
+    externalPictureUrl: 'https://example.com/photo.jpg',
+    pictureName: 'front',
+  });
+});
+
+it('decodes base64 to image bytes for uploadSiteHostedPictures', async () => {
+  const api = createTradingApiMock();
+  const bytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+
+  vi.mocked(api.trading.uploadSiteHostedPictures).mockReturnValue(
+    Effect.succeed({ fullUrl: 'https://i.ebayimg.com/x.jpg' }),
+  );
+
+  await executeTool(api, 'ebay_upload_site_hosted_pictures', {
+    imageBase64: bytes.toString('base64'),
+  });
+
+  expect(api.trading.uploadSiteHostedPictures).toHaveBeenCalledWith({ imageBytes: bytes });
+});
+
+it('rejects invalid base64 for uploadSiteHostedPictures before calling the API', async () => {
+  const api = createTradingApiMock();
+
+  await expect(
+    executeTool(api, 'ebay_upload_site_hosted_pictures', { imageBase64: 'not valid base64 @@@' }),
+  ).rejects.toThrow();
+
+  expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
+});
+
+it('rejects uploadSiteHostedPictures when no image source is provided', async () => {
+  const api = createTradingApiMock();
+
+  await expect(
+    executeTool(api, 'ebay_upload_site_hosted_pictures', { pictureName: 'front' }),
+  ).rejects.toThrow();
+
+  expect(api.trading.uploadSiteHostedPictures).not.toHaveBeenCalled();
 });
