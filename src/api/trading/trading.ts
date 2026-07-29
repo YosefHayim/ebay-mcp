@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import type { TradingApiClient, TradingUploadImage } from '@/api/clientTrading.js';
+import { TradingApiFailure } from '@/api/clientTradingError.js';
 import {
   EbayApiError,
   EndpointInputError,
@@ -97,9 +98,27 @@ const resolveUploadImage = ({
   }
 
   if (imageBase64 !== undefined) {
+    // `Buffer.from(..., 'base64')` silently drops invalid characters and never
+    // throws, so malformed input would upload truncated/empty bytes and fail
+    // remotely with a confusing eBay error. Validate the base64 shape and the
+    // decoded length locally so callers get an actionable input error instead.
+    const normalized = imageBase64.replace(/\s+/g, '');
+    const data = Buffer.from(normalized, 'base64');
+    if (
+      normalized.length === 0 ||
+      !/^[A-Za-z0-9+/]+={0,2}$/.test(normalized) ||
+      data.length === 0
+    ) {
+      return Effect.fail(
+        new EndpointInputError({
+          parameter: 'imageBase64',
+          message: 'imageBase64 is not valid base64-encoded image data',
+        }),
+      );
+    }
     const fileName = pictureName === undefined ? 'image.jpg' : `${pictureName}.jpg`;
     return Effect.succeed({
-      data: Buffer.from(imageBase64, 'base64'),
+      data,
       contentType: imageContentTypeFor(fileName),
       fileName,
     });
@@ -389,7 +408,29 @@ export class TradingApi {
               ExternalPictureURL: externalPictureUrl,
             });
 
-      return { fullUrl: readFullUrl(result), ...result };
+      // The tool's contract is to return a usable hosted URL. eBay returns
+      // SiteHostedPictureDetails.FullURL on success; if it is missing, treat it
+      // as a response-contract failure rather than reporting a success with an
+      // unusable `fullUrl: undefined`.
+      const fullUrl = readFullUrl(result);
+      if (fullUrl === undefined) {
+        const path = tradingClient.getTradingBaseUrl();
+        return yield* Effect.fail(
+          new EbayApiError({
+            method: 'POST',
+            path,
+            cause: new TradingApiFailure({
+              callName: 'UploadSiteHostedPictures',
+              path,
+              message:
+                'Trading API UploadSiteHostedPictures succeeded but returned no SiteHostedPictureDetails.FullURL',
+              cause: result,
+            }),
+          }),
+        );
+      }
+
+      return { fullUrl, ...result };
     });
   };
 }

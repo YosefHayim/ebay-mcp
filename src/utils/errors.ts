@@ -101,6 +101,15 @@ const collectEbayErrorNode = (node: Record<string, unknown>, acc: EbayErrorAccum
     if (detail) {
       acc.message = detail;
     }
+    return;
+  }
+  // eBay Trading (XML) errors ride on the tagged-error `cause` as an array of
+  // `{ ShortMessage, LongMessage, ErrorCode, ErrorParameters }` rather than
+  // `data.errors`. Surface it verbatim so Trading failures carry the same
+  // structured detail (errorId/parameters) as REST failures. The human-readable
+  // message is already captured from the TradingApiFailure `message` field above.
+  if (acc.errors === undefined && Array.isArray(node.cause) && node.cause.length > 0) {
+    acc.errors = node.cause;
   }
 };
 

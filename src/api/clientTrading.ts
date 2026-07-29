@@ -153,6 +153,17 @@ const postTradingXml = ({
 const CRLF = '\r\n';
 
 /**
+ * Strip characters that would break the multipart `Content-Disposition` header:
+ * control characters including CR/LF (which could inject headers or multipart
+ * delimiters) plus the double-quote and backslash that close or escape the
+ * quoted `filename` value. Falls back to a safe default if nothing usable remains.
+ */
+const sanitizeMultipartFileName = (fileName: string): string => {
+  const cleaned = fileName.replace(/[\u0000-\u001f\u007f"\\]/g, '').trim();
+  return cleaned.length > 0 ? cleaned : 'image.jpg';
+};
+
+/**
  * Assemble the multipart/form-data body eBay's UploadSiteHostedPictures expects:
  * the XML request as the first part, the raw image bytes as the second. The XML
  * part must come first so eBay reads the call parameters before the binary.
@@ -168,7 +179,7 @@ const buildMultipartBody = (
     `Content-Type: text/xml; charset=utf-8${CRLF}${CRLF}` +
     `${xmlBody}${CRLF}` +
     `--${boundary}${CRLF}` +
-    `Content-Disposition: form-data; name="image"; filename="${image.fileName}"${CRLF}` +
+    `Content-Disposition: form-data; name="image"; filename="${sanitizeMultipartFileName(image.fileName)}"${CRLF}` +
     `Content-Type: ${image.contentType}${CRLF}${CRLF}`;
   const tail = `${CRLF}--${boundary}--${CRLF}`;
 
