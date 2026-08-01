@@ -158,7 +158,7 @@ const CRLF = '\r\n';
  * delimiters) plus the double-quote and backslash that close or escape the
  * quoted `filename` value. Falls back to a safe default if nothing usable remains.
  */
-const sanitizeMultipartFileName = (fileName: string): string => {
+export const sanitizeMultipartFileName = (fileName: string): string => {
   const cleaned = fileName.replace(/[\u0000-\u001f\u007f"\\]/g, '').trim();
   return cleaned.length > 0 ? cleaned : 'image.jpg';
 };
@@ -168,7 +168,7 @@ const sanitizeMultipartFileName = (fileName: string): string => {
  * the XML request as the first part, the raw image bytes as the second. The XML
  * part must come first so eBay reads the call parameters before the binary.
  */
-const buildMultipartBody = (
+export const buildMultipartBody = (
   boundary: string,
   xmlBody: string,
   image: TradingUploadImage,
@@ -201,6 +201,8 @@ const postTradingMultipart = ({
     url: path,
     headers: { ...headers, 'Content-Type': `multipart/form-data; boundary=${boundary}` },
     body,
+    // Double the 30s used by plain XML calls (postTradingXml): a multipart upload
+    // also streams up to a 12 MB image, so it needs more headroom on slow links.
     timeoutMs: 60_000,
     responseType: 'text',
   }).pipe(

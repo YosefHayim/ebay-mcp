@@ -1,4 +1,3 @@
-import { extname } from 'node:path';
 import type { TradingApiClient, TradingUploadImage } from '@/api/clientTrading.js';
 import { TradingApiFailure } from '@/api/clientTradingError.js';
 import {
@@ -61,29 +60,15 @@ const asRecordArray = (value: unknown): Record<string, unknown>[] => {
   return value.filter(isRecord);
 };
 
-/** Map a file extension to the image MIME type eBay Picture Services expects. */
-const IMAGE_CONTENT_TYPES: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.gif': 'image/gif',
-  '.bmp': 'image/bmp',
-  '.tif': 'image/tiff',
-  '.tiff': 'image/tiff',
-  '.webp': 'image/webp',
-};
-
-/** Resolve an image MIME type from a file name, defaulting to JPEG. */
-const imageContentTypeFor = (fileName: string): string =>
-  IMAGE_CONTENT_TYPES[extname(fileName).toLowerCase()] ?? 'image/jpeg';
-
 /**
  * Detect the image MIME type from the decoded bytes' magic numbers. The base64
  * upload path carries no file name, so relying on the extension would mislabel
  * every payload as JPEG; sniffing the real format keeps the multipart
  * `Content-Type` accurate so eBay does not reject or mis-handle PNG/GIF/WebP.
+ * Returns `undefined` for bytes that match none of the recognized signatures so
+ * the caller can fall back to a default MIME type.
  */
-const sniffImageContentType = (data: Buffer): string | undefined => {
+export const sniffImageContentType = (data: Buffer): string | undefined => {
   if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
     return 'image/jpeg';
   }
@@ -116,18 +101,20 @@ const sniffImageContentType = (data: Buffer): string | undefined => {
   ) {
     return 'image/tiff';
   }
-  return undefined;
 };
 
-/** Build the multipart image part, sniffing the content type from bytes first. */
-const buildUploadImage = (bytes: Buffer, fileName: string | undefined): TradingUploadImage => {
-  const name = fileName ?? 'image.jpg';
-  return {
-    data: bytes,
-    contentType: sniffImageContentType(bytes) ?? imageContentTypeFor(name),
-    fileName: name,
-  };
-};
+/**
+ * Build the multipart image part, sniffing the content type from the bytes'
+ * magic numbers. When the format is unrecognized we default to `image/jpeg`
+ * rather than guessing from the (often absent) file extension — eBay Picture
+ * Services accepts JPEG for the common case and the sniffer already covers the
+ * formats worth distinguishing.
+ */
+const buildUploadImage = (bytes: Buffer, fileName: string | undefined): TradingUploadImage => ({
+  data: bytes,
+  contentType: sniffImageContentType(bytes) ?? 'image/jpeg',
+  fileName: fileName ?? 'image.jpg',
+});
 
 /** Read the FullURL of the eBay-hosted picture from an UploadSiteHostedPictures response. */
 const readFullUrl = (result: Record<string, unknown>): string | undefined => {
@@ -135,7 +122,6 @@ const readFullUrl = (result: Record<string, unknown>): string | undefined => {
   if (isRecord(details) && typeof details.FullURL === 'string') {
     return details.FullURL;
   }
-  return undefined;
 };
 
 /**
@@ -399,19 +385,19 @@ export class TradingApi {
           ...params,
           ExternalPictureURL: input.externalPictureUrl,
         });
-      } else if (input.imageBytes !== undefined) {
-        result = yield* tradingClient.uploadPicture(
-          'UploadSiteHostedPictures',
-          params,
-          buildUploadImage(input.imageBytes, input.fileName),
-        );
-      } else {
+      } else if (input.imageBytes === undefined) {
         return yield* Effect.fail(
           new EndpointInputError({
             parameter: 'imageBytes',
             message:
               'Provide one of filePath, imageBase64, or externalPictureUrl to upload a picture',
           }),
+        );
+      } else {
+        result = yield* tradingClient.uploadPicture(
+          'UploadSiteHostedPictures',
+          params,
+          buildUploadImage(input.imageBytes, input.fileName),
         );
       }
 

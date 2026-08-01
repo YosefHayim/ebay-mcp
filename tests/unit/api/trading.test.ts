@@ -1,13 +1,21 @@
-import { beforeEach, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TradingApiClient } from '@/api/clientTrading.js';
-import { TradingApi } from '@/api/trading/trading.js';
+import { sniffImageContentType, TradingApi } from '@/api/trading/trading.js';
 import { Effect } from 'effect';
 
 let api: TradingApi;
-let mockClient: { execute: ReturnType<typeof vi.fn> };
+let mockClient: {
+  execute: ReturnType<typeof vi.fn>;
+  uploadPicture: ReturnType<typeof vi.fn>;
+  getTradingEndpoint: ReturnType<typeof vi.fn>;
+};
 
 beforeEach(() => {
-  mockClient = { execute: vi.fn() };
+  mockClient = {
+    execute: vi.fn(),
+    uploadPicture: vi.fn(),
+    getTradingEndpoint: vi.fn(() => 'https://api.ebay.com/ws/api.dll'),
+  };
   api = new TradingApi(mockClient as unknown as TradingApiClient);
 });
 
@@ -188,4 +196,94 @@ it('fails relistItem when itemId is missing', async () => {
 
   expect(error._tag).toBe('EndpointInputError');
   expect(error.message).toContain('itemId is required');
+});
+
+describe('sniffImageContentType', () => {
+  const cases: Array<[string, Buffer, string | undefined]> = [
+    ['JPEG', Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]), 'image/jpeg'],
+    ['PNG', Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), 'image/png'],
+    ['GIF', Buffer.from('GIF89a', 'ascii'), 'image/gif'],
+    [
+      'WebP',
+      Buffer.concat([
+        Buffer.from('RIFF', 'ascii'),
+        Buffer.from([0x00, 0x00, 0x00, 0x00]),
+        Buffer.from('WEBP', 'ascii'),
+      ]),
+      'image/webp',
+    ],
+    ['BMP', Buffer.from([0x42, 0x4d, 0x00, 0x00]), 'image/bmp'],
+    ['little-endian TIFF', Buffer.from([0x49, 0x49, 0x2a, 0x00]), 'image/tiff'],
+    ['big-endian TIFF', Buffer.from([0x4d, 0x4d, 0x00, 0x2a]), 'image/tiff'],
+    ['unknown bytes', Buffer.from([0x01, 0x02, 0x03, 0x04]), undefined],
+    ['too-short buffer', Buffer.from([0xff]), undefined],
+  ];
+
+  for (const [name, bytes, expected] of cases) {
+    it(`detects ${name}`, () => {
+      expect(sniffImageContentType(bytes)).toBe(expected);
+    });
+  }
+});
+
+describe('uploadSiteHostedPictures', () => {
+  const successResponse = {
+    Ack: 'Success',
+    SiteHostedPictureDetails: { FullURL: 'https://i.ebayimg.com/images/g/abc/s-l1600.jpg' },
+  };
+
+  it('fetches an external picture URL via a pure-XML call and returns the hosted URL', async () => {
+    mockClient.execute.mockReturnValue(Effect.succeed(successResponse));
+
+    const result = await Effect.runPromise(
+      api.uploadSiteHostedPictures({
+        externalPictureUrl: 'https://example.com/front.jpg',
+        pictureName: 'front',
+      }),
+    );
+
+    expect(mockClient.execute).toHaveBeenCalledWith('UploadSiteHostedPictures', {
+      PictureName: 'front',
+      ExternalPictureURL: 'https://example.com/front.jpg',
+    });
+    expect(mockClient.uploadPicture).not.toHaveBeenCalled();
+    expect(result.fullUrl).toBe('https://i.ebayimg.com/images/g/abc/s-l1600.jpg');
+  });
+
+  it('uploads resolved image bytes via multipart, sniffing the content type', async () => {
+    mockClient.uploadPicture.mockReturnValue(Effect.succeed(successResponse));
+    const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
+
+    const result = await Effect.runPromise(
+      api.uploadSiteHostedPictures({ imageBytes: pngBytes, fileName: 'mislabeled.jpg' }),
+    );
+
+    expect(mockClient.execute).not.toHaveBeenCalled();
+    expect(mockClient.uploadPicture).toHaveBeenCalledWith(
+      'UploadSiteHostedPictures',
+      {},
+      { data: pngBytes, contentType: 'image/png', fileName: 'mislabeled.jpg' },
+    );
+    expect(result.fullUrl).toBe('https://i.ebayimg.com/images/g/abc/s-l1600.jpg');
+  });
+
+  it('fails when eBay returns no SiteHostedPictureDetails.FullURL', async () => {
+    mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success' }));
+
+    const error = await Effect.runPromise(
+      Effect.flip(
+        api.uploadSiteHostedPictures({ externalPictureUrl: 'https://example.com/front.jpg' }),
+      ),
+    );
+
+    expect(error._tag).toBe('EbayApiError');
+    expect(error.message).toContain('no SiteHostedPictureDetails.FullURL');
+  });
+
+  it('fails with an input error when no image source is provided', async () => {
+    const error = await Effect.runPromise(Effect.flip(api.uploadSiteHostedPictures({})));
+
+    expect(error._tag).toBe('EndpointInputError');
+    expect(error.message).toContain('Provide one of');
+  });
 });

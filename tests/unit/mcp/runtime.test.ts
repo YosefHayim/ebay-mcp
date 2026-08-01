@@ -49,3 +49,56 @@ describe('MCP runtime', () => {
     expect(api.initialize).toHaveBeenCalledOnce();
   });
 });
+
+describe('formatToolSuccess', () => {
+  it('serializes a normal result to a JSON text block', async () => {
+    const { formatToolSuccess } = await import('@/mcp/runtime.js');
+
+    const result = formatToolSuccess({ itemId: '12345' });
+
+    expect(result.content[0]?.text).toBe(JSON.stringify({ itemId: '12345' }, null, 2));
+  });
+
+  it('maps a 204/undefined body to an explicit success marker', async () => {
+    const { formatToolSuccess } = await import('@/mcp/runtime.js');
+
+    // JSON.stringify(undefined) is `undefined` (not a string); the MCP result
+    // schema requires text to be a string, so this must become { success: true }.
+    const result = formatToolSuccess(undefined);
+
+    expect(result.content[0]?.text).toBe(JSON.stringify({ success: true }, null, 2));
+  });
+});
+
+describe('formatToolFailure', () => {
+  it('surfaces the eBay message, status, and structured details, and flags isError', async () => {
+    const { formatToolFailure } = await import('@/mcp/runtime.js');
+    const { EbayApiError } = await import('@/api/shared/request.js');
+
+    const error = new EbayApiError({
+      method: 'GET',
+      path: '/buy/browse/v1/x',
+      cause: {
+        status: 400,
+        data: { errors: [{ errorId: 2004, longMessage: 'Invalid request payload' }] },
+      },
+    });
+
+    const result = formatToolFailure(error);
+
+    expect(result.isError).toBe(true);
+    const payload = JSON.parse(result.content[0]?.text ?? '{}');
+    expect(payload.error).toBe('Invalid request payload');
+    expect(payload.status).toBe(400);
+    expect(payload.details).toEqual([{ errorId: 2004, longMessage: 'Invalid request payload' }]);
+  });
+
+  it('omits status and details when the failure carries neither', async () => {
+    const { formatToolFailure } = await import('@/mcp/runtime.js');
+
+    const result = formatToolFailure(new Error('boom'));
+
+    const payload = JSON.parse(result.content[0]?.text ?? '{}');
+    expect(payload).toEqual({ error: 'boom' });
+  });
+});

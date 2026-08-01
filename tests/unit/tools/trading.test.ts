@@ -1,9 +1,23 @@
-import { expect, it, vi } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, expect, it, vi } from 'vitest';
 import type { EbaySellerApi } from '@/api/index.js';
 import { EndpointInputError } from '@/api/shared/request.js';
 import { executeTool } from '@/tools/index.js';
-import { MAX_BASE64_CHARS, resolveUploadImageInput } from '@/tools/trading/uploadImageInput.js';
+import {
+  MAX_BASE64_CHARS,
+  MAX_IMAGE_BYTES,
+  resolveUploadImageInput,
+} from '@/tools/trading/uploadImageInput.js';
 import { Cause, Effect, Exit } from 'effect';
+
+/** Directories created for filePath tests, cleaned up after each test. */
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
+});
 
 /** Run the image resolver and return the tagged input error it fails with. */
 const expectUploadInputError = async (
@@ -15,8 +29,10 @@ const expectUploadInputError = async (
     throw new Error('expected the resolver to fail');
   }
   const error = Cause.squash(exit.cause);
-  expect(error).toBeInstanceOf(EndpointInputError);
-  return error as EndpointInputError;
+  if (!(error instanceof EndpointInputError)) {
+    throw new Error(`expected an EndpointInputError, got ${String(error)}`);
+  }
+  return error;
 };
 
 const createTradingApiMock = (): EbaySellerApi =>
@@ -162,4 +178,46 @@ it('rejects a request with multiple image sources using an imageSource input err
 
   expect(error.parameter).toBe('imageSource');
   expect(error.message).toMatch(/only one of/i);
+});
+
+it('reads a local image file into imageBytes with its basename', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'ebay-upload-'));
+  tempDirs.push(dir);
+  const filePath = join(dir, 'front.jpg');
+  const bytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+  await writeFile(filePath, bytes);
+
+  const resolved = await Effect.runPromise(resolveUploadImageInput({ filePath }));
+
+  expect(resolved.fileName).toBe('front.jpg');
+  expect(Buffer.isBuffer(resolved.imageBytes)).toBe(true);
+  expect(Buffer.from(resolved.imageBytes as Buffer)).toEqual(bytes);
+});
+
+it('rejects a non-regular file with a filePath input error', async () => {
+  // /dev/null is a character device: stat reports a tiny size but it is not a
+  // regular file, so the resolver must reject it rather than read it.
+  const error = await expectUploadInputError({ filePath: '/dev/null' });
+
+  expect(error.parameter).toBe('filePath');
+  expect(error.message).toMatch(/not a regular file/i);
+});
+
+it('reports a filePath input error when the file does not exist', async () => {
+  const error = await expectUploadInputError({ filePath: '/nonexistent/path/to/front.jpg' });
+
+  expect(error.parameter).toBe('filePath');
+  expect(error.message).toMatch(/failed to read image file/i);
+});
+
+it('rejects a file larger than the eBay Picture Services size cap', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'ebay-upload-big-'));
+  tempDirs.push(dir);
+  const filePath = join(dir, 'huge.jpg');
+  await writeFile(filePath, Buffer.alloc(MAX_IMAGE_BYTES + 16));
+
+  const error = await expectUploadInputError({ filePath });
+
+  expect(error.parameter).toBe('filePath');
+  expect(error.message).toMatch(/over the .* limit/i);
 });

@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EbayApiClient } from '@/api/client.js';
-import { TradingApiClient } from '@/api/clientTrading.js';
+import {
+  buildMultipartBody,
+  sanitizeMultipartFileName,
+  TradingApiClient,
+  type TradingUploadImage,
+} from '@/api/clientTrading.js';
 import { Effect } from 'effect';
 import nock from 'nock';
 
@@ -105,6 +110,70 @@ it('uses the sandbox URL for sandbox environment', () => {
 
 it('uses the production URL for production environment', () => {
   expect(client.getTradingBaseUrl()).toBe('https://api.ebay.com');
+});
+
+describe('sanitizeMultipartFileName', () => {
+  it('keeps an ordinary file name unchanged', () => {
+    expect(sanitizeMultipartFileName('front-photo_1.jpg')).toBe('front-photo_1.jpg');
+  });
+
+  it('strips CR/LF so a header cannot be injected', () => {
+    const injected = 'evil.jpg\r\nContent-Disposition: form-data; name="x"';
+    const cleaned = sanitizeMultipartFileName(injected);
+
+    expect(cleaned).not.toMatch(/[\r\n]/);
+    expect(cleaned).toBe('evil.jpgContent-Disposition: form-data; name=x');
+  });
+
+  it('strips double-quote and backslash so the quoted filename cannot be closed', () => {
+    expect(sanitizeMultipartFileName('a"b\\c.jpg')).toBe('abc.jpg');
+  });
+
+  it('falls back to a safe default when nothing usable remains', () => {
+    expect(sanitizeMultipartFileName('\r\n"\\')).toBe('image.jpg');
+    expect(sanitizeMultipartFileName('   ')).toBe('image.jpg');
+  });
+});
+
+describe('buildMultipartBody', () => {
+  const image: TradingUploadImage = {
+    data: Buffer.from([0xde, 0xad, 0xbe, 0xef]),
+    contentType: 'image/png',
+    fileName: 'front.png',
+  };
+
+  it('places the XML payload part before the sanitized binary image part', () => {
+    const body = buildMultipartBody('BOUNDARY123', '<Req/>', image);
+    const text = body.toString('latin1');
+
+    const xmlIndex = text.indexOf('name="XML Payload"');
+    const imageIndex = text.indexOf('name="image"');
+    expect(xmlIndex).toBeGreaterThanOrEqual(0);
+    expect(imageIndex).toBeGreaterThan(xmlIndex);
+    expect(text).toContain('filename="front.png"');
+    expect(text).toContain('Content-Type: image/png');
+    // Opening and closing boundary delimiters are present.
+    expect(text).toContain('--BOUNDARY123\r\n');
+    expect(text).toContain('--BOUNDARY123--\r\n');
+  });
+
+  it('embeds the raw image bytes verbatim between the header and closing boundary', () => {
+    const body = buildMultipartBody('B', '<Req/>', image);
+
+    // The 4 raw image bytes must survive unescaped inside the buffer.
+    expect(body.includes(image.data)).toBe(true);
+  });
+
+  it('sanitizes a header-injecting file name before it reaches the body', () => {
+    const body = buildMultipartBody('B', '<Req/>', {
+      ...image,
+      fileName: 'x.png\r\nX-Evil: 1',
+    });
+    const text = body.toString('latin1');
+
+    expect(text).toContain('filename="x.pngX-Evil: 1"');
+    expect(text).not.toContain('\r\nX-Evil: 1"');
+  });
 });
 
 describe('proxy auth mode', () => {

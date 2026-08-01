@@ -1,6 +1,6 @@
 # ebay-mcp
 
-> Local MCP server that exposes 298 tools covering 100% of the eBay Sell APIs to AI coding assistants (Claude, Cursor, Windsurf, and any MCP-compatible client). Runs entirely on your machine with no cloud relay.
+> Local MCP server that exposes 299 tools covering 100% of the eBay Sell APIs to AI coding assistants (Claude, Cursor, Windsurf, and any MCP-compatible client). Runs entirely on your machine with no cloud relay.
 
 Built with TypeScript/Node.js, the MCP SDK, Effect-backed validation with a Zod-compatible MCP adapter, and OpenAPI-generated eBay types. Supports OAuth 2.0, configurable tool exposure, MCP Apps read-only views, and the eBay Trading API (legacy XML).
 
@@ -65,7 +65,7 @@ Tool definitions and handlers are co-located per family in `src/tools/categories
 
 ### What is the eBay MCP server?
 
-A local Model Context Protocol (MCP) server that exposes 298 tools covering 100% of eBay's Sell APIs (270 endpoints) to AI assistants such as Claude, Cursor, and Cline.
+A local Model Context Protocol (MCP) server that exposes 299 tools covering 100% of eBay's Sell APIs (270 endpoints) to AI assistants such as Claude, Cursor, and Cline.
 
 ### Is this an official eBay product?
 
@@ -81,7 +81,7 @@ Yes. It works with Claude Desktop and Claude Code out of the box, with Cursor an
 
 ### How many eBay APIs and tools does it cover?
 
-298 tools across 270 unique endpoints — 100% of eBay's Sell APIs.
+299 tools across 270 unique endpoints — 100% of eBay's Sell APIs.
 
 ### Is it free and open source?
 

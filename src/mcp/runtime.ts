@@ -42,7 +42,11 @@ export interface EbayMcpRuntime {
   initializeApi(): Promise<void>;
 }
 
-function formatToolSuccess(result: unknown) {
+/**
+ * Shape a successful tool result into an MCP text content block. Exported for
+ * unit testing the 204/`undefined` fallback below.
+ */
+export function formatToolSuccess(result: unknown) {
   // eBay returns 204 No Content for several writes (opt-in, create location),
   // which decodes to `undefined`. `JSON.stringify(undefined)` is `undefined`
   // (not a string), and the MCP result schema requires `text` to be a string —
@@ -59,7 +63,11 @@ function formatToolSuccess(result: unknown) {
   };
 }
 
-function formatToolFailure(error: unknown) {
+/**
+ * Shape a tool failure into an MCP error content block, surfacing eBay's real
+ * error detail. Exported for unit testing the error-payload projection.
+ */
+export function formatToolFailure(error: unknown) {
   // Surface eBay's real error payload (errorId, message, longMessage, parameters)
   // instead of masking every failure as a single opaque message.
   const { message, status, errors } = getEbayErrorDetails(error);

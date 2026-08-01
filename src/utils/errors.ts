@@ -1,3 +1,4 @@
+import type { EbayClientRequestErrorKind } from '@/api/clientRequestError.js';
 import { Cause, Runtime } from 'effect';
 
 /**
@@ -36,7 +37,15 @@ export interface EbayErrorDetails {
   readonly errors?: unknown[];
 }
 
-/** Narrow an unknown value to an indexable object without asserting `any`. */
+/**
+ * Narrow an unknown value to an indexable object without asserting `any`.
+ *
+ * Unlike `isRecord` in `@/utils/typeGuards`, this deliberately admits arrays
+ * (`typeof [] === 'object'`): the Trading (XML) error branch reads `node.cause`
+ * as an array of error objects, and callers here only ever read named string
+ * keys, so treating an array as a record is harmless. Kept local rather than
+ * shared so that difference stays explicit at the one place it matters.
+ */
 const asRecord = (value: unknown): Record<string, unknown> | undefined =>
   typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : undefined;
 
@@ -58,7 +67,7 @@ const nextErrorNode = (node: Record<string, unknown>): unknown => {
 const firstEbayErrorMessage = (errors: unknown[]): string | undefined => {
   const first = asRecord(errors[0]);
   if (!first) {
-    return undefined;
+    return;
   }
   const detail = first.longMessage ?? first.message;
   return typeof detail === 'string' ? detail : undefined;
@@ -74,20 +83,30 @@ interface EbayErrorAccumulator {
 }
 
 /**
- * `EbayClientRequestError.kind` values whose message is deliberate, actionable
- * remediation guidance (retry-after seconds, "use the ebay_set_user_tokens…"
- * hint). A deeper node's raw eBay `longMessage` must not overwrite these — the
- * generic `httpStatus`/`transport` messages, by contrast, are refined by the
- * eBay error detail and stay overwritable.
+ * Classify every `EbayClientRequestError.kind` by whether its message is
+ * deliberate, actionable remediation guidance (retry-after seconds, "use the
+ * ebay_set_user_tokens…" hint) that a deeper node's raw eBay `longMessage` must
+ * not overwrite, versus a generic `httpStatus`/`transport` message that stays
+ * overwritable so the eBay error detail can refine it.
+ *
+ * Typed as a total `Record` over the union so adding a new kind to
+ * {@link EbayClientRequestErrorKind} is a compile error here until it is
+ * classified — the guidance set can never silently drift out of sync.
  */
-const GUIDANCE_KINDS = new Set([
-  'missingCredentials',
-  'localRateLimit',
-  'tokenAcquisition',
-  'missingAccessToken',
-  'tokenRefresh',
-  'remoteRateLimit',
-]);
+const KIND_IS_GUIDANCE: Record<EbayClientRequestErrorKind, boolean> = {
+  missingCredentials: true,
+  localRateLimit: true,
+  tokenAcquisition: true,
+  missingAccessToken: true,
+  tokenRefresh: true,
+  remoteRateLimit: true,
+  httpStatus: false,
+  transport: false,
+};
+
+/** Whether a node's `kind` string carries a remediation message to preserve. */
+const isGuidanceKind = (kind: string): boolean =>
+  Object.hasOwn(KIND_IS_GUIDANCE, kind) && KIND_IS_GUIDANCE[kind as EbayClientRequestErrorKind];
 
 /** Fold one cause-chain node's message, status, and eBay errors into the accumulator. */
 const collectEbayErrorNode = (node: Record<string, unknown>, acc: EbayErrorAccumulator): void => {
@@ -95,7 +114,7 @@ const collectEbayErrorNode = (node: Record<string, unknown>, acc: EbayErrorAccum
     typeof node.message === 'string' && node.message.length > 0 ? node.message : undefined;
   if (message !== undefined && !acc.messageLocked) {
     acc.message = message;
-    if (typeof node.kind === 'string' && GUIDANCE_KINDS.has(node.kind)) {
+    if (typeof node.kind === 'string' && isGuidanceKind(node.kind)) {
       acc.messageLocked = true;
     }
   }
