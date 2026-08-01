@@ -194,14 +194,18 @@ it('reads a local image file into imageBytes with its basename', async () => {
   expect(Buffer.from(resolved.imageBytes as Buffer)).toEqual(bytes);
 });
 
-it('rejects a non-regular file with a filePath input error', async () => {
-  // /dev/null is a character device: stat reports a tiny size but it is not a
-  // regular file, so the resolver must reject it rather than read it.
-  const error = await expectUploadInputError({ filePath: '/dev/null' });
+// /dev/null is a POSIX character device; Windows has no equivalent path.
+it.skipIf(process.platform === 'win32')(
+  'rejects a non-regular file with a filePath input error',
+  async () => {
+    // stat reports a tiny size but it is not a regular file, so the resolver
+    // must reject it rather than read it.
+    const error = await expectUploadInputError({ filePath: '/dev/null' });
 
-  expect(error.parameter).toBe('filePath');
-  expect(error.message).toMatch(/not a regular file/i);
-});
+    expect(error.parameter).toBe('filePath');
+    expect(error.message).toMatch(/not a regular file/i);
+  },
+);
 
 it('reports a filePath input error when the file does not exist', async () => {
   const error = await expectUploadInputError({ filePath: '/nonexistent/path/to/front.jpg' });

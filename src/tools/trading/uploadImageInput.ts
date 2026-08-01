@@ -1,3 +1,4 @@
+import { constants as fsConstants } from 'node:fs';
 import { open } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { EndpointInputError } from '@/api/shared/request.js';
@@ -89,13 +90,16 @@ export const resolveUploadImageInput = (
 
   if (args.filePath !== undefined) {
     const filePath = args.filePath;
-    // Open one descriptor and read at most MAX_IMAGE_BYTES + 1 bytes from it,
-    // rejecting non-regular files. `stat` alone is not a memory bound: a FIFO or
-    // character device (e.g. /dev/zero) reports a tiny size but then blocks or
-    // streams unbounded, and a regular file can grow between stat and read.
+    // Open non-blocking and reject non-regular files. `stat` alone is not a
+    // memory bound, and the open itself must not block: a FIFO with no writer
+    // makes a blocking `open(path, 'r')` hang before the `isFile()` guard can
+    // run, so O_NONBLOCK lets the open return and the guard reject it. Then read
+    // from the descriptor until EOF or one byte past the cap — sizing the buffer
+    // from the (already stale) `stat` size would silently truncate a file that
+    // grew between stat and read, since the extra bytes would never be observed.
     return Effect.tryPromise({
       try: async () => {
-        const handle = await open(filePath, 'r');
+        const handle = await open(filePath, fsConstants.O_RDONLY | fsConstants.O_NONBLOCK);
         try {
           const info = await handle.stat();
           if (!info.isFile()) {
@@ -104,9 +108,20 @@ export const resolveUploadImageInput = (
               message: `"${filePath}" is not a regular file`,
             });
           }
-          const capacity = Math.min(info.size, MAX_IMAGE_BYTES) + 1;
-          const buffer = Buffer.alloc(capacity);
-          const { bytesRead } = await handle.read(buffer, 0, capacity, 0);
+          const buffer = Buffer.alloc(MAX_IMAGE_BYTES + 1);
+          let bytesRead = 0;
+          while (bytesRead < buffer.length) {
+            const { bytesRead: chunk } = await handle.read(
+              buffer,
+              bytesRead,
+              buffer.length - bytesRead,
+              bytesRead,
+            );
+            if (chunk === 0) {
+              break; // EOF
+            }
+            bytesRead += chunk;
+          }
           if (bytesRead > MAX_IMAGE_BYTES) {
             throw tooLarge('filePath', bytesRead);
           }
