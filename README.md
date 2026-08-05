@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/glama%2FYosefHayim%2Febay-mcp.svg)](https://mcptoplist.com/server/glama%2FYosefHayim%2Febay-mcp)
+
 <!-- Keywords: eBay MCP server, eBay Model Context Protocol, eBay API for AI assistants, eBay Sell API, Claude eBay integration, Cursor eBay, eBay inventory automation, eBay order management AI, eBay OAuth, eBay developer tools, MCP server for eBay -->
 
 <p align="center">
