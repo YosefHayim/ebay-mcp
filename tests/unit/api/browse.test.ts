@@ -24,7 +24,7 @@ describe('Browse API helpers', () => {
       expect(buildBrowseFilter({ priceMin: 10, priceMax: 50 })).toBe(
         'price:[10..50],priceCurrency:USD',
       );
-      expect(buildBrowseFilter({ priceMin: 10 })).toBe('price:[10],priceCurrency:USD');
+      expect(buildBrowseFilter({ priceMin: 10 })).toBe('price:[10..],priceCurrency:USD');
       expect(buildBrowseFilter({ priceMax: 50, priceCurrency: 'EUR' })).toBe(
         'price:[..50],priceCurrency:EUR',
       );
@@ -87,6 +87,98 @@ describe('Browse API helpers', () => {
       });
 
       expect(mapped).toEqual({ itemId: 'v1|1|0', title: 'Sparse' });
+    });
+  });
+
+  describe('mapSearchActiveItemsResponse (realistic payload)', () => {
+    // Shaped after eBay's documented item_summary/search response rather than
+    // this module's own assumptions: nested containers, the marketplace/legacy
+    // id fields we deliberately drop, and a thumbnail array we ignore.
+    const EBAY_SEARCH_PAYLOAD = {
+      href: 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=drone&limit=2&offset=0',
+      total: 12_345,
+      next: 'https://api.ebay.com/buy/browse/v1/item_summary/search?q=drone&limit=2&offset=2',
+      limit: 2,
+      offset: 0,
+      itemSummaries: [
+        {
+          itemId: 'v1|254188828753|0',
+          title: 'Drone Quadcopter 4K Camera',
+          leafCategoryIds: ['179697'],
+          categories: [{ categoryId: '179697', categoryName: 'Quadcopters & Multirotors' }],
+          image: { imageUrl: 'https://i.ebayimg.com/images/g/abc/s-l225.jpg' },
+          price: { value: '129.99', currency: 'USD' },
+          itemHref: 'https://api.ebay.com/buy/browse/v1/item/v1%7C254188828753%7C0',
+          seller: {
+            username: 'drone_outlet',
+            feedbackPercentage: '98.7',
+            feedbackScore: 15_432,
+          },
+          condition: 'New',
+          conditionId: '1000',
+          thumbnailImages: [{ imageUrl: 'https://i.ebayimg.com/images/g/abc/s-l64.jpg' }],
+          shippingOptions: [
+            {
+              shippingCostType: 'FIXED',
+              shippingCost: { value: '0.00', currency: 'USD' },
+            },
+          ],
+          buyingOptions: ['FIXED_PRICE'],
+          itemWebUrl: 'https://www.ebay.com/itm/254188828753',
+          itemLocation: { postalCode: '112**', country: 'US' },
+          adultOnly: false,
+          legacyItemId: '254188828753',
+          availableCoupons: false,
+          itemCreationDate: '2026-08-01T10:00:00.000Z',
+          topRatedBuyingExperience: true,
+          priorityListing: false,
+          listingMarketplaceId: 'EBAY_US',
+        },
+      ],
+    };
+
+    it('maps eBay-shaped payloads and ignores unmapped containers', () => {
+      const result = mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, {
+        query: 'drone',
+        offset: 0,
+        limit: 2,
+      });
+
+      expect(result.total).toBe(12_345);
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]).toEqual({
+        itemId: 'v1|254188828753|0',
+        title: 'Drone Quadcopter 4K Camera',
+        price: { currency: 'USD', value: '129.99' },
+        condition: 'New',
+        buyingOptions: ['FIXED_PRICE'],
+        itemWebUrl: 'https://www.ebay.com/itm/254188828753',
+        imageUrl: 'https://i.ebayimg.com/images/g/abc/s-l225.jpg',
+        seller: 'drone_outlet',
+        sellerFeedbackPercentage: '98.7',
+        shippingCost: { currency: 'USD', value: '0.00' },
+        itemLocationCountry: 'US',
+      });
+    });
+
+    it('prefers the pagination eBay returned over the requested window', () => {
+      const result = mapSearchActiveItemsResponse(
+        { ...EBAY_SEARCH_PAYLOAD, offset: 40, limit: 10 },
+        { query: 'drone', offset: 9999, limit: 200 },
+      );
+
+      expect(result.offset).toBe(40);
+      expect(result.limit).toBe(10);
+    });
+
+    it('falls back to the requested window when the payload omits it', () => {
+      const result = mapSearchActiveItemsResponse(
+        { itemSummaries: [] },
+        { query: 'drone', offset: 5, limit: 25 },
+      );
+
+      expect(result.offset).toBe(5);
+      expect(result.limit).toBe(25);
     });
   });
 
@@ -240,6 +332,76 @@ describe('BrowseApi', () => {
         Effect.runPromise(api.searchActiveItems({ query: 'x', sort: 'distance' as never })),
       ).rejects.toThrow(/sort must be one of/);
       expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('rejects an offset above the Browse maximum', async () => {
+      await expect(
+        Effect.runPromise(api.searchActiveItems({ query: 'x', offset: 10_001 })),
+      ).rejects.toThrow(/offset must be between 0 and 10000/);
+      expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('accepts an offset at the Browse maximum', async () => {
+      vi.mocked(mockClient.get).mockResolvedValue({});
+
+      await Effect.runPromise(api.searchActiveItems({ query: 'x', offset: 10_000 }));
+
+      expect(mockClient.get).toHaveBeenCalledWith(
+        '/buy/browse/v1/item_summary/search',
+        expect.objectContaining({ offset: 10_000 }),
+      );
+    });
+
+    it('rejects non-string entries in conditions and buyingOptions', async () => {
+      await expect(
+        Effect.runPromise(api.searchActiveItems({ query: 'x', conditions: [1 as never] })),
+      ).rejects.toThrow(/conditions must be an array of non-empty strings/);
+      await expect(
+        Effect.runPromise(api.searchActiveItems({ query: 'x', buyingOptions: ['' as never] })),
+      ).rejects.toThrow(/buyingOptions must be an array of non-empty strings/);
+      expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('rejects a negative price bound', async () => {
+      await expect(
+        Effect.runPromise(api.searchActiveItems({ query: 'x', priceMin: -1 })),
+      ).rejects.toThrow();
+      expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('rejects an inverted price window', async () => {
+      await expect(
+        Effect.runPromise(api.searchActiveItems({ query: 'x', priceMin: 50, priceMax: 10 })),
+      ).rejects.toThrow(/priceMin \(50\) must not exceed priceMax \(10\)/);
+      expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('rejects a raw filter whose price clause collides with priceMin/priceMax', async () => {
+      await expect(
+        Effect.runPromise(
+          api.searchActiveItems({
+            query: 'x',
+            priceMax: 100,
+            filter: 'price:[5..10],priceCurrency:USD',
+          }),
+        ),
+      ).rejects.toThrow(/filter already contains a price clause/);
+      expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('allows a raw filter without a price clause alongside price bounds', async () => {
+      vi.mocked(mockClient.get).mockResolvedValue({});
+
+      await Effect.runPromise(
+        api.searchActiveItems({ query: 'x', priceMax: 100, filter: 'sellers:{acme}' }),
+      );
+
+      expect(mockClient.get).toHaveBeenCalledWith(
+        '/buy/browse/v1/item_summary/search',
+        expect.objectContaining({
+          filter: 'price:[..100],priceCurrency:USD,sellers:{acme}',
+        }),
+      );
     });
 
     it('rejects a missing query', async () => {

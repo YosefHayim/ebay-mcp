@@ -24,6 +24,12 @@ const DEFAULT_LIMIT = 20;
 /** Hard upper bound for the Browse search `limit` parameter. */
 const MAX_LIMIT = 200;
 
+/** Hard upper bound for the Browse search `offset` parameter. */
+const MAX_OFFSET = 10_000;
+
+/** Detects a price clause in a caller-supplied raw filter expression. */
+const RAW_PRICE_CLAUSE = /(^|,)\s*price(Currency)?:/;
+
 /** Sort orders accepted by Browse item_summary/search (default is best match). */
 export const BROWSE_SORT_VALUES = ['price', '-price', 'newlyListed', 'endingSoonest'] as const;
 
@@ -191,7 +197,7 @@ export const buildBrowseFilter = (input: {
       hasMin && hasMax
         ? `[${input.priceMin}..${input.priceMax}]`
         : hasMin
-          ? `[${input.priceMin}]`
+          ? `[${input.priceMin}..]`
           : `[..${input.priceMax}]`;
     clauses.push(`price:${range}`);
     clauses.push(`priceCurrency:${input.priceCurrency ?? 'USD'}`);
@@ -308,9 +314,17 @@ export const mapSearchActiveItemsResponse = (
 
   const total = typeof raw.total === 'number' ? raw.total : undefined;
 
+  // eBay may clamp the requested window (e.g. an offset past the result set),
+  // so the response values win when present; the request values are only a
+  // fallback for payloads that omit them.
+  const offset = typeof raw.offset === 'number' ? raw.offset : context.offset;
+  const limit = typeof raw.limit === 'number' ? raw.limit : context.limit;
+
   return {
     ...base,
     items,
+    offset,
+    limit,
     ...(total === undefined ? {} : { total }),
   };
 };
@@ -404,6 +418,106 @@ export const mapItemDetailsResponse = (raw: unknown): ItemDetails | undefined =>
 };
 
 /**
+ * Validate an optional string array input.
+ *
+ * @param value - Raw value supplied by the caller.
+ * @param parameter - Parameter name used in the tagged error.
+ * @returns The array (or undefined) when valid, or a tagged input error.
+ */
+const optionalStringArrayEffect = (
+  value: unknown,
+  parameter: string,
+): Effect.Effect<readonly string[] | undefined, EndpointInputError> => {
+  if (value === undefined) {
+    return Effect.succeed(undefined);
+  }
+
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || !entry)) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter,
+        message: `${parameter} must be an array of non-empty strings`,
+      }),
+    );
+  }
+
+  return Effect.succeed(value as readonly string[]);
+};
+
+/**
+ * Validate offset falls within Browse's supported range.
+ *
+ * @param offset - Non-negative offset already validated as >= 0.
+ * @returns The same value when in range, or a tagged input error.
+ */
+const requireOffsetInRange = (offset: number): Effect.Effect<number, EndpointInputError> => {
+  if (offset > MAX_OFFSET) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: 'offset',
+        message: `offset must be between 0 and ${MAX_OFFSET}`,
+      }),
+    );
+  }
+
+  return Effect.succeed(offset);
+};
+
+/**
+ * Reject a price window whose bounds are inverted.
+ *
+ * eBay accepts `price:[50..10]` and simply matches nothing, so an inverted
+ * window would look like a legitimate empty result rather than a mistake.
+ *
+ * @param priceMin - Optional lower bound.
+ * @param priceMax - Optional upper bound.
+ * @returns Unit when the window is coherent, or a tagged input error.
+ */
+const requireCoherentPriceRange = (
+  priceMin: number | undefined,
+  priceMax: number | undefined,
+): Effect.Effect<void, EndpointInputError> => {
+  if (priceMin !== undefined && priceMax !== undefined && priceMin > priceMax) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: 'priceMin',
+        message: `priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
+      }),
+    );
+  }
+
+  return Effect.succeed(undefined);
+};
+
+/**
+ * Reject a raw filter that would collide with the generated price clauses.
+ *
+ * Both are appended to one comma-joined expression, so a caller-supplied
+ * `price:`/`priceCurrency:` clause alongside priceMin/priceMax yields a
+ * duplicate key that eBay rejects with an opaque 400.
+ *
+ * @param rawFilter - Optional caller-supplied filter expression.
+ * @param hasPriceBounds - Whether priceMin or priceMax was supplied.
+ * @returns Unit when the two cannot collide, or a tagged input error.
+ */
+const requireNoPriceFilterConflict = (
+  rawFilter: string | undefined,
+  hasPriceBounds: boolean,
+): Effect.Effect<void, EndpointInputError> => {
+  if (rawFilter && hasPriceBounds && RAW_PRICE_CLAUSE.test(rawFilter)) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: 'filter',
+        message:
+          'filter already contains a price clause; use either priceMin/priceMax or a raw price filter, not both',
+      }),
+    );
+  }
+
+  return Effect.succeed(undefined);
+};
+
+/**
  * Validate limit falls within Browse's supported range.
  *
  * @param limit - Positive page size already validated as > 0.
@@ -482,10 +596,36 @@ export class BrowseApi {
       const offsetRaw = yield* optionalNonNegativeNumberEffect(validatedInput.offset, 'offset');
       const sort = yield* requireSupportedSort(validatedInput.sort);
       const categoryIds = yield* optionalStringEffect(validatedInput.categoryIds, 'categoryIds');
+      const conditions = yield* optionalStringArrayEffect(validatedInput.conditions, 'conditions');
+      const buyingOptions = yield* optionalStringArrayEffect(
+        validatedInput.buyingOptions,
+        'buyingOptions',
+      );
+      const priceMin = yield* optionalNonNegativeNumberEffect(validatedInput.priceMin, 'priceMin');
+      const priceMax = yield* optionalNonNegativeNumberEffect(validatedInput.priceMax, 'priceMax');
+      const priceCurrency = yield* optionalStringEffect(
+        validatedInput.priceCurrency,
+        'priceCurrency',
+      );
+      const rawFilter = yield* optionalStringEffect(validatedInput.filter, 'filter');
       const limit = yield* requireLimitInRange(limitRaw ?? DEFAULT_LIMIT);
-      const offset = offsetRaw ?? 0;
+      const offset = yield* requireOffsetInRange(offsetRaw ?? 0);
+      yield* requireCoherentPriceRange(priceMin, priceMax);
+      yield* requireNoPriceFilterConflict(
+        rawFilter,
+        priceMin !== undefined || priceMax !== undefined,
+      );
 
-      const filter = buildBrowseFilter(validatedInput);
+      // Built from the validated values, never the raw input, so the public
+      // API surface enforces the same contract the MCP schema advertises.
+      const filter = buildBrowseFilter({
+        ...(conditions === undefined ? {} : { conditions }),
+        ...(buyingOptions === undefined ? {} : { buyingOptions }),
+        ...(priceMin === undefined ? {} : { priceMin }),
+        ...(priceMax === undefined ? {} : { priceMax }),
+        ...(priceCurrency === undefined ? {} : { priceCurrency }),
+        ...(rawFilter === undefined ? {} : { filter: rawFilter }),
+      });
 
       const params: Record<string, string | number> = {
         q: query,
