@@ -9,3 +9,5 @@ The `browse` family previously exposed only `ebay_find_completed_items` (sold co
 Search input is validated before the request is built: `limit` (1–200), `offset` (0–10,000), sort order, string-array filters, non-negative and non-inverted price bounds, and a raw `filter` whose price clause would collide with `priceMin`/`priceMax` — each surfaced as a tagged input error rather than an opaque eBay 400. Pagination in the result reflects the window eBay returned, falling back to the requested one.
 
 Auction listings report their live figure: eBay omits `price` on auction-only items and returns `currentBidPrice` instead, so `price` now falls back to it and `bidCount` is surfaced alongside. `offset` is validated as zero or a whole multiple of `limit`, which Browse requires and otherwise rejects with an opaque 400 (error 12515).
+
+Two behaviours documented in the tool and schema descriptions after live testing: eBay converts price bounds across currencies but silently drops the whole price filter when `priceCurrency` is a code it does not recognise, and `total` returns 0 once `offset` runs past the available result window rather than repeating the match count.
