@@ -82,8 +82,10 @@ export interface ActiveItemSummary {
   readonly itemId: string;
   /** Listing title. */
   readonly title: string;
-  /** Current price (fixed price or current bid) when present. */
+  /** Current price when present: the fixed price, or an auction's current bid. */
   readonly price?: BrowseMoney;
+  /** Number of bids placed, for auction listings. */
+  readonly bidCount?: number;
   /** Condition display name when present. */
   readonly condition?: string;
   /** Buying options offered by the listing (FIXED_PRICE, AUCTION, BEST_OFFER). */
@@ -124,8 +126,10 @@ export interface ItemDetails {
   readonly itemId: string;
   /** Listing title. */
   readonly title: string;
-  /** Current price when present. */
+  /** Current price when present: the fixed price, or an auction's current bid. */
   readonly price?: BrowseMoney;
+  /** Number of bids placed, for auction listings. */
+  readonly bidCount?: number;
   /** Condition display name when present. */
   readonly condition?: string;
   /** Seller-entered condition description when present. */
@@ -248,7 +252,10 @@ export const mapItemSummary = (raw: unknown): ActiveItemSummary | undefined => {
     return;
   }
 
-  const price = parseBrowseMoney(raw.price);
+  // Auction-only listings carry no `price`; their live figure is
+  // currentBidPrice. buyingOptions still discloses which one this is.
+  const price = parseBrowseMoney(raw.price) ?? parseBrowseMoney(raw.currentBidPrice);
+  const bidCount = typeof raw.bidCount === 'number' ? raw.bidCount : undefined;
   const condition = optionalString(raw.condition);
   const buyingOptions = optionalStringArray(raw.buyingOptions);
   const itemWebUrl = optionalString(raw.itemWebUrl);
@@ -270,6 +277,7 @@ export const mapItemSummary = (raw: unknown): ActiveItemSummary | undefined => {
     itemId,
     title,
     ...(price === undefined ? {} : { price }),
+    ...(bidCount === undefined ? {} : { bidCount }),
     ...(condition === undefined ? {} : { condition }),
     ...(buyingOptions === undefined ? {} : { buyingOptions }),
     ...(itemWebUrl === undefined ? {} : { itemWebUrl }),
@@ -354,7 +362,8 @@ export const mapItemDetailsResponse = (raw: unknown): ItemDetails | undefined =>
     return;
   }
 
-  const price = parseBrowseMoney(raw.price);
+  const price = parseBrowseMoney(raw.price) ?? parseBrowseMoney(raw.currentBidPrice);
+  const bidCount = typeof raw.bidCount === 'number' ? raw.bidCount : undefined;
   const condition = optionalString(raw.condition);
   const conditionDescription = optionalString(raw.conditionDescription);
   const shortDescription = optionalString(raw.shortDescription);
@@ -400,6 +409,7 @@ export const mapItemDetailsResponse = (raw: unknown): ItemDetails | undefined =>
     itemId,
     title,
     ...(price === undefined ? {} : { price }),
+    ...(bidCount === undefined ? {} : { bidCount }),
     ...(condition === undefined ? {} : { condition }),
     ...(conditionDescription === undefined ? {} : { conditionDescription }),
     ...(shortDescription === undefined ? {} : { shortDescription }),
@@ -450,12 +460,26 @@ const optionalStringArrayEffect = (
  * @param offset - Non-negative offset already validated as >= 0.
  * @returns The same value when in range, or a tagged input error.
  */
-const requireOffsetInRange = (offset: number): Effect.Effect<number, EndpointInputError> => {
+const requireOffsetInRange = (
+  offset: number,
+  limit: number,
+): Effect.Effect<number, EndpointInputError> => {
   if (offset > MAX_OFFSET) {
     return Effect.fail(
       new EndpointInputError({
         parameter: 'offset',
         message: `offset must be between 0 and ${MAX_OFFSET}`,
+      }),
+    );
+  }
+
+  // Browse rejects an offset that is not a whole number of pages (error 12515)
+  // with an opaque 400, so the page arithmetic is enforced here instead.
+  if (offset % limit !== 0) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: 'offset',
+        message: `offset must be zero or a multiple of limit (${limit}); got ${offset}`,
       }),
     );
   }
@@ -609,7 +633,7 @@ export class BrowseApi {
       );
       const rawFilter = yield* optionalStringEffect(validatedInput.filter, 'filter');
       const limit = yield* requireLimitInRange(limitRaw ?? DEFAULT_LIMIT);
-      const offset = yield* requireOffsetInRange(offsetRaw ?? 0);
+      const offset = yield* requireOffsetInRange(offsetRaw ?? 0, limit);
       yield* requireCoherentPriceRange(priceMin, priceMax);
       yield* requireNoPriceFilterConflict(
         rawFilter,

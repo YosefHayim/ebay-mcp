@@ -13,7 +13,7 @@ export const browseEntries: ToolEntry[] = [
   defineTool({
     name: 'ebay_find_active_items',
     description:
-      "Search active eBay listings marketplace-wide (not the seller's own inventory). Uses the Buy Browse API item_summary/search with the app or user access token under the basic api_scope. Supports pagination (limit/offset), sort (price, -price, newlyListed, endingSoonest), category restriction, and condition/buying-option/price filters plus a raw Browse filter passthrough. Returns cleaned summaries: itemId (feed into ebay_get_item_details), title, price, condition, buyingOptions, seller and feedback, cheapest shipping cost, auction end date, and listing URL. The active-listing counterpart of ebay_find_completed_items.",
+      "Search active eBay listings marketplace-wide (not the seller's own inventory). Uses the Buy Browse API item_summary/search with the app or user access token under the basic api_scope. Supports pagination (limit/offset), sort (price, -price, newlyListed, endingSoonest), category restriction, and condition/buying-option/price filters plus a raw Browse filter passthrough. Returns cleaned summaries: itemId (feed into ebay_get_item_details), title, price (an auction's current bid when there is no fixed price, with bidCount), condition, buyingOptions, seller and feedback, cheapest shipping cost, auction end date, and listing URL. The active-listing counterpart of ebay_find_completed_items.",
     inputSchema: findActiveItemsInputSchema.shape,
     annotations: { readOnlyHint: true },
     handler: (api, args) => Effect.runPromise(api.browse.searchActiveItems(args)),

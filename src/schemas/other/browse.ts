@@ -25,7 +25,9 @@ export const findActiveItemsInputSchema = z.object({
     .int()
     .min(0)
     .optional()
-    .describe('Zero-based result offset for pagination. Defaults to 0.'),
+    .describe(
+      'Zero-based result offset for pagination. Must be zero or a multiple of limit (eBay pages in whole limit-sized steps). Defaults to 0.',
+    ),
   sort: z
     .enum(['price', '-price', 'newlyListed', 'endingSoonest'])
     .optional()

@@ -334,9 +334,57 @@ describe('BrowseApi', () => {
       expect(mockClient.get).not.toHaveBeenCalled();
     });
 
+    it('maps an auction summary using currentBidPrice and bidCount', () => {
+      const mapped = mapItemSummary({
+        itemId: 'v1|999|0',
+        title: 'Vintage SLR, no reserve',
+        currentBidPrice: { value: '42.50', currency: 'USD' },
+        bidCount: 7,
+        buyingOptions: ['AUCTION'],
+        itemEndDate: '2026-09-01T18:00:00.000Z',
+      });
+
+      expect(mapped).toMatchObject({
+        price: { currency: 'USD', value: '42.50' },
+        bidCount: 7,
+        buyingOptions: ['AUCTION'],
+        itemEndDate: '2026-09-01T18:00:00.000Z',
+      });
+    });
+
+    it('prefers a fixed price over currentBidPrice when both are present', () => {
+      const mapped = mapItemSummary({
+        itemId: 'v1|998|0',
+        title: 'Auction with Buy It Now',
+        price: { value: '99.00', currency: 'USD' },
+        currentBidPrice: { value: '42.50', currency: 'USD' },
+        buyingOptions: ['AUCTION', 'FIXED_PRICE'],
+      });
+
+      expect(mapped?.price).toEqual({ currency: 'USD', value: '99.00' });
+    });
+
+    it('rejects an offset that is not a whole number of pages', async () => {
+      await expect(
+        Effect.runPromise(api.searchActiveItems({ query: 'x', limit: 3, offset: 20 })),
+      ).rejects.toThrow(/offset must be zero or a multiple of limit \(3\); got 20/);
+      expect(mockClient.get).not.toHaveBeenCalled();
+    });
+
+    it('accepts an offset that is a multiple of limit', async () => {
+      vi.mocked(mockClient.get).mockResolvedValue({});
+
+      await Effect.runPromise(api.searchActiveItems({ query: 'x', limit: 3, offset: 21 }));
+
+      expect(mockClient.get).toHaveBeenCalledWith(
+        '/buy/browse/v1/item_summary/search',
+        expect.objectContaining({ limit: 3, offset: 21 }),
+      );
+    });
+
     it('rejects an offset above the Browse maximum', async () => {
       await expect(
-        Effect.runPromise(api.searchActiveItems({ query: 'x', offset: 10_001 })),
+        Effect.runPromise(api.searchActiveItems({ query: 'x', limit: 1, offset: 10_001 })),
       ).rejects.toThrow(/offset must be between 0 and 10000/);
       expect(mockClient.get).not.toHaveBeenCalled();
     });
