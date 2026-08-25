@@ -48,6 +48,9 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
         '4. `ebay_create_offer` (SKU, marketplace, price, the policy IDs, location).',
         '5. Check the aspects again when the category changes and before `ebay_get_listing_fees`, then `ebay_publish_offer` (offerId) → a live `listingId`. Use `ebay_bulk_publish_offer` for many at once.',
         '',
+        '**Run an auction (same Inventory model).**',
+        'Same steps, but confirm the category allows auctions first with `ebay_get_listing_type_policies` (it also lists the allowed durations). Then `ebay_create_offer` with `format: "AUCTION"`, `pricingSummary.auctionStartPrice` (opening bid), an optional `auctionReservePrice` above it, an optional `pricingSummary.price` as Buy It Now, a day-count `listingDuration` such as `DAYS_7` (never `GTC`), and `availableQuantity: 1`. Reserve prices add a fee — check `ebay_get_listing_fees` before `ebay_publish_offer`. Best Offer and per-buyer limits are fixed-price only; the server rejects mixed-format bodies before they reach eBay.',
+        '',
         '**Fulfill an order.**',
         '`ebay_get_orders` (filter unfulfilled) → `ebay_get_order` (detail) → `ebay_create_shipping_fulfillment` (tracking number + carrier).',
         '',
@@ -69,6 +72,7 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
       body: [
         '- **Two listing models.** REST Inventory (`inventory_item` → `offer` → `publish`) vs legacy Trading (XML). Pick one per SKU and stay in it.',
         '- **Offers need policies + a location first.** A "policy not found" error usually means the one-time account setup was skipped.',
+        '- **Auction vs fixed price is set per offer.** `FIXED_PRICE` uses `pricingSummary.price` + `listingDuration: "GTC"`; `AUCTION` uses `auctionStartPrice` + a day-count duration and quantity 1. An unsold auction turns into a GTC fixed-price listing on eBay\'s side.',
         '- **Item specifics are category-specific.** Use `ebay_get_item_aspects_for_category` for the selected category instead of relying on a fixed fallback value or requirements learned from another category.',
         '- **`search` and `fetch` are ChatGPT-connector only** — ignore them when driving the Sell API directly.',
         '- **Write actions are real.** `publish`, `issue_refund`, `end_listing`, and any `bulk_*` change live seller data — confirm intent before calling.',

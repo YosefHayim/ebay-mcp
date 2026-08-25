@@ -190,6 +190,24 @@ describe('table mappers', () => {
     expect(view.footnote).toBe('1 total');
   });
 
+  it('shows the starting bid as the price of an auction offer row', () => {
+    const view = mapOffersToTable({
+      offers: [
+        {
+          offerId: 'o2',
+          sku: 'SKU-2',
+          format: 'AUCTION',
+          pricingSummary: {
+            auctionStartPrice: { value: '9.99', currency: 'USD' },
+            price: { value: '49.99', currency: 'USD' },
+          },
+        },
+      ],
+    });
+    expect(view.rows[0].cells.format).toBe('Auction');
+    expect(view.rows[0].cells.price).toBe('9.99 USD');
+  });
+
   it('maps inventory items, truncating long titles', () => {
     const longTitle = 'x'.repeat(80);
     const view = mapInventoryItemsToTable({
@@ -281,6 +299,33 @@ describe('card mappers', () => {
     expect(view.title).toBe('Offer o1');
     expect(view.badges?.[0]).toEqual({ label: 'Published', tone: 'success' });
     expect(view.badges?.[1]).toEqual({ label: 'Fixed price' });
+    const pricing = view.sections.find((section) => section.heading === 'Pricing');
+    expect(pricing?.fields[0]).toEqual({ label: 'Price', value: '9.99 USD' });
+  });
+
+  it('maps an auction offer to a card with bid, reserve, Buy It Now, and duration', () => {
+    const view = mapOfferToCard({
+      offerId: 'o2',
+      sku: 'SKU-2',
+      format: 'AUCTION',
+      listingDuration: 'DAYS_7',
+      availableQuantity: 1,
+      pricingSummary: {
+        auctionStartPrice: { value: '9.99', currency: 'USD' },
+        auctionReservePrice: { value: '25.00', currency: 'USD' },
+        price: { value: '49.99', currency: 'USD' },
+      },
+    });
+    expect(view.badges).toContainEqual({ label: 'Auction' });
+    const pricing = view.sections.find((section) => section.heading === 'Pricing');
+    expect(pricing?.fields).toEqual([
+      { label: 'Starting bid', value: '9.99 USD' },
+      { label: 'Reserve price', value: '25.00 USD' },
+      { label: 'Buy It Now price', value: '49.99 USD' },
+      { label: 'Duration', value: 'Days 7' },
+      { label: 'Available quantity', value: 1 },
+      { label: 'Marketplace', value: null },
+    ]);
   });
 
   it('maps an inventory item to a detail card', () => {

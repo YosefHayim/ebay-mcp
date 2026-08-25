@@ -13,14 +13,12 @@ import {
 } from '@/tools/ui/maps.js';
 import { MarketplaceId } from '@/types/ebayEnums.js';
 import type {
-  BulkCreateOfferRequest,
   BulkCreateOrReplaceInventoryItemRequest,
   BulkGetInventoryItemRequest,
   BulkMigrateListingRequest,
   BulkPublishOfferRequest,
   BulkUpdatePriceQuantityRequest,
   CreateInventoryLocationRequest,
-  CreateOfferRequest,
   GetListingFeesRequest,
   InventoryItem,
   InventoryItemGroup,
@@ -28,11 +26,11 @@ import type {
   ProductCompatibility,
   PublishOfferByInventoryItemGroupRequest,
   UpdateInventoryLocationRequest,
-  UpdateOfferRequest,
   WithdrawOfferByInventoryItemGroupRequest,
 } from '@/api/listing-management/inventory.js';
 import {
   bulkInventoryItemResponseSchema,
+  bulkOfferRequestSchema,
   bulkOfferResponseSchema,
   bulkPublishResponseSchema,
   createInventoryItemOutputSchema,
@@ -48,7 +46,9 @@ import {
   getProductCompatibilityOutputSchema,
   inventoryItemSchema,
   offerResponseSchema,
+  offerSchema,
   publishOfferOutputSchema,
+  updateOfferBodySchema,
 } from '@/schemas/inventory-management/inventory.js';
 
 const emptyOutputSchema = {
@@ -137,17 +137,15 @@ const offerIdInputSchema = z.object({
 });
 
 const createOfferInputSchema = z.object({
-  body: generatedBodySchema<CreateOfferRequest>('Generated EbayOfferDetailsWithKeys request body'),
+  body: offerSchema,
 });
 
 const updateOfferInputSchema = offerIdInputSchema.extend({
-  body: generatedBodySchema<UpdateOfferRequest>('Generated EbayOfferDetailsWithId request body'),
+  body: updateOfferBodySchema,
 });
 
 const bulkCreateOfferInputSchema = z.object({
-  body: generatedBodySchema<BulkCreateOfferRequest>(
-    'Generated BulkEbayOfferDetailsWithKeys request body',
-  ),
+  body: bulkOfferRequestSchema,
 });
 
 const bulkPublishOfferInputSchema = z.object({
@@ -445,7 +443,8 @@ export const inventoryEntries: ToolEntry[] = [
   }),
   defineTool({
     name: 'ebay_create_offer',
-    description: 'Create a new offer for an inventory item',
+    description:
+      'Create a new offer (unpublished listing draft) for an inventory item SKU.\n\nFIXED_PRICE offers take pricingSummary.price and listingDuration GTC. AUCTION offers take pricingSummary.auctionStartPrice (opening bid), an optional auctionReservePrice above it, an optional pricingSummary.price as Buy It Now, a day-count listingDuration (DAYS_1/3/5/7/10; never GTC), availableQuantity 1, and no Best Offer or per-buyer limit. Bodies that mix the two formats are rejected before any eBay request.\n\nCheck ebay_get_listing_type_policies for the formats and durations the category allows, then ebay_get_listing_fees (reserve prices carry a fee) before ebay_publish_offer.',
     inputSchema: createOfferInputSchema.shape,
     outputSchema: zodToJsonSchema(createOfferOutputSchema, {
       name: 'CreateOfferResponse',
@@ -455,7 +454,8 @@ export const inventoryEntries: ToolEntry[] = [
   }),
   defineTool({
     name: 'ebay_update_offer',
-    description: 'Update an existing offer',
+    description:
+      'Update an existing offer. Send the full offer details; the format itself cannot change. Auction fields (auctionStartPrice, auctionReservePrice, day-count listingDuration) follow the same rules as ebay_create_offer, and a reserve price must stay above the starting bid.',
     inputSchema: updateOfferInputSchema.shape,
     outputSchema: zodToJsonSchema(offerResponseSchema, {
       name: 'UpdateOfferResponse',
@@ -492,7 +492,8 @@ export const inventoryEntries: ToolEntry[] = [
   }),
   defineTool({
     name: 'ebay_bulk_create_offer',
-    description: 'Bulk create multiple offers',
+    description:
+      'Bulk create up to 25 offers in one request. Each request follows the ebay_create_offer rules: FIXED_PRICE offers take pricingSummary.price and listingDuration GTC. AUCTION offers take pricingSummary.auctionStartPrice (opening bid), an optional auctionReservePrice above it, an optional pricingSummary.price as Buy It Now, a day-count listingDuration (DAYS_1/3/5/7/10; never GTC), availableQuantity 1, and no Best Offer or per-buyer limit. Bodies that mix the two formats are rejected before any eBay request.',
     inputSchema: bulkCreateOfferInputSchema.shape,
     outputSchema: zodToJsonSchema(bulkOfferResponseSchema, {
       name: 'BulkCreateOfferResponse',

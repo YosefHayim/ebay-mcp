@@ -113,6 +113,24 @@ required aspect on the inventory item before creating its offer. Requirements va
 category and marketplace, so re-run the lookup when either changes; do not rely on
 examples or a fixed global fallback value.
 
+### Auction offers
+
+`ebay_create_offer`, `ebay_update_offer`, and `ebay_bulk_create_offer` accept both
+listing formats through the same Inventory model:
+
+| Field | `FIXED_PRICE` | `AUCTION` |
+| --- | --- | --- |
+| `pricingSummary.price` | Listing price | Optional Buy It Now price |
+| `pricingSummary.auctionStartPrice` | — | Opening bid |
+| `pricingSummary.auctionReservePrice` | — | Optional; must exceed the opening bid and carries an eBay fee |
+| `listingDuration` | `GTC` | Day count such as `DAYS_7` (never `GTC`) |
+| `availableQuantity` | Any | `1` |
+| Best Offer / `quantityLimitPerBuyer` | Allowed | Not allowed |
+
+Check `ebay_get_listing_type_policies` for the formats and durations a category allows,
+then `ebay_get_listing_fees` before `ebay_publish_offer`. Bodies that mix the two formats
+are rejected locally, before any request reaches eBay.
+
 ## eBay MCP vs. the raw eBay API
 
 Both talk to the same eBay endpoints — the difference is everything you'd otherwise build yourself.
@@ -360,6 +378,7 @@ Common tasks, phrased as you'd ask your AI assistant:
 
 - **Set up OAuth** — *"Help me set up OAuth for my eBay account."* → generates an authorization URL via `ebay_get_oauth_url`, then configures the refresh token. Unlocks 10k–50k req/day.
 - **Manage inventory** — *"Show me all my active listings."* → `ebay_get_inventory_items` returns SKUs, quantities, and status.
+- **Run an auction** — *"List this SKU as a 7-day auction starting at $9.99 with a $25 reserve."* → `ebay_create_offer` with `format: "AUCTION"`, `auctionStartPrice`, `auctionReservePrice`, and `listingDuration: "DAYS_7"`, then `ebay_publish_offer`.
 - **Look up offers** — `ebay_get_offers` returns offers for one required SKU. To enumerate offers across the inventory, call `ebay_get_inventory_items` first, then call `ebay_get_offers` once per SKU.
 - **Manage fulfillment policies** — *"Create a shipping policy, then update its handling time."* → `ebay_create_fulfillment_policy` creates the reusable policy ID and `ebay_update_fulfillment_policy` replaces its settings.
 - **Process orders** — *"Get all unfulfilled orders from the last 7 days."* → `ebay_get_orders` with date and fulfillment-status filters.
@@ -470,6 +489,13 @@ Credentials are stored locally in your `.env` file and used only to call eBay di
 <summary><strong>How is this different from calling the eBay API directly?</strong></summary>
 
 You interact in natural language through your AI assistant. OAuth token management, automatic retries with backoff, and type-safe Effect-backed validation are built in. See the [comparison table](#ebay-mcp-vs-the-raw-ebay-api) above.
+
+</details>
+
+<details>
+<summary><strong>Does it support auction listings?</strong></summary>
+
+Yes, through the REST Inventory offer tools: create the offer with `format: "AUCTION"`, an `auctionStartPrice`, an optional `auctionReservePrice`, and a day-count `listingDuration`, then publish it. See [Auction offers](#auction-offers). The legacy Trading API tools remain fixed-price only.
 
 </details>
 

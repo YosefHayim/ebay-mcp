@@ -6,6 +6,7 @@ import {
   WeightUnit,
   PricingVisibility,
   FormatType,
+  ListingDuration,
   LocationType,
   MerchantLocationStatus,
   DayOfWeek,
@@ -198,43 +199,68 @@ export const createInventoryItemOutputSchema = z.object({
 // Offer Schemas
 // ============================================================================
 
-const listingPoliciesSchema = z.object({
-  fulfillmentPolicyId: z.string().optional(),
-  paymentPolicyId: z.string().optional(),
-  returnPolicyId: z.string().optional(),
-  productCompliancePolicyIds: z.array(z.string()).optional(),
-  takeBackPolicyIds: z.array(z.string()).optional(),
-  eBayPlusIfEligible: z.boolean().optional(),
-  bestOfferTerms: z
-    .object({
-      autoAcceptPrice: amountSchema.optional(),
-      autoDeclinePrice: amountSchema.optional(),
-      bestOfferEnabled: z.boolean().optional(),
-    })
-    .optional(),
-});
-
-const pricingSchema = z.object({
-  price: amountSchema,
-  pricingVisibility: z.nativeEnum(PricingVisibility).optional(),
-  minimumAdvertisedPrice: amountSchema.optional(),
-  originalRetailPrice: amountSchema.optional(),
-});
-
-const taxSchema = z.object({
-  applyTax: z.boolean().optional(),
-  thirdPartyTaxCategory: z.string().optional(),
-  vatPercentage: z.number().optional(),
-});
+const listingPoliciesSchema = z
+  .object({
+    fulfillmentPolicyId: z.string().optional(),
+    paymentPolicyId: z.string().optional(),
+    returnPolicyId: z.string().optional(),
+    productCompliancePolicyIds: z.array(z.string()).optional(),
+    takeBackPolicyIds: z.array(z.string()).optional(),
+    eBayPlusIfEligible: z.boolean().optional(),
+    bestOfferTerms: z
+      .object({
+        autoAcceptPrice: amountSchema.optional(),
+        autoDeclinePrice: amountSchema.optional(),
+        bestOfferEnabled: z
+          .boolean()
+          .optional()
+          .describe('Best Offer applies to fixed-price offers only; never enable it on an auction'),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 /**
- * Validates the Inventory Management API offer model.
+ * Validates the Inventory Management API offer pricing container for both listing formats.
  */
-export const offerSchema = z.object({
-  sku: z.string(),
-  marketplaceId: z.nativeEnum(MarketplaceId),
-  format: z.nativeEnum(FormatType),
-  availableQuantity: z.number().optional(),
+export const pricingSchema = z
+  .object({
+    price: amountSchema
+      .optional()
+      .describe(
+        'Listing price for FIXED_PRICE offers (required before publish). For AUCTION offers this is the optional Buy It Now price',
+      ),
+    auctionStartPrice: amountSchema
+      .optional()
+      .describe(
+        'Opening bid for AUCTION offers (required before publish); not allowed on FIXED_PRICE offers',
+      ),
+    auctionReservePrice: amountSchema
+      .optional()
+      .describe(
+        'Optional AUCTION reserve; must be higher than auctionStartPrice and eBay charges a reserve fee whether or not the item sells',
+      ),
+    pricingVisibility: z.nativeEnum(PricingVisibility).optional(),
+    minimumAdvertisedPrice: amountSchema.optional(),
+    originalRetailPrice: amountSchema.optional(),
+  })
+  .passthrough();
+
+const taxSchema = z
+  .object({
+    applyTax: z.boolean().optional(),
+    thirdPartyTaxCategory: z.string().optional(),
+    vatPercentage: z.number().optional(),
+  })
+  .passthrough();
+
+/** Offer fields shared by create, update, and response payloads (everything except the keys). */
+const offerDetailsFields = {
+  availableQuantity: z
+    .number()
+    .optional()
+    .describe('Purchasable quantity for this offer; AUCTION offers must use 1'),
   categoryId: z.string().optional(),
   charity: z
     .object({
@@ -253,22 +279,54 @@ export const offerSchema = z.object({
   hideBuyerDetails: z.boolean().optional(),
   includeCatalogProductDetails: z.boolean().optional(),
   listingDescription: z.string().optional(),
-  listingDuration: z.string().optional(),
+  listingDuration: z
+    .nativeEnum(ListingDuration)
+    .optional()
+    .describe(
+      'FIXED_PRICE offers use GTC. AUCTION offers need a day count (commonly DAYS_1, DAYS_3, DAYS_5, DAYS_7, or DAYS_10; check ebay_get_listing_type_policies for the category) and never GTC',
+    ),
   listingPolicies: listingPoliciesSchema.optional(),
   listingStartDate: z.string().optional(),
   lotSize: z.number().optional(),
   merchantLocationKey: z.string().optional(),
   pricingSummary: pricingSchema.optional(),
-  quantityLimitPerBuyer: z.number().optional(),
+  quantityLimitPerBuyer: z
+    .number()
+    .optional()
+    .describe('Per-buyer purchase cap for FIXED_PRICE offers; not applicable to auctions'),
   secondaryCategoryId: z.string().optional(),
   storeCategoryNames: z.array(z.string()).optional(),
   tax: taxSchema.optional(),
-});
+};
+
+/** Keys that identify an offer on create and cannot change on update. */
+const offerKeyFields = {
+  sku: z.string(),
+  marketplaceId: z.nativeEnum(MarketplaceId),
+  format: z
+    .nativeEnum(FormatType)
+    .describe(
+      'FIXED_PRICE (price + GTC) or AUCTION (auctionStartPrice + day-count listingDuration, quantity 1)',
+    ),
+};
+
+/**
+ * Validates the Inventory Management API offer model (createOffer / bulkCreateOffer body).
+ * Unknown keys pass through so generated fields this schema does not model still reach eBay.
+ */
+export const offerSchema = z.object({ ...offerKeyFields, ...offerDetailsFields }).passthrough();
+
+/**
+ * Validates the Inventory Management API updateOffer body (offer details without the keys).
+ */
+export const updateOfferBodySchema = z.object(offerDetailsFields).passthrough();
 
 /**
  * Validates the Inventory Management API offer response payload.
  */
-export const offerResponseSchema = offerSchema.extend({
+export const offerResponseSchema = z.object({
+  ...offerKeyFields,
+  ...offerDetailsFields,
   offerId: z.string().optional(),
   listing: z
     .object({
