@@ -189,3 +189,124 @@ it('fails relistItem when itemId is missing', async () => {
   expect(error._tag).toBe('EndpointInputError');
   expect(error.message).toContain('itemId is required');
 });
+
+it('creates an auction through AddItem with the Chinese listing type', async () => {
+  mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '77777' }));
+
+  const item = {
+    Title: 'Rare coin',
+    StartPrice: 9.99,
+    ListingDuration: 'Days_7',
+    ReservePrice: 25,
+  };
+  const result = await Effect.runPromise(api.createListing({ format: 'AUCTION', item }));
+
+  expect(mockClient.execute).toHaveBeenCalledWith('AddItem', {
+    Item: { ...item, ListingType: 'Chinese' },
+  });
+  expect(result.ItemID).toBe('77777');
+});
+
+it('rejects an auction that mixes fixed-price rules before calling eBay', async () => {
+  const error = await Effect.runPromise(
+    Effect.flip(
+      api.createListing({
+        format: 'AUCTION',
+        item: { Title: 'Rare coin', StartPrice: 9.99, ListingDuration: 'GTC' },
+      }),
+    ),
+  );
+
+  expect(error._tag).toBe('EndpointInputError');
+  expect(error.message).toContain('item.ListingDuration');
+  expect(mockClient.execute).not.toHaveBeenCalled();
+});
+
+it('rejects fixed-price items that carry auction prices', async () => {
+  const error = await Effect.runPromise(
+    Effect.flip(api.createListing({ item: { Title: 'Widget', StartPrice: 10, ReservePrice: 20 } })),
+  );
+
+  expect(error._tag).toBe('EndpointInputError');
+  expect(error.message).toContain('item.ReservePrice');
+  expect(mockClient.execute).not.toHaveBeenCalled();
+});
+
+it('revises an auction through ReviseItem', async () => {
+  mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '12345' }));
+
+  await Effect.runPromise(
+    api.reviseListing({ format: 'AUCTION', itemId: '12345', fields: { ReservePrice: 30 } }),
+  );
+
+  expect(mockClient.execute).toHaveBeenCalledWith('ReviseItem', {
+    Item: { ItemID: '12345', ReservePrice: 30 },
+  });
+});
+
+it('rejects an auction revision with a reserve below the opening bid', async () => {
+  const error = await Effect.runPromise(
+    Effect.flip(
+      api.reviseListing({
+        format: 'AUCTION',
+        itemId: '12345',
+        fields: { StartPrice: 20, ReservePrice: 15 },
+      }),
+    ),
+  );
+
+  expect(error._tag).toBe('EndpointInputError');
+  expect(error.message).toContain('fields.ReservePrice');
+  expect(mockClient.execute).not.toHaveBeenCalled();
+});
+
+it('ends an auction through EndItem and allows SellToHighBidder', async () => {
+  mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success' }));
+
+  await Effect.runPromise(
+    api.endListing({ format: 'AUCTION', itemId: '12345', reason: 'SellToHighBidder' }),
+  );
+
+  expect(mockClient.execute).toHaveBeenCalledWith('EndItem', {
+    ItemID: '12345',
+    EndingReason: 'SellToHighBidder',
+  });
+});
+
+it('rejects SellToHighBidder on a fixed-price end', async () => {
+  const error = await Effect.runPromise(
+    Effect.flip(api.endListing({ itemId: '12345', reason: 'SellToHighBidder' })),
+  );
+
+  expect(error._tag).toBe('EndpointInputError');
+  expect(error.message).toContain('AUCTION');
+  expect(mockClient.execute).not.toHaveBeenCalled();
+});
+
+it('relists an auction through RelistItem', async () => {
+  mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '12345' }));
+
+  await Effect.runPromise(
+    api.relistItem({ format: 'AUCTION', itemId: '12345', modifications: { StartPrice: 5 } }),
+  );
+
+  expect(mockClient.execute).toHaveBeenCalledWith('RelistItem', {
+    Item: { ItemID: '12345', StartPrice: 5 },
+  });
+});
+
+it('rejects an auction relist with Best Offer enabled', async () => {
+  const error = await Effect.runPromise(
+    Effect.flip(
+      api.relistItem({
+        format: 'AUCTION',
+        itemId: '12345',
+        modifications: { BestOfferDetails: { BestOfferEnabled: true } },
+      }),
+    ),
+  );
+
+  expect(error._tag).toBe('EndpointInputError');
+  expect(error.message).toContain('modifications.BestOfferDetails.BestOfferEnabled');
+  expect(mockClient.execute).not.toHaveBeenCalled();
+});

@@ -64,7 +64,7 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
         '`ebay_create_campaign` → `ebay_bulk_create_ads_by_inventory_reference`. The Marketing family also covers promotions and reports.',
         '',
         '**Legacy XML path (Trading API).**',
-        '`ebay_create_listing` / `ebay_revise_listing` / `ebay_relist_item` / `ebay_end_listing`, list via `ebay_get_active_listings`. Use only when you specifically need the legacy flow — do not mix it with the REST Inventory model for the same SKU.',
+        '`ebay_create_listing` / `ebay_revise_listing` / `ebay_relist_item` / `ebay_end_listing`, list via `ebay_get_active_listings`. Each takes `format` (`FIXED_PRICE` default, or `format: "AUCTION"`): auctions go through `AddItem` / `ReviseItem` / `EndItem` / `RelistItem` with `ListingType` Chinese added for you, `StartPrice` as the opening bid, a day-count `ListingDuration` such as `Days_7` (never `GTC`), `Quantity` 1, and optional `ReservePrice` / `BuyItNowPrice` above the bid; mixed payloads are rejected locally. Read `ListingType` from `ebay_get_listing` before revising or ending when the format is unknown. Use only when you specifically need the legacy flow — do not mix it with the REST Inventory model for the same SKU.',
         '',
         '**Diagnose failing calls.**',
         '`ebay_get_token_status` (auth valid/expiring?) → `ebay_get_rate_limits` / `ebay_get_user_rate_limits` (quota hit?) → `ebay_get_api_status` (eBay-side outage?).',
@@ -75,7 +75,7 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
       body: [
         '- **Two listing models.** REST Inventory (`inventory_item` → `offer` → `publish`) vs legacy Trading (XML). Pick one per SKU and stay in it.',
         '- **Offers need policies + a location first.** A "policy not found" error usually means the one-time account setup was skipped.',
-        '- **Auction vs fixed price is set per offer.** `FIXED_PRICE` uses `pricingSummary.price` + `listingDuration: "GTC"`; `AUCTION` uses `auctionStartPrice` + a day-count duration and no `availableQuantity`. Never add `listingStartDate` unless the user asked for a scheduled start — it can incur a fee. An unsold auction turns into a GTC fixed-price listing on eBay\'s side.',
+        '- **Auction vs fixed price is set per offer.** `FIXED_PRICE` uses `pricingSummary.price` + `listingDuration: "GTC"`; `AUCTION` uses `auctionStartPrice` + a day-count duration and no `availableQuantity`. Never add `listingStartDate` unless the user asked for a scheduled start — it can incur a fee. An unsold auction turns into a GTC fixed-price listing on eBay\'s side. The Trading tools make the same split with their `format` argument: `Days_N` durations, `ReservePrice`, and `BuyItNowPrice` are auction-only; `GTC` is fixed-price only.',
         '- **Item specifics are category-specific.** Use `ebay_get_item_aspects_for_category` for the selected category instead of relying on a fixed fallback value or requirements learned from another category.',
         '- **Local media access is opt-in.** The media tools only read files inside `EBAY_MCP_MEDIA_DIRS` / `EBAY_MCP_MEDIA_ROOT`; a "local media access is disabled" error means the operator has not allowed a directory yet — do not try other paths.',
         '- **`search` and `fetch` are ChatGPT-connector only** — ignore them when driving the Sell API directly.',

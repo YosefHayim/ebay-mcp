@@ -97,7 +97,7 @@ Use this map when deciding which tool family to expose, or when asking an assist
 | `metadata` / `taxonomy` | Category trees, aspects, item conditions, return-policy metadata, tax jurisdictions, and vehicle compatibility | "Find required item aspects for this category." |
 | `other` | Identity, VeRO, translation, and international shipping support APIs (Compliance tools remain but report eBay's 2026-03-30 decommission) | "Show my current seller identity details." |
 | `developer` / `token-management` | Rate limits, signing keys, OAuth URLs, token refresh, and diagnostics | "Check my eBay API rate limits." |
-| `trading` | Legacy XML fixed-price listing create, revise, relist, and end operations | "Create a fixed-price listing draft from this SKU." |
+| `trading` | Legacy XML listing create, revise, relist, and end operations for fixed-price listings and auctions | "Create a fixed-price listing draft from this SKU." |
 | `connector` | ChatGPT connector search/fetch tools over the eBay MCP catalogue | "Search the eBay tool catalogue for order tools." |
 
 ### Listing preflight: required item specifics
@@ -131,6 +131,26 @@ listing formats through the same Inventory model:
 Check `ebay_get_listing_type_policies` for the formats and durations a category allows,
 then `ebay_get_listing_fees` before `ebay_publish_offer`. Bodies that mix the two formats
 are rejected locally, before any request reaches eBay.
+
+#### Auctions on the Trading (XML) path
+
+The legacy tools take the same switch as a top-level `format` argument (`FIXED_PRICE` by
+default). `ebay_create_listing`, `ebay_revise_listing`, `ebay_end_listing`, and
+`ebay_relist_item` with `format: "AUCTION"` use the auction-capable calls (`AddItem`,
+`ReviseItem`, `EndItem`, `RelistItem`) instead of the `*FixedPriceItem` family, and
+`ebay_create_listing` adds `ListingType: "Chinese"` to the `Item` for you:
+
+| Trading `Item` field | `FIXED_PRICE` | `AUCTION` |
+| --- | --- | --- |
+| `StartPrice` | Listing price | Opening bid (required on create) |
+| `ReservePrice` / `BuyItNowPrice` | Not allowed | Optional; must exceed `StartPrice` (a reserve carries an eBay fee) |
+| `ListingDuration` | `GTC` | Day count such as `Days_7` (required on create; never `GTC`) |
+| `Quantity` | Any | Omit or `1` |
+| `BestOfferDetails.BestOfferEnabled` | Allowed | Not allowed |
+| `ebay_end_listing` reason `SellToHighBidder` | Not allowed | Ends an auction with bids |
+
+Mixed payloads are rejected locally. When the format of an existing item is unknown, read
+its `ListingType` with `ebay_get_listing` first (`Chinese` = auction).
 
 ### Photos and videos from local files
 
@@ -358,7 +378,7 @@ Auto-configured by `npm run setup`. Requires [Node.js](https://nodejs.org/en) �
 | [Metadata](src/tools/categories/metadata.ts) | Return policies, sales-tax jurisdictions, automotive compatibility |
 | [Taxonomy](src/tools/categories/taxonomy.ts) | Category trees, item aspects, item conditions |
 | [Other](src/tools/categories/other.ts) | Identity, VeRO, translation, and international shipping support APIs (Compliance tools report eBay decommission) |
-| [Trading (legacy XML)](src/tools/categories/trading.ts) | Fixed-price listing create, revise, relist, end |
+| [Trading (legacy XML)](src/tools/categories/trading.ts) | Fixed-price and auction listing create, revise, relist, end |
 | [Developer](src/tools/categories/developer.ts) | Rate limits, signing keys, client registration |
 | [Token Management](src/tools/categories/tokenManagement.ts) | OAuth URL generation and token management |
 
@@ -402,7 +422,7 @@ Common tasks, phrased as you'd ask your AI assistant:
 - **Set up OAuth** — *"Help me set up OAuth for my eBay account."* → generates an authorization URL via `ebay_get_oauth_url`, then configures the refresh token. Unlocks 10k–50k req/day.
 - **Manage inventory** — *"Show me all my active listings."* → `ebay_get_inventory_items` returns SKUs, quantities, and status.
 - **Add photos to a listing** — *"Attach the three photos in ~/listings/megadrive to SKU MD-001."* → `ebay_attach_media_to_inventory_item` uploads them to eBay Picture Services and updates `product.imageUrls` (with `EBAY_MCP_MEDIA_DIRS` allowing that folder).
-- **Run an auction** — *"List this SKU as a 7-day auction starting at $9.99 with a $25 reserve."* → `ebay_create_offer` with `format: "AUCTION"`, `auctionStartPrice`, `auctionReservePrice`, and `listingDuration: "DAYS_7"`, then `ebay_publish_offer`.
+- **Run an auction** — *"List this SKU as a 7-day auction starting at $9.99 with a $25 reserve."* → `ebay_create_offer` with `format: "AUCTION"`, `auctionStartPrice`, `auctionReservePrice`, and `listingDuration: "DAYS_7"`, then `ebay_publish_offer`. On the legacy path, `ebay_create_listing` with `format: "AUCTION"` and a Trading `Item` (`StartPrice`, `ReservePrice`, `ListingDuration: "Days_7"`).
 - **Look up offers** — `ebay_get_offers` returns offers for one required SKU. To enumerate offers across the inventory, call `ebay_get_inventory_items` first, then call `ebay_get_offers` once per SKU.
 - **Manage fulfillment policies** — *"Create a shipping policy, then update its handling time."* → `ebay_create_fulfillment_policy` creates the reusable policy ID and `ebay_update_fulfillment_policy` replaces its settings.
 - **Process orders** — *"Get all unfulfilled orders from the last 7 days."* → `ebay_get_orders` with date and fulfillment-status filters.
@@ -526,14 +546,14 @@ Yes. `ebay_upload_images`, `ebay_upload_video`, and `ebay_attach_media_to_invent
 <details>
 <summary><strong>Does it support auction listings?</strong></summary>
 
-Yes, through the REST Inventory offer tools: create the offer with `format: "AUCTION"`, an `auctionStartPrice`, an optional `auctionReservePrice`, and a day-count `listingDuration`, then publish it. See [Auction offers](#auction-offers). The legacy Trading API tools remain fixed-price only.
+Yes, through the REST Inventory offer tools: create the offer with `format: "AUCTION"`, an `auctionStartPrice`, an optional `auctionReservePrice`, and a day-count `listingDuration`, then publish it. See [Auction offers](#auction-offers). The legacy Trading API tools take the same switch: `ebay_create_listing` with `format: "AUCTION"` sends `AddItem` with `ListingType` Chinese, an opening-bid `StartPrice`, and a day-count `ListingDuration`.
 
 </details>
 
 <details>
 <summary><strong>Does it support eBay's legacy Trading API (XML)?</strong></summary>
 
-Yes. Fixed-price listing create, revise, relist, and end operations are supported through the Trading API tools.
+Yes. Listing create, revise, relist, and end operations are supported through the Trading API tools, for fixed-price listings (`AddFixedPriceItem` family, the default) and for auctions (`format: "AUCTION"` → `AddItem`, `ReviseItem`, `EndItem`, `RelistItem`).
 
 </details>
 

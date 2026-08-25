@@ -70,4 +70,14 @@ describe('skill rendering', () => {
     expect(renderSkill('cursor', usingDoc, 'using')).toBe(renderCursorRule(usingDoc, 'using'));
     expect(renderSkill('codex', usingDoc, 'using')).toBe(renderCodexSection(usingDoc));
   });
+
+  it('documents the Trading auction path beside the REST one', () => {
+    const rendered = renderCodexSection(usingDoc);
+    const legacyFlow = rendered.indexOf('Legacy XML path');
+
+    expect(legacyFlow).toBeGreaterThan(-1);
+    expect(rendered.indexOf('format: "AUCTION"', legacyFlow)).toBeGreaterThan(-1);
+    expect(rendered).toContain('`Days_7`');
+    expect(rendered).toContain('`ListingType`');
+  });
 });

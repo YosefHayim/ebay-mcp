@@ -26,7 +26,7 @@ Tool definitions and handlers are co-located per family in `src/tools/categories
 - [Metadata](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/metadata.ts): Return policies, sales-tax jurisdictions, automotive compatibility
 - [Other](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/other.ts): Identity, compliance, VeRO, translation, and international shipping support APIs
 - [Developer](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/developer.ts): Rate limits, signing keys, client registration
-- [Trading](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/trading.ts): Legacy XML API — fixed-price listing management (create, revise, relist, end)
+- [Trading](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/trading.ts): Legacy XML API — fixed-price and auction listing management (create, revise, relist, end)
 - [Token Management](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/tokenManagement.ts): OAuth token retrieval, refresh, and diagnostics
 - [Connector](https://github.com/YosefHayim/ebay-mcp/blob/main/src/tools/categories/connector.ts): ChatGPT connector search/fetch tools over the eBay MCP catalogue
 
