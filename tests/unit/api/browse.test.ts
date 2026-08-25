@@ -3,10 +3,10 @@ import { Effect } from 'effect';
 import { BrowseApi } from '@/api/other/browse.js';
 import type { EbayApiClient } from '@/api/client.js';
 
-const ERR_LIMIT_MUST_BE_BETWEEN = /limit must be between 1 and 200/;
+const ERR_LIMIT_MUST_BE_BETWEEN = /limit must be an integer between 1 and 200/;
 const ERR_SORT_MUST_BE_ONE = /sort must be one of/;
 const ERR_OFFSET_MUST_BE_ZERO = /offset must be zero or a multiple of limit \(3\); got 20/;
-const ERR_OFFSET_MUST_BE_BETWEEN = /offset must be between 0 and 10000/;
+const ERR_OFFSET_MUST_BE_BETWEEN = /offset must be an integer between 0 and 10000/;
 const ERR_CONDITIONS_MUST_BE_AN = /conditions must be an array of non-empty strings/;
 const ERR_BUYINGOPTIONS_MUST_BE_AN = /buyingOptions must be an array of non-empty strings/;
 const ERR_PRICEMIN_MUST_NOT_EXCEED = /priceMin \(50\) must not exceed priceMax \(10\)/;
@@ -114,6 +114,24 @@ describe('searchActiveItems: pagination guards', () => {
     await expect(
       Effect.runPromise(api.searchActiveItems({ query: 'x', limit: 1, offset: 10_001 })),
     ).rejects.toThrow(ERR_OFFSET_MUST_BE_BETWEEN);
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('rejects a fractional limit', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', limit: 1.5 })),
+    ).rejects.toThrow(ERR_LIMIT_MUST_BE_BETWEEN);
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('rejects a fractional offset', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', limit: 5, offset: 2.5 })),
+    ).rejects.toThrow(ERR_OFFSET_MUST_BE_BETWEEN);
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('blames limit, not offset, for a NaN limit', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', limit: Number.NaN })),
+    ).rejects.toThrow(ERR_LIMIT_MUST_BE_BETWEEN);
     expect(mockClient.get).not.toHaveBeenCalled();
   });
   it('accepts an offset at the Browse maximum', async () => {

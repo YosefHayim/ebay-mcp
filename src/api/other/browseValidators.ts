@@ -15,6 +15,39 @@ const MAX_LIMIT = 200;
 /** Hard upper bound for the Browse search `offset` parameter. */
 const MAX_OFFSET = 10_000;
 
+/**
+ * Validate a pagination value is a whole number inside an inclusive range.
+ *
+ * The shared numeric helpers only compare against their floor, so a fractional
+ * or non-finite value survives them. Without `Number.isInteger` the public
+ * `api.browse` surface would forward a `limit` of `1.5` (which the MCP schema
+ * rejects) straight to eBay, and a `NaN` limit would surface later as a page
+ * alignment failure blamed on `offset`.
+ *
+ * @param value - Pagination value supplied by the caller.
+ * @param parameter - Parameter name used in the tagged error.
+ * @param min - Inclusive lower bound.
+ * @param max - Inclusive upper bound.
+ * @returns The same value when valid, or a tagged input error.
+ */
+const requireIntegerInRange = (
+  value: number,
+  parameter: string,
+  min: number,
+  max: number,
+): Effect.Effect<number, EndpointInputError> => {
+  if (!Number.isInteger(value) || value < min || value > max) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter,
+        message: `${parameter} must be an integer between ${min} and ${max}`,
+      }),
+    );
+  }
+
+  return Effect.succeed(value);
+};
+
 /** Default page size when limit is omitted. */
 export const DEFAULT_LIMIT = 20;
 
@@ -86,37 +119,30 @@ export const optionalNonBlankStringEffect = (
   });
 
 /**
- * Validate offset falls within Browse's supported range.
+ * Validate offset is a whole number inside Browse's supported range.
  *
- * @param offset - Non-negative offset already validated as >= 0.
+ * @param offset - Offset already validated as a number >= 0.
+ * @param limit - Validated page size the offset must align to.
  * @returns The same value when in range, or a tagged input error.
  */
 export const requireOffsetInRange = (
   offset: number,
   limit: number,
-): Effect.Effect<number, EndpointInputError> => {
-  if (offset > MAX_OFFSET) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: 'offset',
-        message: `offset must be between 0 and ${MAX_OFFSET}`,
-      }),
-    );
-  }
+): Effect.Effect<number, EndpointInputError> =>
+  Effect.flatMap(requireIntegerInRange(offset, 'offset', 0, MAX_OFFSET), (validated) => {
+    // Browse rejects an offset that is not a whole number of pages (error 12515)
+    // with an opaque 400, so the page arithmetic is enforced here instead.
+    if (validated % limit !== 0) {
+      return Effect.fail(
+        new EndpointInputError({
+          parameter: 'offset',
+          message: `offset must be zero or a multiple of limit (${limit}); got ${validated}`,
+        }),
+      );
+    }
 
-  // Browse rejects an offset that is not a whole number of pages (error 12515)
-  // with an opaque 400, so the page arithmetic is enforced here instead.
-  if (offset % limit !== 0) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: 'offset',
-        message: `offset must be zero or a multiple of limit (${limit}); got ${offset}`,
-      }),
-    );
-  }
-
-  return Effect.succeed(offset);
-};
+    return Effect.succeed(validated);
+  });
 
 /**
  * Reject a price window whose bounds are inverted.
@@ -145,23 +171,13 @@ export const requireCoherentPriceRange = (
 };
 
 /**
- * Validate limit falls within Browse's supported range.
+ * Validate limit is a whole number inside Browse's supported range.
  *
- * @param limit - Positive page size already validated as > 0.
+ * @param limit - Page size already validated as a number > 0.
  * @returns The same value when in range, or a tagged input error.
  */
-export const requireLimitInRange = (limit: number): Effect.Effect<number, EndpointInputError> => {
-  if (limit > MAX_LIMIT) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: 'limit',
-        message: `limit must be between 1 and ${MAX_LIMIT}`,
-      }),
-    );
-  }
-
-  return Effect.succeed(limit);
-};
+export const requireLimitInRange = (limit: number): Effect.Effect<number, EndpointInputError> =>
+  requireIntegerInRange(limit, 'limit', 1, MAX_LIMIT);
 
 /**
  * Validate sort is one of the supported Browse sort orders when provided.
