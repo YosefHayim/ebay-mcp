@@ -46,7 +46,9 @@ export const findActiveItemsInputSchema = z.object({
   buyingOptions: z
     .array(z.string())
     .optional()
-    .describe('Buying option filters, e.g. ["FIXED_PRICE"], ["AUCTION"], ["BEST_OFFER"].'),
+    .describe(
+      'Buying option filters, e.g. ["FIXED_PRICE"], ["AUCTION"], ["BEST_OFFER"]. eBay documents that a search without this filter returns only listings that still offer FIXED_PRICE, and an auction loses that option once it takes a qualifying bid, so pass ["AUCTION"] (or ["AUCTION", "FIXED_PRICE"] for both) to be sure of reaching auctions.',
+    ),
   priceMin: z.number().min(0).optional().describe('Minimum price (inclusive).'),
   priceMax: z.number().min(0).optional().describe('Maximum price (inclusive).'),
   priceCurrency: z
