@@ -4,7 +4,6 @@ import {
   EndpointInputError,
   optionalNonNegativeNumberEffect,
   optionalPositiveNumberEffect,
-  optionalStringEffect,
   requestGetEffect,
   requireObjectEffect,
   requireStringEffect,
@@ -15,6 +14,7 @@ import { buildBrowseFilter, requireNoPriceFilterConflict } from '@/api/other/bro
 import { mapItemDetailsResponse, mapSearchActiveItemsResponse } from '@/api/other/browseMappers.js';
 import {
   DEFAULT_LIMIT,
+  optionalNonBlankStringEffect,
   optionalStringArrayEffect,
   requireCoherentPriceRange,
   requireLimitInRange,
@@ -72,7 +72,10 @@ export class BrowseApi {
       const limitRaw = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
       const offsetRaw = yield* optionalNonNegativeNumberEffect(validatedInput.offset, 'offset');
       const sort = yield* requireSupportedSort(validatedInput.sort);
-      const categoryIds = yield* optionalStringEffect(validatedInput.categoryIds, 'categoryIds');
+      const categoryIds = yield* optionalNonBlankStringEffect(
+        validatedInput.categoryIds,
+        'categoryIds',
+      );
       const conditions = yield* optionalStringArrayEffect(validatedInput.conditions, 'conditions');
       const buyingOptions = yield* optionalStringArrayEffect(
         validatedInput.buyingOptions,
@@ -80,11 +83,11 @@ export class BrowseApi {
       );
       const priceMin = yield* optionalNonNegativeNumberEffect(validatedInput.priceMin, 'priceMin');
       const priceMax = yield* optionalNonNegativeNumberEffect(validatedInput.priceMax, 'priceMax');
-      const priceCurrency = yield* optionalStringEffect(
+      const priceCurrency = yield* optionalNonBlankStringEffect(
         validatedInput.priceCurrency,
         'priceCurrency',
       );
-      const rawFilter = yield* optionalStringEffect(validatedInput.filter, 'filter');
+      const rawFilter = yield* optionalNonBlankStringEffect(validatedInput.filter, 'filter');
       const limit = yield* requireLimitInRange(limitRaw ?? DEFAULT_LIMIT);
       const offset = yield* requireOffsetInRange(offsetRaw ?? 0, limit);
       yield* requireCoherentPriceRange(priceMin, priceMax);

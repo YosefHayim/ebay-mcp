@@ -5,7 +5,7 @@
  * with an opaque 400, so a caller learns which parameter was wrong and why.
  */
 
-import { EndpointInputError } from '@/api/shared/request.js';
+import { EndpointInputError, optionalStringEffect } from '@/api/shared/request.js';
 import { BROWSE_SORT_VALUES, type BrowseSortValue } from '@/api/other/browseTypes.js';
 import { Effect } from 'effect';
 
@@ -44,6 +44,46 @@ export const optionalStringArrayEffect = (
 
   return Effect.succeed(value as readonly string[]);
 };
+
+/**
+ * Validate an optional string input, rejecting a blank value.
+ *
+ * `optionalStringEffect` accepts `''`, and both `defined` and the query
+ * builder drop only `undefined`, so a blank value survives to the wire: as an
+ * empty `category_ids=` parameter, or as a bare `priceCurrency:` clause that
+ * makes eBay silently discard the whole price filter and answer with
+ * unfiltered results instead of an error.
+ *
+ * @param value - Raw value supplied by the caller.
+ * @param parameter - Parameter name used in the tagged error.
+ * @returns The trimmed string (or undefined) when valid, or a tagged input error.
+ *
+ * @example
+ * ```ts
+ * const categoryIds = yield* optionalNonBlankStringEffect(input.categoryIds, 'categoryIds');
+ * ```
+ */
+export const optionalNonBlankStringEffect = (
+  value: unknown,
+  parameter: string,
+): Effect.Effect<string | undefined, EndpointInputError> =>
+  Effect.flatMap(optionalStringEffect(value, parameter), (text) => {
+    if (text === undefined) {
+      return Effect.succeed(undefined);
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return Effect.fail(
+        new EndpointInputError({
+          parameter,
+          message: `${parameter} must be a non-empty string when provided`,
+        }),
+      );
+    }
+
+    return Effect.succeed(trimmed);
+  });
 
 /**
  * Validate offset falls within Browse's supported range.

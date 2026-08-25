@@ -11,6 +11,10 @@ const ERR_CONDITIONS_MUST_BE_AN = /conditions must be an array of non-empty stri
 const ERR_BUYINGOPTIONS_MUST_BE_AN = /buyingOptions must be an array of non-empty strings/;
 const ERR_PRICEMIN_MUST_NOT_EXCEED = /priceMin \(50\) must not exceed priceMax \(10\)/;
 const ERR_FILTER_ALREADY_CONTAINS_A = /filter already contains a price clause/;
+const ERR_CATEGORYIDS_MUST_BE_NON_EMPTY = /categoryIds must be a non-empty string when provided/;
+const ERR_PRICECURRENCY_MUST_BE_NON_EMPTY =
+  /priceCurrency must be a non-empty string when provided/;
+const ERR_FILTER_MUST_BE_NON_EMPTY = /filter must be a non-empty string when provided/;
 const ERR_NO_ITEM_FOUND = /No item found/;
 
 let api: BrowseApi;
@@ -155,6 +159,53 @@ describe('searchActiveItems: input validation', () => {
   it('rejects a missing query', async () => {
     await expect(Effect.runPromise(api.searchActiveItems({ query: '' }))).rejects.toThrow();
     expect(mockClient.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('searchActiveItems: blank optional strings', () => {
+  it('rejects a blank categoryIds instead of sending an empty category_ids', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', categoryIds: '' })),
+    ).rejects.toThrow(ERR_CATEGORYIDS_MUST_BE_NON_EMPTY);
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', categoryIds: '   ' })),
+    ).rejects.toThrow(ERR_CATEGORYIDS_MUST_BE_NON_EMPTY);
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('rejects a blank priceCurrency instead of emitting a bare priceCurrency clause', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', priceMax: 100, priceCurrency: '' })),
+    ).rejects.toThrow(ERR_PRICECURRENCY_MUST_BE_NON_EMPTY);
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', priceMax: 100, priceCurrency: '  ' })),
+    ).rejects.toThrow(ERR_PRICECURRENCY_MUST_BE_NON_EMPTY);
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('rejects a blank raw filter', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', filter: '' })),
+    ).rejects.toThrow(ERR_FILTER_MUST_BE_NON_EMPTY);
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('trims surrounding whitespace on the optional string inputs', async () => {
+    vi.mocked(mockClient.get).mockResolvedValue({});
+
+    await Effect.runPromise(
+      api.searchActiveItems({
+        query: 'x',
+        categoryIds: ' 27386 ',
+        priceMax: 100,
+        priceCurrency: ' EUR ',
+      }),
+    );
+
+    expect(mockClient.get).toHaveBeenCalledWith(
+      '/buy/browse/v1/item_summary/search',
+      expect.objectContaining({
+        category_ids: '27386',
+        filter: 'price:[..100],priceCurrency:EUR',
+      }),
+    );
   });
 });
 
