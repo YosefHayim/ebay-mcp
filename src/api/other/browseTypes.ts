@@ -73,7 +73,7 @@ export interface ActiveItemSummary {
   readonly seller?: string;
   /** Seller positive-feedback percentage when present. */
   readonly sellerFeedbackPercentage?: string;
-  /** Cheapest listed shipping cost when present (0.00 means free shipping). */
+  /** First listed shipping cost when present (0.00 means free shipping). */
   readonly shippingCost?: BrowseMoney;
   /** Auction end date (ISO 8601) when present. */
   readonly itemEndDate?: string;

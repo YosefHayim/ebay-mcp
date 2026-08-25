@@ -65,7 +65,7 @@ const pickSeller = (
 const pickImageUrl = (raw: Record<string, unknown>): string | undefined =>
   isRecord(raw.image) ? optionalString(raw.image.imageUrl) : undefined;
 
-/** Cheapest advertised shipping cost, from the first shipping option. */
+/** Shipping cost from the first advertised shipping option, when present. */
 const pickShippingCost = (raw: Record<string, unknown>): BrowseMoney | undefined => {
   const options = Array.isArray(raw.shippingOptions) ? raw.shippingOptions : [];
   const first = isRecord(options[0]) ? options[0] : undefined;
