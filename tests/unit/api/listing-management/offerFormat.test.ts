@@ -14,7 +14,6 @@ const auctionOffer = {
   marketplaceId: 'EBAY_US',
   format: 'AUCTION',
   listingDuration: 'DAYS_7',
-  availableQuantity: 1,
   pricingSummary: { auctionStartPrice: usd('9.99'), auctionReservePrice: usd('25.00') },
 };
 
@@ -36,8 +35,16 @@ describe('findOfferFormatViolation', () => {
     expect(findOfferFormatViolation(fixedPriceOffer, 'body')).toBeUndefined();
   });
 
-  it('keeps publish-time fields optional so drafts still pass', () => {
-    expect(findOfferFormatViolation({ format: 'AUCTION' }, 'body')).toBeUndefined();
+  it('requires a duration and a starting bid when an auction is created', () => {
+    expect(findOfferFormatViolation({ format: 'AUCTION' }, 'body')).toMatchObject({
+      parameter: 'body.listingDuration',
+    });
+    expect(
+      findOfferFormatViolation({ format: 'AUCTION', listingDuration: 'DAYS_7' }, 'body'),
+    ).toMatchObject({ parameter: 'body.pricingSummary.auctionStartPrice' });
+  });
+
+  it('keeps fixed-price drafts and format-less update bodies permissive', () => {
     expect(findOfferFormatViolation({ format: 'FIXED_PRICE' }, 'body')).toBeUndefined();
     expect(findOfferFormatViolation({}, 'body')).toBeUndefined();
   });
@@ -60,10 +67,22 @@ describe('findOfferFormatViolation', () => {
     });
   });
 
-  it('rejects an auction quantity other than 1', () => {
+  it('rejects availableQuantity on an auction, even 1', () => {
+    expect(
+      findOfferFormatViolation({ ...auctionOffer, availableQuantity: 1 }, 'body'),
+    ).toMatchObject({ parameter: 'body.availableQuantity' });
     expect(
       findOfferFormatViolation({ ...auctionOffer, availableQuantity: 3 }, 'body'),
     ).toMatchObject({ parameter: 'body.availableQuantity' });
+  });
+
+  it('rejects eBay Plus on an auction', () => {
+    expect(
+      findOfferFormatViolation(
+        { ...auctionOffer, listingPolicies: { eBayPlusIfEligible: true } },
+        'body',
+      ),
+    ).toMatchObject({ parameter: 'body.listingPolicies.eBayPlusIfEligible' });
   });
 
   it('rejects a per-buyer limit on an auction', () => {
@@ -182,7 +201,7 @@ describe('offer methods apply the format rules before calling eBay', () => {
 
   it('rejects an inconsistent createOffer body without a request', async () => {
     const error = await Effect.runPromise(
-      Effect.flip(methods.createOffer({ body: { ...auctionOffer, availableQuantity: 2 } })),
+      Effect.flip(methods.createOffer({ body: { ...auctionOffer, availableQuantity: 1 } })),
     );
 
     expect(error).toMatchObject({

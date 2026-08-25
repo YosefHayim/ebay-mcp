@@ -206,7 +206,10 @@ const listingPoliciesSchema = z
     returnPolicyId: z.string().optional(),
     productCompliancePolicyIds: z.array(z.string()).optional(),
     takeBackPolicyIds: z.array(z.string()).optional(),
-    eBayPlusIfEligible: z.boolean().optional(),
+    eBayPlusIfEligible: z
+      .boolean()
+      .optional()
+      .describe('FIXED_PRICE offers only; not applicable to auctions'),
     bestOfferTerms: z
       .object({
         autoAcceptPrice: amountSchema.optional(),
@@ -260,7 +263,9 @@ const offerDetailsFields = {
   availableQuantity: z
     .number()
     .optional()
-    .describe('Purchasable quantity for this offer; AUCTION offers must use 1'),
+    .describe(
+      'Purchasable quantity for FIXED_PRICE offers. Omit it for AUCTION offers — eBay rejects it there (error 25762) and lists one unit from the inventory item',
+    ),
   categoryId: z.string().optional(),
   charity: z
     .object({
@@ -286,7 +291,12 @@ const offerDetailsFields = {
       'FIXED_PRICE offers use GTC. AUCTION offers need a day count (commonly DAYS_1, DAYS_3, DAYS_5, DAYS_7, or DAYS_10; check ebay_get_listing_type_policies for the category) and never GTC',
     ),
   listingPolicies: listingPoliciesSchema.optional(),
-  listingStartDate: z.string().optional(),
+  listingStartDate: z
+    .string()
+    .optional()
+    .describe(
+      'Schedules the listing to go live later (ISO 8601 UTC). Only set it when the user explicitly asked for a scheduled start — eBay may charge a scheduling fee; never add it on your own',
+    ),
   lotSize: z.number().optional(),
   merchantLocationKey: z.string().optional(),
   pricingSummary: pricingSchema.optional(),
@@ -306,7 +316,7 @@ const offerKeyFields = {
   format: z
     .nativeEnum(FormatType)
     .describe(
-      'FIXED_PRICE (price + GTC) or AUCTION (auctionStartPrice + day-count listingDuration, quantity 1)',
+      'FIXED_PRICE (price + GTC) or AUCTION (auctionStartPrice + day-count listingDuration; no availableQuantity)',
     ),
 };
 

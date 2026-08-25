@@ -25,7 +25,7 @@ and analyse on eBay without bespoke integration code.
 
 ## What it does
 
-- Exposes **299 tools across ~270 endpoints** (100% of the Sell surface) over MCP.
+- Exposes **303 tools across ~274 endpoints** (100% of the Sell surface) over MCP.
 - Handles **OAuth** (setup wizard, refresh-token flow, JWT verification).
 - Speaks both **STDIO** and **HTTP** transports.
 - Lets operators **gate** the exposed tool set (`EBAY_MCP_TOOLS`: all / dynamic /
@@ -44,7 +44,7 @@ and analyse on eBay without bespoke integration code.
 - **Stay at 100% Sell coverage** as eBay ships/changes endpoints — the `sync`
   workflow exists to catch drift and file it.
 - **Keep agent context lean** — dynamic toolGating is the lever; grow it rather
-  than exposing all 299 tools by default.
+  than exposing all 303 tools by default.
 - **Harden the contributor gate** — this change set adds a real CI gate (Biome +
   typecheck + test + build across an OS×Node matrix) and codified docs so
   coverage can grow without regressions.

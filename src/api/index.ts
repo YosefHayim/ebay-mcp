@@ -7,6 +7,7 @@ import { NegotiationApi } from '@/api/communication/negotiation.js';
 import { NotificationApi } from '@/api/communication/notification.js';
 import { DeveloperApi } from '@/api/developer/developer.js';
 import { InventoryApi } from '@/api/listing-management/inventory.js';
+import { MediaApi } from '@/api/listing-management/media.js';
 import { MetadataApi } from '@/api/listing-metadata/metadata.js';
 import { TaxonomyApi } from '@/api/listing-metadata/taxonomy.js';
 import { MarketingApi } from '@/api/marketing-and-promotions/marketing.js';
@@ -35,6 +36,7 @@ export class EbaySellerApi {
   // API categories
   public account: AccountApi;
   public inventory: InventoryApi;
+  public media: MediaApi;
   public fulfillment: FulfillmentApi;
   public dispute: DisputeApi;
   public marketing: MarketingApi;
@@ -62,6 +64,7 @@ export class EbaySellerApi {
     // Initialize API category handlers
     this.account = new AccountApi(this.client);
     this.inventory = new InventoryApi(this.client);
+    this.media = new MediaApi(this.client, this.inventory);
     this.fulfillment = new FulfillmentApi(this.client);
     this.dispute = new DisputeApi(this.client);
     this.marketing = new MarketingApi(this.client);
@@ -151,6 +154,8 @@ export * from '@/api/communication/message.js';
 export * from '@/api/communication/negotiation.js';
 export * from '@/api/communication/notification.js';
 export * from '@/api/listing-management/inventory.js';
+export * from '@/api/listing-management/media.js';
+export * from '@/api/listing-management/mediaAttach.js';
 export * from '@/api/listing-metadata/metadata.js';
 export * from '@/api/listing-metadata/taxonomy.js';
 export * from '@/api/marketing-and-promotions/marketing.js';

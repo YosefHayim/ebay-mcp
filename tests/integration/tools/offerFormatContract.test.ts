@@ -30,7 +30,6 @@ const auctionOffer = {
   marketplaceId: 'EBAY_US',
   format: 'AUCTION',
   listingDuration: 'DAYS_7',
-  availableQuantity: 1,
   categoryId: '1234',
   merchantLocationKey: 'WAREHOUSE-1',
   listingPolicies: {
@@ -154,14 +153,14 @@ describe('offer format registered MCP validation', () => {
     expect(endpoint.isDone()).toBe(false);
   });
 
-  it('rejects an auction quantity above 1 before an eBay request', async () => {
+  it('rejects availableQuantity on an auction before an eBay request', async () => {
     const endpoint = nock('https://api.sandbox.ebay.com')
       .post('/sell/inventory/v1/offer')
       .reply(201, { offerId: 'OFFER-AUCTION' });
 
     const result = await client.callTool({
       name: 'ebay_create_offer',
-      arguments: { body: { ...auctionOffer, availableQuantity: 2 } },
+      arguments: { body: { ...auctionOffer, availableQuantity: 1 } },
     });
 
     expect(result.isError).toBe(true);

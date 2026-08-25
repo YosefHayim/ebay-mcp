@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>The eBay MCP server — give Claude, Cursor, and any AI assistant full access to eBay's Sell APIs. 299 tools for inventory, orders, marketing, and analytics, running locally with your own keys.</strong>
+  <strong>The eBay MCP server — give Claude, Cursor, and any AI assistant full access to eBay's Sell APIs. 303 tools for inventory, orders, marketing, and analytics, running locally with your own keys.</strong>
 </p>
 
 <p align="center"><sub>Unofficial, open-source project — not affiliated with, authorized, or endorsed by eBay Inc.</sub></p>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tools-299-8957e5?logo=ebay&logoColor=white" alt="299 eBay API tools" />
+  <img src="https://img.shields.io/badge/tools-303-8957e5?logo=ebay&logoColor=white" alt="303 eBay API tools" />
   <img src="https://img.shields.io/badge/Sell%20API%20coverage-100%25-success" alt="100% eBay Sell API coverage" />
   <img src="https://img.shields.io/badge/Model%20Context%20Protocol-compatible-000000" alt="Model Context Protocol compatible" />
   <img src="https://img.shields.io/badge/tests-1%2C000%2B%20passing-3fb950?logo=vitest&logoColor=white" alt="Over 1,000 passing tests" />
@@ -45,7 +45,7 @@
 
 ---
 
-**eBay MCP** is a local [Model Context Protocol](https://modelcontextprotocol.io) server that connects AI assistants — [Claude Desktop](https://claude.ai/download), [Claude Code](https://code.claude.com/docs/en/overview), [Cursor](https://cursor.com/), [Cline](https://cline.bot/), [Windsurf](https://windsurf.com/), [Zed](https://zed.dev/), [Continue.dev](https://docs.continue.dev/), [Roo Code](https://roocode.com/), and [Amazon Q Developer](https://aws.amazon.com/q/developer/) — directly to **[eBay's Sell APIs](https://developer.ebay.com/api-docs/sell/static/overview.html)**. It exposes **299 tools** spanning **100% of eBay's Sell API surface** (270 unique endpoints) for inventory management, order fulfillment, promoted-listings marketing, analytics, and developer tooling. Everything runs on your machine over STDIO or local HTTP — **no cloud relay**, and your eBay credentials never leave your computer.
+**eBay MCP** is a local [Model Context Protocol](https://modelcontextprotocol.io) server that connects AI assistants — [Claude Desktop](https://claude.ai/download), [Claude Code](https://code.claude.com/docs/en/overview), [Cursor](https://cursor.com/), [Cline](https://cline.bot/), [Windsurf](https://windsurf.com/), [Zed](https://zed.dev/), [Continue.dev](https://docs.continue.dev/), [Roo Code](https://roocode.com/), and [Amazon Q Developer](https://aws.amazon.com/q/developer/) — directly to **[eBay's Sell APIs](https://developer.ebay.com/api-docs/sell/static/overview.html)**. It exposes **303 tools** spanning **100% of eBay's Sell API surface** (274 unique endpoints) for inventory management, order fulfillment, promoted-listings marketing, analytics, and developer tooling. Everything runs on your machine over STDIO or local HTTP — **no cloud relay**, and your eBay credentials never leave your computer.
 
 > **Disclaimer:** Unofficial, third-party project — **not affiliated with or endorsed by eBay Inc.** Provided "as is" without warranty. You are responsible for complying with [eBay's API License Agreement](https://developer.ebay.com/join/api-license-agreement) and [data-handling requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html), keeping your credentials secure, and staying within rate limits. Test in sandbox before production. See [LICENSE](LICENSE), [SECURITY.md](SECURITY.md), and [EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md).
 
@@ -71,7 +71,7 @@
 
 ## Features
 
-- **299 eBay API tools** — 100% coverage of the eBay Sell APIs across inventory, orders, marketing, analytics, metadata, taxonomy, and developer tooling.
+- **303 eBay API tools** — 100% coverage of the eBay Sell APIs across inventory, orders, marketing, analytics, metadata, taxonomy, and developer tooling.
 - **9 AI clients, auto-configured** — Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI, and Amazon Q Developer.
 - **OAuth 2.0 built in** — full user-token management with automatic refresh, and smart fallback from user tokens (10k–50k req/day) to client credentials (1k req/day).
 - **Resilient by default** — automatic retry with exponential backoff on `429` rate limits, and consistent, loud error surfacing.
@@ -124,12 +124,32 @@ listing formats through the same Inventory model:
 | `pricingSummary.auctionStartPrice` | — | Opening bid |
 | `pricingSummary.auctionReservePrice` | — | Optional; must exceed the opening bid and carries an eBay fee |
 | `listingDuration` | `GTC` | Day count such as `DAYS_7` (never `GTC`) |
-| `availableQuantity` | Any | `1` |
-| Best Offer / `quantityLimitPerBuyer` | Allowed | Not allowed |
+| `availableQuantity` | Any | Omit — eBay rejects it on auctions (error 25762); the inventory item supplies the single unit |
+| Best Offer / `quantityLimitPerBuyer` / `eBayPlusIfEligible` | Allowed | Not allowed |
+| `listingStartDate` | Only when a scheduled start was explicitly requested (eBay may charge a fee) | Same |
 
 Check `ebay_get_listing_type_policies` for the formats and durations a category allows,
 then `ebay_get_listing_fees` before `ebay_publish_offer`. Bodies that mix the two formats
 are rejected locally, before any request reaches eBay.
+
+### Photos and videos from local files
+
+An offer cannot be published without at least one picture. The media tools upload local
+files through eBay's Media API and return what the Inventory API needs:
+
+| Tool | What it does |
+| --- | --- |
+| `ebay_upload_images` | Uploads pictures to eBay Picture Services (`createImageFromFile`) and returns the EPS URLs in order for `product.imageUrls` |
+| `ebay_upload_video` | Runs the video lifecycle (`createVideo` → `uploadVideo` → `getVideo`) and returns the `videoId` for `product.videoIds` |
+| `ebay_get_video` | Re-checks a video that was still `PROCESSING` |
+| `ebay_attach_media_to_inventory_item` | Reads the item, uploads the files, and rewrites only `product.imageUrls` / `product.videoIds` — never publishes, and leaves the item untouched if any upload fails unless `allowPartial` is set |
+
+Local file access is off until you allow it: set `EBAY_MCP_MEDIA_DIRS` (path-delimited
+directories) and/or `EBAY_MCP_MEDIA_ROOT` (one directory that also resolves
+`media://<relative-path>` references). Symlinks are resolved before the containment
+check; anything outside the allowed directories is refused before any upload. Supported:
+JPG, PNG, GIF, BMP, TIFF, WEBP, AVIF, HEIC up to 12 MB; MP4/MOV up to 150 MB. Unused
+uploads expire on eBay's side; they become permanent once a listing uses them.
 
 ## eBay MCP vs. the raw eBay API
 
@@ -143,7 +163,7 @@ Both talk to the same eBay endpoints — the difference is everything you'd othe
 | Input validation | Effect-backed schemas + TypeScript types on every tool | None — you validate your own payloads |
 | Setup | One wizard (`npm run setup`) | Per-call auth, headers, and marketplace wiring |
 | AI client support | 9 clients auto-configured | Not applicable |
-| API coverage | 299 tools across 100% of the Sell APIs, ready to call | Build each request from the docs |
+| API coverage | 303 tools across 100% of the Sell APIs, ready to call | Build each request from the docs |
 | Hosting | Runs locally, no cloud relay | Your own infrastructure |
 
 ## One-click AI setup
@@ -271,6 +291,9 @@ EBAY_USER_REFRESH_TOKEN=your_token  # for higher rate limits
 EBAY_MCP_UI=on                      # interactive MCP Apps views (beta); "off" forces plain JSON
 EBAY_MCP_TOOLS=all                  # tool exposure: "all", "dynamic", or a family list (see below)
 EBAY_READ_ONLY=false                # when true, only register read-only tools (gets/lists/searches)
+# Local photo/video upload (optional — off until a directory is allowed):
+# EBAY_MCP_MEDIA_DIRS=/srv/media    # path-delimited directories the media tools may read
+# EBAY_MCP_MEDIA_ROOT=/srv/media    # root for media://<relative-path> references (also allowed)
 # HTTP deploy (optional — Docker / Railway / self-hosted):
 # MCP_HOST=0.0.0.0                  # default is 0.0.0.0 when PORT is set
 # MCP_PORT=3000                     # preferred over platform PORT
@@ -319,15 +342,15 @@ Auto-configured by `npm run setup`. Requires [Node.js](https://nodejs.org/en) �
 ## Available tools
 
 <details open>
-<summary><strong>299 tools by category (100% Sell API coverage)</strong></summary>
+<summary><strong>303 tools by category (100% Sell API coverage)</strong></summary>
 
-**299 tools**, 100% Sell API coverage, organized by category. Each link points to the tool definitions and handlers in [`src/tools/categories/`](src/tools/categories/):
+**303 tools**, 100% Sell API coverage, organized by category. Each link points to the tool definitions and handlers in [`src/tools/categories/`](src/tools/categories/):
 
 | Category | What you can do |
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | ChatGPT connector search/fetch tools over the eBay MCP catalogue |
 | [Account](src/tools/categories/account.ts) | Business, fulfillment, payment, and return policies; programs; subscriptions; sales tax |
-| [Inventory](src/tools/categories/inventory.ts) | Inventory items, offers, locations, item groups, bulk operations, SKU/location mapping |
+| [Inventory](src/tools/categories/inventory.ts) | Inventory items, offers, locations, item groups, bulk operations, SKU/location mapping, and local photo/video upload ([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | Orders, shipping, refunds, disputes, payment-dispute evidence |
 | [Marketing](src/tools/categories/marketing.ts) | Promoted-listings campaigns, ads, promotions, bidding, bulk operations |
 | [Analytics](src/tools/categories/analytics.ts) | Traffic reports, seller standards, customer-service metrics |
@@ -378,6 +401,7 @@ Common tasks, phrased as you'd ask your AI assistant:
 
 - **Set up OAuth** — *"Help me set up OAuth for my eBay account."* → generates an authorization URL via `ebay_get_oauth_url`, then configures the refresh token. Unlocks 10k–50k req/day.
 - **Manage inventory** — *"Show me all my active listings."* → `ebay_get_inventory_items` returns SKUs, quantities, and status.
+- **Add photos to a listing** — *"Attach the three photos in ~/listings/megadrive to SKU MD-001."* → `ebay_attach_media_to_inventory_item` uploads them to eBay Picture Services and updates `product.imageUrls` (with `EBAY_MCP_MEDIA_DIRS` allowing that folder).
 - **Run an auction** — *"List this SKU as a 7-day auction starting at $9.99 with a $25 reserve."* → `ebay_create_offer` with `format: "AUCTION"`, `auctionStartPrice`, `auctionReservePrice`, and `listingDuration: "DAYS_7"`, then `ebay_publish_offer`.
 - **Look up offers** — `ebay_get_offers` returns offers for one required SKU. To enumerate offers across the inventory, call `ebay_get_inventory_items` first, then call `ebay_get_offers` once per SKU.
 - **Manage fulfillment policies** — *"Create a shipping policy, then update its handling time."* → `ebay_create_fulfillment_policy` creates the reusable policy ID and `ebay_update_fulfillment_policy` replaces its settings.
@@ -404,7 +428,7 @@ Common tasks, phrased as you'd ask your AI assistant:
 <details>
 <summary><strong>What is the eBay MCP server?</strong></summary>
 
-A local [Model Context Protocol](https://modelcontextprotocol.io) server that exposes **299 tools** covering **100% of eBay's Sell APIs** (270 endpoints) to AI assistants — inventory, order fulfillment, marketing, analytics, and developer tools.
+A local [Model Context Protocol](https://modelcontextprotocol.io) server that exposes **303 tools** covering **100% of eBay's Sell APIs** (274 endpoints) to AI assistants — inventory, order fulfillment, marketing, analytics, and developer tools.
 
 </details>
 
@@ -439,7 +463,7 @@ Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that
 <details>
 <summary><strong>How many eBay APIs and tools does it cover?</strong></summary>
 
-299 tools across 270 unique endpoints — 100% of eBay's Sell APIs.
+303 tools across 274 unique endpoints — 100% of eBay's Sell APIs.
 
 </details>
 
@@ -489,6 +513,13 @@ Credentials are stored locally in your `.env` file and used only to call eBay di
 <summary><strong>How is this different from calling the eBay API directly?</strong></summary>
 
 You interact in natural language through your AI assistant. OAuth token management, automatic retries with backoff, and type-safe Effect-backed validation are built in. See the [comparison table](#ebay-mcp-vs-the-raw-ebay-api) above.
+
+</details>
+
+<details>
+<summary><strong>Can it upload my photos and videos?</strong></summary>
+
+Yes. `ebay_upload_images`, `ebay_upload_video`, and `ebay_attach_media_to_inventory_item` read local files (absolute paths or `media://` references) and upload them through eBay's Media API, returning EPS image URLs and video IDs for `product.imageUrls` / `product.videoIds`. Filesystem access is opt-in: nothing is readable until `EBAY_MCP_MEDIA_DIRS` or `EBAY_MCP_MEDIA_ROOT` names the directories. See [Photos and videos from local files](#photos-and-videos-from-local-files).
 
 </details>
 

@@ -8,7 +8,7 @@ talks to it, and the shape data moves through_ — not a glossary (that's
 ## What it is
 
 A **local [MCP](https://modelcontextprotocol.io) server** that exposes eBay's
-Sell APIs — 299 tools across ~270 endpoints — to AI assistants. It runs on the
+Sell APIs — 303 tools across ~274 endpoints — to AI assistants. It runs on the
 developer's machine (or a container), speaks the Model Context Protocol over
 **STDIO** (default) or **HTTP**, holds the eBay OAuth tokens, and turns each tool
 call into an authenticated eBay API request.

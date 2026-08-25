@@ -42,10 +42,16 @@ const auctionViolation = (
       'AUCTION offers need a day-count listingDuration such as DAYS_7; GTC is only valid for FIXED_PRICE offers',
     );
   }
-  if (offer.availableQuantity !== undefined && offer.availableQuantity !== 1) {
+  if (offer.availableQuantity !== undefined) {
     return inputError(
       `${parameter}.availableQuantity`,
-      'AUCTION offers must set availableQuantity to 1 (or omit it)',
+      'availableQuantity is not applicable for AUCTION offers (eBay error 25762); omit it — the inventory item quantity covers the auction',
+    );
+  }
+  if (offer.listingPolicies?.eBayPlusIfEligible === true) {
+    return inputError(
+      `${parameter}.listingPolicies.eBayPlusIfEligible`,
+      'eBayPlusIfEligible is not applicable for AUCTION offers',
     );
   }
   if (offer.quantityLimitPerBuyer !== undefined) {
@@ -81,6 +87,25 @@ const fixedPriceViolation = (
   }
 };
 
+/** Fields eBay requires when an AUCTION offer is created (its createOffer error catalogue). */
+const auctionCreateViolation = (
+  offer: OfferFormatFields,
+  parameter: string,
+): EndpointInputError | undefined => {
+  if (offer.listingDuration === undefined) {
+    return inputError(
+      `${parameter}.listingDuration`,
+      'listingDuration is required for AUCTION offers (a day count such as DAYS_7)',
+    );
+  }
+  if (offer.pricingSummary?.auctionStartPrice === undefined) {
+    return inputError(
+      `${parameter}.pricingSummary.auctionStartPrice`,
+      'auctionStartPrice is required for AUCTION offers',
+    );
+  }
+};
+
 const reserveViolation = (
   offer: OfferFormatFields,
   parameter: string,
@@ -98,10 +123,11 @@ const reserveViolation = (
 /**
  * Finds the first eBay listing-format rule an offer body breaks, if any.
  *
- * AUCTION offers cannot use GTC, must be quantity 1, and cannot carry per-buyer
- * limits or Best Offer; FIXED_PRICE offers must use GTC and cannot carry auction
- * prices; a reserve price must always exceed the starting bid. Fields eBay only
- * requires at publish time (prices, duration) stay optional so drafts still work.
+ * AUCTION offers need a day-count listingDuration and an auctionStartPrice, cannot
+ * carry availableQuantity, per-buyer limits, Best Offer, or eBay Plus; FIXED_PRICE
+ * offers must use GTC and cannot carry auction prices; a reserve price must always
+ * exceed the starting bid. Update bodies carry no format, so only the format-free
+ * rules apply to them.
  *
  * @param offer - Create or update offer body.
  * @param parameter - Parameter path used to label the failing field (for example `body`).
@@ -118,7 +144,8 @@ export const findOfferFormatViolation = (
 ): EndpointInputError | undefined => {
   let formatViolation: EndpointInputError | undefined;
   if (offer.format === FormatType.AUCTION) {
-    formatViolation = auctionViolation(offer, parameter);
+    formatViolation =
+      auctionViolation(offer, parameter) ?? auctionCreateViolation(offer, parameter);
   } else if (offer.format === FormatType.FIXED_PRICE) {
     formatViolation = fixedPriceViolation(offer, parameter);
   }
