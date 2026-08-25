@@ -162,7 +162,23 @@ export * from '@/api/order-management/dispute.js';
 export * from '@/api/order-management/fulfillment.js';
 export * from '@/api/other/compliance.js';
 export * from '@/api/other/edelivery.js';
-export * from '@/api/other/browse.js';
+export { BrowseApi } from '@/api/other/browse.js';
+export { buildBrowseFilter, requireNoPriceFilterConflict } from '@/api/other/browseFilter.js';
+export {
+  mapItemDetailsResponse,
+  mapItemSummary,
+  mapSearchActiveItemsResponse,
+} from '@/api/other/browseMappers.js';
+export {
+  BROWSE_SORT_VALUES,
+  type ActiveItemSummary,
+  type BrowseMoney,
+  type BrowseSortValue,
+  type GetItemDetailsInput,
+  type ItemDetails,
+  type SearchActiveItemsInput,
+  type SearchActiveItemsResult,
+} from '@/api/other/browseTypes.js';
 export * from '@/api/other/finding.js';
 export * from '@/api/other/identity.js';
 export * from '@/api/other/translation.js';

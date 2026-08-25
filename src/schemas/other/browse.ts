@@ -51,7 +51,9 @@ export const findActiveItemsInputSchema = z.object({
   priceCurrency: z
     .string()
     .optional()
-    .describe('Currency for priceMin/priceMax as a 3-letter code (e.g. "USD", "EUR"). Defaults to USD when a bound is set. eBay converts across currencies, but silently drops the entire price filter when the code is not one it recognises — an unsupported code returns unfiltered results rather than an error.'),
+    .describe(
+      'Currency for priceMin/priceMax as a 3-letter code (e.g. "USD", "EUR"). Defaults to USD when a bound is set. eBay converts across currencies, but silently drops the entire price filter when the code is not one it recognises: an unsupported code returns unfiltered results rather than an error.',
+    ),
   filter: z
     .string()
     .optional()
