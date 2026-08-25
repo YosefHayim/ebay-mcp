@@ -10,6 +10,9 @@ const ERR_OFFSET_MUST_BE_BETWEEN = /offset must be an integer between 0 and 1000
 const ERR_CONDITIONS_MUST_BE_AN = /conditions must be an array of non-empty strings/;
 const ERR_BUYINGOPTIONS_MUST_BE_AN = /buyingOptions must be an array of non-empty strings/;
 const ERR_PRICEMIN_MUST_NOT_EXCEED = /priceMin \(50\) must not exceed priceMax \(10\)/;
+const ERR_PRICEMIN_MUST_BE_FINITE = /priceMin must be a finite number/;
+const ERR_PRICEMAX_MUST_BE_FINITE = /priceMax must be a finite number/;
+const ERR_PRICEMIN_MUST_BE_NON_NEGATIVE = /priceMin must be a non-negative number/;
 const ERR_FILTER_ALREADY_CONTAINS_A = /filter already contains a price clause/;
 const ERR_CATEGORYIDS_MUST_BE_NON_EMPTY = /categoryIds must be a non-empty string when provided/;
 const ERR_PRICECURRENCY_MUST_BE_NON_EMPTY =
@@ -166,6 +169,21 @@ describe('searchActiveItems: input validation', () => {
     await expect(
       Effect.runPromise(api.searchActiveItems({ query: 'x', priceMin: -1 })),
     ).rejects.toThrow();
+    expect(mockClient.get).not.toHaveBeenCalled();
+  });
+  it('rejects a non-finite price bound instead of interpolating it into the filter', async () => {
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', priceMin: Number.NaN })),
+    ).rejects.toThrow(ERR_PRICEMIN_MUST_BE_FINITE);
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', priceMin: Number.POSITIVE_INFINITY })),
+    ).rejects.toThrow(ERR_PRICEMIN_MUST_BE_FINITE);
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', priceMax: Number.NaN })),
+    ).rejects.toThrow(ERR_PRICEMAX_MUST_BE_FINITE);
+    await expect(
+      Effect.runPromise(api.searchActiveItems({ query: 'x', priceMin: Number.NEGATIVE_INFINITY })),
+    ).rejects.toThrow(ERR_PRICEMIN_MUST_BE_NON_NEGATIVE);
     expect(mockClient.get).not.toHaveBeenCalled();
   });
   it('rejects an inverted price window', async () => {

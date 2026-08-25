@@ -48,6 +48,34 @@ const requireIntegerInRange = (
   return Effect.succeed(value);
 };
 
+/**
+ * Describe a price bound that is present but not a finite number.
+ *
+ * The shared numeric helper only compares against zero, and `NaN < 0` and
+ * `Infinity < 0` are both false, so either value survives it and every later
+ * comparison. The filter builder then interpolates it straight onto the wire
+ * as `price:[NaN..]`. `Number.isFinite` (not `Number.isInteger`, since prices
+ * are legitimately fractional) closes the gap the MCP schema's `.min(0)`
+ * already covers.
+ *
+ * @param value - Optional price bound already validated as a number >= 0.
+ * @param parameter - Parameter name used in the tagged error.
+ * @returns A tagged input error when the bound is not finite, else undefined.
+ */
+const nonFinitePriceError = (
+  value: number | undefined,
+  parameter: string,
+): EndpointInputError | undefined => {
+  if (value === undefined || Number.isFinite(value)) {
+    return;
+  }
+
+  return new EndpointInputError({
+    parameter,
+    message: `${parameter} must be a finite number; got ${value}`,
+  });
+};
+
 /** Default page size when limit is omitted. */
 export const DEFAULT_LIMIT = 20;
 
@@ -145,10 +173,12 @@ export const requireOffsetInRange = (
   });
 
 /**
- * Reject a price window whose bounds are inverted.
+ * Reject a price window whose bounds are not finite, or are inverted.
  *
  * eBay accepts `price:[50..10]` and simply matches nothing, so an inverted
- * window would look like a legitimate empty result rather than a mistake.
+ * window would look like a legitimate empty result rather than a mistake. A
+ * non-finite bound is rejected here too, because it passes every ordering
+ * comparison silently and would otherwise reach the wire verbatim.
  *
  * @param priceMin - Optional lower bound.
  * @param priceMax - Optional upper bound.
@@ -158,6 +188,12 @@ export const requireCoherentPriceRange = (
   priceMin: number | undefined,
   priceMax: number | undefined,
 ): Effect.Effect<void, EndpointInputError> => {
+  const nonFinite =
+    nonFinitePriceError(priceMin, 'priceMin') ?? nonFinitePriceError(priceMax, 'priceMax');
+  if (nonFinite) {
+    return Effect.fail(nonFinite);
+  }
+
   if (priceMin !== undefined && priceMax !== undefined && priceMin > priceMax) {
     return Effect.fail(
       new EndpointInputError({
