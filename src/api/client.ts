@@ -4,7 +4,12 @@ import { RateLimitTracker } from '@/api/rateLimitTracker.js';
 import { getBaseUrl } from '@/config/environment.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { getErrorMessage } from '@/utils/errors.js';
-import { httpRequestEffect, isHttpError, type ResponseType } from '@/utils/http.js';
+import {
+  type HttpResponse,
+  httpRequestEffect,
+  isHttpError,
+  type ResponseType,
+} from '@/utils/http.js';
 import { isRecord } from '@/utils/typeGuards.js';
 import { apiLogger, logRequest, logResponse, logErrorResponse } from '@/utils/logger.js';
 import { Cause, Effect, Exit } from 'effect';
@@ -22,7 +27,42 @@ export interface EbayRequestConfig {
   params?: Record<string, unknown>;
   /** Successful response decoder for non-JSON endpoints such as binary evidence files. */
   responseType?: ResponseType;
+  /** Treat `endpoint` as a full URL (APIs on another eBay host, e.g. `apim`). */
+  absolute?: boolean;
+  /** Per-request timeout override, e.g. for large media uploads. */
+  timeoutMs?: number;
 }
+
+/** Successful eBay response with the transport metadata some endpoints put their result in. */
+export interface EbayResponse<T> {
+  /** Decoded response body (`undefined` for an empty body). */
+  readonly data: T;
+  /** HTTP status code. */
+  readonly status: number;
+  /** Response headers with lower-cased names (e.g. `location`). */
+  readonly headers: Record<string, string>;
+}
+
+/** Bodies that must never be echoed into debug logs. */
+const isBinaryBody = (data: unknown): boolean =>
+  data instanceof FormData ||
+  data instanceof Blob ||
+  data instanceof Uint8Array ||
+  data instanceof ArrayBuffer;
+
+const CONTENT_TYPE_HEADER = 'content-type';
+
+const hasHeader = (headers: Record<string, string> | undefined, name: string): boolean =>
+  headers !== undefined && Object.keys(headers).some((key) => key.toLowerCase() === name);
+
+/** Removes every spelling of a header so fetch can derive it from the body. */
+const deleteHeader = (headers: Record<string, string>, name: string): void => {
+  for (const key of Object.keys(headers)) {
+    if (key.toLowerCase() === name) {
+      delete headers[key];
+    }
+  }
+};
 
 /** Normalized request options used by the client transport Effect. */
 interface EbayRequestOptions {
@@ -36,6 +76,8 @@ interface EbayRequestOptions {
   readonly responseType?: ResponseType;
   /** Whether `endpoint` was already an absolute URL. */
   readonly absolute?: boolean;
+  /** Per-request timeout override. */
+  readonly timeoutMs?: number;
 }
 
 /** Retry counters carried between recursive request attempts. */
@@ -167,11 +209,23 @@ export class EbayApiClient {
     endpoint: string,
     options: EbayRequestOptions,
   ): Promise<T> {
+    return (await this.requestResponse<T>(method, endpoint, options)).data;
+  }
+
+  /**
+   * Core request boundary that also returns status and headers.
+   */
+  private async requestResponse<T>(
+    method: string,
+    endpoint: string,
+    options: EbayRequestOptions,
+  ): Promise<EbayResponse<T>> {
     // Preserve the typed request error for endpoint adapters. Plain runPromise
     // rejects with a FiberFailure whose generic message hides eBay response data.
     const exit = await Effect.runPromiseExit(this.requestEffect<T>(method, endpoint, options));
     if (Exit.isSuccess(exit)) {
-      return exit.value;
+      const { data, status, headers } = exit.value;
+      return { data, status, headers };
     }
     throw Cause.squash(exit.cause);
   }
@@ -183,7 +237,7 @@ export class EbayApiClient {
     method: string,
     endpoint: string,
     options: EbayRequestOptions,
-  ): Effect.Effect<T, EbayClientRequestError> {
+  ): Effect.Effect<HttpResponse<T>, EbayClientRequestError> {
     const url = options.absolute ? endpoint : `${this.baseUrl}${endpoint}`;
     return this.sendWithRetry<T>(method, url, options, {
       authRetried: false,
@@ -199,7 +253,7 @@ export class EbayApiClient {
     url: string,
     options: EbayRequestOptions,
     state: RequestRetryState,
-  ): Effect.Effect<T, EbayClientRequestError> {
+  ): Effect.Effect<HttpResponse<T>, EbayClientRequestError> {
     return Effect.gen(this, function* () {
       // In proxy auth mode the upstream proxy supplies credentials, so the server
       // neither requires nor validates its own. See EBAY_MCP_DISABLE_AUTH_HEADER.
@@ -226,6 +280,13 @@ export class EbayApiClient {
         ...this.getDefaultHeaders(),
         ...options.headers,
       };
+      if (options.data instanceof FormData) {
+        // fetch must set the multipart content-type itself so the boundary matches.
+        deleteHeader(headers, CONTENT_TYPE_HEADER);
+      } else if (options.data instanceof Blob && !hasHeader(options.headers, CONTENT_TYPE_HEADER)) {
+        // A Blob carries its own MIME type; only an explicit caller header overrides it.
+        deleteHeader(headers, CONTENT_TYPE_HEADER);
+      }
 
       // Proxy auth mode: attach no Authorization header and acquire no token —
       // the upstream proxy injects whatever credentials eBay requires.
@@ -256,7 +317,12 @@ export class EbayApiClient {
       }
 
       this.rateLimitTracker.recordRequest();
-      logRequest(method, url, options.params, options.data);
+      logRequest(
+        method,
+        url,
+        options.params,
+        isBinaryBody(options.data) ? '[binary body]' : options.data,
+      );
 
       return yield* httpRequestEffect<T>({
         method,
@@ -264,7 +330,7 @@ export class EbayApiClient {
         params: options.params,
         headers,
         body: options.data,
-        timeoutMs: this.timeoutMs,
+        timeoutMs: options.timeoutMs ?? this.timeoutMs,
         responseType: options.responseType,
       }).pipe(
         Effect.map((response) => {
@@ -276,7 +342,7 @@ export class EbayApiClient {
             response.headers['x-ebay-c-ratelimit-limit'],
           );
 
-          return response.data;
+          return response;
         }),
         Effect.catchAll((error) =>
           this.handleRequestFailure<T>(error, { method, url, options, state }),
@@ -291,7 +357,7 @@ export class EbayApiClient {
   private handleRequestFailure<T>(
     error: unknown,
     context: RequestFailureContext,
-  ): Effect.Effect<T, EbayClientRequestError> {
+  ): Effect.Effect<HttpResponse<T>, EbayClientRequestError> {
     const { method, url, options, state } = context;
 
     if (!isHttpError(error)) {
@@ -437,6 +503,8 @@ export class EbayApiClient {
       params: { ...params, ...config?.params },
       headers: config?.headers,
       responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
     });
   }
 
@@ -448,11 +516,25 @@ export class EbayApiClient {
     data?: unknown,
     config?: EbayRequestConfig,
   ): Promise<T> {
-    return await this.request<T>('POST', endpoint, {
+    return (await this.postForResponse<T>(endpoint, data, config)).data;
+  }
+
+  /**
+   * Make a POST request and keep the status and headers of the successful
+   * response — for endpoints that return their result in a `Location` header.
+   */
+  async postForResponse<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: EbayRequestConfig,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('POST', endpoint, {
       data,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
     });
   }
 

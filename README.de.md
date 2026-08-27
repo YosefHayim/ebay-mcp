@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>Der eBay MCP-Server — gib Claude, Cursor und jedem KI-Assistenten vollen Zugriff auf die Sell-APIs von eBay. 299 Tools für Bestand, Bestellungen, Marketing und Analytik, lokal ausgeführt mit deinen eigenen Schlüsseln.</strong>
+  <strong>Der eBay MCP-Server — gib Claude, Cursor und jedem KI-Assistenten vollen Zugriff auf die Sell-APIs von eBay. 303 Tools für Bestand, Bestellungen, Marketing und Analytik, lokal ausgeführt mit deinen eigenen Schlüsseln.</strong>
 </p>
 
 <p align="center"><sub>Inoffizielles Open-Source-Projekt — ohne Zugehörigkeit, Genehmigung oder Billigung durch eBay Inc.</sub></p>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tools-299-8957e5?logo=ebay&logoColor=white" alt="299 eBay-API-Tools" />
+  <img src="https://img.shields.io/badge/tools-303-8957e5?logo=ebay&logoColor=white" alt="303 eBay-API-Tools" />
   <img src="https://img.shields.io/badge/Sell%20API%20coverage-100%25-success" alt="100% Abdeckung der eBay Sell API" />
   <img src="https://img.shields.io/badge/Model%20Context%20Protocol-compatible-000000" alt="Model Context Protocol kompatibel" />
   <img src="https://img.shields.io/badge/tests-1%2C000%2B%20passing-3fb950?logo=vitest&logoColor=white" alt="über 1000 bestandene Tests" />
@@ -47,7 +47,7 @@
 
 > **Hinweis:** Die englische [README.md](README.md) ist die Quelle der Wahrheit für aktuelle Produktangaben (Tool-Familien, API-Stilllegungen, Versionshinweise). Diese Übersetzung kann hinterherhinken.
 
-**eBay MCP** ist ein lokaler [Model-Context-Protocol](https://modelcontextprotocol.io)-Server, der KI-Assistenten —Claude Desktop, Claude Code, Cursor, Cline, Windsurf, Zed, Continue.dev, Roo Code und Amazon Q— direkt mit den **Sell-APIs von eBay** verbindet. Er stellt **299 Tools** bereit, die **100% der eBay-Sell-API-Oberfläche** (270 eindeutige Endpunkte) abdecken — für Bestandsverwaltung, Auftragsabwicklung, Marketing mit beworbenen Angeboten, Analytik und Entwicklerwerkzeuge. Alles läuft auf deinem Rechner über STDIO oder lokales HTTP — **kein Cloud-Relay**, und deine eBay-Zugangsdaten verlassen niemals deinen Computer.
+**eBay MCP** ist ein lokaler [Model-Context-Protocol](https://modelcontextprotocol.io)-Server, der KI-Assistenten —Claude Desktop, Claude Code, Cursor, Cline, Windsurf, Zed, Continue.dev, Roo Code und Amazon Q— direkt mit den **Sell-APIs von eBay** verbindet. Er stellt **303 Tools** bereit, die **100% der eBay-Sell-API-Oberfläche** (274 eindeutige Endpunkte) abdecken — für Bestandsverwaltung, Auftragsabwicklung, Marketing mit beworbenen Angeboten, Analytik und Entwicklerwerkzeuge. Alles läuft auf deinem Rechner über STDIO oder lokales HTTP — **kein Cloud-Relay**, und deine eBay-Zugangsdaten verlassen niemals deinen Computer.
 
 > **Haftungsausschluss:** Inoffizielles Drittanbieterprojekt — **ohne Zugehörigkeit zu oder Billigung durch eBay Inc.** Bereitgestellt „wie besehen“, ohne Gewährleistung. Du bist selbst dafür verantwortlich, die [eBay-API-Lizenzvereinbarung](https://developer.ebay.com/join/api-license-agreement) und die [Anforderungen an die Datenverarbeitung](https://developer.ebay.com/api-docs/static/data-handling-update.html) einzuhalten, deine Zugangsdaten zu schützen und die Ratenlimits einzuhalten. Teste im Sandbox-Modus vor dem Produktivbetrieb. Siehe [LICENSE](LICENSE), [SECURITY.md](SECURITY.md) und [EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md).
 
@@ -71,11 +71,11 @@
 
 ## Funktionen
 
-- **299 eBay-API-Tools** — 100% Abdeckung der eBay-Sell-APIs für Bestand, Bestellungen, Marketing, Analytik, Metadaten, Taxonomie und Entwicklerwerkzeuge.
+- **303 eBay-API-Tools** — 100% Abdeckung der eBay-Sell-APIs für Bestand, Bestellungen, Marketing, Analytik, Metadaten, Taxonomie und Entwicklerwerkzeuge.
 - **9 KI-Clients, automatisch konfiguriert** — Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI und Amazon Q Developer.
 - **OAuth 2.0 integriert** — vollständige Verwaltung von Benutzer-Tokens mit automatischer Erneuerung und intelligentem Rückfall von Benutzer-Tokens (10k–50k Anfragen/Tag) auf Client-Zugangsdaten (1k Anfragen/Tag).
 - **Standardmäßig robust** — automatischer Wiederholungsversuch mit exponentiellem Backoff bei `429`-Ratenlimits und konsistente, deutliche Fehlermeldungen.
-- **Typsicher** — durchgängig TypeScript, mit Zod validierte Tool-Eingaben und aus OpenAPI generierte Typen.
+- **Typsicher** — durchgängig TypeScript, mit Effect validierte Tool-Eingaben und aus OpenAPI generierte Typen.
 - **Lokal und privat** — läuft über STDIO oder lokales HTTP; deine Zugangsdaten und Daten verlassen niemals deinen Rechner.
 - **Sandbox und Produktion** — wechsle die Umgebung mit einer einzigen Variablen.
 - **Einrichtung mit einem Befehl** — `npm run setup` konfiguriert Zugangsdaten, OAuth und deinen MCP-Client und öffnet automatisch den Browser für den OAuth-Ablauf.
@@ -90,10 +90,10 @@ Beide sprechen mit denselben eBay-Endpunkten — der Unterschied ist alles, was 
 | Schnittstelle | Natürliche Sprache über deinen KI-Assistenten | Handgeschriebene HTTP-Anfragen und JSON-Parsing |
 | OAuth & Token-Erneuerung | Integriert, mit automatischer Erneuerung | Du implementierst und pflegst sie |
 | Umgang mit Ratenlimits | Automatischer Wiederholungsversuch mit exponentiellem Backoff | Manuelle `429`-Behandlung und Backoff |
-| Eingabevalidierung | Zod-Schemata + TypeScript-Typen für jedes Tool | Keine — du validierst deine eigenen Payloads |
+| Eingabevalidierung | Effect-gestützte Schemata + TypeScript-Typen für jedes Tool | Keine — du validierst deine eigenen Payloads |
 | Einrichtung | Ein Assistent (`npm run setup`) | Auth, Header und Marketplace pro Aufruf |
 | Unterstützung von KI-Clients | 9 Clients automatisch konfiguriert | Nicht zutreffend |
-| API-Abdeckung | 299 Tools über 100% der Sell-APIs, einsatzbereit | Du baust jede Anfrage anhand der Doku selbst |
+| API-Abdeckung | 303 Tools mit 100% Abdeckung der Sell-APIs, einsatzbereit | Du baust jede Anfrage anhand der Doku selbst |
 | Hosting | Läuft lokal, kein Cloud-Relay | Deine eigene Infrastruktur |
 
 ## KI-gestützte Einrichtung mit einem Klick
@@ -236,13 +236,13 @@ Automatisch konfiguriert durch `npm run setup`. Erfordert Node.js ≥ 20 und das
 
 ## Verfügbare Tools
 
-**299 Tools**, 100% Sell-API-Abdeckung, nach Kategorie geordnet. Jeder Link verweist auf die Tool-Definitionen und ihre Handler in [`src/tools/categories/`](src/tools/categories/):
+**303 Tools**, 100% Sell-API-Abdeckung, nach Kategorie geordnet. Jeder Link verweist auf die Tool-Definitionen und ihre Handler in [`src/tools/categories/`](src/tools/categories/):
 
 | Kategorie | Was du tun kannst |
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | ChatGPT-Connector-Search/Fetch über den eBay-MCP-Katalog |
 | [Account](src/tools/categories/account.ts) | Geschäfts-, Versand-, Zahlungs- und Rückgaberichtlinien; Programme; Abonnements; Verkaufssteuer |
-| [Inventory](src/tools/categories/inventory.ts) | Bestandsartikel, Angebote, Standorte, Artikelgruppen, Massenvorgänge, SKU/Standort-Zuordnung |
+| [Inventory](src/tools/categories/inventory.ts) | Bestandsartikel, Angebote, Standorte, Artikelgruppen, Massenvorgänge, SKU/Standort-Zuordnung sowie Upload lokaler Fotos/Videos ([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | Bestellungen, Versand, Rückerstattungen, Streitfälle, Nachweise zu Zahlungsstreitfällen |
 | [Marketing](src/tools/categories/marketing.ts) | Kampagnen für beworbene Angebote, Anzeigen, Aktionen, Gebote, Massenvorgänge |
 | [Analytics](src/tools/categories/analytics.ts) | Traffic-Berichte, Verkäuferstandards, Kundenservice-Kennzahlen |
@@ -251,7 +251,7 @@ Automatisch konfiguriert durch `npm run setup`. Erfordert Node.js ≥ 20 und das
 | [Taxonomy](src/tools/categories/taxonomy.ts) | Kategoriebäume, Artikelmerkmale, Artikelzustände |
 | [Browse](src/tools/categories/browse.ts) | Suche nach verkauften/abgeschlossenen Angeboten (Finding API) für Preisvergleiche |
 | [Other](src/tools/categories/other.ts) | Identity, VeRO, Übersetzung und internationale Versand-Support-APIs (Compliance-Tools melden eBays Stilllegung vom 2026-03-30) |
-| [Trading (Legacy-XML)](src/tools/categories/trading.ts) | Festpreisangebote erstellen, überarbeiten, neu einstellen und beenden |
+| [Trading (Legacy-XML)](src/tools/categories/trading.ts) | Festpreisangebote und Auktionen erstellen, überarbeiten, neu einstellen und beenden |
 | [Developer](src/tools/categories/developer.ts) | Ratenlimits, Signaturschlüssel, Client-Registrierung |
 | [Token Management](src/tools/categories/tokenManagement.ts) | OAuth-URL-Generierung und Token-Verwaltung |
 
@@ -299,7 +299,7 @@ Häufige Aufgaben, formuliert wie du sie deinem KI-Assistenten stellen würdest:
 
 ### Was ist der eBay MCP-Server?
 
-Ein lokaler [Model-Context-Protocol](https://modelcontextprotocol.io)-Server, der **299 Tools** bereitstellt, die **100% der Sell-APIs von eBay** (270 Endpunkte) für KI-Assistenten abdecken — Bestand, Auftragsabwicklung, Marketing, Analytik und Entwicklertools.
+Ein lokaler [Model-Context-Protocol](https://modelcontextprotocol.io)-Server, der **303 Tools** bereitstellt, die **100% der Sell-APIs von eBay** (274 Endpunkte) für KI-Assistenten abdecken — Bestand, Auftragsabwicklung, Marketing, Analytik und Entwicklertools.
 
 ### Ist das ein offizielles eBay-Produkt?
 
@@ -319,7 +319,7 @@ Interaktive Ansichten via [MCP Apps](#interaktive-oberfläche-mcp-apps) erschein
 
 ### Wie viele eBay-APIs und Tools deckt es ab?
 
-299 Tools über 270 eindeutige Endpunkte — 100% der Sell-APIs von eBay.
+303 Tools über 274 eindeutige Endpunkte — 100% der Sell-APIs von eBay.
 
 ### Ist es kostenlos und Open Source?
 
@@ -347,11 +347,19 @@ Zugangsdaten werden lokal in deiner `.env`-Datei gespeichert und nur verwendet, 
 
 ### Worin unterscheidet es sich vom direkten Aufruf der eBay-API?
 
-Du interagierst in natürlicher Sprache über deinen KI-Assistenten. OAuth-Token-Verwaltung, automatische Wiederholungen mit Backoff und typsichere Zod-Validierung sind integriert. Siehe die [Vergleichstabelle](#ebay-mcp-im-vergleich-zur-reinen-ebay-api) oben.
+Du interagierst in natürlicher Sprache über deinen KI-Assistenten. OAuth-Token-Verwaltung, automatische Wiederholungen mit Backoff und typsichere Effect-gestützte Validierung sind integriert. Siehe die [Vergleichstabelle](#ebay-mcp-im-vergleich-zur-reinen-ebay-api) oben.
+
+### Kann es meine Fotos und Videos hochladen?
+
+Ja. `ebay_upload_images`, `ebay_upload_video` und `ebay_attach_media_to_inventory_item` lesen lokale Dateien (absolute Pfade oder `media://`-Referenzen) und laden sie über die Media API von eBay hoch. Zurück kommen EPS-Bild-URLs und Video-IDs für `product.imageUrls` / `product.videoIds`. Der Dateizugriff ist opt-in: Nichts ist lesbar, bis `EBAY_MCP_MEDIA_DIRS` oder `EBAY_MCP_MEDIA_ROOT` die Verzeichnisse benennt. Details: [Photos and videos from local files](README.md#photos-and-videos-from-local-files) (Englisch).
+
+### Unterstützt es Auktionen?
+
+Ja, über die REST-Inventory-Angebotstools: Erstelle das Angebot mit `format: "AUCTION"`, einem `auctionStartPrice`, einem optionalen `auctionReservePrice` und einer `listingDuration` in Tagen, und veröffentliche es dann. Details: [Auction offers](README.md#auction-offers) (Englisch). Die Trading-API-Tools nutzen denselben Schalter: `ebay_create_listing` mit `format: "AUCTION"` sendet `AddItem` mit `ListingType` Chinese, einem Startgebot `StartPrice` und einer `ListingDuration` in Tagen.
 
 ### Unterstützt es die alte Trading-API von eBay (XML)?
 
-Ja. Das Erstellen, Überarbeiten, Neueinstellen und Beenden von Festpreisangeboten wird über die Trading-API-Tools unterstützt.
+Ja. Das Erstellen, Überarbeiten, Neueinstellen und Beenden von Angeboten wird über die Trading-API-Tools unterstützt — für Festpreisangebote (`AddFixedPriceItem`-Familie, Standard) und für Auktionen (`format: "AUCTION"` → `AddItem`, `ReviseItem`, `EndItem`, `RelistItem`).
 
 ### Wie bekomme ich höhere Ratenlimits?
 
@@ -359,7 +367,7 @@ Schließe den OAuth-Ablauf mit `npm run setup` ab, um dich mit einem Benutzer-To
 
 ### Womit ist es gebaut?
 
-TypeScript und Node.js (ESM), mit dem offiziellen MCP-SDK, Zod zur Validierung und aus OpenAPI generierten Typen.
+TypeScript und Node.js (ESM), mit dem offiziellen MCP-SDK, Effect-gestützter Validierung mit einem Zod-kompatiblen MCP-Adapter und aus OpenAPI generierten Typen.
 
 ### Wie aktualisiere ich auf die neueste Version?
 

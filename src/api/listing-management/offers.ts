@@ -18,6 +18,7 @@ import type {
   operations,
 } from '@/types/sell-apps/listing-management/sellInventoryV1Oas3.js';
 import { Effect, Either } from 'effect';
+import { validateOfferFormatEffect } from './offerFormat.js';
 import { INVENTORY_BASE_PATH } from './shared.js';
 
 /** Input accepted by getOffers. */
@@ -288,6 +289,11 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkCreateOfferInput>(input, 'input');
       const body = yield* requireObjectEffect<BulkCreateOfferRequest>(validatedInput.body, 'body');
+      yield* Effect.forEach(
+        body.requests ?? [],
+        (request, index) => validateOfferFormatEffect(request, `body.requests[${index}]`),
+        { discard: true },
+      );
 
       return yield* requestPostEffect<BulkCreateOfferResponse>(client, path, body);
     });
@@ -435,6 +441,7 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<CreateOfferInput>(input, 'input');
       const body = yield* requireObjectEffect<CreateOfferRequest>(validatedInput.body, 'body');
+      yield* validateOfferFormatEffect(body, 'body');
 
       return yield* requestPostEffect<CreateOfferResponse>(client, path, body);
     });
@@ -490,6 +497,7 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
       const validatedInput = yield* requireObjectEffect<UpdateOfferInput>(input, 'input');
       const offerId = yield* requireStringEffect(validatedInput.offerId, 'offerId');
       const body = yield* requireObjectEffect<UpdateOfferRequest>(validatedInput.body, 'body');
+      yield* validateOfferFormatEffect(body, 'body');
 
       return yield* requestPutEffect<CreateOfferResponse>(
         client,

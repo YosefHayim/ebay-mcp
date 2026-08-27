@@ -6,6 +6,7 @@ import { CREDENTIAL_ENV_PATH } from '@/config/credentialFile.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 import { getToolGatingConfigError } from '@/config/toolFamilies.js';
+import { getMediaAccessConfig } from '@/config/mediaAccess.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import { getVersion } from '@/utils/version.js';
 import { Effect, Either } from 'effect';
@@ -258,6 +259,9 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
     errors.push(toolGatingError);
   }
 
+  // Validate EBAY_MCP_MEDIA_DIRS / EBAY_MCP_MEDIA_ROOT (local media upload allowlist)
+  errors.push(...getMediaAccessConfig().errors);
+
   const isValid = errors.length === 0;
 
   return {
@@ -408,6 +412,24 @@ export const getIdentityBaseUrl = (
     return overrideBaseUrl;
   }
   return environment === 'production' ? 'https://apiz.ebay.com' : 'https://apiz.sandbox.ebay.com';
+};
+
+/**
+ * Get base URL for the Media API (uses the apim subdomain).
+ *
+ * @param environment eBay environment used when no override is configured.
+ * @param overrideBaseUrl Base URL override from `EBAY_MCP_API_BASE_URL`.
+ * @returns Media API base URL for direct eBay or proxy traffic.
+ * @example
+ * ```ts
+ * const mediaBaseUrl = getMediaBaseUrl('production');
+ * ```
+ */
+export const getMediaBaseUrl = (environment: EbayEnvironment, overrideBaseUrl?: string): string => {
+  if (overrideBaseUrl) {
+    return overrideBaseUrl;
+  }
+  return environment === 'production' ? 'https://apim.ebay.com' : 'https://apim.sandbox.ebay.com';
 };
 
 /** Hosts treated as loopback when deciding whether a cleartext base URL is safe. */

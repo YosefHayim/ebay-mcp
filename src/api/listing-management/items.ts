@@ -31,6 +31,12 @@ export interface CreateOrReplaceInventoryItemInput {
   readonly sku: string;
   /** Generated InventoryItem body. */
   readonly body: InventoryItem;
+  /**
+   * `Content-Language` for this write, for example `en-US`. Defaults to the
+   * client's configured language; pass the item's own locale when rewriting an
+   * existing item so its localized fields stay attached to the right language.
+   */
+  readonly contentLanguage?: string;
 }
 
 /** Input accepted by product compatibility write endpoints. */
@@ -323,11 +329,16 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
       );
       const sku = yield* requireStringEffect(validatedInput.sku, 'sku');
       const body = yield* requireObjectEffect<InventoryItem>(validatedInput.body, 'body');
+      const config =
+        validatedInput.contentLanguage === undefined
+          ? undefined
+          : { headers: { 'Content-Language': validatedInput.contentLanguage } };
 
       return yield* requestPutEffect<BaseResponse>(
         client,
         `${basePath}/inventory_item/${sku}`,
         body,
+        config,
       );
     });
   },

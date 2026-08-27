@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>Le serveur MCP eBay — donnez à Claude, Cursor et tout assistant IA un accès complet aux Sell APIs d'eBay. 299 outils pour l'inventaire, les commandes, le marketing et l'analytique, le tout en local avec vos propres clés.</strong>
+  <strong>Le serveur MCP eBay — donnez à Claude, Cursor et tout assistant IA un accès complet aux Sell APIs d'eBay. 303 outils pour l'inventaire, les commandes, le marketing et l'analytique, le tout en local avec vos propres clés.</strong>
 </p>
 
 <p align="center"><sub>Projet open source non officiel — sans affiliation, autorisation ni approbation d'eBay Inc.</sub></p>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tools-299-8957e5?logo=ebay&logoColor=white" alt="299 outils de l'API eBay" />
+  <img src="https://img.shields.io/badge/tools-303-8957e5?logo=ebay&logoColor=white" alt="303 outils de l'API eBay" />
   <img src="https://img.shields.io/badge/Sell%20API%20coverage-100%25-success" alt="100% de couverture de la Sell API d'eBay" />
   <img src="https://img.shields.io/badge/Model%20Context%20Protocol-compatible-000000" alt="compatible Model Context Protocol" />
   <img src="https://img.shields.io/badge/tests-1%2C000%2B%20passing-3fb950?logo=vitest&logoColor=white" alt="plus de 1000 tests réussis" />
@@ -47,7 +47,7 @@
 
 > **Note :** le [README.md](README.md) anglais est la source de vérité pour les informations produit à jour (familles d’outils, API décommissionnées, notes de version). Cette traduction peut être en retard.
 
-**eBay MCP** est un serveur local du [Model Context Protocol](https://modelcontextprotocol.io) qui connecte les assistants IA —Claude Desktop, Claude Code, Cursor, Cline, Windsurf, Zed, Continue.dev, Roo Code et Amazon Q— directement aux **Sell APIs d'eBay**. Il expose **299 outils** couvrant **100% de la surface de la Sell API d'eBay** (270 endpoints uniques) pour la gestion de l'inventaire, le traitement des commandes, le marketing d'annonces sponsorisées, l'analytique et l'outillage développeur. Tout s'exécute sur votre machine via STDIO ou HTTP local — **sans relais cloud**, et vos identifiants eBay ne quittent jamais votre ordinateur.
+**eBay MCP** est un serveur local du [Model Context Protocol](https://modelcontextprotocol.io) qui connecte les assistants IA —Claude Desktop, Claude Code, Cursor, Cline, Windsurf, Zed, Continue.dev, Roo Code et Amazon Q— directement aux **Sell APIs d'eBay**. Il expose **303 outils** couvrant **100% de la surface de la Sell API d'eBay** (274 endpoints uniques) pour la gestion de l'inventaire, le traitement des commandes, le marketing d'annonces sponsorisées, l'analytique et l'outillage développeur. Tout s'exécute sur votre machine via STDIO ou HTTP local — **sans relais cloud**, et vos identifiants eBay ne quittent jamais votre ordinateur.
 
 > **Avertissement :** Projet tiers non officiel — **sans affiliation ni approbation d'eBay Inc.** Fourni « tel quel », sans garantie. Il vous incombe de respecter l'[Accord de licence de l'API eBay](https://developer.ebay.com/join/api-license-agreement) et les [exigences de traitement des données](https://developer.ebay.com/api-docs/static/data-handling-update.html), de protéger vos identifiants et de respecter les limites de débit. Testez en sandbox avant la production. Voir [LICENSE](LICENSE), [SECURITY.md](SECURITY.md) et [EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md).
 
@@ -71,11 +71,11 @@
 
 ## Fonctionnalités
 
-- **299 outils de l'API eBay** — 100% de couverture des Sell APIs d'eBay pour l'inventaire, les commandes, le marketing, l'analytique, les métadonnées, la taxonomie et l'outillage développeur.
+- **303 outils de l'API eBay** — 100% de couverture des Sell APIs d'eBay pour l'inventaire, les commandes, le marketing, l'analytique, les métadonnées, la taxonomie et l'outillage développeur.
 - **9 clients IA, configurés automatiquement** — Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI et Amazon Q Developer.
 - **OAuth 2.0 intégré** — gestion complète des jetons utilisateur avec renouvellement automatique et bascule intelligente des jetons utilisateur (10k–50k req/jour) vers les identifiants client (1k req/jour).
 - **Résilient par défaut** — nouvelle tentative automatique avec recul exponentiel sur les limites de débit `429` et remontée d'erreurs claire et cohérente.
-- **Typage sûr** — TypeScript de bout en bout, entrées d'outils validées par Zod et types générés à partir d'OpenAPI.
+- **Typage sûr** — TypeScript de bout en bout, entrées d'outils validées par Effect et types générés à partir d'OpenAPI.
 - **Local et privé** — s'exécute via STDIO ou HTTP local ; vos identifiants et données ne quittent jamais votre machine.
 - **Sandbox et production** — changez d'environnement avec une seule variable.
 - **Configuration en une commande** — `npm run setup` configure les identifiants, OAuth et votre client MCP, en ouvrant automatiquement le navigateur pour le flux OAuth.
@@ -90,10 +90,10 @@ Les deux dialoguent avec les mêmes endpoints eBay — la différence, c'est tou
 | Interface | Langage naturel via votre assistant IA | Requêtes HTTP écrites à la main et analyse JSON |
 | OAuth et renouvellement des jetons | Intégrés, avec renouvellement automatique | Vous les implémentez et les maintenez |
 | Gestion des limites de débit | Nouvelle tentative automatique avec recul exponentiel | Gestion manuelle des `429` et du recul |
-| Validation des entrées | Schémas Zod + types TypeScript sur chaque outil | Aucune — vous validez vos propres charges utiles |
+| Validation des entrées | Schémas basés sur Effect + types TypeScript sur chaque outil | Aucune — vous validez vos propres charges utiles |
 | Configuration | Un assistant (`npm run setup`) | Auth, en-têtes et marketplace par appel |
 | Prise en charge des clients IA | 9 clients configurés automatiquement | Sans objet |
-| Couverture de l'API | 299 outils sur 100% des Sell APIs, prêts à l'emploi | Vous construisez chaque requête depuis la documentation |
+| Couverture de l'API | 303 outils sur 100% des Sell APIs, prêts à l'emploi | Vous construisez chaque requête depuis la documentation |
 | Hébergement | S'exécute en local, sans relais cloud | Votre propre infrastructure |
 
 ## Configuration assistée par IA en un clic
@@ -236,13 +236,13 @@ Configurés automatiquement par `npm run setup`. Nécessite Node.js ≥ 20 et le
 
 ## Outils disponibles
 
-**299 outils**, 100% de couverture de la Sell API, organisés par catégorie. Chaque lien pointe vers les définitions d'outils et leurs handlers dans [`src/tools/categories/`](src/tools/categories/) :
+**303 outils**, 100% de couverture de la Sell API, organisés par catégorie. Chaque lien pointe vers les définitions d'outils et leurs handlers dans [`src/tools/categories/`](src/tools/categories/) :
 
 | Catégorie | Ce que vous pouvez faire |
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | Outils search/fetch du connecteur ChatGPT sur le catalogue eBay MCP |
 | [Account](src/tools/categories/account.ts) | Politiques commerciales, d'expédition, de paiement et de retour ; programmes ; abonnements ; taxe de vente |
-| [Inventory](src/tools/categories/inventory.ts) | Articles d'inventaire, offres, emplacements, groupes d'articles, opérations en masse, mappage SKU/emplacement |
+| [Inventory](src/tools/categories/inventory.ts) | Articles d'inventaire, offres, emplacements, groupes d'articles, opérations en masse, mappage SKU/emplacement et envoi de photos/vidéos locales ([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | Commandes, expédition, remboursements, litiges, preuves de litiges de paiement |
 | [Marketing](src/tools/categories/marketing.ts) | Campagnes d'annonces sponsorisées, annonces, promotions, enchères, opérations en masse |
 | [Analytics](src/tools/categories/analytics.ts) | Rapports de trafic, standards vendeur, métriques de service client |
@@ -251,7 +251,7 @@ Configurés automatiquement par `npm run setup`. Nécessite Node.js ≥ 20 et le
 | [Taxonomy](src/tools/categories/taxonomy.ts) | Arbres de catégories, aspects d'articles, états d'articles |
 | [Browse](src/tools/categories/browse.ts) | Recherche d’annonces vendues/terminées (Finding API) pour comparaisons de prix |
 | [Other](src/tools/categories/other.ts) | Identity, VeRO, traduction et APIs d’expédition internationale (les outils Compliance signalent la décommission eBay du 2026-03-30) |
-| [Trading (XML hérité)](src/tools/categories/trading.ts) | Créer, réviser, remettre en vente et clôturer des annonces à prix fixe |
+| [Trading (XML hérité)](src/tools/categories/trading.ts) | Créer, réviser, remettre en vente et clôturer des annonces à prix fixe et des enchères |
 | [Developer](src/tools/categories/developer.ts) | Limites de débit, clés de signature, enregistrement de clients |
 | [Token Management](src/tools/categories/tokenManagement.ts) | Génération d'URL OAuth et gestion des jetons |
 
@@ -299,7 +299,7 @@ Tâches courantes, formulées comme vous les demanderiez à votre assistant IA :
 
 ### Qu'est-ce que le serveur MCP eBay ?
 
-Un serveur local du [Model Context Protocol](https://modelcontextprotocol.io) qui expose **299 outils** couvrant **100% des Sell APIs d'eBay** (270 endpoints) aux assistants IA — inventaire, traitement des commandes, marketing, analytique et outils développeur.
+Un serveur local du [Model Context Protocol](https://modelcontextprotocol.io) qui expose **303 outils** couvrant **100% des Sell APIs d'eBay** (274 endpoints) aux assistants IA — inventaire, traitement des commandes, marketing, analytique et outils développeur.
 
 ### Est-ce un produit officiel eBay ?
 
@@ -319,7 +319,7 @@ Les vues interactives [MCP Apps](#interface-interactive-mcp-apps) n'apparaissent
 
 ### Combien d'API et d'outils eBay couvre-t-il ?
 
-299 outils sur 270 endpoints uniques — 100% des Sell APIs d'eBay.
+303 outils sur 274 endpoints uniques — 100% des Sell APIs d'eBay.
 
 ### Est-il gratuit et open source ?
 
@@ -347,11 +347,19 @@ Les identifiants sont stockés localement dans votre fichier `.env` et utilisés
 
 ### En quoi est-ce différent d'appeler directement l'API eBay ?
 
-Vous interagissez en langage naturel via votre assistant IA. La gestion des jetons OAuth, les nouvelles tentatives automatiques avec recul et la validation typée via Zod sont intégrées. Voir le [tableau comparatif](#ebay-mcp-face-à-lapi-brute-debay) ci-dessus.
+Vous interagissez en langage naturel via votre assistant IA. La gestion des jetons OAuth, les nouvelles tentatives automatiques avec recul et la validation typée basée sur Effect sont intégrées. Voir le [tableau comparatif](#ebay-mcp-face-à-lapi-brute-debay) ci-dessus.
+
+### Peut-il envoyer mes photos et vidéos ?
+
+Oui. `ebay_upload_images`, `ebay_upload_video` et `ebay_attach_media_to_inventory_item` lisent des fichiers locaux (chemins absolus ou références `media://`) et les envoient via la Media API d'eBay, en renvoyant des URL d'images EPS et des identifiants de vidéos pour `product.imageUrls` / `product.videoIds`. L'accès au système de fichiers est optionnel : rien n'est lisible tant que `EBAY_MCP_MEDIA_DIRS` ou `EBAY_MCP_MEDIA_ROOT` ne désigne pas les répertoires. Voir [Photos and videos from local files](README.md#photos-and-videos-from-local-files) (en anglais).
+
+### Prend-il en charge les enchères ?
+
+Oui, via les outils d'offres de l'Inventory API (REST) : créez l'offre avec `format: "AUCTION"`, un `auctionStartPrice`, un `auctionReservePrice` facultatif et une `listingDuration` en jours, puis publiez-la. Voir [Auction offers](README.md#auction-offers) (en anglais). Les outils de la Trading API utilisent le même sélecteur : `ebay_create_listing` avec `format: "AUCTION"` envoie `AddItem` avec `ListingType` Chinese, une mise à prix `StartPrice` et une `ListingDuration` en jours.
 
 ### Prend-il en charge l'ancienne Trading API d'eBay (XML) ?
 
-Oui. Les opérations de création, révision, remise en vente et clôture d'annonces à prix fixe sont prises en charge via les outils de la Trading API.
+Oui. Les opérations de création, révision, remise en vente et clôture d'annonces sont prises en charge via les outils de la Trading API, pour les annonces à prix fixe (famille `AddFixedPriceItem`, par défaut) comme pour les enchères (`format: "AUCTION"` → `AddItem`, `ReviseItem`, `EndItem`, `RelistItem`).
 
 ### Comment obtenir des limites de débit plus élevées ?
 
@@ -359,7 +367,7 @@ Terminez le flux OAuth avec `npm run setup` pour vous authentifier avec un jeton
 
 ### Avec quoi est-il construit ?
 
-TypeScript et Node.js (ESM), avec le SDK officiel MCP, Zod pour la validation et des types générés à partir d'OpenAPI.
+TypeScript et Node.js (ESM), avec le SDK officiel MCP, une validation basée sur Effect avec un adaptateur MCP compatible Zod et des types générés à partir d'OpenAPI.
 
 ### Comment mettre à jour vers la dernière version ?
 

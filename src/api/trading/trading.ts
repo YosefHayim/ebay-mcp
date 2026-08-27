@@ -15,9 +15,18 @@ import type {
   relistItemSchema,
   reviseListingSchema,
 } from '@/utils/trading/trading.js';
+import { FormatType } from '@/types/ebayEnums.js';
 import { isRecord } from '@/utils/typeGuards.js';
 import { Effect } from 'effect';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import {
+  TRADING_AUCTION_LISTING_TYPE,
+  type TradingItemFields,
+  resolveTradingFormat,
+  tradingCallName,
+  validateTradingEndingReasonEffect,
+  validateTradingListingFormatEffect,
+} from './listingFormat.js';
 
 /** Input accepted by getActiveListings. */
 type GetActiveListingsInput = InferEffectSchema<typeof getActiveListingsSchema>;
@@ -131,19 +140,29 @@ export class TradingApi {
   };
 
   /**
-   * Creates a fixed-price listing using the supplied Trading API item payload.
+   * Creates a listing using the supplied Trading API item payload.
    *
-   * @param input - Trading API Item payload nested under `item`.
-   * @returns An Effect that succeeds with the parsed AddFixedPriceItem response.
+   * Fixed-price listings go through AddFixedPriceItem (with `ListingDuration` GTC
+   * when supplied). Auctions go through AddItem with `ListingType` Chinese added to
+   * the item, after the auction rules pass: a day-count `ListingDuration`, a
+   * `StartPrice` opening bid, a single unit, a reserve above the opening bid, a Buy
+   * It Now price at least 30% above it, and Best Offer only without Buy It Now.
+   *
+   * @param input - Trading API Item payload nested under `item`, plus the optional listing format.
+   * @returns An Effect that succeeds with the parsed AddFixedPriceItem or AddItem response.
    *
    * @example
    * ```ts
-   * const listing = await Effect.runPromise(
-   *   tradingApi.createListing({ item: { Title: 'New item', StartPrice: 9.99 } }),
+   * const auction = await Effect.runPromise(
+   *   tradingApi.createListing({
+   *     format: FormatType.AUCTION,
+   *     item: { Title: 'Rare coin', StartPrice: 9.99, ListingDuration: 'Days_7' },
+   *   }),
    * );
    * ```
    *
    * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/AddFixedPriceItem.html
+   * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/AddItem.html
    */
   createListing = (
     input: CreateListingInput,
@@ -152,17 +171,31 @@ export class TradingApi {
 
     return Effect.gen(function* () {
       const request = yield* requireObjectEffect<CreateListingInput>(input, 'input');
-      const item = yield* requireObjectEffect<Record<string, unknown>>(request.item, 'item');
+      const format = resolveTradingFormat(request.format);
+      const item = yield* requireObjectEffect<TradingItemFields>(request.item, 'item');
+      yield* validateTradingListingFormatEffect({
+        item,
+        format,
+        parameter: 'item',
+        isCreate: true,
+      });
+      const payload =
+        format === FormatType.AUCTION
+          ? { ...item, ListingType: TRADING_AUCTION_LISTING_TYPE }
+          : item;
 
-      return yield* tradingClient.execute('AddFixedPriceItem', { Item: item });
+      return yield* tradingClient.execute(tradingCallName('create', format), { Item: payload });
     });
   };
 
   /**
-   * Revises a fixed-price listing by merging changes with the eBay item ID.
+   * Revises a listing by merging changes with the eBay item ID.
    *
-   * @param input - eBay item identifier plus Trading API Item fields to update.
-   * @returns An Effect that succeeds with the parsed ReviseFixedPriceItem response.
+   * Fixed-price listings go through ReviseFixedPriceItem; auctions go through
+   * ReviseItem after the auction field rules pass.
+   *
+   * @param input - eBay item identifier plus Trading API Item fields to update and the optional listing format.
+   * @returns An Effect that succeeds with the parsed ReviseFixedPriceItem or ReviseItem response.
    *
    * @example
    * ```ts
@@ -172,6 +205,7 @@ export class TradingApi {
    * ```
    *
    * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/ReviseFixedPriceItem.html
+   * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/ReviseItem.html
    */
   reviseListing = (
     input: ReviseListingInput,
@@ -180,20 +214,30 @@ export class TradingApi {
 
     return Effect.gen(function* () {
       const request = yield* requireObjectEffect<ReviseListingInput>(input, 'input');
+      const format = resolveTradingFormat(request.format);
       const itemId = yield* requireStringEffect(request.itemId, 'itemId');
-      const fields = yield* requireObjectEffect<Record<string, unknown>>(request.fields, 'fields');
+      const fields = yield* requireObjectEffect<TradingItemFields>(request.fields, 'fields');
+      yield* validateTradingListingFormatEffect({
+        item: fields,
+        format,
+        parameter: 'fields',
+        isCreate: false,
+      });
 
-      return yield* tradingClient.execute('ReviseFixedPriceItem', {
+      return yield* tradingClient.execute(tradingCallName('revise', format), {
         Item: { ...fields, ItemID: itemId },
       });
     });
   };
 
   /**
-   * Ends a fixed-price listing with the provided Trading API ending reason.
+   * Ends a listing with the provided Trading API ending reason.
    *
-   * @param input - eBay item identifier plus optional Trading API ending reason.
-   * @returns An Effect that succeeds with the parsed EndFixedPriceItem response.
+   * Fixed-price listings go through EndFixedPriceItem; auctions go through EndItem,
+   * the only call that accepts the SellToHighBidder reason.
+   *
+   * @param input - eBay item identifier plus optional Trading API ending reason and listing format.
+   * @returns An Effect that succeeds with the parsed EndFixedPriceItem or EndItem response.
    *
    * @example
    * ```ts
@@ -203,6 +247,7 @@ export class TradingApi {
    * ```
    *
    * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/endfixedpriceitem.html
+   * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/EndItem.html
    */
   endListing = (
     input: EndListingInput,
@@ -211,11 +256,13 @@ export class TradingApi {
 
     return Effect.gen(function* () {
       const request = yield* requireObjectEffect<EndListingInput>(input, 'input');
+      const format = resolveTradingFormat(request.format);
       const itemId = yield* requireStringEffect(request.itemId, 'itemId');
       const inputReason = yield* optionalStringEffect(request.reason, 'reason');
+      yield* validateTradingEndingReasonEffect(inputReason, format, 'reason');
       const reason = inputReason === undefined ? 'NotAvailable' : inputReason;
 
-      return yield* tradingClient.execute('EndFixedPriceItem', {
+      return yield* tradingClient.execute(tradingCallName('end', format), {
         ItemID: itemId,
         EndingReason: reason,
       });
@@ -223,10 +270,13 @@ export class TradingApi {
   };
 
   /**
-   * Relists an ended fixed-price item with optional listing modifications.
+   * Relists an ended item with optional listing modifications.
    *
-   * @param input - eBay item identifier plus optional Trading API Item modifications.
-   * @returns An Effect that succeeds with the parsed RelistFixedPriceItem response.
+   * Fixed-price listings go through RelistFixedPriceItem; auctions go through
+   * RelistItem after the auction field rules pass on the modifications.
+   *
+   * @param input - eBay item identifier plus optional Trading API Item modifications and listing format.
+   * @returns An Effect that succeeds with the parsed RelistFixedPriceItem or RelistItem response.
    *
    * @example
    * ```ts
@@ -236,6 +286,7 @@ export class TradingApi {
    * ```
    *
    * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/relistfixedpriceitem.html
+   * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/RelistItem.html
    */
   relistItem = (
     input: RelistItemInput,
@@ -244,17 +295,24 @@ export class TradingApi {
 
     return Effect.gen(function* () {
       const request = yield* requireObjectEffect<RelistItemInput>(input, 'input');
+      const format = resolveTradingFormat(request.format);
       const itemId = yield* requireStringEffect(request.itemId, 'itemId');
-      let modifications: Record<string, unknown> = {};
+      let modifications: TradingItemFields = {};
 
       if (request.modifications !== undefined) {
-        modifications = yield* requireObjectEffect<Record<string, unknown>>(
+        modifications = yield* requireObjectEffect<TradingItemFields>(
           request.modifications,
           'modifications',
         );
       }
+      yield* validateTradingListingFormatEffect({
+        item: modifications,
+        format,
+        parameter: 'modifications',
+        isCreate: false,
+      });
 
-      return yield* tradingClient.execute('RelistFixedPriceItem', {
+      return yield* tradingClient.execute(tradingCallName('relist', format), {
         Item: { ...modifications, ItemID: itemId },
       });
     });

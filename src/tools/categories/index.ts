@@ -3,6 +3,7 @@ import { connectorEntries } from './connector.js';
 import { tokenManagementEntries } from './tokenManagement.js';
 import { accountEntries } from './account.js';
 import { inventoryEntries } from './inventory.js';
+import { mediaEntries } from './media.js';
 import { fulfillmentEntries } from './fulfillment.js';
 import { marketingEntries } from './marketing.js';
 import { analyticsEntries } from './analytics.js';
@@ -37,7 +38,7 @@ export const toolCategories: ToolCategory[] = [
   { key: 'connector', title: 'Connector', entries: connectorEntries },
   { key: 'token-management', title: 'Token Management', entries: tokenManagementEntries },
   { key: 'account', title: 'Account', entries: accountEntries },
-  { key: 'inventory', title: 'Inventory', entries: inventoryEntries },
+  { key: 'inventory', title: 'Inventory', entries: [...inventoryEntries, ...mediaEntries] },
   { key: 'fulfillment', title: 'Fulfillment', entries: fulfillmentEntries },
   { key: 'marketing', title: 'Marketing', entries: marketingEntries },
   { key: 'analytics', title: 'Analytics', entries: analyticsEntries },
