@@ -295,13 +295,13 @@ it('relists an auction through RelistItem', async () => {
   });
 });
 
-it('rejects an auction relist with Best Offer enabled', async () => {
+it('rejects an auction relist that combines Best Offer with Buy It Now', async () => {
   const error = await Effect.runPromise(
     Effect.flip(
       api.relistItem({
         format: 'AUCTION',
         itemId: '12345',
-        modifications: { BestOfferDetails: { BestOfferEnabled: true } },
+        modifications: { BestOfferDetails: { BestOfferEnabled: true }, BuyItNowPrice: 50 },
       }),
     ),
   );

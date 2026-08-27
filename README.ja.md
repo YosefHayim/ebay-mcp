@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>eBay MCP サーバー — Claude、Cursor、そしてあらゆる AI アシスタントに eBay の Sell API への完全なアクセスを。在庫・注文・マーケティング・分析向けの 303 ツールを、自分の鍵でローカル実行。</strong>
+  <strong>eBay MCP サーバー — Claude、Cursor、そしてあらゆる AI アシスタントに eBay の Sell API への完全なアクセスを提供します。在庫・注文・マーケティング・分析向けの 303 ツールを、自分の鍵でローカル実行。</strong>
 </p>
 
 <p align="center"><sub>非公式のオープンソースプロジェクト — eBay Inc. との提携・認可・承認はありません。</sub></p>
@@ -75,7 +75,7 @@
 - **9 つの AI クライアントを自動設定** — Claude Desktop、Cursor、Zed、Cline、Continue.dev、Windsurf、Roo Code、Claude Code CLI、Amazon Q Developer。
 - **OAuth 2.0 を内蔵** — ユーザートークンの完全な管理と自動更新に加え、ユーザートークン（1 日 1 万〜5 万リクエスト）からクライアント認証情報（1 日 1 千リクエスト）へのスマートなフォールバック。
 - **既定で堅牢** — `429` レート制限時に指数バックオフで自動リトライし、一貫した明確なエラー表示を行います。
-- **型安全** — エンドツーエンドの TypeScript、Zod による検証付きのツール入力、OpenAPI から生成された型。
+- **型安全** — エンドツーエンドの TypeScript、Effect による検証付きのツール入力、OpenAPI から生成された型。
 - **ローカルかつプライベート** — STDIO またはローカル HTTP で動作。認証情報やデータがマシンから外に出ることはありません。
 - **サンドボックスと本番** — 変数 1 つで環境を切り替え。
 - **1 コマンドで設定** — `npm run setup` が認証情報、OAuth、MCP クライアントを設定し、OAuth フローのためにブラウザを自動で開きます。
@@ -90,7 +90,7 @@
 | インターフェース | AI アシスタントを介した自然言語 | 手書きの HTTP リクエストと JSON 解析 |
 | OAuth とトークン更新 | 内蔵、自動更新あり | 自分で実装・保守 |
 | レート制限の処理 | 指数バックオフによる自動リトライ | `429` とバックオフの手動処理 |
-| 入力検証 | すべてのツールに Zod スキーマ + TypeScript 型 | なし — 自分でペイロードを検証 |
+| 入力検証 | すべてのツールに Effect ベースのスキーマ + TypeScript 型 | なし — 自分でペイロードを検証 |
 | セットアップ | 1 つのウィザード（`npm run setup`） | 呼び出しごとに認証・ヘッダー・マーケットプレイス |
 | AI クライアント対応 | 9 クライアントを自動設定 | 該当なし |
 | API カバレッジ | Sell API の 100% にわたる 303 ツール、すぐ呼び出し可能 | ドキュメントから各リクエストを構築 |
@@ -242,7 +242,7 @@ EBAY_MCP_UI=on                      # インタラクティブな MCP Apps 表�
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | eBay MCP カタログ向け ChatGPT コネクタの search/fetch |
 | [Account](src/tools/categories/account.ts) | ビジネス・配送・支払い・返品ポリシー、プログラム、サブスクリプション、販売税 |
-| [Inventory](src/tools/categories/inventory.ts) | 在庫アイテム、オファー、ロケーション、アイテムグループ、一括操作、SKU/ロケーションのマッピング |
+| [Inventory](src/tools/categories/inventory.ts) | 在庫アイテム、オファー、ロケーション、アイテムグループ、一括操作、SKU/ロケーションのマッピング、ローカル写真・動画のアップロード（[`media.ts`](src/tools/categories/media.ts)、Media API） |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | 注文、配送、返金、係争、支払い係争の証拠 |
 | [Marketing](src/tools/categories/marketing.ts) | プロモーション広告キャンペーン、広告、プロモーション、入札、一括操作 |
 | [Analytics](src/tools/categories/analytics.ts) | トラフィックレポート、出品者基準、カスタマーサービス指標 |
@@ -251,7 +251,7 @@ EBAY_MCP_UI=on                      # インタラクティブな MCP Apps 表�
 | [Taxonomy](src/tools/categories/taxonomy.ts) | カテゴリツリー、アイテムの特性、アイテムのコンディション |
 | [Browse](src/tools/categories/browse.ts) | 価格比較のための売約済み/完了リスティング検索（Finding API） |
 | [Other](src/tools/categories/other.ts) | Identity、VeRO、翻訳、国際配送サポート API（Compliance ツールは eBay の 2026-03-30 廃止を報告） |
-| [Trading（レガシー XML）](src/tools/categories/trading.ts) | 固定価格出品の作成・修正・再出品・終了 |
+| [Trading（レガシー XML）](src/tools/categories/trading.ts) | 固定価格出品とオークションの作成・修正・再出品・終了 |
 | [Developer](src/tools/categories/developer.ts) | レート制限、署名キー、クライアント登録 |
 | [Token Management](src/tools/categories/tokenManagement.ts) | OAuth URL の生成とトークン管理 |
 
@@ -347,11 +347,19 @@ Node.js ≥ 20、無料の [eBay 開発者アカウント](https://developer.eba
 
 ### eBay API を直接呼び出すのと何が違いますか？
 
-AI アシスタントを通じて自然言語でやり取りします。OAuth トークン管理、バックオフ付きの自動リトライ、Zod による型安全な検証が組み込まれています。上の [比較表](#ebay-mcp-と素の-ebay-api) を参照してください。
+AI アシスタントを通じて自然言語でやり取りします。OAuth トークン管理、バックオフ付きの自動リトライ、Effect による型安全な検証が組み込まれています。上の [比較表](#ebay-mcp-と素の-ebay-api) を参照してください。
+
+### 写真や動画をアップロードできますか？
+
+はい。`ebay_upload_images`、`ebay_upload_video`、`ebay_attach_media_to_inventory_item` はローカルファイル（絶対パスまたは `media://` 参照）を読み取り、eBay の Media API 経由でアップロードして、`product.imageUrls` / `product.videoIds` 用の EPS 画像 URL と動画 ID を返します。ファイルシステムへのアクセスはオプトインです。`EBAY_MCP_MEDIA_DIRS` または `EBAY_MCP_MEDIA_ROOT` でディレクトリを指定するまで、何も読み取れません。詳細は [Photos and videos from local files](README.md#photos-and-videos-from-local-files)（英語）を参照してください。
+
+### オークション出品に対応していますか？
+
+はい。REST の Inventory オファーツールで、`format: "AUCTION"`、`auctionStartPrice`、任意の `auctionReservePrice`、日数指定の `listingDuration` を付けてオファーを作成し、公開します。詳細は [Auction offers](README.md#auction-offers)（英語）を参照してください。レガシーの Trading API ツールも同じスイッチを使います。`format: "AUCTION"` を付けた `ebay_create_listing` は、`ListingType` Chinese、開始価格 `StartPrice`、日数指定の `ListingDuration` を含む `AddItem` を送信します。
 
 ### eBay のレガシー Trading API（XML）に対応していますか？
 
-はい。固定価格出品の作成・修正・再出品・終了の操作が Trading API ツールでサポートされています。
+はい。出品の作成・修正・再出品・終了の操作が Trading API ツールでサポートされています。固定価格出品（`AddFixedPriceItem` 系、デフォルト）とオークション（`format: "AUCTION"` → `AddItem`、`ReviseItem`、`EndItem`、`RelistItem`）の両方に対応します。
 
 ### より高いレート制限を得るには？
 
@@ -359,7 +367,7 @@ AI アシスタントを通じて自然言語でやり取りします。OAuth �
 
 ### 何で構築されていますか？
 
-TypeScript と Node.js（ESM）で、公式の MCP SDK、検証用の Zod、OpenAPI から生成された型を使用しています。
+TypeScript と Node.js（ESM）で、公式の MCP SDK、Zod 互換の MCP アダプターを備えた Effect ベースの検証、OpenAPI から生成された型を使用しています。
 
 ### 最新バージョンへの更新方法は？
 

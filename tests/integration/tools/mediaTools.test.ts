@@ -66,7 +66,7 @@ beforeEach(async () => {
     EBAY_MCP_TOOLS: 'inventory',
     EBAY_MCP_MEDIA_ROOT: fixture.root,
   };
-  process.env.EBAY_MCP_MEDIA_DIRS = undefined;
+  delete process.env.EBAY_MCP_MEDIA_DIRS;
 
   mockOAuthClient.hasUserTokens.mockReturnValue(true);
   mockOAuthClient.getAccessToken.mockReturnValue(Effect.succeed('mock_access_token'));
@@ -162,7 +162,7 @@ describe('ebay_upload_images', () => {
   });
 
   it('is disabled until a media directory is configured', async () => {
-    process.env.EBAY_MCP_MEDIA_ROOT = undefined;
+    delete process.env.EBAY_MCP_MEDIA_ROOT;
 
     const result = await callTool('ebay_upload_images', { paths: [fixture.jpeg] });
 
@@ -229,15 +229,24 @@ describe('ebay_attach_media_to_inventory_item', () => {
     },
   };
 
-  it('uploads, then rewrites only the media fields of the preserved item', async () => {
+  it('uploads, re-reads the item, then rewrites only its media fields in its own locale', async () => {
     const read = nock(API_HOST).get(`/sell/inventory/v1/inventory_item/${sku}`).reply(200, item);
     const upload = mockImageUpload('https://i.ebayimg.com/front.jpg');
+    // Edited while the upload ran: the write must start from this copy, not the first read.
+    const editedMeanwhile = {
+      ...item,
+      availability: { shipToLocationAvailability: { quantity: 3 } },
+    };
+    const reread = nock(API_HOST)
+      .get(`/sell/inventory/v1/inventory_item/${sku}`)
+      .reply(200, editedMeanwhile);
     let putBody: unknown;
     const write = nock(API_HOST)
       .put(`/sell/inventory/v1/inventory_item/${sku}`, (body) => {
         putBody = body;
         return true;
       })
+      .matchHeader('Content-Language', 'de-DE')
       .reply(204);
 
     const result = await callTool('ebay_attach_media_to_inventory_item', {
@@ -255,7 +264,7 @@ describe('ebay_attach_media_to_inventory_item', () => {
     });
     expect(putBody).toEqual({
       condition: 'USED_GOOD',
-      availability: { shipToLocationAvailability: { quantity: 1 } },
+      availability: { shipToLocationAvailability: { quantity: 3 } },
       product: {
         title: 'Sega Mega Drive',
         aspects: { Marke: ['Sega'] },
@@ -265,6 +274,7 @@ describe('ebay_attach_media_to_inventory_item', () => {
     });
     expect(read.isDone()).toBe(true);
     expect(upload.isDone()).toBe(true);
+    expect(reread.isDone()).toBe(true);
     expect(write.isDone()).toBe(true);
   });
 

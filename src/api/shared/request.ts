@@ -298,9 +298,11 @@ export const requestPutEffect = <T = unknown>(
   client: EbayApiClient,
   path: string,
   body?: unknown,
+  config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
   Effect.tryPromise({
-    try: () => client.put<T>(path, body),
+    try: () =>
+      config === undefined ? client.put<T>(path, body) : client.put<T>(path, body, config),
     catch: (cause) => new EbayApiError({ method: 'PUT', path, cause }),
   });
 

@@ -120,12 +120,13 @@ listing formats through the same Inventory model:
 
 | Field | `FIXED_PRICE` | `AUCTION` |
 | --- | --- | --- |
-| `pricingSummary.price` | Listing price | Optional Buy It Now price |
+| `pricingSummary.price` | Listing price | Optional Buy It Now price, at least 30% above the opening bid |
 | `pricingSummary.auctionStartPrice` | — | Opening bid |
 | `pricingSummary.auctionReservePrice` | — | Optional; must exceed the opening bid and carries an eBay fee |
 | `listingDuration` | `GTC` | Day count such as `DAYS_7` (never `GTC`) |
-| `availableQuantity` | Any | Omit — eBay rejects it on auctions (error 25762); the inventory item supplies the single unit |
-| Best Offer / `quantityLimitPerBuyer` / `eBayPlusIfEligible` | Allowed | Not allowed |
+| `availableQuantity` | Any | Omit or `1` — an auction sells a single unit |
+| Best Offer | Allowed | Allowed where the category supports it, but not together with a Buy It Now price |
+| `quantityLimitPerBuyer` / `eBayPlusIfEligible` | Allowed | Not allowed |
 | `listingStartDate` | Only when a scheduled start was explicitly requested (eBay may charge a fee) | Same |
 
 Check `ebay_get_listing_type_policies` for the formats and durations a category allows,
@@ -143,10 +144,11 @@ default). `ebay_create_listing`, `ebay_revise_listing`, `ebay_end_listing`, and
 | Trading `Item` field | `FIXED_PRICE` | `AUCTION` |
 | --- | --- | --- |
 | `StartPrice` | Listing price | Opening bid (required on create) |
-| `ReservePrice` / `BuyItNowPrice` | Not allowed | Optional; must exceed `StartPrice` (a reserve carries an eBay fee) |
-| `ListingDuration` | `GTC` | Day count such as `Days_7` (required on create; never `GTC`) |
+| `ReservePrice` | Not allowed | Optional; must exceed `StartPrice` (a reserve carries an eBay fee) |
+| `BuyItNowPrice` | Not allowed | Optional; at least 30% above `StartPrice` |
+| `ListingDuration` | `GTC` (the only fixed-price duration eBay accepts) | Day count such as `Days_7` (required on create; never `GTC`) |
 | `Quantity` | Any | Omit or `1` |
-| `BestOfferDetails.BestOfferEnabled` | Allowed | Not allowed |
+| `BestOfferDetails.BestOfferEnabled` | Allowed | Allowed where the category supports it, but not together with `BuyItNowPrice` |
 | `ebay_end_listing` reason `SellToHighBidder` | Not allowed | Ends an auction with bids |
 
 Mixed payloads are rejected locally. When the format of an existing item is unknown, read

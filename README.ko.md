@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>eBay MCP 서버 — Claude, Cursor 및 모든 AI 어시스턴트에 eBay Sell API에 대한 완전한 접근 권한을. 재고, 주문, 마케팅, 분석을 위한 303개 도구를 자신의 키로 로컬에서 실행합니다.</strong>
+  <strong>eBay MCP 서버 — Claude, Cursor 및 모든 AI 어시스턴트에 eBay Sell API에 대한 완전한 접근 권한을 제공합니다. 재고, 주문, 마케팅, 분석을 위한 303개 도구를 자신의 키로 로컬에서 실행합니다.</strong>
 </p>
 
 <p align="center"><sub>비공식 오픈소스 프로젝트 — eBay Inc.와 제휴, 승인 또는 보증 관계가 없습니다.</sub></p>
@@ -75,7 +75,7 @@
 - **9개 AI 클라이언트 자동 구성** — Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI, Amazon Q Developer.
 - **OAuth 2.0 내장** — 사용자 토큰의 완전한 관리와 자동 갱신, 그리고 사용자 토큰(일 1만~5만 요청)에서 클라이언트 자격 증명(일 1천 요청)으로의 스마트 폴백.
 - **기본적으로 견고함** — `429` 속도 제한 시 지수 백오프로 자동 재시도하고, 일관되고 명확하게 오류를 표시합니다.
-- **타입 안전** — 엔드투엔드 TypeScript, Zod로 검증되는 도구 입력, OpenAPI에서 생성된 타입.
+- **타입 안전** — 엔드투엔드 TypeScript, Effect로 검증되는 도구 입력, OpenAPI에서 생성된 타입.
 - **로컬 및 프라이빗** — STDIO 또는 로컬 HTTP로 실행되며, 자격 증명과 데이터가 컴퓨터를 벗어나지 않습니다.
 - **샌드박스와 프로덕션** — 변수 하나로 환경을 전환합니다.
 - **한 번의 명령으로 설정** — `npm run setup`이 자격 증명, OAuth, MCP 클라이언트를 구성하고 OAuth 플로우를 위해 브라우저를 자동으로 엽니다.
@@ -90,7 +90,7 @@
 | 인터페이스 | AI 어시스턴트를 통한 자연어 | 직접 작성한 HTTP 요청과 JSON 파싱 |
 | OAuth 및 토큰 갱신 | 내장, 자동 갱신 | 직접 구현하고 유지보수 |
 | 속도 제한 처리 | 지수 백오프로 자동 재시도 | `429`와 백오프 수동 처리 |
-| 입력 검증 | 모든 도구에 Zod 스키마 + TypeScript 타입 | 없음 — 페이로드를 직접 검증 |
+| 입력 검증 | 모든 도구에 Effect 기반 스키마 + TypeScript 타입 | 없음 — 페이로드를 직접 검증 |
 | 설정 | 단일 마법사(`npm run setup`) | 호출마다 인증, 헤더, 마켓플레이스 |
 | AI 클라이언트 지원 | 9개 클라이언트 자동 구성 | 해당 없음 |
 | API 커버리지 | Sell API 100%에 걸친 303개 도구, 바로 호출 가능 | 문서를 보고 각 요청을 직접 구성 |
@@ -242,7 +242,7 @@ EBAY_MCP_UI=on                      # 대화형 MCP Apps 보기(베타); 일반 
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | eBay MCP 카탈로그용 ChatGPT 커넥터 search/fetch 도구 |
 | [Account](src/tools/categories/account.ts) | 비즈니스·배송·결제·반품 정책, 프로그램, 구독, 판매세 |
-| [Inventory](src/tools/categories/inventory.ts) | 재고 항목, 오퍼, 위치, 항목 그룹, 일괄 작업, SKU/위치 매핑 |
+| [Inventory](src/tools/categories/inventory.ts) | 재고 항목, 오퍼, 위치, 항목 그룹, 일괄 작업, SKU/위치 매핑, 로컬 사진/동영상 업로드([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | 주문, 배송, 환불, 분쟁, 결제 분쟁 증거 |
 | [Marketing](src/tools/categories/marketing.ts) | 프로모션 광고 캠페인, 광고, 프로모션, 입찰, 일괄 작업 |
 | [Analytics](src/tools/categories/analytics.ts) | 트래픽 보고서, 판매자 기준, 고객 서비스 지표 |
@@ -251,7 +251,7 @@ EBAY_MCP_UI=on                      # 대화형 MCP Apps 보기(베타); 일반 
 | [Taxonomy](src/tools/categories/taxonomy.ts) | 카테고리 트리, 항목 속성, 항목 상태 |
 | [Browse](src/tools/categories/browse.ts) | 가격 비교용 판매/완료 리스팅 검색(Finding API) |
 | [Other](src/tools/categories/other.ts) | Identity, VeRO, 번역 및 국제 배송 지원 API(Compliance 도구는 eBay 2026-03-30 폐기를 보고) |
-| [Trading(레거시 XML)](src/tools/categories/trading.ts) | 고정 가격 리스팅 생성, 수정, 재등록, 종료 |
+| [Trading(레거시 XML)](src/tools/categories/trading.ts) | 고정 가격 리스팅과 경매의 생성, 수정, 재등록, 종료 |
 | [Developer](src/tools/categories/developer.ts) | 속도 제한, 서명 키, 클라이언트 등록 |
 | [Token Management](src/tools/categories/tokenManagement.ts) | OAuth URL 생성 및 토큰 관리 |
 
@@ -347,11 +347,19 @@ Node.js ≥ 20, 무료 [eBay 개발자 계정](https://developer.ebay.com/)(Clie
 
 ### eBay API를 직접 호출하는 것과 무엇이 다른가요?
 
-AI 어시스턴트를 통해 자연어로 상호작용합니다. OAuth 토큰 관리, 백오프가 적용된 자동 재시도, Zod를 통한 타입 안전 검증이 내장되어 있습니다. 위의 [비교 표](#ebay-mcp-vs-순수-ebay-api)를 참조하세요.
+AI 어시스턴트를 통해 자연어로 상호작용합니다. OAuth 토큰 관리, 백오프가 적용된 자동 재시도, Effect를 통한 타입 안전 검증이 내장되어 있습니다. 위의 [비교 표](#ebay-mcp-vs-순수-ebay-api)를 참조하세요.
+
+### 사진과 동영상을 업로드할 수 있나요?
+
+네. `ebay_upload_images`, `ebay_upload_video`, `ebay_attach_media_to_inventory_item`은 로컬 파일(절대 경로 또는 `media://` 참조)을 읽어 eBay의 Media API를 통해 업로드하고, `product.imageUrls` / `product.videoIds`에 쓸 EPS 이미지 URL과 동영상 ID를 반환합니다. 파일 시스템 접근은 옵트인입니다. `EBAY_MCP_MEDIA_DIRS` 또는 `EBAY_MCP_MEDIA_ROOT`로 디렉터리를 지정하기 전까지는 아무것도 읽을 수 없습니다. 자세한 내용은 [Photos and videos from local files](README.md#photos-and-videos-from-local-files)(영어)를 참조하세요.
+
+### 경매 리스팅을 지원하나요?
+
+네. REST Inventory 오퍼 도구로 `format: "AUCTION"`, `auctionStartPrice`, 선택적 `auctionReservePrice`, 일 단위 `listingDuration`을 지정해 오퍼를 만든 뒤 게시하면 됩니다. 자세한 내용은 [Auction offers](README.md#auction-offers)(영어)를 참조하세요. 레거시 Trading API 도구도 같은 스위치를 사용합니다. `format: "AUCTION"`을 지정한 `ebay_create_listing`은 `ListingType` Chinese, 시작가 `StartPrice`, 일 단위 `ListingDuration`을 담은 `AddItem`을 보냅니다.
 
 ### eBay의 레거시 Trading API(XML)를 지원하나요?
 
-네. 고정 가격 리스팅의 생성, 수정, 재등록, 종료 작업이 Trading API 도구를 통해 지원됩니다.
+네. 리스팅의 생성, 수정, 재등록, 종료 작업이 Trading API 도구를 통해 지원됩니다. 고정 가격 리스팅(`AddFixedPriceItem` 계열, 기본값)과 경매(`format: "AUCTION"` → `AddItem`, `ReviseItem`, `EndItem`, `RelistItem`) 모두 가능합니다.
 
 ### 더 높은 속도 제한은 어떻게 얻나요?
 
@@ -359,7 +367,7 @@ AI 어시스턴트를 통해 자연어로 상호작용합니다. OAuth 토큰 �
 
 ### 무엇으로 만들어졌나요?
 
-TypeScript와 Node.js(ESM), 공식 MCP SDK, 검증용 Zod, OpenAPI에서 생성된 타입을 사용합니다.
+TypeScript와 Node.js(ESM), 공식 MCP SDK, Zod 호환 MCP 어댑터를 갖춘 Effect 기반 검증, OpenAPI에서 생성된 타입을 사용합니다.
 
 ### 최신 버전으로 어떻게 업데이트하나요?
 

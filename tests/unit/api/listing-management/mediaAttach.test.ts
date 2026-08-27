@@ -79,6 +79,7 @@ describe('attachMediaToInventoryItem', () => {
     expect(result.videoIds).toEqual(['VID-1']);
     expect(items.createOrReplaceInventoryItem).toHaveBeenCalledWith({
       sku: 'SKU-1',
+      contentLanguage: 'en-US',
       body: {
         availability: existingItem.availability,
         condition: 'USED_GOOD',
@@ -108,6 +109,98 @@ describe('attachMediaToInventoryItem', () => {
     expect(result.imageUrls).toEqual(['https://i.ebayimg.com/a.jpg']);
   });
 
+  it('replaces only the media family the caller supplied', async () => {
+    const withVideo = {
+      ...existingItem,
+      product: { ...existingItem.product, videoIds: ['VID-OLD'] },
+    };
+    items.getInventoryItem.mockReturnValue(Effect.succeed(withVideo));
+
+    const imagesOnly = await Effect.runPromise(
+      attach({
+        sku: 'SKU-1',
+        images: [mediaFile('/m/a.jpg', 'image')],
+        videos: [],
+        replaceExisting: true,
+      }),
+    );
+    expect(imagesOnly.imageUrls).toEqual(['https://i.ebayimg.com/a.jpg']);
+    expect(imagesOnly.videoIds).toEqual(['VID-OLD']);
+
+    const videosOnly = await Effect.runPromise(
+      attach({
+        sku: 'SKU-1',
+        images: [],
+        videos: [mediaFile('/m/clip.mp4', 'video')],
+        replaceExisting: true,
+      }),
+    );
+    expect(videosOnly.imageUrls).toEqual(['https://i.ebayimg.com/old.jpg']);
+    expect(videosOnly.videoIds).toEqual(['VID-1']);
+    expect(items.createOrReplaceInventoryItem).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          product: expect.objectContaining({
+            imageUrls: ['https://i.ebayimg.com/old.jpg'],
+            videoIds: ['VID-1'],
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('writes onto the item as it is right before the update, not the earlier snapshot', async () => {
+    const edited = {
+      ...existingItem,
+      availability: { shipToLocationAvailability: { quantity: 7 } },
+      product: {
+        ...existingItem.product,
+        title: 'Mega Drive II',
+        imageUrls: ['https://i.ebayimg.com/old.jpg', 'https://i.ebayimg.com/meanwhile.jpg'],
+      },
+    };
+    items.getInventoryItem
+      .mockReturnValueOnce(Effect.succeed(existingItem))
+      .mockReturnValueOnce(Effect.succeed(edited));
+
+    const result = await Effect.runPromise(
+      attach({ sku: 'SKU-1', images: [mediaFile('/m/a.jpg', 'image')], videos: [] }),
+    );
+
+    expect(items.getInventoryItem).toHaveBeenCalledTimes(2);
+    expect(result.imageUrls).toEqual([
+      'https://i.ebayimg.com/old.jpg',
+      'https://i.ebayimg.com/meanwhile.jpg',
+      'https://i.ebayimg.com/a.jpg',
+    ]);
+    expect(items.createOrReplaceInventoryItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          availability: { shipToLocationAvailability: { quantity: 7 } },
+          product: expect.objectContaining({ title: 'Mega Drive II', imageUrls: result.imageUrls }),
+        }),
+      }),
+    );
+  });
+
+  it('sends the item locale as Content-Language and omits it when eBay returned none', async () => {
+    items.getInventoryItem.mockReturnValue(Effect.succeed({ ...existingItem, locale: 'de_DE' }));
+    await Effect.runPromise(
+      attach({ sku: 'SKU-1', images: [mediaFile('/m/a.jpg', 'image')], videos: [] }),
+    );
+    expect(items.createOrReplaceInventoryItem).toHaveBeenLastCalledWith(
+      expect.objectContaining({ contentLanguage: 'de-DE' }),
+    );
+
+    items.getInventoryItem.mockReturnValue(Effect.succeed({ ...existingItem, locale: undefined }));
+    await Effect.runPromise(
+      attach({ sku: 'SKU-1', images: [mediaFile('/m/a.jpg', 'image')], videos: [] }),
+    );
+    expect(items.createOrReplaceInventoryItem).toHaveBeenLastCalledWith(
+      expect.objectContaining({ contentLanguage: undefined }),
+    );
+  });
+
   it('leaves the item untouched when any upload fails', async () => {
     media.createImageFromFile.mockImplementationOnce(() => Effect.fail(new Error('EPS down')));
 
@@ -132,6 +225,7 @@ describe('attachMediaToInventoryItem', () => {
       ]);
     }
     expect(items.createOrReplaceInventoryItem).not.toHaveBeenCalled();
+    expect(items.getInventoryItem).toHaveBeenCalledTimes(1);
   });
 
   it('attaches the successful uploads when allowPartial is set', async () => {

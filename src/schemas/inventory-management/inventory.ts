@@ -217,7 +217,9 @@ const listingPoliciesSchema = z
         bestOfferEnabled: z
           .boolean()
           .optional()
-          .describe('Best Offer applies to fixed-price offers only; never enable it on an auction'),
+          .describe(
+            'Enable Best Offer where the category allows it. On AUCTION offers it cannot be combined with a Buy It Now price (pricingSummary.price)',
+          ),
       })
       .passthrough()
       .optional(),
@@ -232,7 +234,7 @@ export const pricingSchema = z
     price: amountSchema
       .optional()
       .describe(
-        'Listing price for FIXED_PRICE offers (required before publish). For AUCTION offers this is the optional Buy It Now price',
+        'Listing price for FIXED_PRICE offers (required before publish). For AUCTION offers this is the optional Buy It Now price, at least 30% above auctionStartPrice and not combinable with Best Offer',
       ),
     auctionStartPrice: amountSchema
       .optional()
@@ -264,7 +266,7 @@ const offerDetailsFields = {
     .number()
     .optional()
     .describe(
-      'Purchasable quantity for FIXED_PRICE offers. Omit it for AUCTION offers — eBay rejects it there (error 25762) and lists one unit from the inventory item',
+      'Purchasable quantity. FIXED_PRICE offers take any quantity; AUCTION offers list a single unit, so omit it or set it to 1',
     ),
   categoryId: z.string().optional(),
   charity: z
@@ -288,7 +290,7 @@ const offerDetailsFields = {
     .nativeEnum(ListingDuration)
     .optional()
     .describe(
-      'FIXED_PRICE offers use GTC. AUCTION offers need a day count (commonly DAYS_1, DAYS_3, DAYS_5, DAYS_7, or DAYS_10; check ebay_get_listing_type_policies for the category) and never GTC',
+      'FIXED_PRICE offers use GTC. AUCTION offers need a day count (DAYS_1, DAYS_3, DAYS_5, DAYS_7, or DAYS_10 everywhere; DAYS_14, DAYS_21, and DAYS_30 only where ebay_get_listing_type_policies lists them for the category) and never GTC',
     ),
   listingPolicies: listingPoliciesSchema.optional(),
   listingStartDate: z
@@ -316,8 +318,15 @@ const offerKeyFields = {
   format: z
     .nativeEnum(FormatType)
     .describe(
-      'FIXED_PRICE (price + GTC) or AUCTION (auctionStartPrice + day-count listingDuration; no availableQuantity)',
+      'FIXED_PRICE (price + GTC) or AUCTION (auctionStartPrice + day-count listingDuration; availableQuantity omitted or 1)',
     ),
+};
+
+/** Offer keys as eBay returns them: optional, since unpublished or partial offers can omit them. */
+const offerResponseKeyFields = {
+  sku: z.string().optional(),
+  marketplaceId: z.nativeEnum(MarketplaceId).optional(),
+  format: z.nativeEnum(FormatType).optional(),
 };
 
 /**
@@ -332,10 +341,11 @@ export const offerSchema = z.object({ ...offerKeyFields, ...offerDetailsFields }
 export const updateOfferBodySchema = z.object(offerDetailsFields).passthrough();
 
 /**
- * Validates the Inventory Management API offer response payload.
+ * Validates the Inventory Management API offer response payload. Mirrors the
+ * generated `EbayOfferDetailsWithAll`, where every field is optional.
  */
 export const offerResponseSchema = z.object({
-  ...offerKeyFields,
+  ...offerResponseKeyFields,
   ...offerDetailsFields,
   offerId: z.string().optional(),
   listing: z

@@ -150,6 +150,10 @@ describe('trading format registered MCP validation', () => {
   });
 
   it('rejects a mixed-format auction locally without calling eBay', async () => {
+    const endpoint = nock(TRADING_HOST)
+      .post(TRADING_PATH)
+      .reply(200, tradingResponse('AddItem', '<ItemID>110003</ItemID>'));
+
     const result = await client.callTool({
       name: 'ebay_create_listing',
       arguments: { format: 'AUCTION', item: { ...auctionItem, ListingDuration: 'GTC' } },
@@ -157,7 +161,7 @@ describe('trading format registered MCP validation', () => {
 
     expect(result.isError).toBe(true);
     expect(textContent(result)).toContain('item.ListingDuration');
-    expect(nock.pendingMocks()).toEqual([]);
+    expect(endpoint.isDone()).toBe(false);
   });
 
   it('ends an auction through EndItem with SellToHighBidder', async () => {

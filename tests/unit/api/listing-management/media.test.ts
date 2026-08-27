@@ -173,6 +173,38 @@ describe('MediaApi', () => {
     expect(client.get).toHaveBeenCalledTimes(3);
   });
 
+  it('never sleeps past the wait budget, even with a longer poll interval', async () => {
+    client.get.mockResolvedValue({ videoId: 'VID-1', status: 'PROCESSING' });
+    const startedAt = Date.now();
+
+    const video = await Effect.runPromise(
+      media.waitForVideo({ videoId: 'VID-1', maxWaitMs: 5, pollIntervalMs: 60_000 }),
+    );
+
+    expect(video.status).toBe('PROCESSING');
+    expect(client.get).toHaveBeenCalledTimes(2);
+    expect(Date.now() - startedAt).toBeLessThan(5000);
+  });
+
+  it('encodes image and video IDs as single path segments', async () => {
+    client.get.mockResolvedValue({ status: 'LIVE' });
+    client.post.mockResolvedValue(undefined);
+
+    await Effect.runPromise(media.getVideo({ videoId: 'VID/1?x=y' }));
+    await Effect.runPromise(media.getImage({ imageId: 'IMG#1' }));
+    await Effect.runPromise(media.uploadVideo({ videoId: '../VID-2', bytes }));
+
+    expect(client.get.mock.calls[0][0]).toBe(
+      'https://apim.sandbox.ebay.com/commerce/media/v1_beta/video/VID%2F1%3Fx%3Dy',
+    );
+    expect(client.get.mock.calls[1][0]).toBe(
+      'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/IMG%231',
+    );
+    expect(client.post.mock.calls[0][0]).toBe(
+      'https://apim.sandbox.ebay.com/commerce/media/v1_beta/video/..%2FVID-2/upload',
+    );
+  });
+
   it('runs the whole video lifecycle and always returns the video ID', async () => {
     client.postForResponse.mockResolvedValue({
       status: 201,

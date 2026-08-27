@@ -50,6 +50,20 @@ const isBinaryBody = (data: unknown): boolean =>
   data instanceof Uint8Array ||
   data instanceof ArrayBuffer;
 
+const CONTENT_TYPE_HEADER = 'content-type';
+
+const hasHeader = (headers: Record<string, string> | undefined, name: string): boolean =>
+  headers !== undefined && Object.keys(headers).some((key) => key.toLowerCase() === name);
+
+/** Removes every spelling of a header so fetch can derive it from the body. */
+const deleteHeader = (headers: Record<string, string>, name: string): void => {
+  for (const key of Object.keys(headers)) {
+    if (key.toLowerCase() === name) {
+      delete headers[key];
+    }
+  }
+};
+
 /** Normalized request options used by the client transport Effect. */
 interface EbayRequestOptions {
   /** Query-string parameters appended to the request URL. */
@@ -268,7 +282,10 @@ export class EbayApiClient {
       };
       if (options.data instanceof FormData) {
         // fetch must set the multipart content-type itself so the boundary matches.
-        delete headers['Content-Type'];
+        deleteHeader(headers, CONTENT_TYPE_HEADER);
+      } else if (options.data instanceof Blob && !hasHeader(options.headers, CONTENT_TYPE_HEADER)) {
+        // A Blob carries its own MIME type; only an explicit caller header overrides it.
+        deleteHeader(headers, CONTENT_TYPE_HEADER);
       }
 
       // Proxy auth mode: attach no Authorization header and acquire no token —

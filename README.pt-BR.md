@@ -75,7 +75,7 @@
 - **9 clientes de IA, autoconfigurados** — Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI e Amazon Q Developer.
 - **OAuth 2.0 integrado** — gestão completa de tokens de usuário com renovação automática e fallback inteligente de tokens de usuário (10k–50k req/dia) para credenciais de cliente (1k req/dia).
 - **Resiliente por padrão** — nova tentativa automática com recuo exponencial em limites de taxa `429` e exibição de erros clara e consistente.
-- **Com segurança de tipos** — TypeScript de ponta a ponta, entradas de ferramentas validadas com Zod e tipos gerados a partir do OpenAPI.
+- **Com segurança de tipos** — TypeScript de ponta a ponta, entradas de ferramentas validadas com Effect e tipos gerados a partir do OpenAPI.
 - **Local e privado** — roda via STDIO ou HTTP local; suas credenciais e dados nunca saem da sua máquina.
 - **Sandbox e produção** — troque de ambiente com uma única variável.
 - **Configuração em um comando** — `npm run setup` configura credenciais, OAuth e seu cliente MCP, abrindo o navegador automaticamente para o fluxo OAuth.
@@ -90,7 +90,7 @@ Ambos falam com os mesmos endpoints do eBay — a diferença é tudo o que você
 | Interface | Linguagem natural pelo seu assistente de IA | Requisições HTTP escritas à mão e parsing de JSON |
 | OAuth e renovação de tokens | Integrados, com renovação automática | Você implementa e mantém |
 | Tratamento de limites de taxa | Nova tentativa automática com recuo exponencial | Tratamento manual de `429` e recuo |
-| Validação de entradas | Esquemas Zod + tipos TypeScript em cada ferramenta | Nenhuma — você valida seus próprios payloads |
+| Validação de entradas | Esquemas baseados em Effect + tipos TypeScript em cada ferramenta | Nenhuma — você valida seus próprios payloads |
 | Configuração | Um assistente (`npm run setup`) | Auth, cabeçalhos e marketplace por chamada |
 | Suporte a clientes de IA | 9 clientes autoconfigurados | Não se aplica |
 | Cobertura da API | 303 ferramentas em 100% das Sell APIs, prontas para usar | Você constrói cada requisição a partir da documentação |
@@ -242,7 +242,7 @@ Autoconfigurados pelo `npm run setup`. Requer Node.js ≥ 20 e o protocolo MCP 1
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | Ferramentas search/fetch do conector ChatGPT sobre o catálogo eBay MCP |
 | [Account](src/tools/categories/account.ts) | Políticas de negócio, envio, pagamento e devolução; programas; assinaturas; imposto sobre vendas |
-| [Inventory](src/tools/categories/inventory.ts) | Itens de estoque, ofertas, locais, grupos de itens, operações em massa, mapeamento SKU/local |
+| [Inventory](src/tools/categories/inventory.ts) | Itens de estoque, ofertas, locais, grupos de itens, operações em massa, mapeamento SKU/local e upload de fotos/vídeos locais ([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | Pedidos, envio, reembolsos, disputas, evidências de disputas de pagamento |
 | [Marketing](src/tools/categories/marketing.ts) | Campanhas de anúncios patrocinados, anúncios, promoções, lances, operações em massa |
 | [Analytics](src/tools/categories/analytics.ts) | Relatórios de tráfego, padrões do vendedor, métricas de atendimento ao cliente |
@@ -251,7 +251,7 @@ Autoconfigurados pelo `npm run setup`. Requer Node.js ≥ 20 e o protocolo MCP 1
 | [Taxonomy](src/tools/categories/taxonomy.ts) | Árvores de categorias, aspectos de itens, condições de itens |
 | [Browse](src/tools/categories/browse.ts) | Busca de anúncios vendidos/concluídos (Finding API) para comparáveis de preço |
 | [Other](src/tools/categories/other.ts) | Identity, VeRO, tradução e APIs de suporte a envio internacional (ferramentas de Compliance reportam a desativação da eBay em 2026-03-30) |
-| [Trading (XML legado)](src/tools/categories/trading.ts) | Criar, revisar, republicar e encerrar anúncios de preço fixo |
+| [Trading (XML legado)](src/tools/categories/trading.ts) | Criar, revisar, republicar e encerrar anúncios de preço fixo e leilões |
 | [Developer](src/tools/categories/developer.ts) | Limites de taxa, chaves de assinatura, registro de clientes |
 | [Token Management](src/tools/categories/tokenManagement.ts) | Geração de URL de OAuth e gestão de tokens |
 
@@ -347,11 +347,19 @@ As credenciais são armazenadas localmente no seu arquivo `.env` e usadas apenas
 
 ### Qual a diferença em relação a chamar a API do eBay diretamente?
 
-Você interage em linguagem natural pelo seu assistente de IA. Gestão de tokens OAuth, novas tentativas automáticas com recuo e validação com segurança de tipos via Zod já vêm integradas. Consulte a [tabela comparativa](#ebay-mcp-vs-a-api-bruta-do-ebay) acima.
+Você interage em linguagem natural pelo seu assistente de IA. Gestão de tokens OAuth, novas tentativas automáticas com recuo e validação com segurança de tipos baseada em Effect já vêm integradas. Consulte a [tabela comparativa](#ebay-mcp-vs-a-api-bruta-do-ebay) acima.
+
+### Ele consegue enviar minhas fotos e vídeos?
+
+Sim. `ebay_upload_images`, `ebay_upload_video` e `ebay_attach_media_to_inventory_item` leem arquivos locais (caminhos absolutos ou referências `media://`) e os enviam pela Media API do eBay, devolvendo URLs de imagem EPS e IDs de vídeo para `product.imageUrls` / `product.videoIds`. O acesso ao sistema de arquivos é opcional: nada pode ser lido até que `EBAY_MCP_MEDIA_DIRS` ou `EBAY_MCP_MEDIA_ROOT` indique os diretórios. Veja [Photos and videos from local files](README.md#photos-and-videos-from-local-files) (em inglês).
+
+### Ele suporta anúncios em leilão?
+
+Sim, pelas ferramentas de ofertas da Inventory API (REST): crie a oferta com `format: "AUCTION"`, um `auctionStartPrice`, um `auctionReservePrice` opcional e uma `listingDuration` em dias, e depois publique. Veja [Auction offers](README.md#auction-offers) (em inglês). As ferramentas da Trading API usam a mesma chave: `ebay_create_listing` com `format: "AUCTION"` envia `AddItem` com `ListingType` Chinese, um lance inicial `StartPrice` e uma `ListingDuration` em dias.
 
 ### Ele suporta a antiga Trading API do eBay (XML)?
 
-Sim. As operações de criar, revisar, republicar e encerrar anúncios de preço fixo são suportadas pelas ferramentas da Trading API.
+Sim. As operações de criar, revisar, republicar e encerrar anúncios são suportadas pelas ferramentas da Trading API, tanto para anúncios de preço fixo (família `AddFixedPriceItem`, o padrão) quanto para leilões (`format: "AUCTION"` → `AddItem`, `ReviseItem`, `EndItem`, `RelistItem`).
 
 ### Como obtenho limites de taxa mais altos?
 
@@ -359,7 +367,7 @@ Conclua o fluxo OAuth com `npm run setup` para autenticar com um token de usuár
 
 ### Com o que ele é construído?
 
-TypeScript e Node.js (ESM), usando o SDK oficial do MCP, Zod para validação e tipos gerados a partir do OpenAPI.
+TypeScript e Node.js (ESM), usando o SDK oficial do MCP, validação baseada em Effect com um adaptador MCP compatível com Zod e tipos gerados a partir do OpenAPI.
 
 ### Como atualizo para a versão mais recente?
 

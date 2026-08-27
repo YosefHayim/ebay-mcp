@@ -157,10 +157,13 @@ const expectedMimeType = (
   return Effect.succeed(mimeType);
 };
 
+/** HEIC and AVIF share the ISO-BMFF container; the major brand does not always match the extension. */
+const HEIF_FAMILY: ReadonlySet<string> = new Set(['image/heic', 'image/avif']);
+
 const sameFamily = (expected: string, sniffed: string): boolean =>
   expected === sniffed ||
   (kindOf(expected) === 'video' && kindOf(sniffed) === 'video') ||
-  (expected === 'image/heic' && sniffed === 'image/avif');
+  (HEIF_FAMILY.has(expected) && HEIF_FAMILY.has(sniffed));
 
 /**
  * Resolves, authorises, validates, and reads one local media reference.

@@ -153,6 +153,10 @@ export class MediaUploadError extends Data.TaggedError('MediaUploadError')<{
 const idFromLocation = (location: string | undefined): string | undefined =>
   location?.split('/').filter(Boolean).at(-1);
 
+/** Media API resource path for an image or video ID, with the ID encoded as one path segment. */
+const resourcePath = (resource: 'image' | 'video', id: string, suffix = ''): string =>
+  `/${resource}/${encodeURIComponent(id)}${suffix}`;
+
 const apiFailure =
   (method: 'GET' | 'POST', path: string) =>
   (cause: unknown): EbayApiError =>
@@ -182,9 +186,9 @@ export class MediaApi {
     ).attachMediaToInventoryItem;
   }
 
-  private url(resourcePath: string): string {
+  private url(suffix: string): string {
     const config = this.client.getConfig();
-    return `${getMediaBaseUrl(config.environment, config.apiBaseUrl)}${MEDIA_BASE_PATH}${resourcePath}`;
+    return `${getMediaBaseUrl(config.environment, config.apiBaseUrl)}${MEDIA_BASE_PATH}${suffix}`;
   }
 
   /**
@@ -304,14 +308,14 @@ export class MediaApi {
     input: ImageIdInput,
   ): Effect.Effect<ImageResponse, EbayApiError | EndpointInputError> => {
     const client = this.client;
-    const url = (imageId: string) => this.url(`/image/${imageId}`);
+    const url = (imageId: string) => this.url(resourcePath('image', imageId));
 
     return Effect.gen(function* () {
       const validated = yield* requireObjectEffect<ImageIdInput>(input, 'input');
       const imageId = yield* requireStringEffect(validated.imageId, 'imageId');
       return yield* Effect.tryPromise({
         try: () => client.get<ImageResponse>(url(imageId), undefined, { absolute: true }),
-        catch: apiFailure('GET', `${MEDIA_BASE_PATH}/image/${imageId}`),
+        catch: apiFailure('GET', `${MEDIA_BASE_PATH}${resourcePath('image', imageId)}`),
       });
     });
   };
@@ -380,7 +384,7 @@ export class MediaApi {
     input: UploadVideoInput,
   ): Effect.Effect<void, EbayApiError | EndpointInputError> => {
     const client = this.client;
-    const url = (videoId: string) => this.url(`/video/${videoId}/upload`);
+    const url = (videoId: string) => this.url(resourcePath('video', videoId, '/upload'));
 
     return Effect.gen(function* () {
       const validated = yield* requireObjectEffect<UploadVideoInput>(input, 'input');
@@ -395,7 +399,7 @@ export class MediaApi {
               'Content-Length': String(validated.bytes.byteLength),
             },
           }),
-        catch: apiFailure('POST', `${MEDIA_BASE_PATH}/video/${videoId}/upload`),
+        catch: apiFailure('POST', `${MEDIA_BASE_PATH}${resourcePath('video', videoId, '/upload')}`),
       });
     });
   };
@@ -417,20 +421,22 @@ export class MediaApi {
     input: VideoIdInput,
   ): Effect.Effect<Video, EbayApiError | EndpointInputError> => {
     const client = this.client;
-    const url = (videoId: string) => this.url(`/video/${videoId}`);
+    const url = (videoId: string) => this.url(resourcePath('video', videoId));
 
     return Effect.gen(function* () {
       const validated = yield* requireObjectEffect<VideoIdInput>(input, 'input');
       const videoId = yield* requireStringEffect(validated.videoId, 'videoId');
       return yield* Effect.tryPromise({
         try: () => client.get<Video>(url(videoId), undefined, { absolute: true }),
-        catch: apiFailure('GET', `${MEDIA_BASE_PATH}/video/${videoId}`),
+        catch: apiFailure('GET', `${MEDIA_BASE_PATH}${resourcePath('video', videoId)}`),
       });
     });
   };
 
   /**
-   * Polls getVideo until the status is final or the wait budget runs out.
+   * Polls getVideo until the status is final or the wait budget runs out. The
+   * last sleep is cut to the remaining budget, so the total wait never exceeds
+   * `maxWaitMs` by more than one status request.
    *
    * @param input - Video ID plus optional wait budget and poll interval.
    * @returns An Effect with the latest Video; check `status` — it may still be PROCESSING.
@@ -453,8 +459,9 @@ export class MediaApi {
       let waitedMs = 0;
       let video = yield* getVideo({ videoId: input.videoId });
       while (!videoStatusFinal(video) && waitedMs < maxWaitMs) {
-        yield* Effect.sleep(pollIntervalMs);
-        waitedMs += pollIntervalMs;
+        const sleepMs = Math.min(pollIntervalMs, maxWaitMs - waitedMs);
+        yield* Effect.sleep(sleepMs);
+        waitedMs += sleepMs;
         video = yield* getVideo({ videoId: input.videoId });
       }
       return video;

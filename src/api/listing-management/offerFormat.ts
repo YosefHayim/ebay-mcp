@@ -1,3 +1,4 @@
+import { BUY_IT_NOW_MARGIN_LABEL, meetsBuyItNowMargin } from '@/api/shared/auctionPricing.js';
 import { EndpointInputError } from '@/api/shared/request.js';
 import { FormatType, ListingDuration } from '@/types/ebayEnums.js';
 import type { components } from '@/types/sell-apps/listing-management/sellInventoryV1Oas3.js';
@@ -6,6 +7,9 @@ import { Effect } from 'effect';
 type OfferDetails = components['schemas']['EbayOfferDetailsWithId'];
 type OfferWithKeys = components['schemas']['EbayOfferDetailsWithKeys'];
 type Amount = components['schemas']['Amount'];
+
+/** The only `availableQuantity` eBay accepts on an auction offer. */
+const AUCTION_QUANTITY = 1;
 
 /**
  * Offer fields the listing-format rules read. Both create (with keys) and update
@@ -42,10 +46,10 @@ const auctionViolation = (
       'AUCTION offers need a day-count listingDuration such as DAYS_7; GTC is only valid for FIXED_PRICE offers',
     );
   }
-  if (offer.availableQuantity !== undefined) {
+  if (offer.availableQuantity !== undefined && offer.availableQuantity !== AUCTION_QUANTITY) {
     return inputError(
       `${parameter}.availableQuantity`,
-      'availableQuantity is not applicable for AUCTION offers (eBay error 25762); omit it — the inventory item quantity covers the auction',
+      'AUCTION offers list a single unit; omit availableQuantity or set it to 1',
     );
   }
   if (offer.listingPolicies?.eBayPlusIfEligible === true) {
@@ -60,10 +64,13 @@ const auctionViolation = (
       'quantityLimitPerBuyer does not apply to AUCTION offers',
     );
   }
-  if (offer.listingPolicies?.bestOfferTerms?.bestOfferEnabled === true) {
+  if (
+    offer.listingPolicies?.bestOfferTerms?.bestOfferEnabled === true &&
+    offer.pricingSummary?.price !== undefined
+  ) {
     return inputError(
       `${parameter}.listingPolicies.bestOfferTerms.bestOfferEnabled`,
-      'Best Offer cannot be enabled on AUCTION offers',
+      'an AUCTION offer can carry Best Offer or a Buy It Now price (pricingSummary.price), not both',
     );
   }
 };
@@ -106,16 +113,27 @@ const auctionCreateViolation = (
   }
 };
 
-const reserveViolation = (
+/** Price relations that hold for any body carrying an opening bid, with or without a format. */
+const auctionPriceViolation = (
   offer: OfferFormatFields,
   parameter: string,
 ): EndpointInputError | undefined => {
   const start = parseAmount(offer.pricingSummary?.auctionStartPrice);
+  if (start === undefined) {
+    return;
+  }
   const reserve = parseAmount(offer.pricingSummary?.auctionReservePrice);
-  if (start !== undefined && reserve !== undefined && reserve <= start) {
+  if (reserve !== undefined && reserve <= start) {
     return inputError(
       `${parameter}.pricingSummary.auctionReservePrice`,
       'auctionReservePrice must be higher than auctionStartPrice',
+    );
+  }
+  const buyItNow = parseAmount(offer.pricingSummary?.price);
+  if (buyItNow !== undefined && !meetsBuyItNowMargin(start, buyItNow)) {
+    return inputError(
+      `${parameter}.pricingSummary.price`,
+      `the Buy It Now price (pricingSummary.price) must be at least ${BUY_IT_NOW_MARGIN_LABEL} higher than auctionStartPrice`,
     );
   }
 };
@@ -123,11 +141,12 @@ const reserveViolation = (
 /**
  * Finds the first eBay listing-format rule an offer body breaks, if any.
  *
- * AUCTION offers need a day-count listingDuration and an auctionStartPrice, cannot
- * carry availableQuantity, per-buyer limits, Best Offer, or eBay Plus; FIXED_PRICE
- * offers must use GTC and cannot carry auction prices; a reserve price must always
- * exceed the starting bid. Update bodies carry no format, so only the format-free
- * rules apply to them.
+ * AUCTION offers need a day-count listingDuration and an auctionStartPrice, list a
+ * single unit (availableQuantity omitted or 1), cannot carry per-buyer limits or
+ * eBay Plus, and cannot combine Best Offer with a Buy It Now price; FIXED_PRICE
+ * offers must use GTC and cannot carry auction prices. A reserve must exceed the
+ * opening bid and a Buy It Now price must be at least 30% above it. Update bodies
+ * carry no format, so only the format-free rules apply to them.
  *
  * @param offer - Create or update offer body.
  * @param parameter - Parameter path used to label the failing field (for example `body`).
@@ -149,7 +168,7 @@ export const findOfferFormatViolation = (
   } else if (offer.format === FormatType.FIXED_PRICE) {
     formatViolation = fixedPriceViolation(offer, parameter);
   }
-  return formatViolation ?? reserveViolation(offer, parameter);
+  return formatViolation ?? auctionPriceViolation(offer, parameter);
 };
 
 /**

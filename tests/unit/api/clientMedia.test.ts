@@ -79,6 +79,49 @@ describe('EbayApiClient media transport', () => {
     expect(response.data).toEqual({ imageUrl: 'https://i.ebayimg.com/x.jpg' });
   });
 
+  it('drops the JSON content type for FormData whatever its spelling', async () => {
+    let contentType = '';
+    const scope = nock('https://apim.sandbox.ebay.com')
+      .post('/commerce/media/v1_beta/image/create_image_from_file')
+      .reply(function reply() {
+        contentType = String(this.req.headers['content-type']);
+        return [201, { imageUrl: 'https://i.ebayimg.com/y.jpg' }];
+      });
+
+    const form = new FormData();
+    form.append('image', new Blob([new Uint8Array([1])], { type: 'image/jpeg' }), 'y.jpg');
+    await client.postForResponse(
+      'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/create_image_from_file',
+      form,
+      { absolute: true, headers: { 'content-type': 'application/json' } },
+    );
+
+    expect(scope.isDone()).toBe(true);
+    expect(contentType).toMatch(/^multipart\/form-data; boundary=/);
+  });
+
+  it('lets a Blob body carry its own MIME type unless the caller sets one', async () => {
+    const seen: string[] = [];
+    const scope = nock('https://apim.sandbox.ebay.com')
+      .post('/commerce/media/v1_beta/video/VID-2/upload')
+      .twice()
+      .reply(function reply() {
+        seen.push(String(this.req.headers['content-type']));
+        return [200, ''];
+      });
+    const url = 'https://apim.sandbox.ebay.com/commerce/media/v1_beta/video/VID-2/upload';
+    const blob = new Blob([new Uint8Array([1, 2])], { type: 'video/mp4' });
+
+    await client.post(url, blob, { absolute: true });
+    await client.post(url, blob, {
+      absolute: true,
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
+
+    expect(scope.isDone()).toBe(true);
+    expect(seen).toEqual(['video/mp4', 'application/octet-stream']);
+  });
+
   it('sends raw bytes with caller headers and treats an empty 200 body as success', async () => {
     let contentType = '';
     const scope = nock('https://apim.sandbox.ebay.com')

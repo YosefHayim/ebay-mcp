@@ -79,15 +79,27 @@ describe('auction Item rules', () => {
     expect(auctionCreate({ ...auctionItem, Quantity: '1' })).toBeUndefined();
   });
 
-  it('rejects Best Offer', () => {
+  it('allows Best Offer on its own but not together with Buy It Now', () => {
+    const bestOffer = { BestOfferDetails: { BestOfferEnabled: true } };
+
+    expect(auctionCreate({ ...auctionItem, ...bestOffer })).toBeUndefined();
+    expect(auctionRevise(bestOffer)).toBeUndefined();
+    expect(auctionCreate({ ...auctionItem, ...bestOffer, BuyItNowPrice: 49.99 })?.parameter).toBe(
+      'item.BestOfferDetails.BestOfferEnabled',
+    );
     expect(
-      auctionCreate({ ...auctionItem, BestOfferDetails: { BestOfferEnabled: true } })?.parameter,
+      auctionCreate({
+        ...auctionItem,
+        BestOfferDetails: { BestOfferEnabled: 'true' },
+        BuyItNowPrice: 49.99,
+      })?.parameter,
     ).toBe('item.BestOfferDetails.BestOfferEnabled');
     expect(
-      auctionCreate({ ...auctionItem, BestOfferDetails: { BestOfferEnabled: 'true' } })?.parameter,
-    ).toBe('item.BestOfferDetails.BestOfferEnabled');
-    expect(
-      auctionCreate({ ...auctionItem, BestOfferDetails: { BestOfferEnabled: false } }),
+      auctionCreate({
+        ...auctionItem,
+        BestOfferDetails: { BestOfferEnabled: false },
+        BuyItNowPrice: 49.99,
+      }),
     ).toBeUndefined();
   });
 
@@ -108,7 +120,16 @@ describe('auction Item rules', () => {
     expect(violation?.message).toContain('higher than StartPrice');
   });
 
-  it('rejects a Buy It Now price at or below the opening bid', () => {
+  it('requires the Buy It Now price to sit at least 30% above the opening bid', () => {
+    expect(auctionRevise({ StartPrice: 10, BuyItNowPrice: 13 })).toBeUndefined();
+    expect(auctionRevise({ StartPrice: 9.99, BuyItNowPrice: 12.99 })).toBeUndefined();
+
+    const justBelow = auctionRevise({ StartPrice: 10, BuyItNowPrice: 12.99 });
+    expect(justBelow?.parameter).toBe('fields.BuyItNowPrice');
+    expect(justBelow?.message).toContain('30%');
+    expect(auctionRevise({ StartPrice: 10, BuyItNowPrice: 10 })?.parameter).toBe(
+      'fields.BuyItNowPrice',
+    );
     expect(auctionRevise({ StartPrice: 10, BuyItNowPrice: 8 })?.parameter).toBe(
       'fields.BuyItNowPrice',
     );
@@ -131,6 +152,14 @@ describe('fixed-price Item rules', () => {
 
     expect(violation?.parameter).toBe('item.ListingType');
     expect(violation?.message).toContain('format AUCTION');
+  });
+
+  it('only accepts GTC as a fixed-price duration and does not demand one', () => {
+    const violation = fixedPrice({ Title: 'Widget', StartPrice: 14.99, ListingDuration: 'Days_7' });
+
+    expect(violation?.parameter).toBe('item.ListingDuration');
+    expect(violation?.message).toContain('GTC');
+    expect(fixedPrice({ Title: 'Widget', StartPrice: 14.99 })).toBeUndefined();
   });
 
   it('rejects auction-only prices', () => {

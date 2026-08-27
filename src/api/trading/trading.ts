@@ -142,10 +142,11 @@ export class TradingApi {
   /**
    * Creates a listing using the supplied Trading API item payload.
    *
-   * Fixed-price listings go through AddFixedPriceItem. Auctions go through AddItem
-   * with `ListingType` Chinese added to the item, after the auction rules pass:
-   * a day-count `ListingDuration`, a `StartPrice` opening bid, a single unit, no
-   * Best Offer, and reserve or Buy It Now prices above the opening bid.
+   * Fixed-price listings go through AddFixedPriceItem (with `ListingDuration` GTC
+   * when supplied). Auctions go through AddItem with `ListingType` Chinese added to
+   * the item, after the auction rules pass: a day-count `ListingDuration`, a
+   * `StartPrice` opening bid, a single unit, a reserve above the opening bid, a Buy
+   * It Now price at least 30% above it, and Best Offer only without Buy It Now.
    *
    * @param input - Trading API Item payload nested under `item`, plus the optional listing format.
    * @returns An Effect that succeeds with the parsed AddFixedPriceItem or AddItem response.

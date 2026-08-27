@@ -129,6 +129,15 @@ describe('loadLocalMedia', () => {
     );
   });
 
+  it('accepts an AVIF whose major brand is the generic HEIF brand', async () => {
+    const generic = path.join(fixture.root, 'generic.avif');
+    await writeFile(generic, isoHeader('mif1'));
+
+    const file = await Effect.runPromise(loadLocalMedia(generic, 'image', access));
+
+    expect(file.mimeType).toBe('image/avif');
+  });
+
   it('rejects files whose content does not match the extension', async () => {
     const message = await failureOf(loadLocalMedia(fixture.mismatched, 'image', access));
 

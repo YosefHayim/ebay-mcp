@@ -1,3 +1,4 @@
+import { BUY_IT_NOW_MARGIN_LABEL, meetsBuyItNowMargin } from '@/api/shared/auctionPricing.js';
 import { EndpointInputError } from '@/api/shared/request.js';
 import { FormatType } from '@/types/ebayEnums.js';
 import { isRecord } from '@/utils/typeGuards.js';
@@ -70,10 +71,10 @@ const auctionViolation = (
       'AUCTION listings sell a single unit; omit Quantity or set it to 1',
     );
   }
-  if (isBestOfferEnabled(item)) {
+  if (isBestOfferEnabled(item) && item.BuyItNowPrice !== undefined) {
     return inputError(
       `${parameter}.BestOfferDetails.BestOfferEnabled`,
-      'Best Offer cannot be enabled on AUCTION listings',
+      'an AUCTION listing can carry Best Offer or a BuyItNowPrice, not both',
     );
   }
 };
@@ -107,6 +108,12 @@ const fixedPriceViolation = (
       `ListingType ${TRADING_AUCTION_LISTING_TYPE} is an auction; pass format AUCTION instead`,
     );
   }
+  if (item.ListingDuration !== undefined && item.ListingDuration !== TRADING_GTC_DURATION) {
+    return inputError(
+      `${parameter}.ListingDuration`,
+      `FIXED_PRICE listings must use ListingDuration ${TRADING_GTC_DURATION} (the only duration eBay accepts for fixed-price listings); day counts such as Days_7 are for AUCTION listings`,
+    );
+  }
   if (item.ReservePrice !== undefined) {
     return inputError(`${parameter}.ReservePrice`, 'ReservePrice only applies to AUCTION listings');
   }
@@ -134,10 +141,10 @@ const auctionPriceViolation = (
     );
   }
   const buyItNow = parseTradingAmount(item.BuyItNowPrice);
-  if (buyItNow !== undefined && buyItNow <= start) {
+  if (buyItNow !== undefined && !meetsBuyItNowMargin(start, buyItNow)) {
     return inputError(
       `${parameter}.BuyItNowPrice`,
-      'BuyItNowPrice must be higher than StartPrice (eBay requires a margin above the opening bid)',
+      `BuyItNowPrice must be at least ${BUY_IT_NOW_MARGIN_LABEL} higher than StartPrice (the opening bid)`,
     );
   }
 };
@@ -158,9 +165,11 @@ export interface TradingListingFormatCheck {
  * Finds the first Trading listing-format rule an `Item` payload breaks, if any.
  *
  * AUCTION payloads cannot carry a non-auction `ListingType`, `GTC`, a quantity other
- * than 1, or Best Offer, and on create need a `ListingDuration` and `StartPrice`.
- * FIXED_PRICE payloads cannot carry `ListingType` Chinese, `ReservePrice`, or
- * `BuyItNowPrice`. A reserve or Buy It Now price must always exceed the opening bid.
+ * than 1, or Best Offer together with `BuyItNowPrice`, and on create need a
+ * `ListingDuration` and `StartPrice`. FIXED_PRICE payloads cannot carry
+ * `ListingType` Chinese, a `ListingDuration` other than `GTC`, `ReservePrice`, or
+ * `BuyItNowPrice`. A reserve must exceed the opening bid and a Buy It Now price must
+ * be at least 30% above it.
  *
  * @param check - Item payload, selected format, parameter label, and create flag.
  * @returns The tagged input error describing the violation, or undefined when the payload is consistent.

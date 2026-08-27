@@ -49,13 +49,36 @@ describe('findOfferFormatViolation', () => {
     expect(findOfferFormatViolation({}, 'body')).toBeUndefined();
   });
 
-  it('lets an auction carry a Buy It Now price beside the starting bid', () => {
+  it('lets an auction carry a Buy It Now price at least 30% above the starting bid', () => {
     const offer = {
       ...auctionOffer,
       pricingSummary: { auctionStartPrice: usd('9.99'), price: usd('49.99') },
     };
+    const boundary = {
+      ...auctionOffer,
+      pricingSummary: { auctionStartPrice: usd('10.00'), price: usd('13.00') },
+    };
 
     expect(findOfferFormatViolation(offer, 'body')).toBeUndefined();
+    expect(findOfferFormatViolation(boundary, 'body')).toBeUndefined();
+  });
+
+  it('rejects a Buy It Now price below the 30% margin', () => {
+    const justBelow = {
+      ...auctionOffer,
+      pricingSummary: { auctionStartPrice: usd('10.00'), price: usd('12.99') },
+    };
+    const equal = {
+      ...auctionOffer,
+      pricingSummary: { auctionStartPrice: usd('10.00'), price: usd('10.00') },
+    };
+
+    expect(findOfferFormatViolation(justBelow, 'body')).toMatchObject({
+      parameter: 'body.pricingSummary.price',
+    });
+    expect(findOfferFormatViolation(equal, 'body')).toMatchObject({
+      parameter: 'body.pricingSummary.price',
+    });
   });
 
   it('rejects GTC on an auction', () => {
@@ -67,9 +90,12 @@ describe('findOfferFormatViolation', () => {
     });
   });
 
-  it('rejects availableQuantity on an auction, even 1', () => {
+  it('accepts availableQuantity 1 on an auction and rejects any other quantity', () => {
     expect(
       findOfferFormatViolation({ ...auctionOffer, availableQuantity: 1 }, 'body'),
+    ).toBeUndefined();
+    expect(
+      findOfferFormatViolation({ ...auctionOffer, availableQuantity: 0 }, 'body'),
     ).toMatchObject({ parameter: 'body.availableQuantity' });
     expect(
       findOfferFormatViolation({ ...auctionOffer, availableQuantity: 3 }, 'body'),
@@ -91,20 +117,24 @@ describe('findOfferFormatViolation', () => {
     ).toMatchObject({ parameter: 'body.quantityLimitPerBuyer' });
   });
 
-  it('rejects Best Offer on an auction but tolerates it switched off', () => {
-    const enabled = {
+  it('allows Best Offer on an auction unless a Buy It Now price is also set', () => {
+    const bestOffer = { bestOfferTerms: { bestOfferEnabled: true } };
+    const enabled = { ...auctionOffer, listingPolicies: bestOffer };
+    const withBuyItNow = {
       ...auctionOffer,
-      listingPolicies: { bestOfferTerms: { bestOfferEnabled: true } },
+      listingPolicies: bestOffer,
+      pricingSummary: { auctionStartPrice: usd('9.99'), price: usd('49.99') },
     };
-    const disabled = {
-      ...auctionOffer,
+    const disabledWithBuyItNow = {
+      ...withBuyItNow,
       listingPolicies: { bestOfferTerms: { bestOfferEnabled: false } },
     };
 
-    expect(findOfferFormatViolation(enabled, 'body')).toMatchObject({
+    expect(findOfferFormatViolation(enabled, 'body')).toBeUndefined();
+    expect(findOfferFormatViolation(withBuyItNow, 'body')).toMatchObject({
       parameter: 'body.listingPolicies.bestOfferTerms.bestOfferEnabled',
     });
-    expect(findOfferFormatViolation(disabled, 'body')).toBeUndefined();
+    expect(findOfferFormatViolation(disabledWithBuyItNow, 'body')).toBeUndefined();
   });
 
   it('rejects a reserve at or below the starting bid', () => {
@@ -125,14 +155,23 @@ describe('findOfferFormatViolation', () => {
     });
   });
 
-  it('checks the reserve rule on update bodies that carry no format', () => {
-    const update = {
+  it('checks the price rules on update bodies that carry no format', () => {
+    const reserve = {
       pricingSummary: { auctionStartPrice: usd('10.00'), auctionReservePrice: usd('5.00') },
     };
+    const buyItNow = {
+      pricingSummary: { auctionStartPrice: usd('10.00'), price: usd('11.00') },
+    };
 
-    expect(findOfferFormatViolation(update, 'body')).toMatchObject({
+    expect(findOfferFormatViolation(reserve, 'body')).toMatchObject({
       parameter: 'body.pricingSummary.auctionReservePrice',
     });
+    expect(findOfferFormatViolation(buyItNow, 'body')).toMatchObject({
+      parameter: 'body.pricingSummary.price',
+    });
+    expect(
+      findOfferFormatViolation({ pricingSummary: { price: usd('11.00') } }, 'body'),
+    ).toBeUndefined();
   });
 
   it('leaves unparseable amounts to eBay', () => {
@@ -201,7 +240,7 @@ describe('offer methods apply the format rules before calling eBay', () => {
 
   it('rejects an inconsistent createOffer body without a request', async () => {
     const error = await Effect.runPromise(
-      Effect.flip(methods.createOffer({ body: { ...auctionOffer, availableQuantity: 1 } })),
+      Effect.flip(methods.createOffer({ body: { ...auctionOffer, availableQuantity: 3 } })),
     );
 
     expect(error).toMatchObject({

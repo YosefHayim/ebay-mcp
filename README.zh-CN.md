@@ -75,7 +75,7 @@
 - **自动配置 9 个 AI 客户端** — Claude Desktop、Cursor、Zed、Cline、Continue.dev、Windsurf、Roo Code、Claude Code CLI 和 Amazon Q Developer。
 - **内置 OAuth 2.0** — 完整的用户令牌管理与自动刷新，并能从用户令牌（每天 1 万–5 万次请求）智能回退到客户端凭据（每天 1 千次请求）。
 - **默认具备韧性** — 遇到 `429` 速率限制时自动重试并采用指数退避，错误提示清晰一致。
-- **类型安全** — 端到端 TypeScript，使用 Zod 校验工具输入，类型由 OpenAPI 生成。
+- **类型安全** — 端到端 TypeScript，使用 Effect 校验工具输入，类型由 OpenAPI 生成。
 - **本地且私密** — 通过 STDIO 或本地 HTTP 运行；你的凭据和数据永远不会离开你的机器。
 - **沙盒与生产** — 用一个变量即可切换环境。
 - **一条命令完成配置** — `npm run setup` 会配置凭据、OAuth 和你的 MCP 客户端，并自动打开浏览器完成 OAuth 流程。
@@ -90,7 +90,7 @@
 | 接口 | 通过 AI 助手使用自然语言 | 手写 HTTP 请求并解析 JSON |
 | OAuth 与令牌刷新 | 内置，并自动刷新 | 由你自行实现和维护 |
 | 速率限制处理 | 自动重试并指数退避 | 手动处理 `429` 与退避 |
-| 输入校验 | 每个工具都有 Zod 模式 + TypeScript 类型 | 无 — 由你校验自己的载荷 |
+| 输入校验 | 每个工具都有基于 Effect 的模式 + TypeScript 类型 | 无 — 由你校验自己的载荷 |
 | 配置 | 一个向导（`npm run setup`） | 每次调用都要处理认证、请求头和站点 |
 | AI 客户端支持 | 自动配置 9 个客户端 | 不适用 |
 | API 覆盖 | 303 个工具覆盖 100% Sell API，开箱即用 | 你需根据文档构建每个请求 |
@@ -242,7 +242,7 @@ EBAY_MCP_UI=on                      # 交互式 MCP Apps 视图（测试版）�
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | 面向 eBay MCP 目录的 ChatGPT 连接器 search/fetch 工具 |
 | [Account](src/tools/categories/account.ts) | 业务、履行、付款和退货政策；计划；订阅；销售税 |
-| [Inventory](src/tools/categories/inventory.ts) | 库存商品、报价、地点、商品分组、批量操作、SKU/地点映射 |
+| [Inventory](src/tools/categories/inventory.ts) | 库存商品、报价、地点、商品分组、批量操作、SKU/地点映射，以及本地照片/视频上传（[`media.ts`](src/tools/categories/media.ts)，Media API） |
 | [Fulfillment](src/tools/categories/fulfillment.ts) | 订单、配送、退款、纠纷、付款纠纷证据 |
 | [Marketing](src/tools/categories/marketing.ts) | 推广刊登广告活动、广告、促销、出价、批量操作 |
 | [Analytics](src/tools/categories/analytics.ts) | 流量报告、卖家标准、客户服务指标 |
@@ -251,7 +251,7 @@ EBAY_MCP_UI=on                      # 交互式 MCP Apps 视图（测试版）�
 | [Taxonomy](src/tools/categories/taxonomy.ts) | 类目树、商品属性、商品成色 |
 | [Browse](src/tools/categories/browse.ts) | 已售/已完成 listing 搜索（Finding API）用于比价 |
 | [Other](src/tools/categories/other.ts) | Identity、VeRO、翻译与国际物流支持 API（Compliance 工具会报告 eBay 于 2026-03-30 的下线） |
-| [Trading（旧版 XML）](src/tools/categories/trading.ts) | 固定价格刊登的创建、修改、重新刊登和结束 |
+| [Trading（旧版 XML）](src/tools/categories/trading.ts) | 固定价格刊登和拍卖的创建、修改、重新刊登和结束 |
 | [Developer](src/tools/categories/developer.ts) | 速率限制、签名密钥、客户端注册 |
 | [Token Management](src/tools/categories/tokenManagement.ts) | OAuth URL 生成与令牌管理 |
 
@@ -347,11 +347,19 @@ Node.js ≥ 20、一个免费的 [eBay 开发者账号](https://developer.ebay.c
 
 ### 这与直接调用 eBay API 有何不同？
 
-你通过 AI 助手以自然语言交互。OAuth 令牌管理、带退避的自动重试以及基于 Zod 的类型安全校验都是内置的。参见上面的 [对比表](#ebay-mcp-对比原生-ebay-api)。
+你通过 AI 助手以自然语言交互。OAuth 令牌管理、带退避的自动重试以及基于 Effect 的类型安全校验都是内置的。参见上面的 [对比表](#ebay-mcp-对比原生-ebay-api)。
+
+### 它能上传我的照片和视频吗？
+
+可以。`ebay_upload_images`、`ebay_upload_video` 和 `ebay_attach_media_to_inventory_item` 会读取本地文件（绝对路径或 `media://` 引用），通过 eBay 的 Media API 上传，并返回用于 `product.imageUrls` / `product.videoIds` 的 EPS 图片 URL 和视频 ID。文件系统访问需要显式开启：在 `EBAY_MCP_MEDIA_DIRS` 或 `EBAY_MCP_MEDIA_ROOT` 指定目录之前，什么都无法读取。详见 [Photos and videos from local files](README.md#photos-and-videos-from-local-files)（英文）。
+
+### 它支持拍卖刊登吗？
+
+支持。通过 REST Inventory 报价工具：使用 `format: "AUCTION"`、`auctionStartPrice`、可选的 `auctionReservePrice` 和按天计的 `listingDuration` 创建报价，然后发布。详见 [Auction offers](README.md#auction-offers)（英文）。旧版 Trading API 工具使用同样的开关：带 `format: "AUCTION"` 的 `ebay_create_listing` 会发送包含 `ListingType` Chinese、起拍价 `StartPrice` 和按天计的 `ListingDuration` 的 `AddItem`。
 
 ### 它是否支持 eBay 的旧版 Trading API（XML）？
 
-支持。固定价格刊登的创建、修改、重新刊登和结束操作通过 Trading API 工具提供。
+支持。刊登的创建、修改、重新刊登和结束操作通过 Trading API 工具提供，既支持固定价格刊登（`AddFixedPriceItem` 系列，默认），也支持拍卖（`format: "AUCTION"` → `AddItem`、`ReviseItem`、`EndItem`、`RelistItem`）。
 
 ### 如何获得更高的速率限制？
 
@@ -359,7 +367,7 @@ Node.js ≥ 20、一个免费的 [eBay 开发者账号](https://developer.ebay.c
 
 ### 它用什么构建？
 
-TypeScript 和 Node.js（ESM），使用官方 MCP SDK、用于校验的 Zod 以及由 OpenAPI 生成的类型。
+TypeScript 和 Node.js（ESM），使用官方 MCP SDK、基于 Effect 的校验（带 Zod 兼容的 MCP 适配器）以及由 OpenAPI 生成的类型。
 
 ### 如何更新到最新版本？
 
