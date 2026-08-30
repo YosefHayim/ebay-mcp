@@ -85,6 +85,13 @@ export interface ActiveItemSummary {
 export interface SearchActiveItemsResult {
   /** Active listings matched by the query. */
   readonly items: ActiveItemSummary[];
+  /**
+   * Whether Browse reported a further page, derived from the `next` link.
+   *
+   * This is the authoritative end-of-results signal per eBay's
+   * SearchPagedCollection contract; `total` is not a pagination signal.
+   */
+  readonly hasNext: boolean;
   /** Total matching listings reported by Browse, when available. */
   readonly total?: number;
   /** Offset echoed for pagination. */

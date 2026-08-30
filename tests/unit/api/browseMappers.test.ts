@@ -182,6 +182,51 @@ describe('mapSearchActiveItemsResponse (realistic payload)', () => {
   });
 });
 
+// eBay's SearchPagedCollection contract makes `next` the authoritative
+// "another page exists" signal, so it is mapped independently of `total` and
+// of how full the returned page is.
+describe('mapSearchActiveItemsResponse (hasNext)', () => {
+  const context = { query: 'drone', offset: 0, limit: 2 };
+
+  it('reports hasNext when the payload carries a next link', () => {
+    expect(mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, context).hasNext).toBe(true);
+  });
+
+  it('reports no next page when the payload omits the next link', () => {
+    const { next: _next, ...withoutNext } = EBAY_SEARCH_PAYLOAD;
+
+    expect(mapSearchActiveItemsResponse(withoutNext, context).hasNext).toBe(false);
+  });
+
+  it('treats a blank next link as no further page', () => {
+    expect(
+      mapSearchActiveItemsResponse({ ...EBAY_SEARCH_PAYLOAD, next: '' }, context).hasNext,
+    ).toBe(false);
+  });
+
+  it('ignores a non-string next value', () => {
+    expect(
+      mapSearchActiveItemsResponse({ ...EBAY_SEARCH_PAYLOAD, next: 42 }, context).hasNext,
+    ).toBe(false);
+  });
+
+  it('does not infer the end of results from a short page', () => {
+    // One item against a limit of 2 — a short page that still has a next link.
+    const result = mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, context);
+
+    expect(result.items).toHaveLength(1);
+    expect(result.limit).toBe(2);
+    expect(result.hasNext).toBe(true);
+  });
+
+  it('does not infer the end of results from a zero total', () => {
+    const result = mapSearchActiveItemsResponse({ ...EBAY_SEARCH_PAYLOAD, total: 0 }, context);
+
+    expect(result.total).toBe(0);
+    expect(result.hasNext).toBe(true);
+  });
+});
+
 describe('mapSearchActiveItemsResponse', () => {
   it('maps items and total', () => {
     const result = mapSearchActiveItemsResponse(
@@ -201,8 +246,9 @@ describe('mapSearchActiveItemsResponse', () => {
 
   it('returns empty items for unexpected payloads', () => {
     const context = { query: 'x', offset: 0, limit: 20 };
-    expect(mapSearchActiveItemsResponse(undefined, context)).toEqual({ items: [], ...context });
-    expect(mapSearchActiveItemsResponse({}, context)).toEqual({ items: [], ...context });
+    const empty = { items: [], hasNext: false, ...context };
+    expect(mapSearchActiveItemsResponse(undefined, context)).toEqual(empty);
+    expect(mapSearchActiveItemsResponse({}, context)).toEqual(empty);
   });
 });
 

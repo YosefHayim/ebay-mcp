@@ -144,7 +144,8 @@ export const mapItemSummary = (raw: unknown): ActiveItemSummary | undefined => {
  *
  * @param raw - Full JSON body returned by Browse search.
  * @param context - Echoed query and pagination values.
- * @returns Cleaned items plus the total match count when available.
+ * @returns Cleaned items, the `hasNext` page signal, and the total match count
+ *   when available.
  *
  * @example
  * ```ts
@@ -155,7 +156,7 @@ export const mapSearchActiveItemsResponse = (
   raw: unknown,
   context: { readonly query: string; readonly offset: number; readonly limit: number },
 ): SearchActiveItemsResult => {
-  const base: SearchActiveItemsResult = { items: [], ...context };
+  const base: SearchActiveItemsResult = { items: [], hasNext: false, ...context };
   if (!isRecord(raw)) {
     return base;
   }
@@ -171,6 +172,12 @@ export const mapSearchActiveItemsResponse = (
 
   const total = typeof raw.total === 'number' ? raw.total : undefined;
 
+  // eBay's SearchPagedCollection contract makes `next` the authoritative
+  // "another page exists" signal. The link itself is an authenticated API URL
+  // the caller cannot follow without our credentials, so only its presence is
+  // surfaced.
+  const hasNext = typeof raw.next === 'string' && raw.next.length > 0;
+
   // eBay may clamp the requested window (e.g. an offset past the result set),
   // so the response values win when present; the request values are only a
   // fallback for payloads that omit them.
@@ -180,6 +187,7 @@ export const mapSearchActiveItemsResponse = (
   return {
     ...base,
     items,
+    hasNext,
     offset,
     limit,
     ...(total === undefined ? {} : { total }),

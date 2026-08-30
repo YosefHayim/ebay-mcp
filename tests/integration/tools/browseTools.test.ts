@@ -94,6 +94,9 @@ describe('browse tools registered MCP contract', () => {
     expect(
       (definition?.inputSchema.properties?.offset as { description?: string })?.description,
     ).toContain('multiple of limit');
+    // The advertised rule has to name hasNext, not the short-page heuristic
+    // eBay's paged-collection contract rules out.
+    expect(definition?.description).toContain('`hasNext` is the authoritative pagination signal');
   });
 
   // The price grammar is the contract eBay actually reads: an open-ended lower
@@ -193,6 +196,41 @@ describe('browse tools registered MCP contract', () => {
       price: { currency: 'USD', value: '42.50' },
       bidCount: 7,
     });
+  });
+
+  // eBay's SearchPagedCollection contract makes `next` the authoritative
+  // end-of-results signal, so it has to survive the mapper and reach callers
+  // as `hasNext` — neither `total` nor a short page substitutes for it.
+  it.each([
+    {
+      label: 'a next link is present',
+      body: {
+        total: 0,
+        next: `${HOST}${SEARCH}?q=camera&limit=1&offset=1`,
+        itemSummaries: [{ itemId: 'v1|1|0', title: 'One' }],
+      },
+      expected: true,
+    },
+    {
+      label: 'no next link is present',
+      body: {
+        total: 12_345,
+        itemSummaries: [{ itemId: 'v1|1|0', title: 'One' }],
+      },
+      expected: false,
+    },
+  ])('surfaces hasNext=$expected when $label', async ({ body, expected }) => {
+    nock(HOST).get(SEARCH).query(true).reply(200, body);
+
+    const result = await client.callTool({
+      name: 'ebay_find_active_items',
+      arguments: { query: 'camera', limit: 1, offset: 0 },
+    });
+    const text = result.content.find((item) => item.type === 'text');
+    const payload = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<string, unknown>;
+
+    expect(result.isError).not.toBe(true);
+    expect(payload.hasNext).toBe(expected);
   });
 
   it('url-encodes the pipe-delimited item id on the detail path', async () => {
