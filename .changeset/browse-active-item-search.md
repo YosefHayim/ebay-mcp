@@ -1,0 +1,17 @@
+---
+"ebay-mcp": minor
+---
+
+Add `ebay_find_active_items` and `ebay_get_item_details`, active-listing marketplace search and item detail via the Buy Browse API.
+
+The `browse` family previously exposed only `ebay_find_completed_items` (sold comps), so there was no way to search live listings. The Finding API's `findItemsAdvanced` was decommissioned in February 2025, leaving Browse as eBay's only supported item-search API. `ebay_find_active_items` wraps `item_summary/search` with pagination, sort, category restriction, condition/buying-option/price filters, and a raw filter passthrough; `ebay_get_item_details` wraps the item resource for one listing. Both are read-only and use the existing application token under the basic `api_scope`, so no new credentials or scopes are required.
+
+eBay documents every Browse method as requiring an application access token from the client-credentials flow, but the client's default token path prefers a configured user token and only falls back to the application token. Requests now accept a `tokenType: 'application'` override, which both Browse methods pass; every other endpoint keeps the existing behaviour untouched. The override is honoured at both token-acquisition sites — the initial attempt and the 401 retry — so an application request cannot silently downgrade to the user token on a retry. Proxy auth (`EBAY_MCP_DISABLE_AUTH_HEADER`) short-circuits ahead of token acquisition and is unaffected.
+
+Search input is validated before the request is built: `limit` (a whole number, 1–200), `offset` (a whole number, 0–10,000), sort order, string-array filters, non-blank optional strings, finite, non-negative and non-inverted price bounds, and a raw `filter` whose price clause would collide with `priceMin`/`priceMax`. Each is surfaced as a tagged input error rather than an opaque eBay 400. Pagination in the result reflects the window eBay returned, falling back to the requested one.
+
+Auction listings report their live figure: eBay omits `price` on auction-only items and returns `currentBidPrice` instead, so `price` now falls back to it and `bidCount` is surfaced alongside. `offset` is validated as zero or a whole multiple of `limit`, which Browse requires and otherwise rejects with an opaque 400 (error 12515).
+
+Search results carry `hasNext`, derived from the `next` link in eBay's paged-collection response. eBay's `SearchPagedCollection` contract makes that link the authoritative "another page exists" signal and states that `total` must not be used for pagination, so `hasNext` is what the tool description now tells callers to page on. The raw `next` value is deliberately not surfaced: it is a fully qualified authenticated API URL that a caller cannot follow without the server's own credentials.
+
+Two behaviours documented in the tool and schema descriptions after live testing: eBay converts price bounds across currencies but silently drops the whole price filter when `priceCurrency` is a code it does not recognise, and `total` returns 0 once `offset` runs past the available result window rather than repeating the match count. The descriptions also note eBay's documented search default, which returns only listings that still offer `FIXED_PRICE`: an auction loses that option once it takes a qualifying bid, so reaching it reliably means passing `buyingOptions: ["AUCTION"]`.

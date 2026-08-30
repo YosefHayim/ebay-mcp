@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>eBay MCP サーバー — Claude、Cursor、そしてあらゆる AI アシスタントに eBay の Sell API への完全なアクセスを。在庫・注文・マーケティング・分析向けの 299 ツールを、自分の鍵でローカル実行。</strong>
+  <strong>eBay MCP サーバー — Claude、Cursor、そしてあらゆる AI アシスタントに eBay の Sell API への完全なアクセスを。在庫・注文・マーケティング・分析向けの 301 ツールを、自分の鍵でローカル実行。</strong>
 </p>
 
 <p align="center"><sub>非公式のオープンソースプロジェクト — eBay Inc. との提携・認可・承認はありません。</sub></p>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tools-299-8957e5?logo=ebay&logoColor=white" alt="299 個の eBay API ツール" />
+  <img src="https://img.shields.io/badge/tools-301-8957e5?logo=ebay&logoColor=white" alt="301 個の eBay API ツール" />
   <img src="https://img.shields.io/badge/Sell%20API%20coverage-100%25-success" alt="eBay Sell API を 100% カバー" />
   <img src="https://img.shields.io/badge/Model%20Context%20Protocol-compatible-000000" alt="Model Context Protocol 対応" />
   <img src="https://img.shields.io/badge/tests-1%2C000%2B%20passing-3fb950?logo=vitest&logoColor=white" alt="1000 件以上のテストに合格" />
@@ -47,7 +47,7 @@
 
 > **注意:** 最新の製品情報（ツールファミリー、API 廃止、バージョン注記）の正本は英語の [README.md](README.md) です。この翻訳は遅れている場合があります。
 
-**eBay MCP** は、AI アシスタント —Claude Desktop、Claude Code、Cursor、Cline、Windsurf、Zed、Continue.dev、Roo Code、Amazon Q— を **eBay の Sell API** に直接接続するローカルの [Model Context Protocol](https://modelcontextprotocol.io) サーバーです。**eBay Sell API の全面（270 の固有エンドポイント）の 100%** をカバーする **299 個のツール** を提供し、在庫管理、注文処理、プロモーション広告のマーケティング、分析、開発者向けツールに対応します。すべては STDIO またはローカル HTTP 経由であなたのマシン上で動作し、**クラウド中継はありません**。eBay の認証情報がコンピューターから外に出ることは決してありません。
+**eBay MCP** は、AI アシスタント —Claude Desktop、Claude Code、Cursor、Cline、Windsurf、Zed、Continue.dev、Roo Code、Amazon Q— を **eBay の Sell API** に直接接続するローカルの [Model Context Protocol](https://modelcontextprotocol.io) サーバーです。**eBay Sell API の全面（270 の固有エンドポイント）の 100%** をカバーする **301 個のツール** を提供し、在庫管理、注文処理、プロモーション広告のマーケティング、分析、開発者向けツールに対応します。すべては STDIO またはローカル HTTP 経由であなたのマシン上で動作し、**クラウド中継はありません**。eBay の認証情報がコンピューターから外に出ることは決してありません。
 
 > **免責事項：** 非公式のサードパーティ製プロジェクトであり、**eBay Inc. との提携・承認はありません。** 「現状のまま」提供され、いかなる保証もありません。[eBay API ライセンス契約](https://developer.ebay.com/join/api-license-agreement) と [データ取り扱い要件](https://developer.ebay.com/api-docs/static/data-handling-update.html) の遵守、認証情報の安全な保管、レート制限の遵守はご自身の責任です。本番前にサンドボックスでテストしてください。[LICENSE](LICENSE)、[SECURITY.md](SECURITY.md)、[EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md) を参照してください。
 
@@ -71,7 +71,7 @@
 
 ## 機能
 
-- **299 個の eBay API ツール** — 在庫、注文、マーケティング、分析、メタデータ、タクソノミー、開発者向けツールにわたり eBay Sell API を 100% カバー。
+- **301 個の eBay API ツール** — 在庫、注文、マーケティング、分析、メタデータ、タクソノミー、開発者向けツールにわたり eBay Sell API を 100% カバー。
 - **9 つの AI クライアントを自動設定** — Claude Desktop、Cursor、Zed、Cline、Continue.dev、Windsurf、Roo Code、Claude Code CLI、Amazon Q Developer。
 - **OAuth 2.0 を内蔵** — ユーザートークンの完全な管理と自動更新に加え、ユーザートークン（1 日 1 万〜5 万リクエスト）からクライアント認証情報（1 日 1 千リクエスト）へのスマートなフォールバック。
 - **既定で堅牢** — `429` レート制限時に指数バックオフで自動リトライし、一貫した明確なエラー表示を行います。
@@ -93,7 +93,7 @@
 | 入力検証 | すべてのツールに Zod スキーマ + TypeScript 型 | なし — 自分でペイロードを検証 |
 | セットアップ | 1 つのウィザード（`npm run setup`） | 呼び出しごとに認証・ヘッダー・マーケットプレイス |
 | AI クライアント対応 | 9 クライアントを自動設定 | 該当なし |
-| API カバレッジ | Sell API の 100% にわたる 299 ツール、すぐ呼び出し可能 | ドキュメントから各リクエストを構築 |
+| API カバレッジ | Sell API の 100% にわたる 301 ツール、すぐ呼び出し可能 | ドキュメントから各リクエストを構築 |
 | ホスティング | ローカル動作、クラウド中継なし | 自前のインフラ |
 
 ## AI ワンクリック設定
@@ -236,7 +236,7 @@ EBAY_MCP_UI=on                      # インタラクティブな MCP Apps 表�
 
 ## 利用可能なツール
 
-**299 ツール**、Sell API を 100% カバー、カテゴリ別に整理。各リンクは [`src/tools/categories/`](src/tools/categories/) 内のツール定義とそのハンドラーを指します：
+**301 ツール**、Sell API を 100% カバー、カテゴリ別に整理。各リンクは [`src/tools/categories/`](src/tools/categories/) 内のツール定義とそのハンドラーを指します：
 
 | カテゴリ | できること |
 | --- | --- |
@@ -299,7 +299,7 @@ AI アシスタントに尋ねるように表現した一般的なタスク：
 
 ### eBay MCP サーバーとは何ですか？
 
-AI アシスタントに **eBay Sell API の 100%**（270 エンドポイント）をカバーする **299 個のツール** を公開するローカルの [Model Context Protocol](https://modelcontextprotocol.io) サーバーです — 在庫、注文処理、マーケティング、分析、開発者向けツール。
+AI アシスタントに **eBay Sell API の 100%**（270 エンドポイント）をカバーする **301 個のツール** を公開するローカルの [Model Context Protocol](https://modelcontextprotocol.io) サーバーです — 在庫、注文処理、マーケティング、分析、開発者向けツール。
 
 ### これは eBay の公式製品ですか？
 
@@ -319,7 +319,7 @@ AI アシスタントに **eBay Sell API の 100%**（270 エンドポイント�
 
 ### eBay の API とツールはどれくらいカバーしていますか？
 
-270 の固有エンドポイントにわたる 299 ツール — eBay Sell API の 100% です。
+270 の固有エンドポイントにわたる 301 ツール — eBay Sell API の 100% です。
 
 ### 無料でオープンソースですか？
 

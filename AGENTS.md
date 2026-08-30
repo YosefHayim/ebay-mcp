@@ -4,7 +4,7 @@ Guidance for coding agents (and humans) working **on** this repo. For using the 
 
 ## What this is
 
-A local [MCP](https://modelcontextprotocol.io) server exposing 299 tools across 100% of eBay's Sell APIs. TypeScript/Node.js (ESM), built with `@modelcontextprotocol/sdk`, Effect-backed validation, a Zod SDK adapter, and OpenAPI-generated types.
+A local [MCP](https://modelcontextprotocol.io) server exposing 301 tools across 100% of eBay's Sell APIs. TypeScript/Node.js (ESM), built with `@modelcontextprotocol/sdk`, Effect-backed validation, a Zod SDK adapter, and OpenAPI-generated types.
 
 - **Entry points:** `src/index.ts` (STDIO transport — default) and `src/serverHttp.ts` (HTTP transport).
 - **Runtime:** Node.js ≥ 20. Package manager: pnpm (`pnpm@10.14.0`); npm scripts work too.

@@ -1,7 +1,7 @@
 {
   "name": "ebay-mcp",
   "version": "1.15.0",
-  "description": "Model Context Protocol (MCP) server that exposes 100% of eBay's Sell APIs (299 tools across 270 endpoints) to AI assistants like Claude, Cursor, and Cline, covering inventory, order fulfillment, marketing, analytics, and developer tools with OAuth authentication and refresh-token support.",
+  "description": "Model Context Protocol (MCP) server that exposes 100% of eBay's Sell APIs (301 tools across 270 endpoints) to AI assistants like Claude, Cursor, and Cline, covering inventory, order fulfillment, marketing, analytics, and developer tools with OAuth authentication and refresh-token support.",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
