@@ -480,6 +480,50 @@ describe('EbayApiClient Unit Tests', () => {
       apiErrorSpy.mockRestore();
     });
 
+    // Telling a caller to set user tokens cannot repair rejected client
+    // credentials, so the remediation has to follow the token the request needs.
+    it('points an application-token failure at the client credentials', async () => {
+      const apiErrorSpy = vi.spyOn(apiLogger, 'error').mockImplementation(() => {});
+      // The first acquisition succeeds so the request reaches eBay; the 401
+      // handler's re-acquire is the one that fails.
+      let attempt = 0;
+      mockOAuthClient.getOrRefreshAppAccessToken.mockImplementation(() => {
+        attempt += 1;
+        return attempt === 1
+          ? Effect.succeed('mock_app_token')
+          : Effect.fail(new Error('invalid_client'));
+      });
+      nock(HOST)
+        .get(PATH)
+        .reply(401, { errors: [{ message: 'Invalid access token' }] });
+
+      await expect(apiClient.get(PATH, undefined, { tokenType: 'application' })).rejects.toThrow(
+        /EBAY_CLIENT_ID and EBAY_CLIENT_SECRET/,
+      );
+
+      apiErrorSpy.mockRestore();
+    });
+
+    it('keeps the user-token remediation on the default path', async () => {
+      const apiErrorSpy = vi.spyOn(apiLogger, 'error').mockImplementation(() => {});
+      let attempt = 0;
+      mockOAuthClient.getAccessToken.mockImplementation(() => {
+        attempt += 1;
+        return attempt === 1
+          ? Effect.succeed('mock_access_token')
+          : Effect.fail(new Error('refresh failed'));
+      });
+      nock(HOST)
+        .get('/sell/inventory/v1/test')
+        .reply(401, { errors: [{ message: 'Invalid access token' }] });
+
+      await expect(apiClient.get('/sell/inventory/v1/test')).rejects.toThrow(
+        /ebay_set_user_tokens_with_expiry/,
+      );
+
+      apiErrorSpy.mockRestore();
+    });
+
     it('still acquires no token at all in proxy auth mode', async () => {
       const proxyClient = new EbayApiClient({
         clientId: '',

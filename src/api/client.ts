@@ -75,6 +75,17 @@ interface RequestFailureContext {
   readonly state: RequestRetryState;
 }
 
+/**
+ * Remediation hint for a token failure, matched to the token the request needs.
+ *
+ * Setting user tokens cannot repair rejected client credentials, so an
+ * application request has to point at the credentials instead.
+ */
+const tokenFailureRemediation = (tokenType: EbayTokenType | undefined): string =>
+  tokenType === 'application'
+    ? 'This endpoint requires an application access token minted from client credentials, which a user token cannot supply. Check EBAY_CLIENT_ID and EBAY_CLIENT_SECRET.'
+    : 'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.';
+
 /** Sleep for a retry backoff delay without exposing timers to callers. */
 const sleep = (delayMs: number): Effect.Effect<void> =>
   Effect.promise(
@@ -349,7 +360,7 @@ export class EbayApiClient {
     // own auth failing) is surfaced directly rather than retried.
     if (error.status === 401 && !this.config.disableAuthHeader) {
       if (!state.authRetried) {
-        apiLogger.warn('Authentication error (401). Attempting to refresh user token...');
+        apiLogger.warn('Authentication error (401). Attempting to refresh the access token...');
 
         return this.acquireAccessToken(options.tokenType).pipe(
           Effect.catchAll((refreshError) => {
@@ -365,7 +376,7 @@ export class EbayApiClient {
                 status: error.status,
                 message:
                   `${detail}. Token refresh failed: ${reason}. ` +
-                  'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.',
+                  tokenFailureRemediation(options.tokenType),
                 cause: refreshError,
               }),
             );
@@ -389,7 +400,7 @@ export class EbayApiClient {
           status: error.status,
           message:
             `${detail}. Automatic token refresh failed. ` +
-            'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.',
+            tokenFailureRemediation(options.tokenType),
           cause: error,
         }),
       );
