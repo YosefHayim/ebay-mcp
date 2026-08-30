@@ -11,6 +11,7 @@ import type { EbayConfig } from '@/types/ebay.js';
 const mockOAuthClient = {
   hasUserTokens: vi.fn(),
   getAccessToken: vi.fn(),
+  getOrRefreshAppAccessToken: vi.fn(),
   setUserTokens: vi.fn(),
   initialize: vi.fn(),
   getTokenInfo: vi.fn(),
@@ -57,7 +58,11 @@ describe('browse tools registered MCP contract', () => {
     delete process.env.http_proxy;
     delete process.env.https_proxy;
     mockOAuthClient.hasUserTokens.mockReturnValue(true);
-    mockOAuthClient.getAccessToken.mockReturnValue(Effect.succeed('mock_access_token'));
+    // Both token kinds are configured, as they are in the normal seller setup:
+    // the default path resolves a user token, the client-credentials path an
+    // application token. Browse must reach for the latter.
+    mockOAuthClient.getAccessToken.mockReturnValue(Effect.succeed('user_access_token'));
+    mockOAuthClient.getOrRefreshAppAccessToken.mockReturnValue(Effect.succeed('app_access_token'));
     mockOAuthClient.initialize.mockReturnValue(Effect.succeed(undefined));
 
     const config: EbayConfig = {
@@ -231,6 +236,44 @@ describe('browse tools registered MCP contract', () => {
 
     expect(result.isError).not.toBe(true);
     expect(payload.hasNext).toBe(expected);
+  });
+
+  // eBay documents every Browse method as requiring a client-credentials
+  // application token, so neither tool may fall through to the user token the
+  // default path prefers.
+  it('authenticates the search with the application token, not the user token', async () => {
+    const scope = nock(HOST)
+      .matchHeader('authorization', 'Bearer app_access_token')
+      .get(SEARCH)
+      .query(true)
+      .reply(200, { total: 0, itemSummaries: [] });
+
+    const result = await client.callTool({
+      name: 'ebay_find_active_items',
+      arguments: { query: 'camera' },
+    });
+
+    expect(result.isError).not.toBe(true);
+    expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalled();
+    expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
+    scope.done();
+  });
+
+  it('authenticates the item detail with the application token', async () => {
+    const scope = nock(HOST)
+      .matchHeader('authorization', 'Bearer app_access_token')
+      .get('/buy/browse/v1/item/v1%7C110587051479%7C0')
+      .reply(200, { itemId: 'v1|110587051479|0', title: 'Camera' });
+
+    const result = await client.callTool({
+      name: 'ebay_get_item_details',
+      arguments: { itemId: 'v1|110587051479|0' },
+    });
+
+    expect(result.isError).not.toBe(true);
+    expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalled();
+    expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
+    scope.done();
   });
 
   it('url-encodes the pipe-delimited item id on the detail path', async () => {

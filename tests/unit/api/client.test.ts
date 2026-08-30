@@ -11,6 +11,7 @@ import { Effect } from 'effect';
 const mockOAuthClient = {
   hasUserTokens: vi.fn(),
   getAccessToken: vi.fn(),
+  getOrRefreshAppAccessToken: vi.fn(),
   setUserTokens: vi.fn(),
   initialize: vi.fn(),
   getTokenInfo: vi.fn(),
@@ -50,6 +51,7 @@ describe('EbayApiClient Unit Tests', () => {
     // Setup mock OAuth client
     mockOAuthClient.hasUserTokens.mockReturnValue(true);
     mockOAuthClient.getAccessToken.mockReturnValue(Effect.succeed('mock_access_token'));
+    mockOAuthClient.getOrRefreshAppAccessToken.mockReturnValue(Effect.succeed('mock_app_token'));
     mockOAuthClient.initialize.mockReturnValue(Effect.succeed(undefined));
     mockOAuthClient.setUserTokens.mockReturnValue(Effect.succeed(undefined));
     mockOAuthClient.isAuthenticated.mockReturnValue(true);
@@ -416,6 +418,87 @@ describe('EbayApiClient Unit Tests', () => {
       expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
 
       apiErrorSpy.mockRestore();
+    });
+  });
+  // eBay documents the Buy APIs as requiring a client-credentials application
+  // token, but the default token path prefers a configured user token. Both
+  // token kinds are configured here (getAccessToken resolves the user token,
+  // getOrRefreshAppAccessToken the application token) so these assert which
+  // one actually reaches the wire.
+  describe('Application token requests (tokenType)', () => {
+    const HOST = 'https://api.sandbox.ebay.com';
+    const PATH = '/buy/browse/v1/item_summary/search';
+
+    it('sends the user token by default, leaving the other tools unchanged', async () => {
+      const scope = nock(HOST)
+        .matchHeader('authorization', 'Bearer mock_access_token')
+        .get('/sell/inventory/v1/test')
+        .reply(200, { ok: true });
+
+      await apiClient.get('/sell/inventory/v1/test');
+
+      expect(mockOAuthClient.getAccessToken).toHaveBeenCalled();
+      expect(mockOAuthClient.getOrRefreshAppAccessToken).not.toHaveBeenCalled();
+      scope.done();
+    });
+
+    it('sends the application token when tokenType is application', async () => {
+      const scope = nock(HOST)
+        .matchHeader('authorization', 'Bearer mock_app_token')
+        .get(PATH)
+        .reply(200, { ok: true });
+
+      const result = await apiClient.get(PATH, undefined, { tokenType: 'application' });
+
+      expect(result).toEqual({ ok: true });
+      expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalled();
+      expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
+      scope.done();
+    });
+
+    // The 401 path re-acquires a token before retrying. Acquiring it from the
+    // default path there would silently downgrade an application request to the
+    // user token on retry.
+    it('keeps the application token when a 401 triggers the retry', async () => {
+      const apiErrorSpy = vi.spyOn(apiLogger, 'error').mockImplementation(() => {});
+      const scope = nock(HOST)
+        .matchHeader('authorization', 'Bearer mock_app_token')
+        .get(PATH)
+        .reply(401, { errors: [{ message: 'Invalid access token' }] })
+        .matchHeader('authorization', 'Bearer mock_app_token')
+        .get(PATH)
+        .reply(200, { ok: true });
+
+      const result = await apiClient.get(PATH, undefined, { tokenType: 'application' });
+
+      expect(result).toEqual({ ok: true });
+      // Three acquisitions: the first attempt, the 401 handler's re-acquire,
+      // and the retry attempt itself. All three must take the application path.
+      expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalledTimes(3);
+      expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
+      scope.done();
+      apiErrorSpy.mockRestore();
+    });
+
+    it('still acquires no token at all in proxy auth mode', async () => {
+      const proxyClient = new EbayApiClient({
+        clientId: '',
+        clientSecret: '',
+        environment: 'sandbox',
+        apiBaseUrl: 'http://localhost:8099',
+        disableAuthHeader: true,
+      });
+      await Effect.runPromise(proxyClient.initialize());
+
+      const scope = nock('http://localhost:8099', { badheaders: ['authorization'] })
+        .get(PATH)
+        .reply(200, { ok: true });
+
+      await proxyClient.get(PATH, undefined, { tokenType: 'application' });
+
+      expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
+      expect(mockOAuthClient.getOrRefreshAppAccessToken).not.toHaveBeenCalled();
+      scope.done();
     });
   });
 });

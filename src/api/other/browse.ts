@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
 import {
   type EbayApiError,
   EndpointInputError,
@@ -34,6 +34,15 @@ const SEARCH_PATH = '/buy/browse/v1/item_summary/search';
 /** Browse API item resource path prefix (item id is appended URL-encoded). */
 const ITEM_PATH = '/buy/browse/v1/item';
 
+/**
+ * eBay documents every Browse method as requiring an application access token
+ * from the client-credentials flow, so Browse opts out of the client's default
+ * user-first token path.
+ *
+ * @see https://developer.ebay.com/develop/api/buy/browse_api
+ */
+const BROWSE_REQUEST_CONFIG: EbayRequestConfig = { tokenType: 'application' };
+
 /** Browse API - active-listing marketplace search and item detail. */
 export class BrowseApi {
   readonly #client: EbayApiClient;
@@ -45,9 +54,10 @@ export class BrowseApi {
   /**
    * Search active eBay listings (marketplace-wide, not the seller's own).
    *
-   * Uses the Buy Browse API (`item_summary/search`). Works with an
-   * application access token under the basic `api_scope`; a user token also
-   * works. The counterpart of `findCompletedItems` for live listings.
+   * Uses the Buy Browse API (`item_summary/search`) with the application
+   * access token eBay requires for Browse, minted from client credentials
+   * under the basic `api_scope`. The counterpart of `findCompletedItems` for
+   * live listings.
    *
    * @param input - Query plus optional pagination, sort, and filters.
    * @returns An Effect that succeeds with cleaned active-listing summaries.
@@ -116,7 +126,12 @@ export class BrowseApi {
         ...defined({ sort, category_ids: categoryIds, filter }),
       };
 
-      const raw = yield* requestGetEffect<unknown>(client, SEARCH_PATH, params);
+      const raw = yield* requestGetEffect<unknown>(
+        client,
+        SEARCH_PATH,
+        params,
+        BROWSE_REQUEST_CONFIG,
+      );
 
       return mapSearchActiveItemsResponse(raw, { query, offset, limit });
     });
@@ -125,8 +140,9 @@ export class BrowseApi {
   /**
    * Get full detail for one active listing by its Browse RESTful item id.
    *
-   * Uses the Buy Browse API item resource. The id comes from
-   * `searchActiveItems` results (e.g. "v1|110587051479|0").
+   * Uses the Buy Browse API item resource with the application access token
+   * eBay requires for Browse. The id comes from `searchActiveItems` results
+   * (e.g. "v1|110587051479|0").
    *
    * @param input - Browse RESTful item id.
    * @returns An Effect that succeeds with cleaned item details.
@@ -150,7 +166,7 @@ export class BrowseApi {
       const itemId = yield* requireStringEffect(validatedInput.itemId, 'itemId');
 
       const path = `${ITEM_PATH}/${encodeURIComponent(itemId)}`;
-      const raw = yield* requestGetEffect<unknown>(client, path);
+      const raw = yield* requestGetEffect<unknown>(client, path, undefined, BROWSE_REQUEST_CONFIG);
 
       const details = mapItemDetailsResponse(raw);
       if (!details) {

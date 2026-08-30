@@ -20,6 +20,10 @@ const ERR_PRICECURRENCY_MUST_BE_NON_EMPTY =
 const ERR_FILTER_MUST_BE_NON_EMPTY = /filter must be a non-empty string when provided/;
 const ERR_NO_ITEM_FOUND = /No item found/;
 
+// Browse must authenticate with the client-credentials application token, so
+// every request carries the explicit token-type override.
+const APP_TOKEN_CONFIG = { tokenType: 'application' } as const;
+
 let api: BrowseApi;
 let mockClient: EbayApiClient;
 
@@ -46,11 +50,15 @@ describe('searchActiveItems: request shape', () => {
       api.searchActiveItems({ query: 'camera', limit: 5, offset: 10 }),
     );
 
-    expect(mockClient.get).toHaveBeenCalledWith('/buy/browse/v1/item_summary/search', {
-      q: 'camera',
-      limit: 5,
-      offset: 10,
-    });
+    expect(mockClient.get).toHaveBeenCalledWith(
+      '/buy/browse/v1/item_summary/search',
+      {
+        q: 'camera',
+        limit: 5,
+        offset: 10,
+      },
+      APP_TOKEN_CONFIG,
+    );
     expect(result.items).toEqual([{ itemId: 'v1|1|0', title: 'One' }]);
     expect(result.total).toBe(2);
   });
@@ -62,6 +70,7 @@ describe('searchActiveItems: request shape', () => {
     expect(mockClient.get).toHaveBeenCalledWith(
       '/buy/browse/v1/item_summary/search',
       expect.objectContaining({ q: 'lens', limit: 20, offset: 0 }),
+      APP_TOKEN_CONFIG,
     );
     expect(result.limit).toBe(20);
     expect(result.offset).toBe(0);
@@ -86,6 +95,7 @@ describe('searchActiveItems: request shape', () => {
         category_ids: '27386',
         filter: 'conditions:{NEW},price:[..500],priceCurrency:USD',
       }),
+      APP_TOKEN_CONFIG,
     );
   });
 });
@@ -111,6 +121,7 @@ describe('searchActiveItems: pagination guards', () => {
     expect(mockClient.get).toHaveBeenCalledWith(
       '/buy/browse/v1/item_summary/search',
       expect.objectContaining({ limit: 3, offset: 21 }),
+      APP_TOKEN_CONFIG,
     );
   });
   it('rejects an offset above the Browse maximum', async () => {
@@ -145,6 +156,7 @@ describe('searchActiveItems: pagination guards', () => {
     expect(mockClient.get).toHaveBeenCalledWith(
       '/buy/browse/v1/item_summary/search',
       expect.objectContaining({ offset: 10_000 }),
+      APP_TOKEN_CONFIG,
     );
   });
 });
@@ -241,6 +253,7 @@ describe('searchActiveItems: blank optional strings', () => {
         category_ids: '27386',
         filter: 'price:[..100],priceCurrency:EUR',
       }),
+      APP_TOKEN_CONFIG,
     );
   });
 });
@@ -270,6 +283,7 @@ describe('searchActiveItems: raw filter conflicts', () => {
       expect.objectContaining({
         filter: 'price:[..100],priceCurrency:USD,sellers:{acme}',
       }),
+      APP_TOKEN_CONFIG,
     );
   });
 });
@@ -283,7 +297,11 @@ describe('getItemDetails', () => {
 
     const result = await Effect.runPromise(api.getItemDetails({ itemId: 'v1|110587051479|0' }));
 
-    expect(mockClient.get).toHaveBeenCalledWith('/buy/browse/v1/item/v1%7C110587051479%7C0');
+    expect(mockClient.get).toHaveBeenCalledWith(
+      '/buy/browse/v1/item/v1%7C110587051479%7C0',
+      undefined,
+      APP_TOKEN_CONFIG,
+    );
     expect(result).toEqual({ itemId: 'v1|110587051479|0', title: 'Camera' });
   });
 
