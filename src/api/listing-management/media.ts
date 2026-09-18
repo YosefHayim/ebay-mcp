@@ -1,7 +1,7 @@
 import type { EbayApiClient } from '@/api/client.js';
 import {
   EbayApiError,
-  type EndpointInputError,
+  EndpointInputError,
   requireObjectEffect,
   requireStringEffect,
 } from '@/api/shared/request.js';
@@ -164,6 +164,41 @@ const apiFailure =
 
 const videoStatusFinal = (video: Video): boolean =>
   video.status !== undefined && TERMINAL_VIDEO_STATUSES.has(video.status);
+
+/**
+ * Validates one of {@link MediaApi.waitForVideo}'s timing inputs.
+ *
+ * A zero, negative, or non-finite poll interval would leave the wait budget
+ * standing still while status requests kept going, so the boundary is checked
+ * before the first poll rather than inside the loop.
+ *
+ * @param value - Caller-supplied duration in milliseconds, or undefined.
+ * @param fallback - Duration used when the caller supplied none.
+ * @param name - Parameter name used in the validation message.
+ * @param minimum - Smallest accepted value.
+ * @returns An Effect with the duration to use, or a tagged input error.
+ */
+const requireDurationMs = (
+  value: number | undefined,
+  fallback: number,
+  name: string,
+  minimum: number,
+): Effect.Effect<number, EndpointInputError> => {
+  if (value === undefined) {
+    return Effect.succeed(fallback);
+  }
+
+  if (!Number.isFinite(value) || value < minimum) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: name,
+        message: `${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
+      }),
+    );
+  }
+
+  return Effect.succeed(value);
+};
 
 /**
  * Media API client. Image and video uploads go to eBay's `apim` host and return
@@ -436,7 +471,8 @@ export class MediaApi {
   /**
    * Polls getVideo until the status is final or the wait budget runs out. The
    * last sleep is cut to the remaining budget, so the total wait never exceeds
-   * `maxWaitMs` by more than one status request.
+   * `maxWaitMs` by more than one status request. Both timings are validated
+   * before the first request, so no poll interval can stall the budget.
    *
    * @param input - Video ID plus optional wait budget and poll interval.
    * @returns An Effect with the latest Video; check `status` — it may still be PROCESSING.
@@ -452,10 +488,21 @@ export class MediaApi {
     input: WaitForVideoInput,
   ): Effect.Effect<Video, EbayApiError | EndpointInputError> => {
     const getVideo = this.getVideo;
-    const maxWaitMs = input.maxWaitMs ?? DEFAULT_VIDEO_WAIT_MS;
-    const pollIntervalMs = input.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
 
     return Effect.gen(function* () {
+      const maxWaitMs = yield* requireDurationMs(
+        input.maxWaitMs,
+        DEFAULT_VIDEO_WAIT_MS,
+        'maxWaitMs',
+        0,
+      );
+      const pollIntervalMs = yield* requireDurationMs(
+        input.pollIntervalMs,
+        DEFAULT_POLL_INTERVAL_MS,
+        'pollIntervalMs',
+        1,
+      );
+
       let waitedMs = 0;
       let video = yield* getVideo({ videoId: input.videoId });
       while (!videoStatusFinal(video) && waitedMs < maxWaitMs) {

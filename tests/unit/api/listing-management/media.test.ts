@@ -1,6 +1,6 @@
 import type { EbayApiClient } from '@/api/client.js';
 import { MediaApi, type Video } from '@/api/listing-management/media.js';
-import { Effect } from 'effect';
+import { Effect, Exit } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 type MediaApiItems = ConstructorParameters<typeof MediaApi>[1];
@@ -184,6 +184,33 @@ describe('MediaApi', () => {
     expect(video.status).toBe('PROCESSING');
     expect(client.get).toHaveBeenCalledTimes(2);
     expect(Date.now() - startedAt).toBeLessThan(5000);
+  });
+
+  it('rejects a poll interval that could never advance the wait budget', async () => {
+    client.get.mockResolvedValue({ videoId: 'VID-1', status: 'PROCESSING' });
+
+    const exit = await Effect.runPromiseExit(
+      media.waitForVideo({ videoId: 'VID-1', maxWaitMs: 1000, pollIntervalMs: 0 }),
+    );
+
+    expect(Exit.isFailure(exit)).toBe(true);
+    // Validated before the first poll, so a stalled budget cannot spin on eBay.
+    expect(client.get).not.toHaveBeenCalled();
+  });
+
+  it('rejects non-finite wait timings', async () => {
+    client.get.mockResolvedValue({ videoId: 'VID-1', status: 'PROCESSING' });
+
+    const infiniteInterval = await Effect.runPromiseExit(
+      media.waitForVideo({ videoId: 'VID-1', pollIntervalMs: Number.POSITIVE_INFINITY }),
+    );
+    const notANumberBudget = await Effect.runPromiseExit(
+      media.waitForVideo({ videoId: 'VID-1', maxWaitMs: Number.NaN }),
+    );
+
+    expect(Exit.isFailure(infiniteInterval)).toBe(true);
+    expect(Exit.isFailure(notANumberBudget)).toBe(true);
+    expect(client.get).not.toHaveBeenCalled();
   });
 
   it('encodes image and video IDs as single path segments', async () => {
