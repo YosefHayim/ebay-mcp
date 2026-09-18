@@ -547,6 +547,8 @@ export class EbayApiClient {
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
     });
   }
 
@@ -558,6 +560,8 @@ export class EbayApiClient {
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
     });
   }
 

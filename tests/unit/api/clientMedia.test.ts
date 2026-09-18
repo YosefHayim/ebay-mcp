@@ -142,6 +142,38 @@ describe('EbayApiClient media transport', () => {
     expect(result).toBeUndefined();
   });
 
+  it('sends put and delete to absolute URLs instead of the API base URL', async () => {
+    const imageUrl = 'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/IMG-1';
+    const scope = nock('https://apim.sandbox.ebay.com')
+      .put('/commerce/media/v1_beta/image/IMG-1')
+      .reply(204)
+      .delete('/commerce/media/v1_beta/image/IMG-1')
+      .reply(204);
+
+    await client.put(imageUrl, { title: 'front' }, { absolute: true });
+    await client.delete(imageUrl, { absolute: true });
+
+    expect(scope.isDone()).toBe(true);
+  });
+
+  it('applies the per-request timeout to put and delete', async () => {
+    nock('https://apim.sandbox.ebay.com')
+      .put('/commerce/media/v1_beta/image/SLOW')
+      .delay(200)
+      .reply(204)
+      .delete('/commerce/media/v1_beta/image/SLOW')
+      .delay(200)
+      .reply(204);
+    const slowUrl = 'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/SLOW';
+
+    await expect(client.put(slowUrl, {}, { absolute: true, timeoutMs: 5 })).rejects.toThrow(
+      /timed out/,
+    );
+    await expect(client.delete(slowUrl, { absolute: true, timeoutMs: 5 })).rejects.toThrow(
+      /timed out/,
+    );
+  });
+
   it('keeps plain post() returning only the body', async () => {
     nock('https://api.sandbox.ebay.com')
       .post('/sell/inventory/v1/offer')
