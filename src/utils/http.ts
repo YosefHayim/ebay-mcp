@@ -248,41 +248,43 @@ const parseErrorData = (text: string): unknown => {
   );
 };
 
-/** Run native fetch with timeout handling and normalized transport failures. */
-const fetchWithTimeout = (
-  url: string,
-  init: RequestInit,
-  timeoutMs?: number,
-): Effect.Effect<Response, HttpError> => {
+/**
+ * Abort handle covering one request *and* the read of its body.
+ *
+ * `fetch` resolves as soon as the response headers arrive, so a deadline that
+ * stops there leaves `res.text()` free to stall forever on a body that never
+ * finishes arriving. The same controller therefore stays armed until the body
+ * has been decoded.
+ */
+interface RequestDeadline {
+  /** Signal passed to `fetch`; aborts the response stream too. */
+  readonly signal: AbortSignal;
+  /** Whether our own timer aborted this request. */
+  readonly expired: () => boolean;
+  /** Disarm the timer; safe to call more than once. */
+  readonly clear: () => void;
+}
+
+/** Arm a {@link RequestDeadline}; without `timeoutMs` the request is never aborted. */
+const startDeadline = (timeoutMs?: number): RequestDeadline => {
   const controller = new AbortController();
-  let timedOut = false;
+  let expired = false;
   const timer = timeoutMs
     ? setTimeout(() => {
-        timedOut = true;
+        expired = true;
         controller.abort();
       }, timeoutMs)
     : undefined;
 
-  return Effect.tryPromise({
-    try: () => fetch(url, { ...init, signal: controller.signal }),
-    catch: (error) => {
-      if (timedOut) {
-        return new HttpError(`Request to ${url} timed out after ${timeoutMs}ms`, {
-          url,
-          isTimeout: true,
-        });
+  return {
+    signal: controller.signal,
+    expired: () => expired,
+    clear: () => {
+      if (timer) {
+        clearTimeout(timer);
       }
-      return new HttpError(getErrorMessage(error, `Request to ${url} failed`), { url });
     },
-  }).pipe(
-    Effect.ensuring(
-      Effect.sync(() => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      }),
-    ),
-  );
+  };
 };
 
 /**
@@ -311,50 +313,69 @@ export const httpRequestEffect = <T = unknown>(
     headers['Content-Type'] = contentType;
   }
 
-  return Effect.gen(function* () {
-    const response = yield* fetchWithTimeout(url, { method, headers, body }, timeoutMs);
-    const responseHeaders = collectHeaders(response);
+  return Effect.suspend(() => {
+    const deadline = startDeadline(timeoutMs);
 
-    if (!response.ok) {
-      const errorText = yield* Effect.tryPromise({
-        try: () => response.text(),
-        catch: (error) =>
-          new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
+    /** Describe a transport or body-read failure, naming the timeout when ours fired. */
+    const failure = (error: unknown, stage: string, response?: Response): HttpError => {
+      const responseInit = response
+        ? {
+            status: response.status,
+            statusText: response.statusText,
+            headers: collectHeaders(response),
+          }
+        : {};
+
+      return deadline.expired()
+        ? new HttpError(`Request to ${url} timed out after ${timeoutMs}ms reading the ${stage}`, {
+            url,
+            ...responseInit,
+            isTimeout: true,
+          })
+        : new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
+            url,
+            ...responseInit,
+          });
+    };
+
+    return Effect.gen(function* () {
+      const response = yield* Effect.tryPromise({
+        try: () => fetch(url, { method, headers, body, signal: deadline.signal }),
+        catch: (error) => failure(error, 'response headers'),
+      });
+      const responseHeaders = collectHeaders(response);
+
+      if (!response.ok) {
+        const errorText = yield* Effect.tryPromise({
+          try: () => response.text(),
+          catch: (error) => failure(error, 'error body', response),
+        });
+        const data = parseErrorData(errorText);
+        return yield* Effect.fail(
+          new HttpError(`Request to ${url} failed with status ${response.status}`, {
             url,
             status: response.status,
             statusText: response.statusText,
+            data,
             headers: responseHeaders,
           }),
+        );
+      }
+
+      const data = yield* Effect.tryPromise({
+        try: () => decodeBody<T>(response, responseType),
+        catch: (error) => failure(error, 'response body', response),
       });
-      const data = parseErrorData(errorText);
-      return yield* Effect.fail(
-        new HttpError(`Request to ${url} failed with status ${response.status}`, {
-          url,
-          status: response.status,
-          statusText: response.statusText,
-          data,
-          headers: responseHeaders,
-        }),
-      );
-    }
 
-    const data = yield* Effect.tryPromise({
-      try: () => decodeBody<T>(response, responseType),
-      catch: (error) =>
-        new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
-          url,
-          status: response.status,
-          statusText: response.statusText,
-          headers: responseHeaders,
-        }),
-    });
-
-    return {
-      data,
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    };
+      return {
+        data,
+        status: response.status,
+        statusText: response.statusText,
+        headers: responseHeaders,
+      };
+      // The deadline stays armed until the body has been decoded, so a response
+      // stream that stalls mid-body fails instead of hanging the caller forever.
+    }).pipe(Effect.ensuring(Effect.sync(deadline.clear)));
   });
 };
 
