@@ -15,4 +15,13 @@ describe('meetsBuyItNowMargin', () => {
     expect(meetsBuyItNowMargin(10, 10)).toBe(false);
     expect(meetsBuyItNowMargin(10, 8)).toBe(false);
   });
+
+  it('rounds the required margin up to the next representable cent', () => {
+    // 30% above $0.01 is $0.013, which cannot be listed; $0.02 is the first
+    // price that clears the rule, so the equal-price case must stay rejected.
+    expect(meetsBuyItNowMargin(0.01, 0.01)).toBe(false);
+    expect(meetsBuyItNowMargin(0.01, 0.02)).toBe(true);
+    expect(meetsBuyItNowMargin(0.05, 0.06)).toBe(false);
+    expect(meetsBuyItNowMargin(0.05, 0.07)).toBe(true);
+  });
 });
