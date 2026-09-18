@@ -16,7 +16,10 @@ describe('getMediaAccessConfig', () => {
       EBAY_MCP_MEDIA_DIRS: ` /srv/media ${path.delimiter} /var/uploads/ ${path.delimiter}`,
     });
 
-    expect(access.allowedDirs).toEqual(['/srv/media', '/var/uploads']);
+    // Entries are normalized with path.resolve, which is drive-qualified on
+    // Windows, so the expectations are derived the same way rather than pinned
+    // to POSIX spellings.
+    expect(access.allowedDirs).toEqual([path.resolve('/srv/media'), path.resolve('/var/uploads')]);
   });
 
   it('adds EBAY_MCP_MEDIA_ROOT to the allowed directories once', () => {
@@ -25,8 +28,8 @@ describe('getMediaAccessConfig', () => {
       EBAY_MCP_MEDIA_ROOT: '/srv/media',
     });
 
-    expect(access.mediaRoot).toBe('/srv/media');
-    expect(access.allowedDirs).toEqual(['/srv/media']);
+    expect(access.mediaRoot).toBe(path.resolve('/srv/media'));
+    expect(access.allowedDirs).toEqual([path.resolve('/srv/media')]);
   });
 
   it('rejects relative entries with an error naming the variable', () => {
