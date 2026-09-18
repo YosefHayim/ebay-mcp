@@ -15,6 +15,15 @@ import { apiLogger, logRequest, logResponse, logErrorResponse } from '@/utils/lo
 import { Cause, Effect, Exit } from 'effect';
 
 /**
+ * Which eBay OAuth token a request authenticates with.
+ *
+ * `'application'` forces the client-credentials application token. Omitting
+ * the token type keeps the default path, which prefers a configured user token
+ * and falls back to the application token.
+ */
+export type EbayTokenType = 'application';
+
+/**
  * Per-request overrides accepted by the verb helpers ({@link EbayApiClient.get}
  * et al). `headers` are merged over the client defaults (the auth header is
  * always applied last and cannot be overridden); `params` are appended to the
@@ -31,6 +40,12 @@ export interface EbayRequestConfig {
   absolute?: boolean;
   /** Per-request timeout override, e.g. for large media uploads. */
   timeoutMs?: number;
+  /**
+   * Token the request must authenticate with. Omit for the default
+   * user-first token, or pass `'application'` for endpoints eBay documents as
+   * requiring a client-credentials application token (the Buy APIs).
+   */
+  tokenType?: EbayTokenType;
 }
 
 /** Successful eBay response with the transport metadata some endpoints put their result in. */
@@ -78,6 +93,8 @@ interface EbayRequestOptions {
   readonly absolute?: boolean;
   /** Per-request timeout override. */
   readonly timeoutMs?: number;
+  /** Token the request must authenticate with; omit for the default path. */
+  readonly tokenType?: EbayTokenType;
 }
 
 /** Retry counters carried between recursive request attempts. */
@@ -99,6 +116,17 @@ interface RequestFailureContext {
   /** Retry counters for this attempt. */
   readonly state: RequestRetryState;
 }
+
+/**
+ * Remediation hint for a token failure, matched to the token the request needs.
+ *
+ * Setting user tokens cannot repair rejected client credentials, so an
+ * application request has to point at the credentials instead.
+ */
+const tokenFailureRemediation = (tokenType: EbayTokenType | undefined): string =>
+  tokenType === 'application'
+    ? 'This endpoint requires an application access token minted from client credentials, which a user token cannot supply. Check EBAY_CLIENT_ID and EBAY_CLIENT_SECRET.'
+    : 'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.';
 
 /** Sleep for a retry backoff delay without exposing timers to callers. */
 const sleep = (delayMs: number): Effect.Effect<void> =>
@@ -152,6 +180,21 @@ export class EbayApiClient {
     this.authClient = new EbayOAuthClient(config);
     this.baseUrl = getBaseUrl(config.environment, config.apiBaseUrl);
     this.rateLimitTracker = new RateLimitTracker();
+  }
+
+  /**
+   * Acquire the access token a request should authenticate with.
+   *
+   * Both token-acquisition sites (the initial attempt and the 401 retry) route
+   * through here, so an `'application'` request cannot silently downgrade to
+   * the user token on a retry.
+   */
+  private acquireAccessToken(
+    tokenType: EbayTokenType | undefined,
+  ): Effect.Effect<string, EbayOAuthError> {
+    return tokenType === 'application'
+      ? this.authClient.getOrRefreshAppAccessToken()
+      : this.authClient.getAccessToken();
   }
 
   /**
@@ -291,7 +334,7 @@ export class EbayApiClient {
       // Proxy auth mode: attach no Authorization header and acquire no token —
       // the upstream proxy injects whatever credentials eBay requires.
       if (!this.config.disableAuthHeader) {
-        const token = yield* this.authClient.getAccessToken().pipe(
+        const token = yield* this.acquireAccessToken(options.tokenType).pipe(
           Effect.mapError((cause) =>
             clientRequestError({
               kind: 'tokenAcquisition',
@@ -383,9 +426,9 @@ export class EbayApiClient {
     // own auth failing) is surfaced directly rather than retried.
     if (error.status === 401 && !this.config.disableAuthHeader) {
       if (!state.authRetried) {
-        apiLogger.warn('Authentication error (401). Attempting to refresh user token...');
+        apiLogger.warn('Authentication error (401). Attempting to refresh the access token...');
 
-        return this.authClient.getAccessToken().pipe(
+        return this.acquireAccessToken(options.tokenType).pipe(
           Effect.catchAll((refreshError) => {
             const reason = getErrorMessage(refreshError);
             apiLogger.error('Failed to refresh token', { error: reason });
@@ -399,7 +442,7 @@ export class EbayApiClient {
                 status: error.status,
                 message:
                   `${detail}. Token refresh failed: ${reason}. ` +
-                  'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.',
+                  tokenFailureRemediation(options.tokenType),
                 cause: refreshError,
               }),
             );
@@ -423,7 +466,7 @@ export class EbayApiClient {
           status: error.status,
           message:
             `${detail}. Automatic token refresh failed. ` +
-            'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.',
+            tokenFailureRemediation(options.tokenType),
           cause: error,
         }),
       );
@@ -505,6 +548,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      tokenType: config?.tokenType,
     });
   }
 
@@ -535,6 +579,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      tokenType: config?.tokenType,
     });
   }
 
@@ -549,6 +594,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      tokenType: config?.tokenType,
     });
   }
 
@@ -562,6 +608,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      tokenType: config?.tokenType,
     });
   }
 

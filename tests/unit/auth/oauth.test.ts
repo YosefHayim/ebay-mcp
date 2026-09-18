@@ -43,6 +43,9 @@ const setUserTokens = (
 const getAccessToken = (client: EbayOAuthClient): Promise<string> =>
   Effect.runPromise(client.getAccessToken());
 
+const getOrRefreshAppAccessToken = (client: EbayOAuthClient): Promise<string> =>
+  Effect.runPromise(client.getOrRefreshAppAccessToken());
+
 const exchangeCodeForToken = (client: EbayOAuthClient, code: string) =>
   Effect.runPromise(client.exchangeCodeForToken(code));
 
@@ -291,6 +294,23 @@ describe('EbayOAuthClient', () => {
       const token = await getAccessToken(oauthClient);
 
       expect(token).toBe(clientToken);
+    });
+
+    // The Buy APIs need the application token specifically, so the two
+    // acquisition methods have to diverge when both token kinds are available.
+    it('returns the application token even when a user token is configured', async () => {
+      const appToken = 'client_credentials_token';
+      mockOAuthTokenEndpoint('sandbox', {
+        access_token: appToken,
+        token_type: 'Bearer',
+        expires_in: 7200,
+      });
+      const future = Date.now() + 3_600_000;
+      await setUserTokens(oauthClient, 'user_access', 'user_refresh', future, future);
+
+      // The default path still prefers the user token for every other endpoint.
+      expect(await getAccessToken(oauthClient)).toBe('user_access');
+      expect(await getOrRefreshAppAccessToken(oauthClient)).toBe(appToken);
     });
 
     it('reuse cached client credentials token if still valid', async () => {
