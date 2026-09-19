@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   getDefaultScopes,
+  getRequestedScopes,
   validateScopes,
   getOAuthAuthorizationUrl,
 } from '@/config/environment.js';
+import process from 'node:process';
 
 describe('Scope Validation', () => {
   describe('getDefaultScopes', () => {
@@ -269,6 +271,60 @@ describe('Scope Validation', () => {
       const parsed = new URL(url);
       const scopeParam = parsed.searchParams.get('scope')!;
       expect(scopeParam).toBe(scopes.join(' '));
+    });
+  });
+
+  describe('getRequestedScopes', () => {
+    it('fall back to the environment scope table when nothing is configured', () => {
+      expect(getRequestedScopes('production', {})).toEqual(getDefaultScopes('production'));
+      expect(getRequestedScopes('sandbox', {})).toEqual(getDefaultScopes('sandbox'));
+    });
+
+    it('request exactly the configured scopes, split on spaces or commas', () => {
+      const scopes = getRequestedScopes('production', {
+        EBAY_OAUTH_SCOPES:
+          ' https://api.ebay.com/oauth/api_scope, https://api.ebay.com/oauth/api_scope/sell.inventory ',
+      });
+
+      // A keyset is granted a subset of the published table, and eBay answers
+      // invalid_scope for the whole request when it names a scope it never gave.
+      expect(scopes).toEqual([
+        'https://api.ebay.com/oauth/api_scope',
+        'https://api.ebay.com/oauth/api_scope/sell.inventory',
+      ]);
+    });
+
+    it('drop entries that are not eBay OAuth scope URIs', () => {
+      const scopes = getRequestedScopes('production', {
+        EBAY_OAUTH_SCOPES:
+          'https://api.ebay.com/oauth/api_scope https://evil.example/x&prompt=login not-a-scope',
+      });
+
+      expect(scopes).toEqual(['https://api.ebay.com/oauth/api_scope']);
+    });
+
+    it('keep the defaults when every configured entry is unusable', () => {
+      const scopes = getRequestedScopes('sandbox', { EBAY_OAUTH_SCOPES: 'nonsense' });
+
+      expect(scopes).toEqual(getDefaultScopes('sandbox'));
+    });
+
+    it('build the authorization URL from the configured scopes', () => {
+      const previous = process.env.EBAY_OAUTH_SCOPES;
+      process.env.EBAY_OAUTH_SCOPES = 'https://api.ebay.com/oauth/api_scope/sell.inventory';
+
+      try {
+        const url = getOAuthAuthorizationUrl('client', 'Ru-Name', 'production');
+        const scopeParam = new URL(url).searchParams.get('scope');
+
+        expect(scopeParam).toBe('https://api.ebay.com/oauth/api_scope/sell.inventory');
+      } finally {
+        if (previous === undefined) {
+          delete process.env.EBAY_OAUTH_SCOPES;
+        } else {
+          process.env.EBAY_OAUTH_SCOPES = previous;
+        }
+      }
     });
   });
 });
