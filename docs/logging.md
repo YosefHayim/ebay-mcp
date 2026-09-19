@@ -10,6 +10,17 @@ Set the level via environment variable:
 EBAY_LOG_LEVEL=debug  # error | warn | info | http | verbose | debug | silly
 ```
 
+The default level is `info`, which does **not** include outbound eBay traffic.
+Every request and response is logged at `http`, so set `EBAY_LOG_LEVEL=http` (or
+anything below it) when a tool call looks stuck and you need to see whether the
+request reached eBay and what came back.
+
+## Request timeouts
+
+Every eBay REST call is bounded by a 30-second deadline that covers the whole
+exchange, including reading the response body — a stalled response fails with a
+timeout error rather than leaving the tool call hanging.
+
 ## File logging
 
 Enable persistent logs to disk:

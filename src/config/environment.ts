@@ -161,6 +161,55 @@ export const getDefaultScopes = (environment: EbayEnvironment): string[] => {
   return getSandboxScopes();
 };
 
+/** Environment variable naming the exact OAuth scopes the consent URL should request. */
+export const OAUTH_SCOPES_ENV = 'EBAY_OAUTH_SCOPES';
+
+/** Shape every eBay OAuth scope shares; anything else would corrupt the query string. */
+const SCOPE_PATTERN = /^https:\/\/api\.ebay\.com\/oauth\/[\w./-]+$/;
+
+/**
+ * OAuth scopes the consent URL should ask for.
+ *
+ * The checked-in scope tables list every scope eBay publishes, but a keyset is
+ * only granted a subset — several of these are limited release — and eBay
+ * rejects the whole authorization request with `invalid_scope` when it names one
+ * the keyset never received. `EBAY_OAUTH_SCOPES` takes the scope list shown for
+ * your own keyset in the developer portal, separated by spaces or commas.
+ *
+ * @param environment eBay environment whose scope table backs the default.
+ * @param env Environment to read; defaults to `process.env`.
+ * @returns Configured scopes when the variable is set, otherwise the environment defaults.
+ * @example
+ * ```ts
+ * const scopes = getRequestedScopes('production');
+ * ```
+ */
+export const getRequestedScopes = (
+  environment: EbayEnvironment,
+  env: NodeJS.ProcessEnv = process.env,
+): string[] => {
+  const configured = (env[OAUTH_SCOPES_ENV] ?? '')
+    .split(/[\s,]+/)
+    .map((scope) => scope.trim())
+    .filter((scope) => scope.length > 0);
+
+  if (configured.length === 0) {
+    return getDefaultScopes(environment);
+  }
+
+  // A scope carrying `&` or `?` would smuggle extra parameters into the
+  // authorization URL, so anything unrecognizable is dropped rather than sent.
+  const wellFormed = configured.filter((scope) => SCOPE_PATTERN.test(scope));
+  const rejected = configured.filter((scope) => !SCOPE_PATTERN.test(scope));
+  if (rejected.length > 0) {
+    writeConfigDiagnostic(
+      `${OAUTH_SCOPES_ENV} ignored ${rejected.length === 1 ? 'an entry that is' : `${rejected.length} entries that are`} not an eBay OAuth scope URI: ${rejected.join(', ')}`,
+    );
+  }
+
+  return wellFormed.length > 0 ? wellFormed : getDefaultScopes(environment);
+};
+
 /**
  * Validates requested scopes against the selected eBay environment.
  *
@@ -247,7 +296,18 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
   }
 
   // Check if redirect URI is set (needed for OAuth user flow)
-  if (!process.env.EBAY_REDIRECT_URI) {
+  const redirectUri = process.env.EBAY_REDIRECT_URI;
+  if (redirectUri) {
+    // eBay's authorization endpoint answers a URL redirect_uri with an opaque
+    // "temporarily_unavailable" 500, so name the real problem here instead.
+    if (redirectUri.includes('://')) {
+      warnings.push(
+        `EBAY_REDIRECT_URI must be your eBay RuName, not a URL; got "${redirectUri}". eBay answers the ` +
+          'authorization request with "temporarily_unavailable" when redirect_uri is a URL. Copy the RuName ' +
+          '(it looks like "YourApp-YourApp-abc-def-ghi") from https://developer.ebay.com/my/auth.',
+      );
+    }
+  } else {
     warnings.push(
       'EBAY_REDIRECT_URI is not set. User OAuth flow will not work. Set this to enable user token generation.',
     );
@@ -567,8 +627,7 @@ export const getOAuthAuthorizationUrl = (
   if (scopes && scopes.length > 0) {
     scopeList = scopes.join('%20');
   } else {
-    const defaultScopes = getDefaultScopes(environment);
-    scopeList = defaultScopes.join('%20');
+    scopeList = getRequestedScopes(environment).join('%20');
   }
 
   const params = new URLSearchParams({

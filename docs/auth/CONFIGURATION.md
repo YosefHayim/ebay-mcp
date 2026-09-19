@@ -601,6 +601,47 @@ EBAY_USER_REFRESH_TOKEN=v^1.1#r^1#i^1#p^3#I^3#f^0#t^H4sIAAAAAAAAAOVXa2...
 2. Ensure `EBAY_REDIRECT_URI` is set to your RuName (not a full URL)
 3. The RuName should look like: `YourAppId-YourAppId-abc-def-ghi`
 
+#### `temporarily_unavailable` from the authorization page
+
+**Problem:** eBay answers the consent URL with
+`{"error_id":"temporarily_unavailable","http_status_code":500}`.
+
+**Common Cause:** `EBAY_REDIRECT_URI` holds a URL (for example
+`http://localhost:3000/oauth/callback`) instead of your RuName. eBay reports this
+misconfiguration as a generic server error rather than naming the parameter.
+
+**Solution:**
+
+1. Copy your **RuName** from the [eBay Developer Portal](https://developer.ebay.com/my/auth) — it
+   looks like `YourAppId-YourAppId-abc-def-ghi`, not a URL
+2. Set `EBAY_REDIRECT_URI` to that value and restart; the server warns at startup when the value
+   still looks like a URL
+3. The loopback URL your browser is redirected back to is registered as the RuName's *auth-accepted
+   URL* in the portal — it never goes in `EBAY_REDIRECT_URI`
+
+#### `invalid_scope` from the authorization page
+
+**Problem:** eBay answers the consent URL with
+`{"error_id":"invalid_scope","http_status_code":400}`.
+
+**Common Cause:** the consent URL asks for every scope eBay publishes for the environment, but a
+keyset is only granted a subset — several scopes (for example eDelivery, VeRO, and the messaging
+and feedback scopes) are limited release. eBay rejects the entire request when it names one scope
+the keyset never received.
+
+**Solution:**
+
+1. Open your keyset in the [eBay Developer Portal](https://developer.ebay.com/my/keys) and copy the
+   scope list it shows under **OAuth Scopes**
+2. Set `EBAY_OAUTH_SCOPES` to exactly those scopes, separated by spaces or commas:
+
+   ```bash
+   EBAY_OAUTH_SCOPES="https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account"
+   ```
+
+3. Re-run the OAuth flow. Entries that are not eBay OAuth scope URIs are ignored with a startup
+   notice, and an empty or unusable value falls back to the published table for your environment
+
 #### "Failed to exchange code for token"
 
 **Problem:** Authorization code exchange failed.

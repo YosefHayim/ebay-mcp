@@ -222,6 +222,29 @@ describe('Environment Configuration', () => {
       expect(result.warnings.some((w) => w.includes('EBAY_REDIRECT_URI'))).toBe(true);
     });
 
+    it('warn when REDIRECT_URI is a URL instead of a RuName', () => {
+      process.env.EBAY_CLIENT_ID = 'test_id';
+      process.env.EBAY_CLIENT_SECRET = 'test_secret';
+      process.env.EBAY_REDIRECT_URI = 'http://localhost:3000/oauth/callback';
+
+      const result = validateEnvironmentConfig();
+
+      // eBay answers a URL redirect_uri with an opaque "temporarily_unavailable",
+      // so the misconfiguration has to be named here to be diagnosable.
+      expect(result.isValid).toBe(true);
+      expect(result.warnings.some((w) => w.includes('must be your eBay RuName'))).toBe(true);
+    });
+
+    it('accept a RuName redirect URI without warning', () => {
+      process.env.EBAY_CLIENT_ID = 'test_id';
+      process.env.EBAY_CLIENT_SECRET = 'test_secret';
+      process.env.EBAY_REDIRECT_URI = 'Your-App-Your-App-abcdef-ghij';
+
+      const result = validateEnvironmentConfig();
+
+      expect(result.warnings.some((w) => w.includes('EBAY_REDIRECT_URI'))).toBe(false);
+    });
+
     it('not require client credentials in proxy auth mode', () => {
       delete process.env.EBAY_CLIENT_ID;
       delete process.env.EBAY_CLIENT_SECRET;
