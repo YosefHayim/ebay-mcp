@@ -1,12 +1,16 @@
 name: Weekly Cleanup
 
+# Retention must outlive an open pull request. Branch protection requires the
+# `CI Gate` status check, and deleting a PR's workflow run deletes that check —
+# GitHub then reports the PR as BLOCKED on a check that can only come back by
+# pushing again. Keeping a month of history leaves review cycles intact.
 on:
   workflow_dispatch: # Manual trigger
     inputs:
       days_to_keep:
         description: 'Number of days of workflow history to keep'
         type: number
-        default: 0
+        default: 30
         required: true
   schedule:
     # Runs every Monday at 00:00 UTC
@@ -34,7 +38,9 @@ jobs:
 
       - name: Delete old workflow runs
         env:
-          DAYS_TO_KEEP: ${{ github.event.inputs.days_to_keep || 0 }} # Use input or default to 0 days
+          # The scheduled run carries no inputs, so this fallback is the one that
+          # actually applied every Monday — it was 0, i.e. delete everything.
+          DAYS_TO_KEEP: ${{ github.event.inputs.days_to_keep || 30 }} # Use input or default to 30 days
         run: |
           echo "Keeping workflow runs from the last $DAYS_TO_KEEP days."
           echo "Repository: ${{ github.repository }}"
