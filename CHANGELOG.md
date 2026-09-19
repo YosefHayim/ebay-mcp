@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-09-19
+
+### Added
+
+- **Browse: live marketplace search (#172)** — `ebay_find_active_items` wraps Buy Browse `item_summary/search` with pagination, sort, category restriction, condition/buying-option/price filters, and a raw filter passthrough; `ebay_get_item_details` wraps the item resource. Browse requests select the client-credentials application token eBay documents for those methods, at both the initial attempt and the 401 retry, and pagination reports `hasNext` derived from Browse's authoritative `next` link rather than inferring it from `total`. Thanks [@nickawilliams](https://github.com/nickawilliams).
+- **Auction listings (#173, #179)** — `ebay_create_offer`, `ebay_update_offer`, and `ebay_bulk_create_offer` accept `format: "AUCTION"` with `auctionStartPrice`, `auctionReservePrice`, and a day-count `listingDuration`. `ebay_create_listing`, `ebay_revise_listing`, `ebay_end_listing`, and `ebay_relist_item` take the same `format` argument and route auctions through `AddItem`/`ReviseItem`/`EndItem`/`RelistItem`. Bodies that mix auction and fixed-price rules are rejected before any eBay request. Thanks [@leolobato](https://github.com/leolobato).
+- **Local photo and video uploads (#173, #179)** — `ebay_upload_images`, `ebay_upload_video`, `ebay_get_video`, and `ebay_attach_media_to_inventory_item`, backed by the Commerce Media API. Attachment re-reads the inventory item immediately before the write, preserves the media family the caller did not supply, and never publishes. Filesystem access is opt-in through `EBAY_MCP_MEDIA_DIRS` / `EBAY_MCP_MEDIA_ROOT`, with symlinks resolved before the containment check. Thanks [@leolobato](https://github.com/leolobato).
+- **`EBAY_OAUTH_SCOPES` (#175)** — names the exact OAuth scopes the consent URL requests, for keysets that were not granted every scope eBay publishes. Unset keeps the previous behaviour.
+
+### Fixed
+
+- **Tool calls that hung forever (#174)** — `fetch` resolves as soon as the response headers arrive, and the timeout timer was cleared at that point, so reading the response body ran with no deadline at all. A response stream that stalled mid-body left the call pending indefinitely with no error and no further log line. The abort deadline now stays armed until the body has been decoded, and a timeout reports which stage stalled.
+- **Opaque OAuth consent failures (#175)** — startup now warns when `EBAY_REDIRECT_URI` holds a URL instead of a RuName, which eBay reports only as `temporarily_unavailable`; `docs/auth/CONFIGURATION.md` gains a troubleshooting entry for that error and for `invalid_scope`, each keyed to the exact message users see.
+- **Buy It Now margin rounding (#179)** — the required 30% margin rounded down for small cent values, so a $0.01 Buy It Now price passed against a $0.01 opening bid. The threshold is computed in whole cents with ceiling arithmetic.
+- **Unbounded video polling (#179)** — `waitForVideo` advanced its wait budget by the sleep it had taken, so a zero or non-finite poll interval kept issuing status requests forever. Both timings are validated before the first poll.
+- **Dropped request options (#179)** — `put` and `delete` now forward `absolute` and `timeoutMs`, which `EbayRequestConfig` advertised but only `get` and `post` honoured.
+
+### Changed
+
+- **CI run retention (#178)** — the weekly cleanup ran with `days_to_keep` falling back to `0`, deleting every workflow run each Monday. Because branch protection requires the `CI Gate` check, deleting a pull request's run left it permanently blocked on a check that no longer existed. Retention is now 30 days.
+- **Outbound request logging** — `docs/logging.md` documents that requests and responses are logged at the `http` level, below the default `info`, and that `EBAY_LOG_LEVEL=http` surfaces them when a call looks stuck.
+
 ## [1.14.3] - 2026-08-07
 
 ### Fixed
