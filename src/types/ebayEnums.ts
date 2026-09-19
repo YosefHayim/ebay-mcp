@@ -245,6 +245,43 @@ export enum FormatType {
 }
 
 /**
+ * Listing Duration
+ *
+ * Number of days an offer's listing stays active. Fixed-price listings must use
+ * GTC; auction listings use one of the day-count values allowed for the category.
+ *
+ * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:ListingDurationEnum
+ */
+export enum ListingDuration {
+  /** One-day listing (auction only) */
+  DAYS_1 = 'DAYS_1',
+
+  /** Three-day listing (auction only) */
+  DAYS_3 = 'DAYS_3',
+
+  /** Five-day listing (auction only) */
+  DAYS_5 = 'DAYS_5',
+
+  /** Seven-day listing (auction only) */
+  DAYS_7 = 'DAYS_7',
+
+  /** Ten-day listing (auction only) */
+  DAYS_10 = 'DAYS_10',
+
+  /** Fourteen-day listing (auction only, category dependent) */
+  DAYS_14 = 'DAYS_14',
+
+  /** Twenty-one-day listing (auction only, category dependent) */
+  DAYS_21 = 'DAYS_21',
+
+  /** Thirty-day listing (auction only, category dependent) */
+  DAYS_30 = 'DAYS_30',
+
+  /** Good 'Til Cancelled — required for fixed-price listings, never valid for auctions */
+  GTC = 'GTC',
+}
+
+/**
  * Order Payment Status
  *
  * Indicates the payment status of an order.

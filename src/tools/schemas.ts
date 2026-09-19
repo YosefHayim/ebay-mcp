@@ -13,6 +13,7 @@ import {
   WeightUnit,
   PricingVisibility,
   FormatType,
+  ListingDuration,
   LocationType,
   MerchantLocationStatus,
   DayOfWeek,
@@ -271,7 +272,9 @@ export const inventoryItemSchema = z
 /** Offer pricing payload for fixed-price and auction listing tools. */
 export const pricingSchema = z
   .object({
-    price: amountSchema,
+    price: amountSchema.optional(),
+    auctionStartPrice: amountSchema.optional(),
+    auctionReservePrice: amountSchema.optional(),
     pricingVisibility: z.nativeEnum(PricingVisibility).optional(),
     minimumAdvertisedPrice: amountSchema.optional(),
     originalRetailPrice: amountSchema.optional(),
@@ -305,6 +308,7 @@ export const offerSchema = z
     availableQuantity: z.number().optional(),
     categoryId: z.string().optional(),
     listingDescription: z.string().optional(),
+    listingDuration: z.nativeEnum(ListingDuration).optional(),
     listingPolicies: listingPoliciesSchema.optional(),
     merchantLocationKey: z.string().optional(),
     pricingSummary: pricingSchema.optional(),

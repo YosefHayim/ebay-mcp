@@ -70,6 +70,30 @@ const footnoteFor = (shown: number, total: number | undefined): string | undefin
   return total > shown ? `Showing ${shown} of ${total}` : `${total} total`;
 };
 
+type OfferPricing = Pick<EbayOfferDetailsWithAll, 'format' | 'listingDuration' | 'pricingSummary'>;
+
+/**
+ * Picks the amount a listing is offered at: the fixed price, or the opening bid
+ * for an auction (its `price`, when present, is only the Buy It Now option).
+ */
+const offerListPrice = (offer: OfferPricing) =>
+  offer.format === 'AUCTION'
+    ? offer.pricingSummary?.auctionStartPrice
+    : offer.pricingSummary?.price;
+
+/** Pricing rows for an offer card, labelled by listing format. */
+const offerPriceFields = (offer: OfferPricing): CardSection['fields'] => {
+  if (offer.format !== 'AUCTION') {
+    return [{ label: 'Price', value: formatAmount(offer.pricingSummary?.price) }];
+  }
+  return [
+    { label: 'Starting bid', value: formatAmount(offer.pricingSummary?.auctionStartPrice) },
+    { label: 'Reserve price', value: formatAmount(offer.pricingSummary?.auctionReservePrice) },
+    { label: 'Buy It Now price', value: formatAmount(offer.pricingSummary?.price) },
+    { label: 'Duration', value: humanizeStatus(offer.listingDuration) },
+  ];
+};
+
 /** Builds a status badge only when eBay returned a status value to display. */
 const statusBadge = (status: string | undefined): CardBadge | undefined => {
   const label = humanizeStatus(status);
@@ -187,7 +211,7 @@ export const mapOffersToTable = (result: Offers): TableViewModel => {
         sku: offer.sku ?? null,
         marketplace: offer.marketplaceId ?? null,
         format: humanizeStatus(offer.format),
-        price: formatAmount(offer.pricingSummary?.price),
+        price: formatAmount(offerListPrice(offer)),
         quantity: offer.availableQuantity ?? null,
         status: humanizeStatus(offer.status),
       },
@@ -403,7 +427,7 @@ export const mapOfferToCard = (result: EbayOfferDetailsWithAll): CardViewModel =
       {
         heading: 'Pricing',
         fields: [
-          { label: 'Price', value: formatAmount(result.pricingSummary?.price) },
+          ...offerPriceFields(result),
           { label: 'Available quantity', value: result.availableQuantity ?? null },
           { label: 'Marketplace', value: result.marketplaceId ?? null },
         ],

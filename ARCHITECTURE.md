@@ -13,7 +13,7 @@ src/
 │                     #   (account-management, order-management, marketing-and-promotions, …)
 │                     #   plus client.ts (REST) and clientTrading.ts (Trading XML)
 ├── auth/             # OAuth 2.0 flow, token store, JWT verification, setup callback helper
-├── config/           # environment loading, constants, toolFamilies
+├── config/           # environment loading, constants, toolFamilies, mediaAccess (local-media allowlist)
 ├── mcp/              # runtime.ts, httpTransport.ts, toolGating.ts, uiBridge.ts
 ├── tools/            # tool wiring: defineTool.ts, registry.ts, contracts.ts, schemas.ts,
 │                     #   types.ts, categories/ (one family file per EBAY_MCP_TOOLS key), ui/
@@ -21,7 +21,7 @@ src/
 ├── skills/           # agent-skills generator (`ebay-mcp skills`)
 ├── scripts/          # CLI tooling (setup, skills, diagnostics, wizards/validators, …)
 ├── types/            # generated OpenAPI types — do NOT hand-edit (`pnpm run sync`)
-└── utils/            # platform primitives: logging, http, errors, effectSchema*, version, cliUi
+└── utils/            # platform primitives: logging, http, errors, effectSchema*, version, cliUi, localMedia
 ```
 
 ## Pipeline — a tool call

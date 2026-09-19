@@ -42,7 +42,8 @@ export interface HttpRequestOptions {
   /**
    * Request body. An object is JSON-stringified (with a JSON content-type when
    * none is set); a `URLSearchParams` is form-encoded; strings/`Buffer` are sent
-   * as-is. `undefined` sends no body.
+   * as-is; `FormData`/`Blob` are handed to fetch untouched so it can set the
+   * multipart boundary. `undefined` sends no body.
    */
   body?: unknown;
   /** Abort the request after this many milliseconds. */
@@ -209,6 +210,10 @@ const prepareBody = (body: unknown): PreparedBody => {
   }
   if (body instanceof Uint8Array || body instanceof ArrayBuffer) {
     return { body: body as BodyInit };
+  }
+  if (body instanceof FormData || body instanceof Blob) {
+    // fetch derives the content-type itself (multipart boundary / blob type).
+    return { body };
   }
   return { body: JSON.stringify(body), contentType: 'application/json' };
 };

@@ -115,6 +115,22 @@ These credentials are obtained from the [eBay Developer Portal](https://develope
 - **Default:** off
 - **Behavior:** Applied after `EBAY_MCP_TOOLS` family gating. Classification uses each tool’s MCP `readOnlyHint` / `destructiveHint` annotations when present, otherwise a conservative name heuristic (write verbs excluded; unmatched names default to excluded).
 
+#### `EBAY_MCP_MEDIA_DIRS`
+
+- **Description:** Directories the media upload tools (`ebay_upload_images`, `ebay_upload_video`, `ebay_attach_media_to_inventory_item`) may read local files from
+- **Example:** `/srv/media:/home/seller/listings` (macOS/Linux, `:`-delimited) or `C:\media;D:\listings` (Windows, `;`-delimited)
+- **Required:** No — local file access stays **off** until this or `EBAY_MCP_MEDIA_ROOT` is set
+- **Default:** unset (the media tools refuse every path and explain how to enable access)
+- **Behavior:** Entries must be absolute. A requested file is resolved with `realpath` (symlinks followed) and must sit inside one of these directories; anything else is refused before any upload. Relative entries fail startup validation.
+
+#### `EBAY_MCP_MEDIA_ROOT`
+
+- **Description:** Single directory that `media://<relative-path>` references resolve under; it is also added to the allowed directories
+- **Example:** `/srv/openclaw/media` — then `media://inbound/front.jpg` means `/srv/openclaw/media/inbound/front.jpg`
+- **Required:** No
+- **Default:** unset (`media://` references are refused)
+- **Behavior:** Must be absolute. `..` segments are resolved first, so a reference cannot escape the root.
+
 ### HTTP transport / container deploy (optional)
 
 These variables apply when running the HTTP MCP server (`node build/serverHttp.js` or the Docker image, which uses that entrypoint).

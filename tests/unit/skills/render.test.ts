@@ -54,9 +54,30 @@ describe('skill rendering', () => {
     expect(rendered).toContain('Requirements vary by category and marketplace');
   });
 
+  it('documents the auction offer flow beside the fixed-price one', () => {
+    const rendered = renderCodexSection(usingDoc);
+    const fixedPriceFlow = rendered.indexOf('Publish a fixed-price listing');
+    const auctionFlow = rendered.indexOf('Run an auction');
+
+    expect(fixedPriceFlow).toBeGreaterThan(-1);
+    expect(auctionFlow).toBeGreaterThan(fixedPriceFlow);
+    expect(rendered).toContain('`ebay_get_listing_type_policies`');
+    expect(rendered).toContain('`pricingSummary.auctionStartPrice`');
+  });
+
   it('dispatches renderSkill by provider', () => {
     expect(renderSkill('claude', usingDoc, 'using')).toBe(renderClaudeSkill(usingDoc, 'using'));
     expect(renderSkill('cursor', usingDoc, 'using')).toBe(renderCursorRule(usingDoc, 'using'));
     expect(renderSkill('codex', usingDoc, 'using')).toBe(renderCodexSection(usingDoc));
+  });
+
+  it('documents the Trading auction path beside the REST one', () => {
+    const rendered = renderCodexSection(usingDoc);
+    const legacyFlow = rendered.indexOf('Legacy XML path');
+
+    expect(legacyFlow).toBeGreaterThan(-1);
+    expect(rendered.indexOf('format: "AUCTION"', legacyFlow)).toBeGreaterThan(-1);
+    expect(rendered).toContain('`Days_7`');
+    expect(rendered).toContain('`ListingType`');
   });
 });
