@@ -1,3 +1,4 @@
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { registeredEntries } from '@/tools/categories/index.js';
 import type { ToolDefinition } from '@/tools/types.js';
 import type { ToolHandler } from '@/tools/types.js';
@@ -34,6 +35,8 @@ export interface ResolvedToolUi {
 export interface ToolEntry {
   definition: ToolDefinition;
   handler: ToolHandler;
+  /** Optional formatting of endpoint data into protocol content. */
+  formatResult?: (result: unknown, args: Record<string, unknown>) => CallToolResult;
   /** Present only for tools that render an interactive view; consumed by the runtime seam. */
   ui?: ResolvedToolUi;
 }

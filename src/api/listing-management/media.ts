@@ -12,6 +12,10 @@ import { Data, Effect } from 'effect';
 import type { createInventoryItemsMethods } from './items.js';
 import { createMediaAttachMethods, type MediaAttachMethods } from './mediaAttach.js';
 
+import { createMediaResourceMethods } from './mediaResources.js';
+
+type MediaResourceMethods = ReturnType<typeof createMediaResourceMethods>;
+
 type InventoryItemsMethods = ReturnType<typeof createInventoryItemsMethods>;
 
 /** Media API base path; the host is `apim` rather than `api` (see {@link getMediaBaseUrl}). */
@@ -213,8 +217,34 @@ export class MediaApi {
    */
   public readonly attachMediaToInventoryItem: MediaAttachMethods['attachMediaToInventoryItem'];
 
+  /** Media API createImageFromUrl endpoint; see createMediaResourceMethods. */
+  public readonly createImageFromUrl: MediaResourceMethods['createImageFromUrl'];
+  /** Media API createDocument endpoint; see createMediaResourceMethods. */
+  public readonly createDocument: MediaResourceMethods['createDocument'];
+  /** Media API createDocumentFromUrl endpoint; see createMediaResourceMethods. */
+  public readonly createDocumentFromUrl: MediaResourceMethods['createDocumentFromUrl'];
+  /** Media API getDocument endpoint; see createMediaResourceMethods. */
+  public readonly getDocument: MediaResourceMethods['getDocument'];
+  /** Media API uploadDocument endpoint; see createMediaResourceMethods. */
+  public readonly uploadDocument: MediaResourceMethods['uploadDocument'];
+  /** Media API uploadPostOrderDocument endpoint; see createMediaResourceMethods. */
+  public readonly uploadPostOrderDocument: MediaResourceMethods['uploadPostOrderDocument'];
+  /** Media API downloadPostOrderDocument endpoint; see createMediaResourceMethods. */
+  public readonly downloadPostOrderDocument: MediaResourceMethods['downloadPostOrderDocument'];
+  /** Media API removePostOrderDocument endpoint; see createMediaResourceMethods. */
+  public readonly removePostOrderDocument: MediaResourceMethods['removePostOrderDocument'];
+
   public constructor(client: EbayApiClient, items: InventoryItemsMethods) {
     this.client = client;
+    const resources = createMediaResourceMethods(client);
+    this.createImageFromUrl = resources.createImageFromUrl;
+    this.createDocument = resources.createDocument;
+    this.createDocumentFromUrl = resources.createDocumentFromUrl;
+    this.getDocument = resources.getDocument;
+    this.uploadDocument = resources.uploadDocument;
+    this.uploadPostOrderDocument = resources.uploadPostOrderDocument;
+    this.downloadPostOrderDocument = resources.downloadPostOrderDocument;
+    this.removePostOrderDocument = resources.removePostOrderDocument;
     this.attachMediaToInventoryItem = createMediaAttachMethods(
       items,
       this,

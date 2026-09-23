@@ -2,7 +2,12 @@
  * Utility functions for working with eBay OAuth scopes
  */
 
-import { getDefaultScopes, validateScopes } from '@/config/environment.js';
+import {
+  getDefaultScopes,
+  getKnownScopes,
+  POST_ORDER_DOCUMENT_SCOPE,
+  validateScopes,
+} from '@/config/environment.js';
 
 /**
  * Result of scope validation
@@ -61,7 +66,7 @@ export const validateScopesDetailed = (
   environment: 'production' | 'sandbox',
 ): ScopeValidationResult => {
   const validation = validateScopes(scopes, environment);
-  const validScopeSet = new Set(getDefaultScopes(environment));
+  const validScopeSet = new Set(getKnownScopes(environment));
 
   const validScopes: string[] = [];
   const invalidScopes: string[] = [];
@@ -95,6 +100,29 @@ export const validateScopesDetailed = (
  * ```
  */
 export const getRequiredScopesForTool = (toolName: string): ScopeRequirement | null => {
+  const postOrderTools = [
+    'ebay_upload_post_order_document',
+    'ebay_download_post_order_document',
+    'ebay_remove_post_order_document',
+  ];
+  const documentTools = [
+    'ebay_create_image_from_url',
+    'ebay_create_document',
+    'ebay_create_document_from_url',
+    'ebay_get_document',
+    'ebay_upload_document',
+  ];
+  if (postOrderTools.includes(toolName) || documentTools.includes(toolName)) {
+    const scope = postOrderTools.includes(toolName)
+      ? POST_ORDER_DOCUMENT_SCOPE
+      : 'https://api.ebay.com/oauth/api_scope/sell.inventory';
+    return {
+      requiredScopes: [scope],
+      minimumScope: scope,
+      description:
+        'Requires user consent for the Media API scope; post-order access also requires an eligible keyset',
+    };
+  }
   // Scope requirements mapping based on eBay API documentation
   const scopeMap: Record<string, ScopeRequirement> = {
     // Inventory Management Tools
@@ -435,6 +463,7 @@ export const getScopeTypeDescription = (scope: string): string => {
 
   const descriptions: Record<string, string> = {
     api_scope: 'View public data from eBay',
+    'commerce.post_order.document': 'Upload, download and remove post-order documents',
     'sell.inventory': 'View and manage your inventory and offers',
     'sell.inventory.readonly': 'View your inventory and offers',
     'sell.fulfillment': 'View and manage your order fulfillments',

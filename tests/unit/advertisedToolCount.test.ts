@@ -25,7 +25,7 @@ const advertisedToolCount = getToolDefinitions().length;
  * Anything else in the band is treated as a stale tool-count claim.
  */
 const NON_COUNT_NUMBERS = new Set([
-  274, // unique eBay Sell API endpoints covered
+  283, // unique endpoints in the checked-in OpenAPI coverage report
   300, // Biome per-file line-count warning threshold, cited in AGENTS.md
 ]);
 

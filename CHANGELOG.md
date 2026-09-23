@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-09-23
+
+### Added
+
+- **Complete Media API coverage (#181, #182)** — eight new inventory-family tools create images from HTTPS URLs, stage/upload/check listing documents, and upload/download/remove post-order documents. Image and post-order creation preserve resource IDs from Location headers; PDF downloads return embedded MCP resources without writing local files.
+- **Document upload policies** — local listing documents accept PDF, JPEG/JPG and PNG up to 10 MiB; post-order documents also accept BMP and GIF, up to 5 MiB. Both reuse the opt-in media allowlist, realpath containment and signature validation.
+- **Post-order OAuth scope** — recognize `commerce.post_order.document` in diagnostics and tool scope requirements without adding it to default consent requests. Eligible keysets must request renewed user consent explicitly.
+
+### Fixed
+
+- **Media URI failures** — malformed percent-encoding now returns a typed local-media error. File size is checked again after reading.
+- **MCP annotations** — forward declared read-only and destructive hints to clients.
+
+### Changed
+
+- Update documented coverage to **313 tools across 283 cached OpenAPI endpoints**, with no missing operations in the local sync report.
+
 ## [1.16.0] - 2026-09-19
 
 ### Added
