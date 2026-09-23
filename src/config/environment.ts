@@ -161,6 +161,20 @@ export const getDefaultScopes = (environment: EbayEnvironment): string[] => {
   return getSandboxScopes();
 };
 
+/** Optional scope requiring keyset eligibility and fresh user consent. */
+export const POST_ORDER_DOCUMENT_SCOPE =
+  'https://api.ebay.com/oauth/api_scope/commerce.post_order.document';
+
+/**
+ * Recognized scopes, including optional scopes that are never requested by default.
+ * @param environment - eBay environment for the base scope catalogue.
+ * @returns Known scope identifiers; recognition does not guarantee keyset eligibility.
+ */
+export const getKnownScopes = (environment: EbayEnvironment): string[] => [
+  ...getDefaultScopes(environment),
+  POST_ORDER_DOCUMENT_SCOPE,
+];
+
 /** Environment variable naming the exact OAuth scopes the consent URL should request. */
 export const OAUTH_SCOPES_ENV = 'EBAY_OAUTH_SCOPES';
 
@@ -225,7 +239,7 @@ export const validateScopes = (
   scopes: string[],
   environment: EbayEnvironment,
 ): ScopeValidationResult => {
-  const validScopes = getDefaultScopes(environment);
+  const validScopes = getKnownScopes(environment);
   const validScopeSet = new Set(validScopes);
   const warnings: string[] = [];
   const requestedValidScopes: string[] = [];

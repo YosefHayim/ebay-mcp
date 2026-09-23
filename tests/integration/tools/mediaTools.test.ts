@@ -1,3 +1,6 @@
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import process from 'node:process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
@@ -311,5 +314,173 @@ describe('ebay_attach_media_to_inventory_item', () => {
     expect(result.isError).toBe(true);
     expect(result.text).toContain('unsupported image extension');
     expect(read.isDone()).toBe(false);
+  });
+});
+
+describe('document and image URL tools', () => {
+  const POST_ORDER_HOST = 'https://apiz.sandbox.ebay.com';
+  const metadata = { documentType: 'USER_GUIDE_OR_MANUAL', languages: ['ENGLISH'] };
+
+  it('advertises every new tool and read/write annotations', async () => {
+    const tools = (await client.listTools()).tools;
+    for (const suffix of [
+      'create_image_from_url',
+      'create_document',
+      'create_document_from_url',
+      'get_document',
+      'upload_document',
+      'upload_post_order_document',
+      'download_post_order_document',
+      'remove_post_order_document',
+    ]) {
+      expect(tools.find((tool) => tool.name === `ebay_${suffix}`)).toBeDefined();
+    }
+    expect(
+      tools.find((tool) => tool.name === 'ebay_download_post_order_document')?.annotations
+        ?.readOnlyHint,
+    ).toBe(true);
+    expect(
+      tools.find((tool) => tool.name === 'ebay_remove_post_order_document')?.annotations
+        ?.destructiveHint,
+    ).toBe(true);
+  });
+
+  it('creates an image from its HTTPS URL without fetching the source locally', async () => {
+    const location = `${MEDIA_HOST}${MEDIA_PATH}/image/I-1`;
+    const request = nock(MEDIA_HOST)
+      .post(`${MEDIA_PATH}/image/create_image_from_url`, {
+        imageUrl: 'https://example.com/front.jpg',
+      })
+      .reply(201, { imageUrl: 'https://i.ebayimg.com/front.jpg' }, { Location: location });
+    const result = await callTool('ebay_create_image_from_url', {
+      imageUrl: 'https://example.com/front.jpg',
+    });
+    expect(result.payload).toEqual({
+      imageId: 'I-1',
+      location,
+      image: { imageUrl: 'https://i.ebayimg.com/front.jpg' },
+    });
+    expect(request.isDone()).toBe(true);
+  });
+
+  it('stages, uploads and checks a listing document with separate calls', async () => {
+    const pdf = path.join(fixture.root, 'manual.pdf');
+    await writeFile(pdf, '%PDF-1.7\nmanual');
+    const create = nock(MEDIA_HOST)
+      .post(`${MEDIA_PATH}/document`, metadata)
+      .reply(201, { documentId: 'D-1', documentStatus: 'PENDING_UPLOAD' });
+    const upload = nock(MEDIA_HOST, {
+      reqheaders: { 'content-type': /multipart\/form-data; boundary=/ },
+    })
+      .post(`${MEDIA_PATH}/document/D-1/upload`, (body) => {
+        const text = Buffer.isBuffer(body) ? body.toString() : String(body);
+        return (
+          text.includes('name="file"') &&
+          text.includes('%PDF-1.7') &&
+          text.includes('filename="manual.pdf"')
+        );
+      })
+      .reply(200, { documentId: 'D-1', documentStatus: 'SUBMITTED' });
+    const get = nock(MEDIA_HOST)
+      .get(`${MEDIA_PATH}/document/D-1`)
+      .reply(200, { documentId: 'D-1', documentStatus: 'ACCEPTED' });
+    expect((await callTool('ebay_create_document', metadata)).payload).toMatchObject({
+      documentId: 'D-1',
+    });
+    expect(
+      (await callTool('ebay_upload_document', { documentId: 'D-1', path: pdf })).payload,
+    ).toMatchObject({ documentStatus: 'SUBMITTED' });
+    expect((await callTool('ebay_get_document', { documentId: 'D-1' })).payload).toMatchObject({
+      documentStatus: 'ACCEPTED',
+    });
+    expect([create, upload, get].every((request) => request.isDone())).toBe(true);
+  });
+
+  it('creates a listing document from a URL', async () => {
+    const body = { ...metadata, documentUrl: 'https://example.com/manual.pdf' };
+    const request = nock(MEDIA_HOST)
+      .post(`${MEDIA_PATH}/document/create_document_from_url`, body)
+      .reply(201, { documentId: 'D-2', documentStatus: 'SUBMITTED' });
+    expect((await callTool('ebay_create_document_from_url', body)).payload).toMatchObject({
+      documentId: 'D-2',
+    });
+    expect(request.isDone()).toBe(true);
+  });
+
+  it('uploads post-order form fields, downloads an embedded PDF and removes the document', async () => {
+    const pdf = Buffer.from('%PDF-1.7\nlabel\n%%EOF');
+    await writeFile(path.join(fixture.root, 'label.pdf'), pdf);
+    const location = `${POST_ORDER_HOST}${MEDIA_PATH}/post_order/document/P-1`;
+    const upload = nock(POST_ORDER_HOST, {
+      reqheaders: { 'content-type': /multipart\/form-data; boundary=/ },
+    })
+      .post(`${MEDIA_PATH}/post_order/document`, (body) => {
+        const text = Buffer.isBuffer(body) ? body.toString() : String(body);
+        return (
+          ['file', 'documentUsageType', 'entityType', 'entityId'].every((key) =>
+            text.includes(`name="${key}"`),
+          ) &&
+          text.includes('RETURN_SHIPPING_LABEL') &&
+          text.includes('RETURNS') &&
+          text.includes('R-1')
+        );
+      })
+      .reply(201, '', { Location: location });
+    const download = nock(POST_ORDER_HOST)
+      .get(`${MEDIA_PATH}/post_order/document/P-1`)
+      .matchHeader('accept', 'application/pdf')
+      .reply(200, pdf, { 'Content-Type': 'application/pdf' });
+    const remove = nock(POST_ORDER_HOST).delete(`${MEDIA_PATH}/post_order/document/P-1`).reply(204);
+    expect(
+      (
+        await callTool('ebay_upload_post_order_document', {
+          path: 'media://label.pdf',
+          documentUsageType: 'RETURN_SHIPPING_LABEL',
+          entityType: 'RETURNS',
+          entityId: 'R-1',
+        })
+      ).payload,
+    ).toEqual({ documentId: 'P-1', location });
+    const result = CallToolResultSchema.parse(
+      await client.callTool({
+        name: 'ebay_download_post_order_document',
+        arguments: { documentId: 'P-1' },
+      }),
+    );
+    expect(result.isError).not.toBe(true);
+    const resource = result.content.find((item) => item.type === 'resource');
+    expect(resource?.resource).toEqual({
+      uri: 'ebay-media://post-order/document/P-1',
+      mimeType: 'application/pdf',
+      blob: pdf.toString('base64'),
+    });
+    if (resource && 'blob' in resource.resource)
+      expect(Buffer.from(resource.resource.blob, 'base64')).toEqual(pdf);
+    expect(
+      (await callTool('ebay_remove_post_order_document', { documentId: 'P-1' })).payload,
+    ).toEqual({ status: 'success' });
+    expect([upload, download, remove].every((request) => request.isDone())).toBe(true);
+  });
+
+  it.each([
+    401, 404, 429,
+  ])('preserves eBay error details for a %i download failure', async (status) => {
+    const errors = [{ errorId: 190_302, domain: 'API_MEDIA', message: 'Document unavailable' }];
+    const request = nock(POST_ORDER_HOST)
+      .get(`${MEDIA_PATH}/post_order/document/P-1`)
+      .times(status === 401 ? 2 : 1)
+      .reply(status, { errors }, { 'Retry-After': '5' });
+    const result = await callTool('ebay_download_post_order_document', { documentId: 'P-1' });
+    expect(result.isError).toBe(true);
+    expect(result.payload).toMatchObject({ status, details: errors });
+    expect(request.isDone()).toBe(true);
+  });
+
+  it('surfaces a rejected published-document deletion', async () => {
+    const errors = [{ errorId: 190_311, message: 'Published document cannot be removed' }];
+    nock(POST_ORDER_HOST).delete(`${MEDIA_PATH}/post_order/document/P-1`).reply(400, { errors });
+    const result = await callTool('ebay_remove_post_order_document', { documentId: 'P-1' });
+    expect(result.isError).toBe(true);
+    expect(result.payload).toMatchObject({ status: 400, details: errors });
   });
 });

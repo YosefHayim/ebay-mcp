@@ -1,3 +1,4 @@
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { EbaySellerApi } from '@/api/index.js';
 import type { OutputArgs, ToolAnnotations } from '@/tools/types.js';
 import type { ResolvedToolUi, ToolEntry } from '@/tools/registry.js';
@@ -59,6 +60,8 @@ export interface ToolSpec<Shape extends EffectBackedRawShape, Result = unknown> 
   _meta?: Record<string, unknown>;
   /** Executes the tool against validated, fully-typed arguments; may be async. */
   handler: (api: EbaySellerApi, args: InferEffectRawShape<Shape>) => Result;
+  /** Optional protocol formatter, run only at the MCP boundary. */
+  formatResult?: (result: Awaited<Result>, args: InferEffectRawShape<Shape>) => CallToolResult;
   /** Optional interactive view rendered by hosts that support MCP Apps. */
   ui?: ToolUiSpec<Awaited<Result>>;
 }
@@ -128,10 +131,16 @@ export const defineTool = <Shape extends EffectBackedRawShape, Result>(
   const handler: ToolHandler = (api, args) =>
     spec.handler(api, decodeEffectSchemaSync(schema, args));
 
+  const formatResult = spec.formatResult;
   return {
     definition: toDefinition(spec),
     handler,
     ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
+    // Registry erases the result/argument types; defineTool checks their relationship here.
+    formatResult: formatResult
+      ? (result, args) =>
+          formatResult(result as Awaited<Result>, args as InferEffectRawShape<Shape>)
+      : undefined,
   };
 };
 
@@ -168,9 +177,15 @@ export const rawTool = <Shape extends EffectBackedRawShape, Result>(
 ): ToolEntry => {
   const handler: ToolHandler = (api, args) => spec.handler(api, args as InferEffectRawShape<Shape>);
 
+  const formatResult = spec.formatResult;
   return {
     definition: toDefinition(spec),
     handler,
     ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
+    // Registry erases the result/argument types; defineTool checks their relationship here.
+    formatResult: formatResult
+      ? (result, args) =>
+          formatResult(result as Awaited<Result>, args as InferEffectRawShape<Shape>)
+      : undefined,
   };
 };

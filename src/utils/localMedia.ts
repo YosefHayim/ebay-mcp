@@ -4,7 +4,7 @@ import { MEDIA_DIRS_ENV, MEDIA_ROOT_ENV, type MediaAccessConfig } from '@/config
 import { Data, Effect } from 'effect';
 
 /** Media families the upload tools accept. */
-export type LocalMediaKind = 'image' | 'video';
+export type LocalMediaKind = 'image' | 'video' | 'document' | 'postOrderDocument';
 
 /** A validated local media file, read into memory. */
 export interface LocalMediaFile {
@@ -38,6 +38,11 @@ export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 /** Largest video the Media API accepts (from `CreateVideoRequest.size`). */
 export const MAX_VIDEO_BYTES = 157_286_400;
 
+/** Maximum size of a listing document. */
+export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+/** Maximum size of a post-order document. */
+export const MAX_POST_ORDER_DOCUMENT_BYTES = 5 * 1024 * 1024;
+
 /** URI scheme resolved under `EBAY_MCP_MEDIA_ROOT`. */
 export const MEDIA_URI_PREFIX = 'media://';
 
@@ -61,6 +66,22 @@ const VIDEO_MIME_BY_EXTENSION: Readonly<Record<string, string>> = {
   mov: 'video/quicktime',
 };
 
+const DOCUMENT_MIME_BY_EXTENSION: Readonly<Record<string, string>> = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+};
+const MEDIA_POLICIES = {
+  image: { types: IMAGE_MIME_BY_EXTENSION, limit: MAX_IMAGE_BYTES },
+  video: { types: VIDEO_MIME_BY_EXTENSION, limit: MAX_VIDEO_BYTES },
+  document: { types: DOCUMENT_MIME_BY_EXTENSION, limit: MAX_DOCUMENT_BYTES },
+  postOrderDocument: {
+    types: { ...DOCUMENT_MIME_BY_EXTENSION, bmp: 'image/bmp', gif: 'image/gif' },
+    limit: MAX_POST_ORDER_DOCUMENT_BYTES,
+  },
+};
+
 const HEIC_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1']);
 const AVIF_BRANDS = new Set(['avif', 'avis']);
 
@@ -72,6 +93,7 @@ const asciiAt = (bytes: Buffer, offset: number, length: number): string =>
 
 /** Detects the media type from the file signature; `undefined` when unrecognised. */
 export const sniffMediaType = (bytes: Buffer): string | undefined => {
+  if (asciiAt(bytes, 0, 5) === '%PDF-') return 'application/pdf';
   if (startsWith(bytes, [0xff, 0xd8, 0xff])) {
     return 'image/jpeg';
   }
@@ -114,26 +136,33 @@ const isWithin = (target: string, dir: string): boolean =>
 const resolveReference = (
   source: string,
   access: MediaAccessConfig,
-): Effect.Effect<string, LocalMediaError> => {
-  if (source.startsWith(MEDIA_URI_PREFIX)) {
-    if (!access.mediaRoot) {
-      return Effect.fail(
-        fail(source, `media:// references need ${MEDIA_ROOT_ENV} to point at the media directory`),
-      );
+): Effect.Effect<string, LocalMediaError> =>
+  Effect.gen(function* () {
+    if (source.startsWith(MEDIA_URI_PREFIX)) {
+      if (!access.mediaRoot) {
+        return yield* Effect.fail(
+          fail(
+            source,
+            `media:// references need ${MEDIA_ROOT_ENV} to point at the media directory`,
+          ),
+        );
+      }
+      const relative = yield* Effect.try({
+        try: () => decodeURIComponent(source.slice(MEDIA_URI_PREFIX.length)),
+        catch: () => fail(source, 'media:// reference contains invalid URI encoding'),
+      });
+      if (relative.length === 0) {
+        return yield* Effect.fail(fail(source, 'media:// reference has no path'));
+      }
+      return yield* Effect.succeed(path.resolve(access.mediaRoot, relative));
     }
-    const relative = decodeURIComponent(source.slice(MEDIA_URI_PREFIX.length));
-    if (relative.length === 0) {
-      return Effect.fail(fail(source, 'media:// reference has no path'));
+    if (path.isAbsolute(source)) {
+      return yield* Effect.succeed(path.resolve(source));
     }
-    return Effect.succeed(path.resolve(access.mediaRoot, relative));
-  }
-  if (path.isAbsolute(source)) {
-    return Effect.succeed(path.resolve(source));
-  }
-  return Effect.fail(
-    fail(source, 'media references must be absolute paths or media://<relative-path> URIs'),
-  );
-};
+    return yield* Effect.fail(
+      fail(source, 'media references must be absolute paths or media://<relative-path> URIs'),
+    );
+  });
 
 const realPathOf = (target: string): Effect.Effect<string | undefined> =>
   Effect.tryPromise(() => realpath(target)).pipe(Effect.orElseSucceed(() => undefined));
@@ -144,7 +173,7 @@ const expectedMimeType = (
   kind: LocalMediaKind,
 ): Effect.Effect<string, LocalMediaError> => {
   const extension = path.extname(filePath).slice(1).toLowerCase();
-  const table = kind === 'image' ? IMAGE_MIME_BY_EXTENSION : VIDEO_MIME_BY_EXTENSION;
+  const table: Readonly<Record<string, string>> = MEDIA_POLICIES[kind].types;
   const mimeType = table[extension];
   if (!mimeType) {
     return Effect.fail(
@@ -175,7 +204,7 @@ const sameFamily = (expected: string, sniffed: string): boolean =>
  * must agree with the extension.
  *
  * @param source - Absolute path or `media://` reference.
- * @param kind - Whether an image or a video is expected.
+ * @param kind - Upload policy: image, video, listing document or post-order document.
  * @param access - Parsed allowlist from {@link getMediaAccessConfig}.
  * @returns An Effect that succeeds with the validated file (contents included) or fails with `LocalMediaError`.
  *
@@ -219,7 +248,7 @@ export const loadLocalMedia = (
       return yield* Effect.fail(fail(source, `${realFilePath} is not a regular file`));
     }
     const mimeType = yield* expectedMimeType(source, realFilePath, kind);
-    const limit = kind === 'image' ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+    const limit = MEDIA_POLICIES[kind].limit;
     if (stats.size > limit) {
       return yield* Effect.fail(
         fail(source, `${stats.size} bytes exceeds eBay's ${kind} limit of ${limit} bytes`),
@@ -232,6 +261,9 @@ export const loadLocalMedia = (
       try: () => readFile(realFilePath),
       catch: () => fail(source, `cannot read ${realFilePath}`),
     });
+    if (bytes.length === 0 || bytes.length > limit) {
+      return yield* Effect.fail(fail(source, `file must contain 1 to ${limit} bytes`));
+    }
     const sniffed = sniffMediaType(bytes);
     if (!(sniffed && sameFamily(mimeType, sniffed))) {
       return yield* Effect.fail(
@@ -246,7 +278,7 @@ export const loadLocalMedia = (
       path: realFilePath,
       fileName: path.basename(realFilePath),
       mimeType,
-      size: stats.size,
+      size: bytes.length,
       kind,
       bytes,
     };

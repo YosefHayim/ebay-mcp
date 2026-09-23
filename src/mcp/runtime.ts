@@ -94,6 +94,7 @@ function registerTool(
     {
       description: definition.description,
       inputSchema: definition.inputSchema,
+      annotations: definition.annotations,
     },
     async (args: ToolArgs) => {
       if (logToolExecution) {
@@ -108,6 +109,10 @@ function registerTool(
           Effect.map((result) => {
             if (logToolExecution) {
               toolLogger.debug(`Tool ${definition.name} completed successfully`);
+            }
+
+            if (entry.formatResult) {
+              return entry.formatResult(result, args);
             }
 
             return ui.shouldRender(entry)
