@@ -474,6 +474,8 @@ export const getScopeTypeDescription = (scope: string): string => {
     'sell.marketing.readonly': 'View your eBay marketing activities',
     'sell.analytics.readonly': 'View your selling analytics data',
     'sell.finances': 'View and manage your payment and order information',
+    'sell.finances.earnings.read': 'View your order earnings',
+    'sell.logistics': 'Create shipping quotes and purchase shipping labels',
     'sell.payment.dispute': 'View and manage disputes and related details',
     'commerce.identity.readonly': 'View basic user information from eBay account',
     'sell.reputation': 'View and manage your reputation data',
