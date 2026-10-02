@@ -35,6 +35,7 @@ const limit = (maximum: number, fallback: number) =>
     .number()
     .int()
     .min(1)
+    .max(maximum)
     .optional()
     .describe(`Records per page, up to ${maximum} (eBay default ${fallback})`);
 
@@ -159,7 +160,7 @@ export const getTransactionSummaryInputSchema = z.object({
   marketplaceId,
   filter: z
     .string()
-    .optional()
+    .regex(/transactionStatus:/, 'Must include a transactionStatus criterion')
     .describe(
       `Transaction summary filter. eBay requires a transactionStatus criterion, e.g. transactionStatus:{PAYOUT}; other criteria are optional: ${transactionCriteria}. ${COMBINE_NOTE}`,
     ),
@@ -184,7 +185,7 @@ export const getBillingActivitiesInputSchema = z.object({
     ),
   filter: z
     .string()
-    .optional()
+    .regex(NON_BLANK, 'Must contain a non-whitespace character')
     .describe(
       'eBay requires exactly one criterion: activityId:{12**56} (a billingTransactionId), listingId:{...}, orderId:{...}, or transactionDate:[2025-10-01T00:00:00Z..2025-10-31T23:59:59Z] in UTC with a start no more than 120 days ago.',
     ),

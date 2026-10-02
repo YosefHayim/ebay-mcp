@@ -443,7 +443,7 @@ export class FinancesApi {
    * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactionSummary
    */
   public getTransactionSummary = (
-    input: GetTransactionSummaryInput = {},
+    input: GetTransactionSummaryInput,
   ): Effect.Effect<TransactionSummaryResponse, EbayApiError | EndpointInputError> => {
     const getFromApiz = this.getFromApiz;
 
@@ -512,7 +512,7 @@ export class FinancesApi {
    * @see https://developer.ebay.com/api-docs/sell/finances/resources/billing_activity/methods/getBillingActivities
    */
   public getBillingActivities = (
-    input: GetBillingActivitiesInput = {},
+    input: GetBillingActivitiesInput,
   ): Effect.Effect<BillingActivityResponse, EbayApiError | EndpointInputError> => {
     const client = this.client;
 

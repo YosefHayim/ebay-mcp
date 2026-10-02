@@ -87,9 +87,9 @@ describe('Finances tool advertisement', () => {
     ebay_get_payout_summary: undefined,
     ebay_get_seller_funds_summary: undefined,
     ebay_get_transactions: undefined,
-    ebay_get_transaction_summary: undefined,
+    ebay_get_transaction_summary: ['filter'],
     ebay_get_transfer: ['transferId'],
-    ebay_get_billing_activities: undefined,
+    ebay_get_billing_activities: ['filter'],
   };
 
   it('advertises every Finances tool as read-only with its required inputs', async () => {

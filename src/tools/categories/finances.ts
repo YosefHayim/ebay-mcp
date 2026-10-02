@@ -95,8 +95,7 @@ export const financesEntries: ToolEntry[] = [
   }),
   defineTool({
     name: 'ebay_get_billing_activities',
-    description:
-      'Get seller billing activities (fees and credits) from the eBay Finances API. eBay requires exactly one filter criterion: activityId, listingId, orderId, or a transactionDate range starting within the last 120 days. Page with limit/offset, sort by transactionDate. Requires the sell.finances scope.',
+    description: `Get seller billing activities (fees and credits) from the eBay Finances API. eBay requires exactly one filter criterion: activityId, listingId, orderId, or a transactionDate range starting within the last 120 days. Page with limit/offset, sort by transactionDate. ${FINANCES_SCOPE_NOTE}`,
     inputSchema: getBillingActivitiesInputSchema.shape,
     annotations: { readOnlyHint: true },
     handler: (api, args) => Effect.runPromise(api.finances.getBillingActivities(args)),

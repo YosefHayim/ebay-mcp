@@ -148,11 +148,17 @@ describe('FinancesApi hosts', () => {
   });
 
   it('sends a per-call Accept-Language header for getBillingActivities', async () => {
-    await Effect.runPromise(finances.getBillingActivities({ acceptLanguage: 'de-DE' }));
+    await Effect.runPromise(
+      finances.getBillingActivities({ acceptLanguage: 'de-DE', filter: 'orderId:{12-34}' }),
+    );
 
-    expect(client.get).toHaveBeenCalledWith('/sell/finances/v1/billing_activity', undefined, {
-      headers: { 'Accept-Language': 'de-DE' },
-    });
+    expect(client.get).toHaveBeenCalledWith(
+      '/sell/finances/v1/billing_activity',
+      { filter: 'orderId:{12-34}' },
+      {
+        headers: { 'Accept-Language': 'de-DE' },
+      },
+    );
   });
 });
 
@@ -169,7 +175,9 @@ describe('FinancesApi failures', () => {
   it('fails with EbayApiError when billing activity is rejected', async () => {
     client.get.mockRejectedValue(new Error('eBay API Error: filter required'));
 
-    const error = await Effect.runPromise(Effect.flip(finances.getBillingActivities({})));
+    const error = await Effect.runPromise(
+      Effect.flip(finances.getBillingActivities({ filter: 'orderId:{12-34}' })),
+    );
 
     expect(error).toMatchObject({
       _tag: 'EbayApiError',
@@ -182,7 +190,16 @@ describe('FinancesApi failures', () => {
     ['empty transferId', () => finances.getTransfer({ transferId: '' })],
     ['negative offset', () => finances.getTransactions({ offset: -1 })],
     ['zero limit', () => finances.getOrderEarnings({ limit: 0 })],
-    ['fractional limit', () => finances.getBillingActivities({ limit: 1.5 })],
+    [
+      'fractional limit',
+      () => finances.getBillingActivities({ filter: 'orderId:{1}', limit: 1.5 }),
+    ],
+    ['limit above the documented maximum', () => finances.getTransactions({ limit: 1001 })],
+    ['billing activity without a filter', () => finances.getBillingActivities({} as never)],
+    [
+      'transaction summary without transactionStatus',
+      () => finances.getTransactionSummary({ filter: 'transactionType:{SALE}' }),
+    ],
   ])('rejects a %s with EndpointInputError before calling eBay', async (_, run) => {
     const error = await Effect.runPromise(Effect.flip(run()));
 
