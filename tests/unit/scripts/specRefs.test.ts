@@ -36,6 +36,8 @@ const spec = {
     },
   },
 };
+// Taken before any test runs, so an in-place mutation by any earlier test is caught too.
+const PRISTINE_SPEC = structuredClone(spec);
 
 describe('replaceDanglingSchemaRefs', () => {
   it('keeps references into a defined schema, such as one of its properties', () => {
@@ -108,10 +110,8 @@ describe('replaceDanglingSchemaRefs', () => {
   });
 
   it('does not mutate the input document', () => {
-    const before = JSON.stringify(spec);
-
     replaceDanglingSchemaRefs(spec);
 
-    expect(JSON.stringify(spec)).toBe(before);
+    expect(spec).toEqual(PRISTINE_SPEC);
   });
 });
