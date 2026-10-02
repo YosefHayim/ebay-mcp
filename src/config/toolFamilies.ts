@@ -24,6 +24,7 @@ export const TOOL_FAMILY_KEYS = [
   'account',
   'finances',
   'inventory',
+  'feed',
   'stores',
   'fulfillment',
   'logistics',
