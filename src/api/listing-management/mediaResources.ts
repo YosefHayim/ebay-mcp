@@ -1,4 +1,5 @@
 import type { EbayApiClient } from '@/api/client.js';
+import { locatedResourceId } from '@/api/shared/location.js';
 import { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
 import { getIdentityBaseUrl, getMediaBaseUrl } from '@/config/environment.js';
 import {
@@ -40,28 +41,6 @@ const uploadForm = (file: MediaUpload): FormData => {
   return form;
 };
 
-const locationId = (location: string | undefined, path: string) =>
-  Effect.try({
-    try: () => {
-      if (!location) {
-        throw new Error('eBay returned no Location header');
-      }
-      const url = new URL(location);
-      const prefix = `${path}/`;
-      const segment = url.pathname.slice(prefix.length);
-      if (
-        url.protocol !== 'https:' ||
-        !url.pathname.startsWith(prefix) ||
-        !segment ||
-        segment.includes('/')
-      ) {
-        throw new Error('eBay returned an invalid resource Location');
-      }
-      return { location, id: decodeURIComponent(segment) };
-    },
-    catch: (cause) => new EbayApiError({ method: 'POST', path, cause }),
-  });
-
 /**
  * Creates endpoint methods for image URLs and documents on the Media API.
  * @param client - Shared authenticated HTTP client.
@@ -98,7 +77,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
           }),
         catch: failure('POST', path),
       });
-      const resource = yield* locationId(response.headers.location, `${BASE_PATH}/image`);
+      const resource = yield* locatedResourceId(response.headers.location, `${BASE_PATH}/image`);
       return { imageId: resource.id, location: resource.location, image: response.data };
     });
 
@@ -206,7 +185,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
           }),
         catch: failure('POST', path),
       });
-      const resource = yield* locationId(response.headers.location, `${BASE_PATH}${path}`);
+      const resource = yield* locatedResourceId(response.headers.location, `${BASE_PATH}${path}`);
       return { documentId: resource.id, location: resource.location };
     });
 
