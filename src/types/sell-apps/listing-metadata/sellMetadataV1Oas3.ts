@@ -113,7 +113,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** @description This method returns item condition metadata on one, multiple, or all eBay categories on an eBay marketplace. This metadata consists of the different item conditions (with IDs) that an eBay category supports, and a boolean to indicate if an eBay category requires an item condition. <br><br>If applicable, this metadata also shows the different condition descriptors (with IDs) that an eBay category supports.<br><br><span class="tablenote"><b>Note:</b> Currently, condition grading is only applicable to the following trading card categories: <ul><li>Non-Sport Trading Card Singles</li><li>CCG Individual Cards</li><li>Sports Trading Cards Singles</li></ul></span><br>The identifier of the eBay marketplace is passed in as a path parameter, and unless one or more eBay category IDs are passed in through the <b>filter</b> query parameter, this method will return metadata on every single category for the specified marketplace. If you only want to view item condition metadata for one eBay category or a select group of eBay categories, you can pass in up to 50 eBay category ID through the <b>filter</b> query parameter.<br><br><span class="tablenote"><span style="color:#FF0000"><strong>Important:</strong></span> <b>Certified - Refurbished</b>-eligible sellers, and sellers who are eligible to list with the new values (EXCELLENT_REFURBISHED, VERY_GOOD_REFURBISHED, and GOOD_REFURBISHED) must use an OAuth token created with the <a href="/api-docs/static/oauth-authorization-code-grant.html" target="_blank">authorization code grant flow</a> and <b>https://api.ebay.com/oauth/api_scope/sell.inventory</b> scope in order to retrieve the refurbished conditions for the relevant categories.<br/><br/>See the <a href="/api-docs/sell/static/metadata/condition-id-values.html#Category " target="_blank">eBay Refurbished Program - Category and marketplace support</a> topic for the categories and marketplaces that support these refurbished conditions<br/><br/>These restricted item conditions will not be returned if an OAuth token created with the <a href="/api-docs/static/oauth-client-credentials-grant.html" target="_blank">client credentials grant flow</a> and <b>https://api.ebay.com/oauth/api_scope</b> scope is used, or if any seller is not eligible to list with that item condition. <br/><br/> See the <a href="/api-docs/static/oauth-scopes.html" target="_blank">Specifying OAuth scopes</a> topic for more information about specifying scopes.</span><br><br><span class="tablenote"><span style="color:#478415"><strong>Tip:</strong></span> This method can potentially return a very large response payload. eBay recommends that the response payload be compressed by passing in the <b>Accept-Encoding</b> request header and setting the value to <code>gzip</code>.</span> */
+    /** @description This method returns item condition metadata on one, multiple, or all eBay categories on an eBay marketplace. This metadata consists of the different item conditions (with IDs) that an eBay category supports, and a boolean to indicate if an eBay category requires an item condition. <br><br>If applicable, this metadata also shows the different condition descriptors (with IDs) that an eBay category supports.<br><br><span class="tablenote"><b>Note:</b> Currently, condition grading is only applicable to the following trading card categories: <ul><li>Non-Sport Trading Card Singles</li><li>CCG Individual Cards</li><li>Sports Trading Cards Singles</li></ul></span><br>The identifier of the eBay marketplace is passed in as a path parameter, and unless one or more eBay category IDs are passed in through the <b>filter</b> query parameter, this method will return metadata on every single category for the specified marketplace. If you only want to view item condition metadata for one eBay category or a select group of eBay categories, you can pass in up to 50 eBay category ID through the <b>filter</b> query parameter.<br><br><span class="tablenote"><span style="color:#FF0000"><strong>Important:</strong></span> <b>Certified - Refurbished</b>-eligible sellers, and sellers who are eligible to list with the new values (EXCELLENT_REFURBISHED, VERY_GOOD_REFURBISHED, and GOOD_REFURBISHED) must use an OAuth token created with the <a href="/api-docs/static/oauth-authorization-code-grant.html" target="_blank">authorization code grant flow</a> and <b>https://api.ebay.com/oauth/api_scope/sell.inventory</b> scope in order to retrieve the refurbished conditions for the relevant categories.<br/><br/>Refurbished item conditions are only supported in the Australia, Canada, French Canada, Germany, France, Italy, UK, and US marketplaces. See the <a href="https://www.ebay.com/sellercenter/ebay-for-business/ebay-refurbished-program" target="_blank">eBay Refurbished Program</a> page in help center for the categories that support refurbished conditions. <br/><br/>These restricted item conditions will not be returned if an OAuth token created with the <a href="/api-docs/static/oauth-client-credentials-grant.html" target="_blank">client credentials grant flow</a> and <b>https://api.ebay.com/oauth/api_scope</b> scope is used, or if any seller is not eligible to list with that item condition. <br/><br/> See the <a href="/api-docs/static/oauth-scopes.html" target="_blank">Specifying OAuth scopes</a> topic for more information about specifying scopes.</span><br><br><span class="tablenote"><span style="color:#478415"><strong>Tip:</strong></span> This method can potentially return a very large response payload. eBay recommends that the response payload be compressed by passing in the <b>Accept-Encoding</b> request header and setting the value to <code>gzip</code>.</span> */
     get: operations['getItemConditionPolicies'];
     put?: never;
     post?: never;
@@ -361,6 +361,91 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/shipping/marketplace/{marketplace_id}/get_exclude_shipping_locations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description This method retrieves a list of locations that the seller can use as excluded shipping locations within their listings or in their fulfillment business policies for the specified marketplace. These are locations that a seller designates as areas where they will not ship items. <p>Excluded shipping locations and ship-to locations are used in tandem at the listing level and in fulfillment business policies. Excluded shipping locations and ship-to locations share a lot of the same values and they should not contradict each other.<p>Manage excluded shipping locations using business policies through the <a href="/api-docs/sell/account/resources/methods#s0-1-30-4-7-5-6-2[1]-h2-fulfillment_policy"  target="_blank">fulfillment_policy</a> resource of the <b>Account v1 API</b>.</p> */
+    get: operations['getExcludeShippingLocations'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/shipping/marketplace/{marketplace_id}/get_handling_times': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description This method retrieves a list of supported handling times for the specified marketplace. The handling time returned specifies the maximum number of business days the eBay site allows for shipping an item to domestic buyers after receiving a cleared payment. Handling times apply to both domestic and international orders. If the handling time is 1 day, the seller commits to dropping the item off for shipment one business day after payment clears. <p>Manage handing times using business policies through the <a href="/api-docs/sell/account/resources/methods#s0-1-30-4-7-5-6-2[1]-h2-fulfillment_policy"  target="_blank">fulfillment_policy</a> resource of the <b>Account v1 API</b>.</p> */
+    get: operations['getHandlingTimes'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/shipping/marketplace/{marketplace_id}/get_shipping_carriers': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description This method retrieves a list of supported shipping carriers for the specified marketplace. It provides essential information for sellers to understand which shipping carriers are available for use when listing items on that eBay marketplace. Knowing the supported carriers can help sellers optimize their shipping options and ensure efficient delivery to buyers.<p>The value returned in the <b>shippingCarrier</b> field is the enumerated value required when providing shipment tracking information for that carrier.</p><p><span class="tablenote"><span style="color:#004680"><strong>Tip: </strong> Use the <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices"  target="_blank">getShippingServices</a> method to explore available shipping services for each carrier.</span></p><p>Manage shipping carriers using business policies through the <a href="/api-docs/sell/account/resources/methods#s0-1-30-4-7-5-6-2[1]-h2-fulfillment_policy"  target="_blank">fulfillment_policy</a> resource of the <b>Account v1 API</b>.</p> */
+    get: operations['getShippingCarriers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/shipping/marketplace/{marketplace_id}/get_shipping_locations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description This method retrieves a list of supported shipping locations for the specified marketplace. It provides sellers with information on where they can ship their items. Sellers can use this information to configure their shipping settings. <p><span class="tablenote"><span style="color:#004680"><strong>Tip: </strong> Use the <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getExcludeShippingLocations">getExcludeShippingLocations</a> method to return locations where the seller does not ship.</span></p><p>Manage shipping locations using business policies through the <a href="/api-docs/sell/account/resources/methods#s0-1-30-4-7-5-6-2[1]-h2-fulfillment_policy"  target="_blank">fulfillment_policy</a> resource of the <b>Account v1 API</b>.</p> */
+    get: operations['getShippingLocations'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/shipping/marketplace/{marketplace_id}/get_shipping_services': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description This method retrieves a list of shipping services supported for the specified marketplace, including valid shipping services, shipping times, and package constraints such as size and weight.<p>Manage shipping services using business policies through the <a href="/api-docs/sell/account/resources/methods#s0-1-30-4-7-5-6-2[1]-h2-fulfillment_policy"  target="_blank">fulfillment_policy</a> resource of the <b>Account v1 API</b>.</p> */
+    get: operations['getShippingServices'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/country/{countryCode}/sales_tax_jurisdiction': {
     parameters: {
       query?: never;
@@ -432,7 +517,7 @@ export interface components {
       lsd?: boolean;
       /** @description Indicates the Minimum Reserve Price for an auction listing in this category. If there is no Minimum Reserve Price, a value of <code>0.0</code> is returned in this field. */
       minimumReservePrice?: number;
-      /** @description If this field (Override Reserve Price Allowed) is returned as <code>true</code>, all leaf categories on the site allow the seller to completely remove the reserve price for an active auction listing. For information on removing or reducing reserve prices, see <a href="https://www.ebay.com/help/selling/listings/selling-auctions/reserve-prices?id=4143"  target="_blank">Setting a reserve price</a>. */
+      /** @description This field (Override Reserve Price Allowed) is returned as <code>true</code> if the eBay marketplace's default policy is to allow reserve prices for auction listings, but the corresponding category does not allow a reserve price. <p><span class="tablenote"><span style="color:#004680"><strong>Note: </strong>This field is not returned if the marketplace does not permit reserve prices.</span></p> */
       orpa?: boolean;
       /** @description If this field (Override Reduce Reserve Allowed) is returned as <code>true</code>, the seller can reduce or remove a reserve price that had already been reduced for an active auction listing. */
       orra?: boolean;
@@ -440,6 +525,8 @@ export interface components {
       paymentMethods?: string[];
       /** @description If this field (Reduce Reserve Allowed) is <code>true</code>, the corresponding leaf category allows the seller to reduce an item's reserve price. If false, this field is not returned in the response and the corresponding leaf category on the site do not normally allow sellers to reduce an item's reserve price.<p>This field is only returned when <code>true</code> (not returned when false).</p> */
       reduceReserveAllowed?: boolean;
+      /** @description This field indicates whether reserve prices are allowed for auction listings in this category. This field returns as <code>true</code> when the category supports reserve prices, or <code>false</code> if the eBay marketplace does not permit reserve prices or the category override blocks reserve prices (<b>orpa</b> is <code>true</code>). */
+      reservePriceAllowed?: boolean;
       /** @description This enumerated value indicates whether or not the category on the specified eBay site supports the use of Universal Product Codes (UPCs) to help create a listing. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/metadata/types/sel:ProductIdentiferEnabledEnum'>eBay API documentation</a> */
       upcSupport?: string;
       /** @description When returned as <code>true</code>, this boolean indicates that the leaf category for the specified site is designated by eBay as a value category. Value categories can be used as a secondary category for a listing at no extra charge. */
@@ -552,7 +639,7 @@ export interface components {
       /** @description Name of the domain's subsystem or subdivision. For example, checkout is a subdomain in the buying domain. */
       subdomain?: string;
     };
-    /** @description Container for a error parameter. */
+    /** @description Container for an error parameter. */
     ErrorParameter: {
       /** @description Name of the entity that threw the error. */
       name?: string;
@@ -678,7 +765,7 @@ export interface components {
       categoryTreeId?: string;
       /** @description This flag denotes whether or not you must list the item condition in a listing for the specified category. If set to <code>true</code>, you must specify an item condition for the associated category. */
       itemConditionRequired?: boolean;
-      /** @description The item-condition values allowed in the category.<br><br><span class="tablenote"><b>Note:</b> The ‘Seller Refurbished’ item condition (condition ID 2500) has been replaced by the 'Excellent - Refurbished', 'Very Good - Refurbished', and 'Good - Refurbished' item conditions in a select number of eBay marketplaces and categories. See the <a href="/api-docs/sell/static/metadata/condition-id-values.html#Category " target="_blank "> eBay Refurbished Program - Category and marketplace support</a> topic for more details.<br/><br/>Similar to the ‘Certified Refurbished’ item condition (condition ID 2000), a seller’s OAuth user token will have to be used instead of an OAuth application token, since each seller must  go through an application and qualification process before using any of these new refurbished item conditions in supported categories. If a seller is not qualified to use the new refurbished item conditions, these item condition values will not be returned by <b>getItemConditionPolicies</b>.</span> */
+      /** @description The item-condition values allowed in the category.<br><br><span class="tablenote"><b>Note:</b> The ‘Seller Refurbished’ item condition (condition ID 2500) has been replaced by the 'Excellent - Refurbished', 'Very Good - Refurbished', and 'Good - Refurbished' item conditions in a select number of eBay marketplaces and categories.<br/><br/>Similar to the ‘Certified Refurbished’ item condition (condition ID 2000), a seller’s OAuth user token will have to be used instead of an OAuth application token, since each seller must  go through an application and qualification process before using any of these new refurbished item conditions in supported categories. If a seller is not qualified to use the new refurbished item conditions, these item condition values will not be returned by <b>getItemConditionPolicies</b>.</span> */
       itemConditions?: components['schemas']['ItemCondition'][];
     };
     ItemConditionPolicyResponse: {
@@ -893,6 +980,33 @@ export interface components {
       negotiatedPricePolicies?: components['schemas']['NegotiatedPricePolicy'][];
       /** @description A list of the warnings that were generated as a result of the request. This field is not returned if no warnings were generated by the request. */
       warnings?: components['schemas']['Error'][];
+    };
+    /** @description The packageLimits field is used to specify the physical constraints and measurement units of packages, ensuring compliance with various shipping requirements. */
+    PackageLimits: {
+      /** @description Unit of dimensional measurement, for example <code>INCH</code> or <code>CENTIMETER</code>. */
+      dimensionUnit?: string;
+      /** @description The maximum girth allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      maxGirth?: number;
+      /** @description The maximum height allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      maxHeight?: number;
+      /** @description The maximum length allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      maxLength?: number;
+      /** @description The maximum weight allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.weightUnit">weightUnit</a>. */
+      maxWeight?: number;
+      /** @description The maximum width allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      maxWidth?: number;
+      /** @description The minimum girth allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      minGirth?: number;
+      /** @description The minimum height allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      minHeight?: number;
+      /** @description The minimum length allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      minLength?: number;
+      /** @description The minimum weight allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.weightUnit">weightUnit</a>. */
+      minWeight?: number;
+      /** @description The minimum width allowed for a package shipped through the corresponding shipping service, as measured in units of <a href="/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices#response.shippingServices.packageLimits.dimensionUnit">dimensionUnit</a>. */
+      minWidth?: number;
+      /** @description Unit of weight measurement, for example <code>KILOGRAM</code> or <code>OUNCE</code>. */
+      weightUnit?: string;
     };
     /** @description This type defines the pagination settings for a result set. */
     Pagination: {
@@ -1119,17 +1233,17 @@ export interface components {
     };
     /** @description This container defines the category policies that relate to domestic and international return policies (the return shipping is made via a domestic or an international shipping service, respectively). */
     ReturnPolicyDetails: {
-      /** @description If set to <code>true</code>, this flag indicates you can supply a detailed return policy description within your return policy (for example, by populating the <b>returnInstructions</b> field in the Account API's <b>createReturnPolicy</b>). User-supplied return policy details are allowed only in the DE, ES, FR, and IT marketplaces. */
+      /** @description If set to <code>true</code>, this flag indicates you can supply a detailed return policy description within your return policy (for example, by populating the <b>returnInstructions</b> field in the Account API's <b>createReturnPolicy</b>). User-supplied return policy details are allowed only in the DE, ES, FR, and IT marketplaces.<br/><br/><span class="tablenote"><strong>Note:</strong> Depending on the API used to setup your return policy, return instructions are defined differently.<ul><li><b>Account v1 API</b><br/>When using <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy" target="_blank">createReturnPolicy</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy" target="_blank">updateReturnPolicy</a> to create/manage business policies, use <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.returnInstructions" target="_blank">returnInstructions</a> to provide both domestic and international return instructions for the business policy.</li><li><b>Trading API or Sell Feed API</b><br/><br.>When using the legacy <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy" target="_blank">ReturnPolicy</a> fields, use <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.Description" target="_blank">Item.ReturnPolicyDescription</a> to provide both domestic and internation return instructions for the business policy.</li></ul></span> */
       policyDescriptionEnabled?: boolean;
-      /** @description A list of refund methods allowed for the associated category. */
+      /** @description A list of refund methods allowed for the associated category.<br/><br/><span class="tablenote"><strong>Note:</strong> Depending on the API used to setup your return policy, available refund methods are defined differently.<ul><li><b>Account v1 API</b><br/>When using the <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy" target="_blank">createReturnPolicy</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy" target="_blank">updateReturnPolicy</a> methods to create/manage business policies, use the appropriate <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy#request.refundMethod" target="_blank">refundMethod</a> field to specify the refund method for both domestic and international returns for the business policy.</li><li><b>Trading API or Sell Feed API</b><br/><br.>When using legacy <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy" target="_blank">ReturnPolicy</a> fields, use <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.RefundOption" target="_blank">RefundOption</a> and <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.InternationalRefundOption" target="_blank">InternationalRefundOption</a> to specify the domestic and international refund method, respectively, for returns for the business policy.<br/><br/>Note that if <b>MONEY_BACK</b> is returned by <b>getReturnPolicies</b>, use <b>MoneyBack</b> in <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.RefundOption" target="_blank">RefundOption</a> and <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.InternationalRefundOption" target="_blank">InternationalRefundOption</a>.</li></ul></span> */
       refundMethods?: string[];
-      /** @description A list of return methods allowed for the associated category. */
+      /** @description A list of return methods allowed for the associated category.<br/><br/><span class="tablenote"><strong>Note:</strong> Depending on the API used to setup your return policy, available return methods are defined differently.<ul><li><b>Account v1 API</b><br/>When using <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy" target="_blank">createReturnPolicy</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy" target="_blank">updateReturnPolicy</a> to create/manage business policies, use <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy#request.returnMethod" target="_blank">returnMethod</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.internationalOverride.returnMethod" target="_blank">internationalOverride.returnMethod</a> to specify the domestic and international return method, respectively, for the business policy.</li></ul></span> */
       returnMethods?: string[];
-      /** @description A list of return periods allowed for the associated category.  <br><br>Note that different APIs require you to enter the return period in different ways. For example, the Account API uses the complex <b>TimeDuration</b> type, which takes two values (a <b>unit</b> and a <b>value</b>), whereas the Trading API takes a single value (such as <code>Days_30</code>). */
+      /** @description A list of return periods allowed for the associated category.<br/><br/><span class="tablenote"><strong>Note:</strong> Depending on the API used to setup your return policy, return periods are defined differently.<ul><li><b>Account v1 API</b><br/>When using <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy" target="_blank">createReturnPolicy</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy" target="_blank">updateReturnPolicy</a> to create/manage business policies, use the <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.returnPeriod" target="_blank">returnPeriod</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.internationalOverride.returnPeriod" target="_blank">internationalOverride.returnPeriod</a> containers to set the return period(s) for the business policy. You will use the supported values returned under the <code>returnPeriods</code> array in the <b>getReturnPolicies</b> response.</li><li><b>Trading API or Sell Feed API</b><br/><br.>When using legacy <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy" target="_blank">ReturnPolicy</a> fields, use <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.ReturnsWithinOption" target="_blank">ReturnsWithinOption</a> and <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.InternationalReturnsWithinOption" target="_blank">InternationalReturnsWithinOption</a> to pass in one of the supported enum values defined in <a href="/devzone/xml/docs/Reference/eBay/types/ReturnsWithinOptionsCodeType.html" target="_blank">ReturnsWithinOptionsCodeType</a>.<br/><br/>For example, if a value of <b>30</b> is returned in the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getReturnPolicies#response.returnPolicies.domestic.returnPeriods.value" target="_blank">returnPeriods.value</a> field of <b>getReturnPolicies</b>, use <b>Days_30</b> in <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.ReturnsWithinOption" target="_blank">ReturnsWithinOption</a> or <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.InternationalReturnsWithinOption" target="_blank">InternationalReturnsWithinOption</a>.</li></ul></span> */
       returnPeriods?: components['schemas']['TimeDuration'][];
-      /** @description If set to <code>true</code>, this flag indicates the seller can configure how they handle domestic returns. */
+      /** @description A value of <code>true</code> in this field indicates that return policies are applicable to the corresponding leaf category.<br/><br/><span class="tablenote"><strong>Note:</strong> Depending on the API used to setup your return policy, whether or not you accept returns is configured as follows:<ul><li><b>Account v1 API</b><br/>When using <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy" target="_blank">createReturnPolicy</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy" target="_blank">updateReturnPolicy</a> to create/manage business policies, use <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.returnsAccepted" target="_blank">returnsAccepted</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy#request.internationalOverride.returnsAccepted" target="_blank">internationalOverride.returnsAccepted</a> to indicate whether or not you accept returns.</li><li><b>Trading API or Sell Feed API</b><br/><br.>When using legacy <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy" target="_blank">ReturnPolicy</a> fields, use <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.ReturnsAcceptedOption" target="_blank">ReturnsAcceptedOption</a> and <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.InternationalReturnsAcceptedOption" target="_blank">InternationalReturnsAcceptedOption</a> to indicate whether or not you accept returns.</li></ul></span> */
       returnsAcceptanceEnabled?: boolean;
-      /** @description A list of allowed values for who pays for the return shipping cost.  <br><br>Note that for SNAD returns, the seller is always responsible for the return shipping cost. */
+      /** @description A list of allowed values for who pays for the return shipping cost.<br><br>Note that for SNAD returns, the seller is always responsible for the return shipping cost.<br/><br/><span class="tablenote"><strong>Note:</strong> Depending on the API used to setup your return policy, specifiying that the buyer or seller is responsible for paying for return shipping costs is defined differently.<ul><li><b>Account v1 API</b><br/>When using <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy" target="_blank">createReturnPolicy</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/updateReturnPolicy" target="_blank">updateReturnPolicy</a> to create/manage business policies, use <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.returnShippingCostPayer" target="_blank">returnShippingCostPayer</a> and <a href="/api-docs/sell/account/resources/return_policy/methods/createReturnPolicy#request.internationalOverride.returnShippingCostPayer" target="_blank">internationalOverride.returnShippingCostPayer</a> to specify if the buyer or seller is responsible for paying return shipping charges for the business policy.</li><li><b>Trading API or Sell Feed API</b><br/><br.>When using legacy <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy" target="_blank">ReturnPolicy</a> fields, use <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.ShippingCostPaidByOption" target="_blank">ShippingCostPaidByOption</a> and <a href="/devzone/xml/docs/Reference/eBay/AddItem.html#Request.Item.ReturnPolicy.InternationalShippingCostPaidByOption" target="_blank">InternationalShippingCostPaidByOption</a> fields to specify if the buyer or seller is responsible for paying return shipping charges for the business policy.</li></ul></span> */
       returnShippingCostPayers?: string[];
     };
     ReturnPolicyResponse: {
@@ -1147,6 +1261,61 @@ export interface components {
     SalesTaxJurisdictions: {
       /** @description A list of sales-tax jurisdictions. */
       salesTaxJurisdictions?: components['schemas']['SalesTaxJurisdiction'][];
+    };
+    /** @description This type provides applicable shipping carrier metadata for the marketplace. */
+    ShippingCarrier: {
+      /** @description The localized description of the shipping carrier, such as <code>UPS</code>, <code>FedEx</code>, and <code>USPS</code>. */
+      description?: string;
+      /** @description An enumerated value describing the shipping carrier returned, for example, <code>UPS</code>, <code>FedEx</code>, and <code>USPS</code>. These values are needed when providing shipment tracking information for each specific shipping carrier. */
+      shippingCarrier?: string;
+    };
+    /** @description This type provides applicable shipping carrier metadata for returned for the marketplace. */
+    ShippingCarrierResponse: {
+      /** @description A list of shipping carriers available for the marketplace. */
+      shippingCarriers?: components['schemas']['ShippingCarrier'][];
+    };
+    /** @description This type provides applicable locations or region codes to be excluded set by the seller. */
+    ShippingExcludeLocation: {
+      /** @description The localized location name. */
+      description?: string;
+      /** @description The location or region to be excluded. Countries are returned through <a href="https://www.iso.org/iso-3166-country-codes.html" target="_blank">ISO 3166 codes</a>. This field may also include continents and other larger geographical regions (for example, the Middle East, Southeast Asia), as well as domestic/special locations (like APO/FPO, PO Box, Alaska/Hawaii). The values returned in this field are used in fulfillment business policies (such as in <a href="/api-docs/sell/account/resources/fulfillment_policy/methods/createFulfillmentPolicy#request.shippingOptions.shippingServices.shipToLocations.regionExcluded.regionName" target="_blank">regionName</a>) or through the <a href="/Devzone/XML/docs/Reference/eBay/AddItem.html#Request.Item.ShippingDetails.ExcludeShipToLocation" target="_blank">ExcludeShipToLocation</a> field in an <b>AddItem</b> call. */
+      location?: string;
+      /** @description The region of the excluded shipping area specified, such as:<br><ul><li><code>Africa</code> </li> <li><code>Americas</code> </li> <li><code>Asia</code> </li>  <li><code>Central America and Caribbean</code> </li> <li><code>Europe</code> </li> <li><code>Middle East</code> </li> <li><code>North America</code> </li> <li><code>Oceania</code> </li>  <li><code>South America</code> </li> <li><code>Southeast Asia</code> </li></ul> */
+      region?: string;
+    };
+    /** @description This type provides applicable locations or region codes to be excluded. */
+    ShippingExcludeLocationResponse: {
+      /** @description The complete list of geographical regions, countries, domestic areas, and special locations for the specified eBay marketplace that the seller has designated as excluded shipping locations. */
+      excludeShippingLocations?: components['schemas']['ShippingExcludeLocation'][];
+    };
+    /** @description This type provides applicable shipping handling time metadata. */
+    ShippingHandlingTime: {
+      /** @description The localized description of the maximum handling time. */
+      description?: string;
+      /** @description This field is only returned if its value is <code>true</code>. If returned, it indicates that the corresponding handling time is considered extended handling for the marketplace. Extended handling times may be used for freight shipping, but should generally be avoided if possible, as they might adversely affect the buying decisions of potential customers. */
+      extendedHandling?: boolean;
+      /**
+       * Format: int32
+       * @description The integer value returned in this field indicates the maximum number of business days that the eBay site allows as a seller's handling time measured from when the buyer pays for the order. For example,  if the <b>maxHandlingTime</b> value is set to 1 and  a buyer pays for the order on a Wednesday, the seller would have to ship the item by the next day (Thursday). <br><br>A <b>maxHandlingTime</b> value of <code>0</code> indicates same day handling for an item. In this case, the seller's handling time commitment depends on the order cut off time set in the seller's user preferences. This defaults to 2:00 PM local time on most eBay sites. For orders placed (and cleared payment received) before the local order cut off time, the item must be shipped by the end of the current day. For orders completed on or after the order cut off time, the item must be shipped by the end of the following day (excluding weekends and local holidays).
+       */
+      maxHandlingTime?: number;
+    };
+    /** @description This type provides applicable shipping handling times returned for the specified marketplace. */
+    ShippingHandlingTimeResponse: {
+      /** @description A list of supported handling times for the marketplace. */
+      handlingTimes?: components['schemas']['ShippingHandlingTime'][];
+    };
+    /** @description This type provides applicable shipping location metadata. */
+    ShippingLocation: {
+      /** @description The localized location name. */
+      description?: string;
+      /** @description The name or abbreviation of the shipping location or region. Countries are returned through <a href="https://www.iso.org/iso-3166-country-codes.html" target="_blank">ISO 3166 codes</a>. This field may also include continents and other larger geographical regions (for example, the Middle East, Southeast Asia), as well as domestic/special locations (like APO/FPO, PO Box, Alaska/Hawaii). The values returned in this field are used in fulfillment business policies (such as in <a href="/api-docs/sell/account/resources/fulfillment_policy/methods/createFulfillmentPolicy#request.shippingOptions.shippingServices.shipToLocations.regionExcluded.regionName" target="_blank">regionName</a>) or through the <a href="/Devzone/XML/docs/Reference/eBay/AddItem.html#Request.Item.ShippingDetails.ExcludeShipToLocation" target="_blank">ExcludeShipToLocation</a> field in an <b>AddItem</b> call. */
+      shippingLocation?: string;
+    };
+    /** @description This type provides applicable shipping location metadata returned. */
+    ShippingLocationResponse: {
+      /** @description The complete list of geographical regions, countries, domestic areas, and special locations for the specified eBay marketplace that can be set as shipping locations. */
+      shippingLocations?: components['schemas']['ShippingLocation'][];
     };
     /** @description This type provides fields applicable for shipping policy metadata for the leaf categories returned for the marketplace. */
     ShippingPoliciesResponse: {
@@ -1174,6 +1343,40 @@ export interface components {
       maxFlatShippingCost?: components['schemas']['Amount'];
       /** @description Indicates whether the category requires sellers to specify shipping details at listing time. */
       shippingTermsRequired?: boolean;
+    };
+    /** @description This type provides applicable shipping service metadata. */
+    ShippingService: {
+      /** @description This field returns the localized name of the shipping service. */
+      description?: string;
+      /** @description A value of <code>true</code> indicates that the shipping service is international. An international shipping service option is required if an item is being shipped from one country (origin) to another (destination). */
+      internationalService?: boolean;
+      /**
+       * Format: int32
+       * @description This value indicates the maximum number of business days that it takes the <b>shippingCarrier</b> to ship an item using the corresponding <b>shippingService</b>.
+       */
+      maxShippingTime?: number;
+      /**
+       * Format: int32
+       * @description This value indicates the minimum number of business days that it takes the <b>shippingCarrier</b> to ship an item using the corresponding <b>shippingService</b>.
+       */
+      minShippingTime?: number;
+      /** @description This container provides name-value pairs that specify physical constraints and measurement units of packages for the <b>shippingCarrier</b> and the corresponding <b>shippingService</b>. An empty container is returned if the shipping service does not have any package limits defined. */
+      packageLimits?: components['schemas']['PackageLimits'];
+      /** @description The code for the shipping carrier returned, for example, <code>UPS</code>, <code>FedEx</code>, and <code>USPS</code>. */
+      shippingCarrier?: string;
+      /** @description The shipping category of the shipping service including:  <code>ECONOMY</code>, <code>STANDARD</code>, <code>EXPEDITED</code>, <code>ONE_DAY</code>, <code>PICKUP</code>, and other similar categories. */
+      shippingCategory?: string;
+      /** @description A list of shipping cost types that this shipping service option supports. For example, <code>FLAT_RATE</code>, <code>CALCULATED</code>, and <code>FREIGHT</code>. */
+      shippingCostTypes?: string[];
+      /** @description The name of the shipping service. The shipping service named here can only be used in listings or in business policies if <b>validForSellingFlow</b> is <code>true</code>. The value returned in this field is used in listing APIs and business policies to set the shipping service. */
+      shippingService?: string;
+      /** @description A value of <code>true</code> indicates that the <b>shippingService</b> can be set as an available shipping service in the listing or through the fulfillment business policy. */
+      validForSellingFlow?: boolean;
+    };
+    /** @description This type provides applicable shipping service metadata returned. */
+    ShippingServiceResponse: {
+      /** @description A complete list of shipping service options that can be used on the marketplace for shipping items. */
+      shippingServices?: components['schemas']['ShippingService'][];
     };
     /** @description A type that describes signal words for hazardous materials labels. */
     SignalWord: {
@@ -2447,6 +2650,206 @@ export interface operations {
       };
       /** @description Unauthorized */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getExcludeShippingLocations: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description This header is required to retrieve metadata for the French Canada, French Belgium, and Dutch Belgium marketplaces.<br><br>Follow the instructions below to retrieve metadata for these three marketplaces:<ul><li><b>French Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-BE</code>.</li><li><b>Dutch Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>nl-BE</code>.</li><li><b>French Canada</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_CA</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-CA</code>.</li></ul><span class="tablenote"><b>Note:</b> If <code>EBAY_CA</code> is set as the <b>marketplace_id</b> path parameter and the <b>Accept-Language</b> header is not used, the marketplace will default to the English Canada marketplace.</span> */
+        'Accept-Language'?: string;
+      };
+      path: {
+        /** @description This path parameter specifies the eBay marketplace for which excluded shipping locations information is retrieved.<br><br>See <a href="/api-docs/sell/metadata/types/bas:MarketplaceIdEnum" target="_blank">MarketplaceIdEnum</a> for supported eBay marketplace ID values. <p><span class="tablenote"><span style="color:#004680"><strong>Note: </strong> When listing the items on the French Canada, French Belgium, and Dutch Belgium marketplaces, also set the <b>Accept-Language</b> header as needed.</span></p> */
+        marketplace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShippingExcludeLocationResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getHandlingTimes: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description This header is required to retrieve metadata for the French Canada, French Belgium, and Dutch Belgium marketplaces.<br><br>Follow the instructions below to retrieve metadata for these three marketplaces:<ul><li><b>French Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-BE</code>.</li><li><b>Dutch Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>nl-BE</code>.</li><li><b>French Canada</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_CA</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-CA</code>.</li></ul><span class="tablenote"><b>Note:</b> If <code>EBAY_CA</code> is set as the <b>marketplace_id</b> path parameter and the <b>Accept-Language</b> header is not used, the marketplace will default to the English Canada marketplace.</span> */
+        'Accept-Language'?: string;
+      };
+      path: {
+        /** @description This path parameter specifies the eBay marketplace for which handling times information is retrieved.<br><br>See <a href="/api-docs/sell/metadata/types/bas:MarketplaceIdEnum" target="_blank">MarketplaceIdEnum</a> for supported eBay marketplace ID values. <p><span class="tablenote"><span style="color:#004680"><strong>Note: </strong> When listing the items on the French Canada, French Belgium, and Dutch Belgium marketplaces, also set the <b>Accept-Language</b> header as needed.</span></p> */
+        marketplace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShippingHandlingTimeResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getShippingCarriers: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description This header is required to retrieve metadata for the French Canada, French Belgium, and Dutch Belgium marketplaces.<br><br>Follow the instructions below to retrieve metadata for these three marketplaces:<ul><li><b>French Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-BE</code>.</li><li><b>Dutch Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>nl-BE</code>.</li><li><b>French Canada</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_CA</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-CA</code>.</li></ul><span class="tablenote"><b>Note:</b> If <code>EBAY_CA</code> is set as the <b>marketplace_id</b> path parameter and the <b>Accept-Language</b> header is not used, the marketplace will default to the English Canada marketplace.</span> */
+        'Accept-Language'?: string;
+      };
+      path: {
+        /** @description This path parameter specifies the eBay marketplace for which shipping carriers information is retrieved.<br><br>See <a href="/api-docs/sell/metadata/types/bas:MarketplaceIdEnum" target="_blank">MarketplaceIdEnum</a> for supported eBay marketplace ID values. <p><span class="tablenote"><span style="color:#004680"><strong>Note: </strong> When listing the items on the French Canada, French Belgium, and Dutch Belgium marketplaces, also set the <b>Accept-Language</b> header as needed.</span></p> */
+        marketplace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShippingCarrierResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getShippingLocations: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description This header is required to retrieve metadata for the French Canada, French Belgium, and Dutch Belgium marketplaces.<br><br>Follow the instructions below to retrieve metadata for these three marketplaces:<ul><li><b>French Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-BE</code>.</li><li><b>Dutch Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>nl-BE</code>.</li><li><b>French Canada</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_CA</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-CA</code>.</li></ul><span class="tablenote"><b>Note:</b> If <code>EBAY_CA</code> is set as the <b>marketplace_id</b> path parameter and the <b>Accept-Language</b> header is not used, the marketplace will default to the English Canada marketplace.</span> */
+        'Accept-Language'?: string;
+      };
+      path: {
+        /** @description This path parameter specifies the eBay marketplace for which shipping locations information is retrieved.<br><br>See <a href="/api-docs/sell/metadata/types/bas:MarketplaceIdEnum" target="_blank">MarketplaceIdEnum</a> for supported eBay marketplace ID values. <p><span class="tablenote"><span style="color:#004680"><strong>Note: </strong> When listing the items on the French Canada, French Belgium, and Dutch Belgium marketplaces, also set the <b>Accept-Language</b> header as needed.</span></p> */
+        marketplace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShippingLocationResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getShippingServices: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description This header is required to retrieve metadata for the French Canada, French Belgium, and Dutch Belgium marketplaces.<br><br>Follow the instructions below to retrieve metadata for these three marketplaces:<ul><li><b>French Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-BE</code>.</li><li><b>Dutch Belgium</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_BE</code>, and include the <b>Accept-Language</b> header with a value of <code>nl-BE</code>.</li><li><b>French Canada</b>: Set the <b>marketplace_id</b> path parameter value to <code>EBAY_CA</code>, and include the <b>Accept-Language</b> header with a value of <code>fr-CA</code>.</li></ul><span class="tablenote"><b>Note:</b> If <code>EBAY_CA</code> is set as the <b>marketplace_id</b> path parameter and the <b>Accept-Language</b> header is not used, the marketplace will default to the English Canada marketplace.</span> */
+        'Accept-Language'?: string;
+      };
+      path: {
+        /** @description This path parameter specifies the eBay marketplace for which shipping services information is retrieved.<br><br>See <a href="/api-docs/sell/metadata/types/bas:MarketplaceIdEnum" target="_blank">MarketplaceIdEnum</a> for supported eBay marketplace ID values. <p><span class="tablenote"><span style="color:#004680"><strong>Note: </strong> When listing the items on the French Canada, French Belgium, and Dutch Belgium marketplaces, also set the <b>Accept-Language</b> header as needed.</span></p> */
+        marketplace_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShippingServiceResponse'];
+        };
+      };
+      /** @description Bad Request */
+      400: {
         headers: {
           [name: string]: unknown;
         };
