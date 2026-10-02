@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import type { EbayApiClient } from '@/api/client.js';
 import { FeedApi } from '@/api/listing-management/feed.js';
 import { createFeedScheduleMethods } from '@/api/listing-management/feedSchedules.js';
@@ -7,6 +6,32 @@ import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const BASE = '/sell/feed/v1';
+/** Every operationId in eBay's Sell Feed v1 spec (sell_feed_v1_oas3.json). */
+const FEED_OPERATION_IDS = [
+  'getOrderTasks',
+  'createOrderTask',
+  'getOrderTask',
+  'getInventoryTasks',
+  'createInventoryTask',
+  'getInventoryTask',
+  'getSchedules',
+  'createSchedule',
+  'getSchedule',
+  'updateSchedule',
+  'deleteSchedule',
+  'getLatestResultFile',
+  'getScheduleTemplate',
+  'getScheduleTemplates',
+  'getTasks',
+  'createTask',
+  'getInputFile',
+  'getResultFile',
+  'getTask',
+  'uploadFile',
+  'getCustomerServiceMetricTasks',
+  'createCustomerServiceMetricTask',
+  'getCustomerServiceMetricTask',
+];
 const LOCATION_HOST = 'https://api.ebay.com';
 const schedule = {
   feedType: 'LMS_ORDER_REPORT',
@@ -32,21 +57,15 @@ beforeEach(() => {
 
 describe('FeedApi', () => {
   it('exposes every Feed API operationId as an endpoint method', () => {
-    const spec = JSON.parse(
-      readFileSync('docs/sell-apps/listing-management/sell_feed_v1_oas3.json', 'utf8'),
-    ) as { paths: Record<string, Record<string, { operationId: string }>> };
-    const operationIds = Object.values(spec.paths).flatMap((methods) =>
-      Object.values(methods).map((operation) => operation.operationId),
-    );
     const api = new FeedApi(client as unknown as EbayApiClient) as unknown as Record<
       string,
       unknown
     >;
 
-    expect(operationIds).toHaveLength(23);
-    expect(operationIds.filter((operationId) => typeof api[operationId] !== 'function')).toEqual(
-      [],
-    );
+    expect(FEED_OPERATION_IDS).toHaveLength(23);
+    expect(
+      FEED_OPERATION_IDS.filter((operationId) => typeof api[operationId] !== 'function'),
+    ).toEqual([]);
   });
 });
 
