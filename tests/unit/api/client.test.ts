@@ -152,6 +152,26 @@ describe('EbayApiClient Unit Tests', () => {
     });
   });
 
+  describe('PATCH requests', () => {
+    it('sends the JSON body and per-request headers with the bearer token', async () => {
+      const preferences = { endOfAuctionEmailPreferences: { emailCopyToSeller: true } };
+      nock('https://api.sandbox.ebay.com', {
+        reqheaders: {
+          authorization: 'Bearer mock_access_token',
+          'x-ebay-c-marketplace-id': 'EBAY_GB',
+        },
+      })
+        .patch('/sell/account/v2/user_preferences', preferences)
+        .reply(204);
+
+      await apiClient.patch('/sell/account/v2/user_preferences', preferences, {
+        headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB' },
+      });
+
+      expect(nock.isDone()).toBe(true);
+    });
+  });
+
   describe('429 Rate Limit Errors', () => {
     it('handle 429 errors with Retry-After header', async () => {
       nock('https://api.sandbox.ebay.com')

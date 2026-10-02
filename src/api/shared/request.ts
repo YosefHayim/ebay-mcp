@@ -7,7 +7,7 @@ import { Data, Effect } from 'effect';
 export type QueryParams = Record<string, string | number>;
 
 /** HTTP methods supported by the shared eBay REST request helpers. */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /** One endpoint-owned query parameter allowed by {@link buildEndpointParams}. */
 export interface EndpointParamSpec {
@@ -304,6 +304,32 @@ export const requestPutEffect = <T = unknown>(
     try: () =>
       config === undefined ? client.put<T>(path, body) : client.put<T>(path, body, config),
     catch: (cause) => new EbayApiError({ method: 'PUT', path, cause }),
+  });
+
+/**
+ * Execute a PATCH request as an Effect with typed eBay API errors.
+ *
+ * @param client - eBay REST client that owns auth and transport details.
+ * @param path - eBay REST path to request.
+ * @param body - Optional JSON body to send.
+ * @param config - Optional per-request headers or params, used for endpoint-specific headers.
+ * @returns An Effect that succeeds with the generated eBay response DTO.
+ *
+ * @example
+ * ```ts
+ * await Effect.runPromise(requestPatchEffect(client, path, body, { headers }));
+ * ```
+ */
+export const requestPatchEffect = <T = unknown>(
+  client: EbayApiClient,
+  path: string,
+  body?: unknown,
+  config?: EbayRequestConfig,
+): Effect.Effect<T, EbayApiError> =>
+  Effect.tryPromise({
+    try: () =>
+      config === undefined ? client.patch<T>(path, body) : client.patch<T>(path, body, config),
+    catch: (cause) => new EbayApiError({ method: 'PATCH', path, cause }),
   });
 
 /**

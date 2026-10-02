@@ -599,6 +599,25 @@ export class EbayApiClient {
   }
 
   /**
+   * Make a PATCH request to eBay API
+   */
+  async patch<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: EbayRequestConfig,
+  ): Promise<T> {
+    return await this.request<T>('PATCH', endpoint, {
+      data,
+      params: config?.params,
+      headers: config?.headers,
+      responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
+      tokenType: config?.tokenType,
+    });
+  }
+
+  /**
    * Make a DELETE request to eBay API
    */
   async delete<T = unknown>(endpoint: string, config?: EbayRequestConfig): Promise<T> {
