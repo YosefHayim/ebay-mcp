@@ -54,7 +54,8 @@ export const replaceDanglingSchemaRefs = (spec: unknown): ResolvableSpec => {
       typeof node.$ref === 'string' &&
       node.$ref.startsWith(SCHEMA_REF_PREFIX)
     ) {
-      const name = node.$ref.slice(SCHEMA_REF_PREFIX.length);
+      // `#/components/schemas/Foo/properties/id` lives under Foo: check only the first token.
+      const [name = ''] = node.$ref.slice(SCHEMA_REF_PREFIX.length).split('/');
       if (!defined.has(name)) {
         dangling.add(name);
         return { description: `Undefined upstream schema ${name}` };

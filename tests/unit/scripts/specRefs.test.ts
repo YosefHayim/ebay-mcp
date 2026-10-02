@@ -38,6 +38,22 @@ const spec = {
 };
 
 describe('replaceDanglingSchemaRefs', () => {
+  it('keeps references into a defined schema, such as one of its properties', () => {
+    const nested = {
+      components: {
+        schemas: {
+          Item: { type: 'object', properties: { id: { type: 'string' } } },
+          Wrapper: { properties: { id: { $ref: '#/components/schemas/Item/properties/id' } } },
+        },
+      },
+    };
+
+    const { spec: rewritten, danglingRefs } = replaceDanglingSchemaRefs(nested);
+
+    expect(danglingRefs).toEqual([]);
+    expect(rewritten).toBe(nested);
+  });
+
   it('replaces only undefined schema references with a described open schema', () => {
     const { spec: rewritten, danglingRefs } = replaceDanglingSchemaRefs(spec);
 

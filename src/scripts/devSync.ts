@@ -344,7 +344,9 @@ function generateTypes(): number {
           console.log(`  ${ui.success('✓')} ${camelCaseName}.ts`);
           generated++;
         } else {
-          console.log(`  ${ui.error('✗')} ${camelCaseName}.ts (generation failed)`);
+          console.log(
+            `  ${ui.error('✗')} ${camelCaseName}.ts (generation failed): ${getErrorMessage(generatedFile.left)}`,
+          );
         }
       }
     }
