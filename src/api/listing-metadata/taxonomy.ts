@@ -164,7 +164,7 @@ export class TaxonomyApi {
    * Retrieves the default category tree ID for a marketplace.
    *
    * @param input - Marketplace identifier used to select the default tree.
-   * @returns An Effect that succeeds with eBay's getDefaultCategoryTreeId response.
+   * @returns An Effect that succeeds with eBay's getDefaultCategoryTreeId response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -275,7 +275,7 @@ export class TaxonomyApi {
    * Retrieves category suggestions for listing search text.
    *
    * @param input - Category tree identifier and query text.
-   * @returns An Effect that succeeds with eBay's getCategorySuggestions response.
+   * @returns An Effect that succeeds with eBay's getCategorySuggestions response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -318,7 +318,7 @@ export class TaxonomyApi {
    * Retrieves item aspects for a category.
    *
    * @param input - Category tree and category identifiers.
-   * @returns An Effect that succeeds with eBay's getItemAspectsForCategory response.
+   * @returns An Effect that succeeds with eBay's getItemAspectsForCategory response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -361,7 +361,7 @@ export class TaxonomyApi {
    * Retrieves compatibility property names for a category.
    *
    * @param input - Category tree and compatibility-enabled category identifiers.
-   * @returns An Effect that succeeds with eBay's getCompatibilityProperties response.
+   * @returns An Effect that succeeds with eBay's getCompatibilityProperties response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -404,7 +404,7 @@ export class TaxonomyApi {
    * Retrieves compatibility values for one property within a category.
    *
    * @param input - Category tree, category, and compatibility property identifiers.
-   * @returns An Effect that succeeds with eBay's getCompatibilityPropertyValues response.
+   * @returns An Effect that succeeds with eBay's getCompatibilityPropertyValues response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
