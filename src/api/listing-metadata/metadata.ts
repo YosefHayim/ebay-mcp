@@ -11,6 +11,9 @@ import {
 } from '@/api/shared/request.js';
 import type { components } from '@/types/sell-apps/listing-metadata/sellMetadataV1Oas3.js';
 import { Effect } from 'effect';
+import { createMetadataShippingMethods } from './metadataShipping.js';
+
+type MetadataShippingMethods = ReturnType<typeof createMetadataShippingMethods>;
 
 /** Input accepted by marketplace-scoped Metadata policy endpoints. */
 export interface MetadataMarketplaceInput {
@@ -245,11 +248,32 @@ type MultiCompatibilityPropertyValuesRequest =
 /** Generated request body for getProductCompatibilities. */
 type ProductRequest = components['schemas']['ProductRequest'];
 
-/** Metadata API - marketplace policies, compatibility metadata, and tax jurisdictions. */
+/**
+ * Metadata API - marketplace policies, shipping metadata, compatibility metadata, and tax
+ * jurisdictions.
+ */
 export class MetadataApi {
   private readonly basePath = '/sell/metadata/v1';
 
-  public constructor(private readonly client: EbayApiClient) {}
+  /** Metadata API getExcludeShippingLocations endpoint; see createMetadataShippingMethods. */
+  public readonly getExcludeShippingLocations: MetadataShippingMethods['getExcludeShippingLocations'];
+  /** Metadata API getHandlingTimes endpoint; see createMetadataShippingMethods. */
+  public readonly getHandlingTimes: MetadataShippingMethods['getHandlingTimes'];
+  /** Metadata API getShippingCarriers endpoint; see createMetadataShippingMethods. */
+  public readonly getShippingCarriers: MetadataShippingMethods['getShippingCarriers'];
+  /** Metadata API getShippingLocations endpoint; see createMetadataShippingMethods. */
+  public readonly getShippingLocations: MetadataShippingMethods['getShippingLocations'];
+  /** Metadata API getShippingServices endpoint; see createMetadataShippingMethods. */
+  public readonly getShippingServices: MetadataShippingMethods['getShippingServices'];
+
+  public constructor(private readonly client: EbayApiClient) {
+    const shipping = createMetadataShippingMethods(client);
+    this.getExcludeShippingLocations = shipping.getExcludeShippingLocations;
+    this.getHandlingTimes = shipping.getHandlingTimes;
+    this.getShippingCarriers = shipping.getShippingCarriers;
+    this.getShippingLocations = shipping.getShippingLocations;
+    this.getShippingServices = shipping.getShippingServices;
+  }
 
   /**
    * Retrieves automotive parts compatibility policies for a marketplace.
