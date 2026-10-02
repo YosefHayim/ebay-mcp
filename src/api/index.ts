@@ -1,4 +1,5 @@
 import { AccountApi } from '@/api/account-management/account.js';
+import { AccountV2Api } from '@/api/account-management/accountV2.js';
 import { FinancesApi } from '@/api/account-management/finances.js';
 import { AnalyticsApi } from '@/api/analytics-and-report/analytics.js';
 import { EbayApiClient } from '@/api/client.js';
@@ -39,6 +40,7 @@ export class EbaySellerApi {
 
   // API categories
   public account: AccountApi;
+  public accountV2: AccountV2Api;
   public finances: FinancesApi;
   public inventory: InventoryApi;
   public media: MediaApi;
@@ -71,6 +73,7 @@ export class EbaySellerApi {
 
     // Initialize API category handlers
     this.account = new AccountApi(this.client);
+    this.accountV2 = new AccountV2Api(this.client);
     this.finances = new FinancesApi(this.client);
     this.inventory = new InventoryApi(this.client);
     this.media = new MediaApi(this.client, this.inventory);
@@ -159,6 +162,7 @@ export class EbaySellerApi {
 }
 
 export * from '@/api/account-management/account.js';
+export * from '@/api/account-management/accountV2.js';
 export * from '@/api/account-management/finances.js';
 export * from '@/api/analytics-and-report/analytics.js';
 export * from '@/api/client.js';

@@ -2,6 +2,7 @@ import type { ToolEntry } from '@/tools/registry.js';
 import { connectorEntries } from './connector.js';
 import { tokenManagementEntries } from './tokenManagement.js';
 import { accountEntries } from './account.js';
+import { accountV2Entries } from './accountV2.js';
 import { financesEntries } from './finances.js';
 import { inventoryEntries } from './inventory.js';
 import { mediaEntries } from './media.js';
@@ -40,7 +41,7 @@ export interface ToolCategory {
 export const toolCategories: ToolCategory[] = [
   { key: 'connector', title: 'Connector', entries: connectorEntries },
   { key: 'token-management', title: 'Token Management', entries: tokenManagementEntries },
-  { key: 'account', title: 'Account', entries: accountEntries },
+  { key: 'account', title: 'Account', entries: [...accountEntries, ...accountV2Entries] },
   { key: 'finances', title: 'Finances', entries: financesEntries },
   { key: 'inventory', title: 'Inventory', entries: [...inventoryEntries, ...mediaEntries] },
   { key: 'stores', title: 'Stores', entries: storesEntries },
