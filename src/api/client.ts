@@ -553,6 +553,25 @@ export class EbayApiClient {
   }
 
   /**
+   * Make a GET request and keep the status and headers of the successful
+   * response — for file downloads whose name and type arrive in headers.
+   */
+  async getForResponse<T = unknown>(
+    endpoint: string,
+    params?: Record<string, unknown>,
+    config?: EbayRequestConfig,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('GET', endpoint, {
+      params: { ...params, ...config?.params },
+      headers: config?.headers,
+      responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
+      tokenType: config?.tokenType,
+    });
+  }
+
+  /**
    * Make a POST request to eBay API
    */
   async post<T = unknown>(
