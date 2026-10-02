@@ -13,6 +13,7 @@ import { marketingEntries } from './marketing.js';
 import { analyticsEntries } from './analytics.js';
 import { metadataEntries } from './metadata.js';
 import { taxonomyEntries } from './taxonomy.js';
+import { charityEntries } from './charity.js';
 import { communicationEntries } from './communication.js';
 import { browseEntries } from './browse.js';
 import { otherEntries } from './other.js';
@@ -50,7 +51,7 @@ export const toolCategories: ToolCategory[] = [
   { key: 'marketing', title: 'Marketing', entries: marketingEntries },
   { key: 'analytics', title: 'Analytics', entries: analyticsEntries },
   { key: 'metadata', title: 'Metadata', entries: metadataEntries },
-  { key: 'taxonomy', title: 'Taxonomy', entries: taxonomyEntries },
+  { key: 'taxonomy', title: 'Taxonomy', entries: [...taxonomyEntries, ...charityEntries] },
   { key: 'communication', title: 'Communication', entries: communicationEntries },
   { key: 'browse', title: 'Browse', entries: browseEntries },
   { key: 'other', title: 'Other', entries: otherEntries },
