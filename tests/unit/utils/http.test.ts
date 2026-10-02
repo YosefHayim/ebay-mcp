@@ -69,7 +69,8 @@ describe('httpRequest timeouts', () => {
   });
 
   it('fails a request whose response body never finishes arriving', async () => {
-    const error = await httpRequest({ url: `${baseUrl}/stalled-body`, timeoutMs: 150 }).catch(
+    // Long enough for the headers to land first on a loaded runner; 150 ms lost that race.
+    const error = await httpRequest({ url: `${baseUrl}/stalled-body`, timeoutMs: 1000 }).catch(
       (cause: unknown) => cause,
     );
 
