@@ -13,7 +13,7 @@ import type { DownloadedFile } from '@/api/shared/download.js';
  * @example
  * ```ts
  * formatResult: (file, args) =>
- *   formatFileResult(file, `ebay-feed://task/${args.taskId}/result`, `Feed task ${args.taskId} result file`),
+ *   formatFileResult(file, `ebay-feed://task/${encodeURIComponent(args.taskId)}/result`, `Feed task ${args.taskId} result file`),
  * ```
  */
 export const formatFileResult = (

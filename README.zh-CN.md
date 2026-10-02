@@ -241,7 +241,7 @@ EBAY_MCP_UI=on                      # 交互式 MCP Apps 视图（测试版）�
 | 类别 | 你可以做什么 |
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | 面向 eBay MCP 目录的 ChatGPT 连接器 search/fetch 工具 |
-| [Account](src/tools/categories/account.ts) | 业务、履行、付款和退货政策；计划；订阅；销售税 |
+| [Account](src/tools/categories/account.ts) | 业务、履行、付款和退货政策；计划；订阅；销售税；运费表、付款设置、合并运费规则和用户偏好设置（[`accountV2.ts`](src/tools/categories/accountV2.ts)，Account API v2） |
 | [Finances](src/tools/categories/finances.ts) | 付款、交易、转账、卖家资金、账单活动、订单收益 |
 | [Inventory](src/tools/categories/inventory.ts) | 库存商品、报价、地点、商品分组、批量操作、SKU/地点映射，以及本地照片/视频上传（[`media.ts`](src/tools/categories/media.ts)，Media API） |
 | [Feed](src/tools/categories/feed.ts) | 订单、库存和客户服务指标的 Feed 任务；计划与模板；Feed 文件上传/下载 |

@@ -241,7 +241,7 @@ Automatisch konfiguriert durch `npm run setup`. Erfordert Node.js ≥ 20 und das
 | Kategorie | Was du tun kannst |
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | ChatGPT-Connector-Search/Fetch über den eBay-MCP-Katalog |
-| [Account](src/tools/categories/account.ts) | Geschäfts-, Versand-, Zahlungs- und Rückgaberichtlinien; Programme; Abonnements; Verkaufssteuer |
+| [Account](src/tools/categories/account.ts) | Geschäfts-, Versand-, Zahlungs- und Rückgaberichtlinien; Programme; Abonnements; Verkaufssteuer; Versandkostentabellen, Auszahlungseinstellungen, Kombiversandregeln und Benutzereinstellungen ([`accountV2.ts`](src/tools/categories/accountV2.ts), Account API v2) |
 | [Finances](src/tools/categories/finances.ts) | Auszahlungen, Transaktionen, Überweisungen, Verkäuferguthaben, Abrechnungsaktivitäten, Bestellerlöse |
 | [Inventory](src/tools/categories/inventory.ts) | Bestandsartikel, Angebote, Standorte, Artikelgruppen, Massenvorgänge, SKU/Standort-Zuordnung sowie Upload lokaler Fotos/Videos ([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Feed](src/tools/categories/feed.ts) | Feed-Aufgaben für Bestellungen, Bestand und Kundenservice-Kennzahlen; Zeitpläne und Vorlagen; Upload/Download von Feed-Dateien |

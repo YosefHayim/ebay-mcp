@@ -241,7 +241,7 @@ Configurés automatiquement par `npm run setup`. Nécessite Node.js ≥ 20 et le
 | Catégorie | Ce que vous pouvez faire |
 | --- | --- |
 | [Connector](src/tools/categories/connector.ts) | Outils search/fetch du connecteur ChatGPT sur le catalogue eBay MCP |
-| [Account](src/tools/categories/account.ts) | Politiques commerciales, d'expédition, de paiement et de retour ; programmes ; abonnements ; taxe de vente |
+| [Account](src/tools/categories/account.ts) | Politiques commerciales, d'expédition, de paiement et de retour ; programmes ; abonnements ; taxe de vente ; grilles tarifaires, paramètres de versement, règles d'expédition groupée et préférences utilisateur ([`accountV2.ts`](src/tools/categories/accountV2.ts), Account API v2) |
 | [Finances](src/tools/categories/finances.ts) | Versements, transactions, transferts, fonds vendeur, activité de facturation, revenus par commande |
 | [Inventory](src/tools/categories/inventory.ts) | Articles d'inventaire, offres, emplacements, groupes d'articles, opérations en masse, mappage SKU/emplacement et envoi de photos/vidéos locales ([`media.ts`](src/tools/categories/media.ts), Media API) |
 | [Feed](src/tools/categories/feed.ts) | Tâches de flux pour commandes, inventaire et indicateurs du service client ; planifications et modèles ; envoi et téléchargement de fichiers de flux |

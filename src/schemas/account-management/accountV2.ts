@@ -216,12 +216,12 @@ const setUserPreferencesSchema = z.object({
 // Rate table
 // ============================================================================
 
-/** Input for updateShippingCost: rate table path ID plus the RateTableUpdate body. */
 /** Input for Account API v2 getRateTable. */
 export const getRateTableInputSchema = z.object({
   rateTableId: nonempty.describe('Shipping rate table ID (from Account API v1 getRateTables)'),
 });
 
+/** Input for updateShippingCost: rate table path ID plus the RateTableUpdate body. */
 export const updateShippingCostInputSchema = z.object({
   rateTableId: nonempty.describe('Shipping rate table ID (from Account API v1 getRateTables)'),
   rateTableUpdate: z
