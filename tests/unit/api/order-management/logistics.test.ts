@@ -115,7 +115,11 @@ describe('LogisticsApi shipments', () => {
     expect(client.getForResponse).toHaveBeenCalledWith(
       `${BASE}/shipment/S%2F1/download_label_file`,
       undefined,
-      { headers: { Accept: 'application/pdf' }, responseType: 'arraybuffer' },
+      {
+        headers: { Accept: 'application/pdf' },
+        responseType: 'arraybuffer',
+        maxBytes: MAX_INLINE_DOWNLOAD_BYTES,
+      },
     );
   });
 });

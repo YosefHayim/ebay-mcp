@@ -48,7 +48,11 @@ describe('requestDownloadEffect', () => {
     expect(client.getForResponse).toHaveBeenCalledWith(
       '/sell/feed/v1/task/T1/download_result_file',
       undefined,
-      { headers: { Accept: 'application/octet-stream' }, responseType: 'arraybuffer' },
+      {
+        headers: { Accept: 'application/octet-stream' },
+        responseType: 'arraybuffer',
+        maxBytes: MAX_INLINE_DOWNLOAD_BYTES,
+      },
     );
     expect(file).toEqual({ bytes, contentType: 'application/zip', fileName: 'result.zip' });
   });
@@ -86,6 +90,21 @@ describe('requestDownloadEffect', () => {
       bytes: MAX_INLINE_DOWNLOAD_BYTES + 1,
       limit: MAX_INLINE_DOWNLOAD_BYTES,
     });
+  });
+
+  it('rejects a file by its declared length when reading stopped early', async () => {
+    const declared = MAX_INLINE_DOWNLOAD_BYTES * 4;
+    const client = {
+      getForResponse: vi.fn().mockResolvedValue({
+        data: Buffer.alloc(0),
+        status: 200,
+        headers: { 'content-length': String(declared) },
+      }),
+    } as unknown as EbayApiClient;
+
+    const error = await Effect.runPromise(Effect.flip(requestDownloadEffect(client, '/big')));
+
+    expect(error).toMatchObject({ _tag: 'DownloadTooLargeError', bytes: declared });
   });
 
   it('fails with a tagged EbayApiError', async () => {

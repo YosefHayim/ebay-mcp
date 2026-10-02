@@ -36,6 +36,7 @@ describe('TaxonomyApi fetchItemAspects', () => {
     expect(client.getForResponse).toHaveBeenCalledWith(`${TREE}/3/fetch_item_aspects`, undefined, {
       timeoutMs: 120_000,
       responseType: 'arraybuffer',
+      maxBytes: MAX_INLINE_DOWNLOAD_BYTES,
     });
   });
 

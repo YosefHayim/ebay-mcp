@@ -40,6 +40,8 @@ export interface EbayRequestConfig {
   absolute?: boolean;
   /** Per-request timeout override, e.g. for large media uploads. */
   timeoutMs?: number;
+  /** Stop reading an `arraybuffer` body past this many bytes (see HttpRequestOptions). */
+  maxBytes?: number;
   /**
    * Token the request must authenticate with. Omit for the default
    * user-first token, or pass `'application'` for endpoints eBay documents as
@@ -93,6 +95,8 @@ interface EbayRequestOptions {
   readonly absolute?: boolean;
   /** Per-request timeout override. */
   readonly timeoutMs?: number;
+  /** Binary body read limit passed to the HTTP adapter. */
+  readonly maxBytes?: number;
   /** Token the request must authenticate with; omit for the default path. */
   readonly tokenType?: EbayTokenType;
 }
@@ -375,6 +379,7 @@ export class EbayApiClient {
         body: options.data,
         timeoutMs: options.timeoutMs ?? this.timeoutMs,
         responseType: options.responseType,
+        maxBytes: options.maxBytes,
       }).pipe(
         Effect.map((response) => {
           logResponse(
@@ -567,6 +572,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }

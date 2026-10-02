@@ -50,6 +50,12 @@ export interface HttpRequestOptions {
   timeoutMs?: number;
   /** Decoding for the success body. Defaults to `json`. */
   responseType?: ResponseType;
+  /**
+   * For `arraybuffer` bodies: stop reading once the body is known to exceed this many
+   * bytes. The returned buffer is then empty (a larger `content-length`) or truncated just
+   * past the limit, so the caller can reject it without buffering the whole file.
+   */
+  maxBytes?: number;
 }
 
 /**
@@ -227,10 +233,36 @@ const collectHeaders = (response: Response): Record<string, string> => {
   return headers;
 };
 
+/** Read a binary body, stopping as soon as it is known to exceed `maxBytes`. */
+const readCappedBody = async (response: Response, maxBytes: number): Promise<Buffer> => {
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  if (Number(response.headers.get('content-length')) > maxBytes) {
+    await response.body?.cancel();
+    return Buffer.alloc(0);
+  }
+  for await (const chunk of response.body ?? []) {
+    chunks.push(chunk);
+    size += chunk.byteLength;
+    if (size > maxBytes) {
+      break;
+    }
+  }
+  return Buffer.concat(chunks, size);
+};
+
 /** Decode a successful body per `responseType`, treating an empty body as `undefined`. */
-const decodeBody = async <T>(response: Response, responseType: ResponseType): Promise<T> => {
+const decodeBody = async <T>(
+  response: Response,
+  responseType: ResponseType,
+  maxBytes?: number,
+): Promise<T> => {
   if (responseType === 'arraybuffer') {
-    return Buffer.from(await response.arrayBuffer()) as T;
+    return (
+      maxBytes === undefined
+        ? Buffer.from(await response.arrayBuffer())
+        : await readCappedBody(response, maxBytes)
+    ) as T;
   }
   const text = await response.text();
   if (responseType === 'text') {
@@ -368,7 +400,7 @@ export const httpRequestEffect = <T = unknown>(
       }
 
       const data = yield* Effect.tryPromise({
-        try: () => decodeBody<T>(response, responseType),
+        try: () => decodeBody<T>(response, responseType, options.maxBytes),
         catch: (error) => failure(error, 'response body', response),
       });
 

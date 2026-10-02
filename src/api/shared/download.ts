@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig, EbayResponse } from '@/api/client.js';
 import { EbayApiError } from '@/api/shared/request.js';
 import { Data, Effect } from 'effect';
 
@@ -57,18 +57,23 @@ export interface DownloadedFile {
 export class DownloadTooLargeError extends Data.TaggedError('DownloadTooLargeError')<{
   /** eBay REST path that produced the file. */
   readonly path: string;
-  /** Size eBay returned. */
+  /** Size eBay declared or that was read before stopping; at least `limit + 1`. */
   readonly bytes: number;
   /** Inline limit the file exceeded. */
   readonly limit: number;
 }> {
   override get message(): string {
-    return `eBay file from ${this.path} is ${this.bytes} bytes, above the ${this.limit}-byte limit for returning files inline over MCP`;
+    return `eBay file from ${this.path} is at least ${this.bytes} bytes, above the ${this.limit}-byte limit for returning files inline over MCP`;
   }
 }
 
+/** Size of a download: what was read, or the larger declared length when reading stopped early. */
+const downloadSize = (response: EbayResponse<Buffer>): number =>
+  Math.max(response.data.length, Number(response.headers['content-length']) || 0);
+
 /**
  * Downloads a binary eBay resource as an Effect, keeping its content type and file name.
+ * Reading stops as soon as the file is known to exceed {@link MAX_INLINE_DOWNLOAD_BYTES}.
  *
  * @param client - eBay REST client that owns auth and transport details.
  * @param path - eBay REST path, or a full URL when `config.absolute` is set.
@@ -90,15 +95,19 @@ export const requestDownloadEffect = (
 ): Effect.Effect<DownloadedFile, EbayApiError | DownloadTooLargeError> =>
   Effect.tryPromise({
     try: () =>
-      client.getForResponse<Buffer>(path, undefined, { ...config, responseType: 'arraybuffer' }),
+      client.getForResponse<Buffer>(path, undefined, {
+        ...config,
+        responseType: 'arraybuffer',
+        maxBytes: MAX_INLINE_DOWNLOAD_BYTES,
+      }),
     catch: (cause) => new EbayApiError({ method: 'GET', path, cause }), // allow-duplicate
   }).pipe(
     Effect.filterOrFail(
-      (response) => response.data.length <= MAX_INLINE_DOWNLOAD_BYTES,
+      (response) => downloadSize(response) <= MAX_INLINE_DOWNLOAD_BYTES,
       (response) =>
         new DownloadTooLargeError({
           path,
-          bytes: response.data.length,
+          bytes: downloadSize(response),
           limit: MAX_INLINE_DOWNLOAD_BYTES,
         }),
     ),
