@@ -5,7 +5,12 @@ import {
   requestDownloadEffect,
 } from '@/api/shared/download.js';
 import { type LocatedResource, locatedResourceId } from '@/api/shared/location.js';
-import { buildEndpointParams, EbayApiError, type QueryParams } from '@/api/shared/request.js';
+import {
+  buildEndpointParams,
+  EbayApiError,
+  EndpointInputError,
+  type QueryParams,
+} from '@/api/shared/request.js';
 import { Effect } from 'effect';
 
 /** Feed API base path on the default `api` host. */
@@ -63,6 +68,36 @@ export const feedListParams = (query: FeedListQuery): QueryParams | undefined =>
     limit: { wireName: 'limit', value: query.limit },
     offset: { wireName: 'offset', value: query.offset },
   });
+
+/**
+ * Rejects the list filter pairs eBay documents as mutually exclusive (feedType with scheduleId,
+ * dateRange with lookBackDays) before any request is sent.
+ *
+ * @param query - Decoded list filters and pagination.
+ * @returns An Effect with the same query, or an EndpointInputError naming the conflicting filter.
+ * @example exclusiveFeedFilters({ feedType: 'LMS_ORDER_REPORT', lookBackDays: 10 })
+ */
+export const exclusiveFeedFilters = <TQuery extends FeedListQuery>(
+  query: TQuery,
+): Effect.Effect<TQuery, EndpointInputError> => {
+  if (query.feedType !== undefined && query.scheduleId !== undefined) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: 'scheduleId',
+        message: 'Pass feedType or scheduleId, not both',
+      }),
+    );
+  }
+  if (query.dateRange !== undefined && query.lookBackDays !== undefined) {
+    return Effect.fail(
+      new EndpointInputError({
+        parameter: 'lookBackDays',
+        message: 'Pass dateRange or lookBackDays, not both',
+      }),
+    );
+  }
+  return Effect.succeed(query);
+};
 
 /**
  * POSTs a Feed API create request whose new resource ID arrives only in `Location`.

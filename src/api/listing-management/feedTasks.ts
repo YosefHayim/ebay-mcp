@@ -19,6 +19,7 @@ import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 import {
   downloadFeedFile,
+  exclusiveFeedFilters,
   FEED_BASE_PATH,
   feedListParams,
   feedResourcePath,
@@ -73,6 +74,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    */
   const getTasks = (input: GetFeedTasksInput = {}) =>
     decodeEndpointInputEffect(getFeedTasksInputSchema, input).pipe(
+      Effect.flatMap(exclusiveFeedFilters),
       Effect.flatMap((query) =>
         requestGetEffect<FeedTaskCollection>(
           client,

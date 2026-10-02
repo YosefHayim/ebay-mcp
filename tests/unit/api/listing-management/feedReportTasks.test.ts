@@ -180,6 +180,24 @@ describe('Feed report task failures', () => {
     expect(client.postForResponse).not.toHaveBeenCalled();
   });
 
+  it('rejects filter pairs eBay documents as mutually exclusive', async () => {
+    const errors = await Promise.all(
+      [
+        feed.getOrderTasks({ feedType: 'LMS_ORDER_REPORT', scheduleId: 'S-1' }),
+        feed.getCustomerServiceMetricTasks({
+          dateRange: '2026-09-01..2026-09-08',
+          lookBackDays: 7,
+        }),
+      ].map((program) => Effect.runPromise(Effect.flip(program))),
+    );
+
+    expect(errors).toMatchObject([
+      { _tag: 'EndpointInputError', parameter: 'scheduleId' },
+      { _tag: 'EndpointInputError', parameter: 'lookBackDays' },
+    ]);
+    expect(client.get).not.toHaveBeenCalled();
+  });
+
   it('wraps transport failures on every report task endpoint with the request context', async () => {
     const cause = new Error('remote failure');
     client.get.mockRejectedValue(cause);

@@ -41,6 +41,7 @@ describe('feed files', () => {
     ],
     ['listings.csv', Buffer.from('Action,SKU,Titel\nAdd,SKU-1,Gr\u00f6\u00dfe M\n'), 'text/csv'],
     ['add.zip', ZIP, 'application/zip'],
+    ['padded.xml', Buffer.concat([Buffer.from(' '.repeat(2048)), XML]), 'application/xml'],
     ['orders.xml.gz', GZIP, 'application/gzip'],
   ])('accepts %s as %s', async (name, bytes, mimeType) => {
     await writeFeed(name, bytes);

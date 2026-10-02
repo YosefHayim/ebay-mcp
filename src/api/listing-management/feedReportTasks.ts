@@ -12,7 +12,13 @@ import {
 import type { components } from '@/types/sell-apps/listing-management/sellFeedV1Oas3.js';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
-import { FEED_BASE_PATH, feedListParams, feedResourcePath, postFeedTask } from './feedRequest.js';
+import {
+  exclusiveFeedFilters,
+  FEED_BASE_PATH,
+  feedListParams,
+  feedResourcePath,
+  postFeedTask,
+} from './feedRequest.js';
 
 type FeedTaskIdInput = InferEffectSchema<typeof feedTaskIdInputSchema>;
 type GetOrderTasksInput = InferEffectSchema<typeof getOrderTasksInputSchema>;
@@ -60,6 +66,7 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
    */
   const getOrderTasks = (input: GetOrderTasksInput = {}) =>
     decodeEndpointInputEffect(getOrderTasksInputSchema, input).pipe(
+      Effect.flatMap(exclusiveFeedFilters),
       Effect.flatMap((query) =>
         requestGetEffect<OrderTaskCollection>(
           client,
@@ -107,6 +114,7 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
    */
   const getInventoryTasks = (input: GetInventoryTasksInput = {}) =>
     decodeEndpointInputEffect(getInventoryTasksInputSchema, input).pipe(
+      Effect.flatMap(exclusiveFeedFilters),
       Effect.flatMap((query) =>
         requestGetEffect<InventoryTaskCollection>(
           client,
@@ -154,6 +162,7 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
    */
   const getCustomerServiceMetricTasks = (input: GetServiceMetricTasksInput = {}) =>
     decodeEndpointInputEffect(getCustomerServiceMetricTasksInputSchema, input).pipe(
+      Effect.flatMap(exclusiveFeedFilters),
       Effect.flatMap((query) =>
         requestGetEffect<CustomerServiceMetricTaskCollection>(
           client,

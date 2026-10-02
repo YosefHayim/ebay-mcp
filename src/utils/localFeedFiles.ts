@@ -2,10 +2,19 @@ import { isUtf8 } from 'node:buffer';
 
 const ZIP_SIGNATURE = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 const GZIP_SIGNATURE = Buffer.from([0x1f, 0x8b, 0x08]);
-/** Markup must open an XML document, after an optional byte-order mark and whitespace. */
-const XML_START = /^\uFEFF?\s*</;
-/** Leading bytes inspected for the XML start; whitespace before markup is never this long. */
-const XML_START_WINDOW = 1024;
+const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
+/** XML whitespace bytes: space, tab, line feed, carriage return. */
+const XML_WHITESPACE = new Set([0x20, 0x09, 0x0a, 0x0d]);
+const LESS_THAN = 0x3c;
+
+/** Whether markup opens the document, after an optional byte-order mark and any whitespace. */
+const opensWithMarkup = (bytes: Buffer): boolean => {
+  const body = bytes.subarray(0, UTF8_BOM.length).equals(UTF8_BOM)
+    ? bytes.subarray(UTF8_BOM.length)
+    : bytes;
+  const first = body.findIndex((byte) => !XML_WHITESPACE.has(byte));
+  return first !== -1 && body[first] === LESS_THAN;
+};
 
 /**
  * Maximum size of a Feed API upload file: eBay limits feed data files to 15 MB, regular or
@@ -51,10 +60,7 @@ export const feedFileProblem = (bytes: Buffer, mimeType: string): string | undef
   if (bytes.includes(0) || !isUtf8(bytes)) {
     return `content is not UTF-8 text without NUL bytes, as ${mimeType} requires`;
   }
-  if (
-    mimeType === 'application/xml' &&
-    !XML_START.test(bytes.toString('utf8', 0, XML_START_WINDOW))
-  ) {
+  if (mimeType === 'application/xml' && !opensWithMarkup(bytes)) {
     return 'content does not start with XML markup';
   }
 };
