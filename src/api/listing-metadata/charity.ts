@@ -1,13 +1,13 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
 import {
   buildEndpointParams,
+  decodeEndpointInputEffect,
   type EbayApiError,
   EndpointInputError,
   requestGetEffect,
 } from '@/api/shared/request.js';
 import { getCharityOrgInputSchema, getCharityOrgsInputSchema } from '@/schemas/taxonomy/charity.js';
 import type { components } from '@/types/sell-apps/listing-metadata/commerceCharityV1Oas3.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 
@@ -71,13 +71,9 @@ export class CharityApi {
     const client = this.client;
 
     return Effect.gen(function* () {
-      const { charityOrgId, marketplaceId } = yield* decodeEffectSchema(
+      const { charityOrgId, marketplaceId } = yield* decodeEndpointInputEffect(
         getCharityOrgInputSchema,
         input,
-      ).pipe(
-        Effect.mapError(
-          (cause) => new EndpointInputError({ parameter: 'input', message: cause.message }),
-        ),
       );
 
       return yield* requestGetEffect<CharityOrgResponse>(
@@ -111,11 +107,7 @@ export class CharityApi {
     const client = this.client;
 
     return Effect.gen(function* () {
-      const search = yield* decodeEffectSchema(getCharityOrgsInputSchema, input).pipe(
-        Effect.mapError(
-          (cause) => new EndpointInputError({ parameter: 'input', message: cause.message }),
-        ),
-      );
+      const search = yield* decodeEndpointInputEffect(getCharityOrgsInputSchema, input);
       if ((search.q === undefined) === (search.registrationIds === undefined)) {
         return yield* Effect.fail(
           new EndpointInputError({

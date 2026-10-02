@@ -1,4 +1,6 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import { decodeEffectSchema } from '@/utils/effectSchema.js';
+import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Data, Effect } from 'effect';
 
 /**
@@ -39,6 +41,29 @@ export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
   /** Human-readable validation failure message. */
   readonly message: string;
 }> {}
+
+/**
+ * Decodes endpoint input through its Effect-backed schema (the tool's SSOT), reporting a
+ * failure as EndpointInputError so endpoint Effects keep one input-failure type.
+ *
+ * @param schema - Effect-backed endpoint input schema.
+ * @param input - Raw endpoint input.
+ * @param parameter - Parameter named in the failure; defaults to `input`.
+ * @returns An Effect with the decoded input, or EndpointInputError.
+ *
+ * @example
+ * ```ts
+ * const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
+ * ```
+ */
+export const decodeEndpointInputEffect = <TSchema extends EffectBackedSchema>(
+  schema: TSchema,
+  input: unknown,
+  parameter = 'input',
+): Effect.Effect<InferEffectSchema<TSchema>, EndpointInputError> =>
+  decodeEffectSchema(schema, input).pipe(
+    Effect.mapError((cause) => new EndpointInputError({ parameter, message: cause.message })),
+  );
 
 /**
  * Builds the per-call `X-EBAY-C-MARKETPLACE-ID` header for operations whose marketplace

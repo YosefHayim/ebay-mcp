@@ -1,5 +1,6 @@
 import type { EbayApiClient } from '@/api/client.js';
 import {
+  decodeEndpointInputEffect,
   requestGetEffect,
   requestPostEffect,
   requireObjectEffect,
@@ -17,7 +18,6 @@ import type {
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 import {
-  decodeFeedInput,
   downloadFeedFile,
   FEED_BASE_PATH,
   feedListParams,
@@ -72,7 +72,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getTasks
    */
   const getTasks = (input: GetFeedTasksInput = {}) =>
-    decodeFeedInput(getFeedTasksInputSchema, input).pipe(
+    decodeEndpointInputEffect(getFeedTasksInputSchema, input).pipe(
       Effect.flatMap((query) =>
         requestGetEffect<FeedTaskCollection>(
           client,
@@ -91,7 +91,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    */
   const createTask = (input: CreateFeedTaskInput) =>
     Effect.gen(function* () {
-      const { task, marketplaceId, acceptLanguage } = yield* decodeFeedInput(
+      const { task, marketplaceId, acceptLanguage } = yield* decodeEndpointInputEffect(
         createFeedTaskInputSchema,
         input,
       );
@@ -114,7 +114,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getTask
    */
   const getTask = (input: FeedTaskIdInput) =>
-    decodeFeedInput(feedTaskIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
       Effect.flatMap(({ taskId }) =>
         requestGetEffect<FeedTask>(client, feedResourcePath('/task', taskId)),
       ),
@@ -129,7 +129,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getInputFile
    */
   const getInputFile = (input: FeedTaskIdInput) =>
-    decodeFeedInput(feedTaskIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
       Effect.flatMap(({ taskId }) =>
         downloadFeedFile(client, feedResourcePath('/task', taskId, '/download_input_file')),
       ),
@@ -143,7 +143,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getResultFile
    */
   const getResultFile = (input: FeedTaskIdInput) =>
-    decodeFeedInput(feedTaskIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
       Effect.flatMap(({ taskId }) =>
         downloadFeedFile(client, feedResourcePath('/task', taskId, '/download_result_file')),
       ),
@@ -159,7 +159,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
    */
   const uploadFile = (input: FeedTaskIdInput & { file: MediaUpload }) =>
     Effect.gen(function* () {
-      const { taskId } = yield* decodeFeedInput(feedTaskIdInputSchema, input);
+      const { taskId } = yield* decodeEndpointInputEffect(feedTaskIdInputSchema, input);
       const file = yield* requireObjectEffect<MediaUpload>(input.file, 'file');
       yield* requireStringEffect(file.fileName, 'file.fileName');
       return yield* requestPostEffect<UploadFeedFileResponse>(

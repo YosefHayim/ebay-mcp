@@ -5,14 +5,7 @@ import {
   requestDownloadEffect,
 } from '@/api/shared/download.js';
 import { type LocatedResource, locatedResourceId } from '@/api/shared/location.js';
-import {
-  buildEndpointParams,
-  EbayApiError,
-  EndpointInputError,
-  type QueryParams,
-} from '@/api/shared/request.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
-import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import { buildEndpointParams, EbayApiError, type QueryParams } from '@/api/shared/request.js';
 import { Effect } from 'effect';
 
 /** Feed API base path on the default `api` host. */
@@ -41,24 +34,6 @@ export interface CreatedFeedTask {
   /** `Location` header exactly as eBay returned it. */
   readonly location: string;
 }
-
-/**
- * Decodes endpoint input through its Effect-backed schema before any request is sent.
- *
- * @param schema - Endpoint input schema from `@/schemas/inventory-management/feed.js`.
- * @param input - Caller-supplied input.
- * @returns An Effect with the decoded input, or an EndpointInputError.
- * @example decodeFeedInput(feedTaskIdInputSchema, { taskId: 'TASK-1' })
- */
-export const decodeFeedInput = <TSchema extends EffectBackedSchema>(
-  schema: TSchema,
-  input: unknown,
-): Effect.Effect<InferEffectSchema<TSchema>, EndpointInputError> =>
-  decodeEffectSchema(schema, input).pipe(
-    Effect.mapError(
-      (cause) => new EndpointInputError({ parameter: 'input', message: cause.message }),
-    ),
-  );
 
 /**
  * Feed API path of one resource, with its ID encoded as a single path segment.

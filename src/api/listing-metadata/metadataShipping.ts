@@ -1,8 +1,12 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
-import { type EbayApiError, EndpointInputError, requestGetEffect } from '@/api/shared/request.js';
+import {
+  decodeEndpointInputEffect,
+  type EbayApiError,
+  type EndpointInputError,
+  requestGetEffect,
+} from '@/api/shared/request.js';
 import { shippingMetadataInputSchema } from '@/schemas/metadata/shipping.js';
 import type { components } from '@/types/sell-apps/listing-metadata/sellMetadataV1Oas3.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 
@@ -67,13 +71,9 @@ export const createMetadataShippingMethods = (client: EbayApiClient) => {
     resource: string,
   ): Effect.Effect<Response, EbayApiError | EndpointInputError> =>
     Effect.gen(function* () {
-      const { marketplaceId, acceptLanguage } = yield* decodeEffectSchema(
+      const { marketplaceId, acceptLanguage } = yield* decodeEndpointInputEffect(
         shippingMetadataInputSchema,
         input,
-      ).pipe(
-        Effect.mapError(
-          (cause) => new EndpointInputError({ parameter: 'input', message: cause.message }),
-        ),
       );
       const path = `${SHIPPING_MARKETPLACE_PATH}/${encodeURIComponent(marketplaceId)}/${resource}`;
       const config: EbayRequestConfig | undefined =

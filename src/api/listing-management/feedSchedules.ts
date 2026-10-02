@@ -1,5 +1,10 @@
 import type { EbayApiClient } from '@/api/client.js';
-import { requestDeleteEffect, requestGetEffect, requestPutEffect } from '@/api/shared/request.js';
+import {
+  decodeEndpointInputEffect,
+  requestDeleteEffect,
+  requestGetEffect,
+  requestPutEffect,
+} from '@/api/shared/request.js';
 import {
   createFeedScheduleInputSchema,
   feedScheduleIdInputSchema,
@@ -11,7 +16,6 @@ import type { components } from '@/types/sell-apps/listing-management/sellFeedV1
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 import {
-  decodeFeedInput,
   downloadFeedFile,
   FEED_BASE_PATH,
   feedListParams,
@@ -51,7 +55,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedules
    */
   const getSchedules = (input: FeedTypePageInput) =>
-    decodeFeedInput(feedTypePageInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedTypePageInputSchema, input).pipe(
       Effect.flatMap((query) =>
         requestGetEffect<UserScheduleCollection>(
           client,
@@ -69,7 +73,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/createSchedule
    */
   const createSchedule = (input: CreateFeedScheduleInput) =>
-    decodeFeedInput(createFeedScheduleInputSchema, input).pipe(
+    decodeEndpointInputEffect(createFeedScheduleInputSchema, input).pipe(
       Effect.flatMap(({ schedule }) => {
         const body: CreateUserScheduleRequest = schedule;
         return postFeedResource(client, '/schedule', body);
@@ -85,7 +89,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedule
    */
   const getSchedule = (input: FeedScheduleIdInput) =>
-    decodeFeedInput(feedScheduleIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedScheduleIdInputSchema, input).pipe(
       Effect.flatMap(({ scheduleId }) =>
         requestGetEffect<UserScheduleResponse>(client, feedResourcePath('/schedule', scheduleId)),
       ),
@@ -99,7 +103,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/updateSchedule
    */
   const updateSchedule = (input: UpdateFeedScheduleInput) =>
-    decodeFeedInput(updateFeedScheduleInputSchema, input).pipe(
+    decodeEndpointInputEffect(updateFeedScheduleInputSchema, input).pipe(
       Effect.flatMap(({ scheduleId, schedule }) => {
         const body: UpdateUserScheduleRequest = schedule;
         return requestPutEffect<void>(client, feedResourcePath('/schedule', scheduleId), body);
@@ -114,7 +118,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/deleteSchedule
    */
   const deleteSchedule = (input: FeedScheduleIdInput) =>
-    decodeFeedInput(feedScheduleIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedScheduleIdInputSchema, input).pipe(
       Effect.flatMap(({ scheduleId }) =>
         requestDeleteEffect<void>(client, feedResourcePath('/schedule', scheduleId)),
       ),
@@ -128,7 +132,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getLatestResultFile
    */
   const getLatestResultFile = (input: FeedScheduleIdInput) =>
-    decodeFeedInput(feedScheduleIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedScheduleIdInputSchema, input).pipe(
       Effect.flatMap(({ scheduleId }) =>
         downloadFeedFile(
           client,
@@ -145,7 +149,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplate
    */
   const getScheduleTemplate = (input: FeedScheduleTemplateIdInput) =>
-    decodeFeedInput(feedScheduleTemplateIdInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedScheduleTemplateIdInputSchema, input).pipe(
       Effect.flatMap(({ scheduleTemplateId }) =>
         requestGetEffect<ScheduleTemplateResponse>(
           client,
@@ -162,7 +166,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplates
    */
   const getScheduleTemplates = (input: FeedTypePageInput) =>
-    decodeFeedInput(feedTypePageInputSchema, input).pipe(
+    decodeEndpointInputEffect(feedTypePageInputSchema, input).pipe(
       Effect.flatMap((query) =>
         requestGetEffect<ScheduleTemplateCollection>(
           client,

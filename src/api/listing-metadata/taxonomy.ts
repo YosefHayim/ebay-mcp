@@ -6,15 +6,15 @@ import {
 } from '@/api/shared/download.js';
 import {
   buildEndpointParams,
+  decodeEndpointInputEffect,
   type EbayApiError,
-  EndpointInputError,
+  type EndpointInputError,
   requestGetEffect,
   requireObjectEffect,
   requireStringEffect,
 } from '@/api/shared/request.js';
 import { categoryTreeIdInputSchema } from '@/schemas/taxonomy/categoryTree.js';
 import type { components } from '@/types/sell-apps/listing-metadata/commerceTaxonomyV1Oas3.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 
@@ -494,10 +494,7 @@ export class TaxonomyApi {
     input: CategoryTreeIdInput,
     resource: string,
   ): Effect.Effect<string, EndpointInputError> =>
-    decodeEffectSchema(categoryTreeIdInputSchema, input).pipe(
-      Effect.mapError(
-        (cause) => new EndpointInputError({ parameter: 'categoryTreeId', message: cause.message }),
-      ),
+    decodeEndpointInputEffect(categoryTreeIdInputSchema, input, 'categoryTreeId').pipe(
       Effect.map(
         ({ categoryTreeId }) =>
           `${this.basePath}/category_tree/${encodeURIComponent(categoryTreeId)}/${resource}`,

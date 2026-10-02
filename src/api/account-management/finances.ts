@@ -1,8 +1,9 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
 import {
   buildEndpointParams,
+  decodeEndpointInputEffect,
   EbayApiError,
-  EndpointInputError,
+  type EndpointInputError,
   type QueryParams,
   requestGetEffect,
 } from '@/api/shared/request.js';
@@ -21,8 +22,7 @@ import {
   getTransferInputSchema,
 } from '@/schemas/account-management/finances.js';
 import type { components } from '@/types/sell-apps/account-management/sellFinancesV1Oas3.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
-import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 
 const BASE_PATH = '/sell/finances/v1';
@@ -40,17 +40,6 @@ type GetTransferInput = InferEffectSchema<typeof getTransferInputSchema>;
 type GetBillingActivitiesInput = InferEffectSchema<typeof getBillingActivitiesInputSchema>;
 /** Query fields shared by the paginated Finances collections. */
 type FinancesPageQuery = Pick<GetTransactionsInput, 'filter' | 'limit' | 'offset' | 'sort'>;
-
-/** Decodes endpoint input through its schema, reporting failures as EndpointInputError. */
-const decodeInput = <TSchema extends EffectBackedSchema>(
-  schema: TSchema,
-  input: unknown,
-): Effect.Effect<InferEffectSchema<TSchema>, EndpointInputError> =>
-  decodeEffectSchema(schema, input).pipe(
-    Effect.mapError(
-      (cause) => new EndpointInputError({ parameter: 'input', message: cause.message }),
-    ),
-  );
 
 /** Maps the shared filter/limit/offset/sort fields to their eBay query names. */
 const pageQuery = (input: FinancesPageQuery): QueryParams | undefined =>
@@ -199,7 +188,7 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeInput(getOrderEarningsInputSchema, input);
+      const request = yield* decodeEndpointInputEffect(getOrderEarningsInputSchema, input);
 
       return yield* getFromApiz<OrderEarningsResponse>(
         `${BASE_PATH}/order_earnings`,
@@ -230,7 +219,10 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { orderId, marketplaceId } = yield* decodeInput(getOrderEarningsByIdInputSchema, input);
+      const { orderId, marketplaceId } = yield* decodeEndpointInputEffect(
+        getOrderEarningsByIdInputSchema,
+        input,
+      );
 
       return yield* getFromApiz<OrderEarningResponse>(
         `${BASE_PATH}/order_earnings/${encodeURIComponent(orderId)}`,
@@ -260,7 +252,7 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { filter, marketplaceId } = yield* decodeInput(
+      const { filter, marketplaceId } = yield* decodeEndpointInputEffect(
         getOrderEarningsSummaryInputSchema,
         input,
       );
@@ -292,7 +284,10 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { payoutId, marketplaceId } = yield* decodeInput(getPayoutInputSchema, input);
+      const { payoutId, marketplaceId } = yield* decodeEndpointInputEffect(
+        getPayoutInputSchema,
+        input,
+      );
 
       return yield* getFromApiz<PayoutResponse>(
         `${BASE_PATH}/payout/${encodeURIComponent(payoutId)}`,
@@ -323,7 +318,7 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeInput(getPayoutsInputSchema, input);
+      const request = yield* decodeEndpointInputEffect(getPayoutsInputSchema, input);
 
       return yield* getFromApiz<PayoutsResponse | undefined>(
         `${BASE_PATH}/payout`,
@@ -354,7 +349,10 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { filter, marketplaceId } = yield* decodeInput(getPayoutSummaryInputSchema, input);
+      const { filter, marketplaceId } = yield* decodeEndpointInputEffect(
+        getPayoutSummaryInputSchema,
+        input,
+      );
 
       return yield* getFromApiz<PayoutSummaryResponse>(
         `${BASE_PATH}/payout_summary`,
@@ -384,7 +382,10 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { marketplaceId } = yield* decodeInput(getSellerFundsSummaryInputSchema, input);
+      const { marketplaceId } = yield* decodeEndpointInputEffect(
+        getSellerFundsSummaryInputSchema,
+        input,
+      );
 
       return yield* getFromApiz<SellerFundsSummaryResponse | undefined>(
         `${BASE_PATH}/seller_funds_summary`,
@@ -415,7 +416,7 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeInput(getTransactionsInputSchema, input);
+      const request = yield* decodeEndpointInputEffect(getTransactionsInputSchema, input);
 
       return yield* getFromApiz<TransactionsResponse | undefined>(
         `${BASE_PATH}/transaction`,
@@ -447,7 +448,10 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { filter, marketplaceId } = yield* decodeInput(getTransactionSummaryInputSchema, input);
+      const { filter, marketplaceId } = yield* decodeEndpointInputEffect(
+        getTransactionSummaryInputSchema,
+        input,
+      );
 
       return yield* getFromApiz<TransactionSummaryResponse>(
         `${BASE_PATH}/transaction_summary`,
@@ -478,7 +482,10 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const { transferId, marketplaceId } = yield* decodeInput(getTransferInputSchema, input);
+      const { transferId, marketplaceId } = yield* decodeEndpointInputEffect(
+        getTransferInputSchema,
+        input,
+      );
 
       return yield* getFromApiz<TransferResponse>(
         `${BASE_PATH}/transfer/${encodeURIComponent(transferId)}`,
@@ -510,7 +517,7 @@ export class FinancesApi {
     const client = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* decodeInput(getBillingActivitiesInputSchema, input);
+      const request = yield* decodeEndpointInputEffect(getBillingActivitiesInputSchema, input);
       const config: EbayRequestConfig | undefined =
         request.acceptLanguage === undefined
           ? undefined

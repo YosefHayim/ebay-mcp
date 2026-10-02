@@ -1,6 +1,10 @@
 import type { EbayApiClient } from '@/api/client.js';
 import { locatedResourceId } from '@/api/shared/location.js';
-import { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
+import {
+  decodeEndpointInputEffect,
+  EbayApiError,
+  type EndpointInputError,
+} from '@/api/shared/request.js';
 import { getIdentityBaseUrl, getMediaBaseUrl } from '@/config/environment.js';
 import {
   createDocumentFromUrlInputSchema,
@@ -10,7 +14,6 @@ import {
   postOrderDocumentMetadataSchema,
 } from '@/schemas/inventory-management/mediaDocuments.js';
 import type { components } from '@/types/sell-apps/listing-management/commerceMediaV1BetaOas3.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
 import type { MediaUpload } from './media.js';
@@ -27,9 +30,6 @@ type PostOrderMetadata = InferEffectSchema<typeof postOrderDocumentMetadataSchem
 export type CreateDocumentResponse = components['schemas']['CreateDocumentResponse'];
 /** Listing document status and metadata. @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/getDocument */
 export type DocumentResponse = components['schemas']['DocumentResponse'];
-
-const inputFailure = (cause: { message: string }) =>
-  new EndpointInputError({ parameter: 'input', message: cause.message });
 
 const uploadForm = (file: MediaUpload): FormData => {
   const form = new FormData();
@@ -66,9 +66,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const createImageFromUrl = (input: CreateImageFromUrlInput) =>
     Effect.gen(function* () {
-      const body = yield* decodeEffectSchema(createImageFromUrlInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const body = yield* decodeEndpointInputEffect(createImageFromUrlInputSchema, input);
       const path = '/image/create_image_from_url';
       const response = yield* Effect.tryPromise({
         try: () =>
@@ -90,9 +88,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const createDocument = (input: CreateDocumentInput) =>
     Effect.gen(function* () {
-      const body = yield* decodeEffectSchema(createDocumentInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const body = yield* decodeEndpointInputEffect(createDocumentInputSchema, input);
       return yield* Effect.tryPromise({
         try: () => client.post<CreateDocumentResponse>(url('/document'), body, { absolute: true }),
         catch: failure('POST', '/document'),
@@ -108,9 +104,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const createDocumentFromUrl = (input: CreateDocumentFromUrlInput) =>
     Effect.gen(function* () {
-      const body = yield* decodeEffectSchema(createDocumentFromUrlInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const body = yield* decodeEndpointInputEffect(createDocumentFromUrlInputSchema, input);
       const path = '/document/create_document_from_url';
       return yield* Effect.tryPromise({
         try: () => client.post<CreateDocumentResponse>(url(path), body, { absolute: true }),
@@ -127,9 +121,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const getDocument = (input: DocumentIdInput) =>
     Effect.gen(function* () {
-      const { documentId } = yield* decodeEffectSchema(documentIdInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
       const path = `/document/${encodeURIComponent(documentId)}`;
       return yield* Effect.tryPromise({
         try: () => client.get<DocumentResponse>(url(path), undefined, { absolute: true }),
@@ -146,9 +138,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const uploadDocument = (input: DocumentIdInput & { file: MediaUpload }) =>
     Effect.gen(function* () {
-      const { documentId } = yield* decodeEffectSchema(documentIdInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
       const path = `/document/${encodeURIComponent(documentId)}/upload`;
       return yield* Effect.tryPromise({
         try: () =>
@@ -169,9 +159,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const uploadPostOrderDocument = (input: PostOrderMetadata & { file: MediaUpload }) =>
     Effect.gen(function* () {
-      const metadata = yield* decodeEffectSchema(postOrderDocumentMetadataSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const metadata = yield* decodeEndpointInputEffect(postOrderDocumentMetadataSchema, input);
       const form = uploadForm(input.file);
       for (const [key, value] of Object.entries(metadata)) {
         form.append(key, value);
@@ -198,9 +186,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const downloadPostOrderDocument = (input: DocumentIdInput) =>
     Effect.gen(function* () {
-      const { documentId } = yield* decodeEffectSchema(documentIdInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
       const path = `/post_order/document/${encodeURIComponent(documentId)}`;
       return yield* Effect.tryPromise({
         try: () =>
@@ -222,9 +208,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const removePostOrderDocument = (input: DocumentIdInput) =>
     Effect.gen(function* () {
-      const { documentId } = yield* decodeEffectSchema(documentIdInputSchema, input).pipe(
-        Effect.mapError(inputFailure),
-      );
+      const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
       const path = `/post_order/document/${encodeURIComponent(documentId)}`;
       yield* Effect.tryPromise({
         try: () => client.delete<void>(url(path, true), { absolute: true }),
