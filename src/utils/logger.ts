@@ -271,6 +271,11 @@ export const logErrorResponse = (
  * Truncate large data objects for logging
  */
 const truncateData = (data: unknown, maxLength = 1000): unknown => {
+  // File bodies are logged by size only: serializing a 25 MiB Buffer would build a ~100 MB
+  // string and copy the file's opening bytes into the logs.
+  if (data instanceof Uint8Array) {
+    return `[binary ${data.byteLength} bytes]`;
+  }
   const str = JSON.stringify(data);
   if (str.length <= maxLength) {
     return data;

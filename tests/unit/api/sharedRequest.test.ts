@@ -3,10 +3,12 @@ import { Effect } from 'effect';
 import {
   buildEndpointParams,
   EbayApiError,
+  marketplaceHeader,
   optionalNonNegativeNumberEffect,
   optionalPositiveNumberEffect,
   optionalStringEffect,
   requestGetEffect,
+  requestPatchEffect,
   requireObjectEffect,
   requireStringEffect,
 } from '@/api/shared/request.js';
@@ -73,6 +75,12 @@ describe('shared API request helpers', () => {
     });
   });
 
+  it('builds a per-call marketplace header config', () => {
+    expect(marketplaceHeader('EBAY_GB')).toEqual({
+      headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB' },
+    });
+  });
+
   it('runs GET requests through Effect with typed eBay API failures', async () => {
     const client = {
       get: vi.fn().mockRejectedValue(new Error('network down')),
@@ -96,6 +104,24 @@ describe('shared API request helpers', () => {
       });
       expect(error?.message).toBe('eBay GET /sell/account/v1/custom_policy failed: network down');
     }
+  });
+
+  it('runs PATCH requests through Effect with the body, config, and typed failures', async () => {
+    const client = {
+      patch: vi.fn().mockRejectedValue(new Error('conflict')),
+    } as unknown as EbayApiClient;
+    const config = { headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US' } };
+
+    const error = await Effect.runPromise(
+      Effect.flip(requestPatchEffect(client, '/sell/account/v2/user_preferences', {}, config)),
+    );
+
+    expect(client.patch).toHaveBeenCalledWith('/sell/account/v2/user_preferences', {}, config);
+    expect(error).toMatchObject({
+      _tag: 'EbayApiError',
+      method: 'PATCH',
+      path: '/sell/account/v2/user_preferences',
+    });
   });
 
   it('builds EbayApiError.message from method, path, and cause', () => {

@@ -2,6 +2,7 @@ import type { EbayApiClient } from '@/api/client.js';
 import {
   type EbayApiError,
   buildEndpointParams,
+  marketplaceHeader,
   requestDeleteEffect,
   requestGetEffect,
   requestPostEffect,
@@ -33,11 +34,7 @@ import type {
 } from '@/schemas/marketing/marketing.js';
 import type { Effect } from 'effect';
 import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
-import {
-  MARKETING_BASE_PATH,
-  marketplaceHeader,
-  type MarketingOperationResponse,
-} from './shared.js';
+import { MARKETING_BASE_PATH, type MarketingOperationResponse } from './shared.js';
 
 type CreateItemPriceMarkdownPromotionInput = InferEffectSchema<
   typeof createItemPriceMarkdownPromotionInputSchema

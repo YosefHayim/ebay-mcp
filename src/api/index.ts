@@ -1,4 +1,6 @@
 import { AccountApi } from '@/api/account-management/account.js';
+import { AccountV2Api } from '@/api/account-management/accountV2.js';
+import { FinancesApi } from '@/api/account-management/finances.js';
 import { AnalyticsApi } from '@/api/analytics-and-report/analytics.js';
 import { EbayApiClient } from '@/api/client.js';
 import { FeedbackApi } from '@/api/communication/feedback.js';
@@ -6,14 +8,18 @@ import { MessageApi } from '@/api/communication/message.js';
 import { NegotiationApi } from '@/api/communication/negotiation.js';
 import { NotificationApi } from '@/api/communication/notification.js';
 import { DeveloperApi } from '@/api/developer/developer.js';
+import { FeedApi } from '@/api/listing-management/feed.js';
 import { InventoryApi } from '@/api/listing-management/inventory.js';
 import { MediaApi } from '@/api/listing-management/media.js';
+import { StoresApi } from '@/api/listing-management/stores.js';
+import { CharityApi } from '@/api/listing-metadata/charity.js';
 import { MetadataApi } from '@/api/listing-metadata/metadata.js';
 import { TaxonomyApi } from '@/api/listing-metadata/taxonomy.js';
 import { MarketingApi } from '@/api/marketing-and-promotions/marketing.js';
 import { RecommendationApi } from '@/api/marketing-and-promotions/recommendation.js';
 import { DisputeApi } from '@/api/order-management/dispute.js';
 import { FulfillmentApi } from '@/api/order-management/fulfillment.js';
+import { LogisticsApi } from '@/api/order-management/logistics.js';
 import { ComplianceApi } from '@/api/other/compliance.js';
 import { EDeliveryApi } from '@/api/other/edelivery.js';
 import { BrowseApi } from '@/api/other/browse.js';
@@ -36,15 +42,21 @@ export class EbaySellerApi {
 
   // API categories
   public account: AccountApi;
+  public accountV2: AccountV2Api;
+  public finances: FinancesApi;
   public inventory: InventoryApi;
   public media: MediaApi;
+  public feed: FeedApi;
+  public stores: StoresApi;
   public fulfillment: FulfillmentApi;
+  public logistics: LogisticsApi;
   public dispute: DisputeApi;
   public marketing: MarketingApi;
   public recommendation: RecommendationApi;
   public analytics: AnalyticsApi;
   public metadata: MetadataApi;
   public taxonomy: TaxonomyApi;
+  public charity: CharityApi;
   public negotiation: NegotiationApi;
   public message: MessageApi;
   public notification: NotificationApi;
@@ -65,15 +77,21 @@ export class EbaySellerApi {
 
     // Initialize API category handlers
     this.account = new AccountApi(this.client);
+    this.accountV2 = new AccountV2Api(this.client);
+    this.finances = new FinancesApi(this.client);
     this.inventory = new InventoryApi(this.client);
     this.media = new MediaApi(this.client, this.inventory);
+    this.feed = new FeedApi(this.client);
+    this.stores = new StoresApi(this.client);
     this.fulfillment = new FulfillmentApi(this.client);
+    this.logistics = new LogisticsApi(this.client);
     this.dispute = new DisputeApi(this.client);
     this.marketing = new MarketingApi(this.client);
     this.recommendation = new RecommendationApi(this.client);
     this.analytics = new AnalyticsApi(this.client);
     this.metadata = new MetadataApi(this.client);
     this.taxonomy = new TaxonomyApi(this.client);
+    this.charity = new CharityApi(this.client);
     this.negotiation = new NegotiationApi(this.client);
     this.message = new MessageApi(this.client);
     this.notification = new NotificationApi(this.client);
@@ -150,21 +168,27 @@ export class EbaySellerApi {
 }
 
 export * from '@/api/account-management/account.js';
+export * from '@/api/account-management/accountV2.js';
+export * from '@/api/account-management/finances.js';
 export * from '@/api/analytics-and-report/analytics.js';
 export * from '@/api/client.js';
 export * from '@/api/communication/feedback.js';
 export * from '@/api/communication/message.js';
 export * from '@/api/communication/negotiation.js';
 export * from '@/api/communication/notification.js';
+export * from '@/api/listing-management/feed.js';
 export * from '@/api/listing-management/inventory.js';
 export * from '@/api/listing-management/media.js';
 export * from '@/api/listing-management/mediaAttach.js';
+export * from '@/api/listing-management/stores.js';
+export * from '@/api/listing-metadata/charity.js';
 export * from '@/api/listing-metadata/metadata.js';
 export * from '@/api/listing-metadata/taxonomy.js';
 export * from '@/api/marketing-and-promotions/marketing.js';
 export * from '@/api/marketing-and-promotions/recommendation.js';
 export * from '@/api/order-management/dispute.js';
 export * from '@/api/order-management/fulfillment.js';
+export * from '@/api/order-management/logistics.js';
 export * from '@/api/other/compliance.js';
 export * from '@/api/other/edelivery.js';
 export { BrowseApi } from '@/api/other/browse.js';

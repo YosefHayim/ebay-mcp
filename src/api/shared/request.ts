@@ -1,4 +1,6 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import { decodeEffectSchema } from '@/utils/effectSchema.js';
+import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Data, Effect } from 'effect';
 
 /**
@@ -7,7 +9,7 @@ import { Data, Effect } from 'effect';
 export type QueryParams = Record<string, string | number>;
 
 /** HTTP methods supported by the shared eBay REST request helpers. */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /** One endpoint-owned query parameter allowed by {@link buildEndpointParams}. */
 export interface EndpointParamSpec {
@@ -39,6 +41,45 @@ export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
   /** Human-readable validation failure message. */
   readonly message: string;
 }> {}
+
+/**
+ * Decodes endpoint input through its Effect-backed schema (the tool's SSOT), reporting a
+ * failure as EndpointInputError so endpoint Effects keep one input-failure type.
+ *
+ * @param schema - Effect-backed endpoint input schema.
+ * @param input - Raw endpoint input.
+ * @param parameter - Parameter named in the failure; defaults to `input`.
+ * @returns An Effect with the decoded input, or EndpointInputError.
+ *
+ * @example
+ * ```ts
+ * const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
+ * ```
+ */
+export const decodeEndpointInputEffect = <TSchema extends EffectBackedSchema>(
+  schema: TSchema,
+  input: unknown,
+  parameter = 'input',
+): Effect.Effect<InferEffectSchema<TSchema>, EndpointInputError> =>
+  decodeEffectSchema(schema, input).pipe(
+    Effect.mapError((cause) => new EndpointInputError({ parameter, message: cause.message })),
+  );
+
+/**
+ * Builds the per-call `X-EBAY-C-MARKETPLACE-ID` header for operations whose marketplace
+ * differs from the client's configured `EBAY_MARKETPLACE_ID`.
+ *
+ * @param marketplaceId - eBay marketplace ID, e.g. `EBAY_GB`.
+ * @returns A request config carrying only the marketplace header.
+ *
+ * @example
+ * ```ts
+ * yield* requestGetEffect(client, path, undefined, marketplaceHeader('EBAY_GB'));
+ * ```
+ */
+export const marketplaceHeader = (marketplaceId: string): EbayRequestConfig => ({
+  headers: { 'X-EBAY-C-MARKETPLACE-ID': marketplaceId },
+});
 
 /**
  * Builds query params from an endpoint-owned allow-list.
@@ -304,6 +345,32 @@ export const requestPutEffect = <T = unknown>(
     try: () =>
       config === undefined ? client.put<T>(path, body) : client.put<T>(path, body, config),
     catch: (cause) => new EbayApiError({ method: 'PUT', path, cause }),
+  });
+
+/**
+ * Execute a PATCH request as an Effect with typed eBay API errors.
+ *
+ * @param client - eBay REST client that owns auth and transport details.
+ * @param path - eBay REST path to request.
+ * @param body - Optional JSON body to send.
+ * @param config - Optional per-request headers or params, used for endpoint-specific headers.
+ * @returns An Effect that succeeds with the generated eBay response DTO.
+ *
+ * @example
+ * ```ts
+ * await Effect.runPromise(requestPatchEffect(client, path, body, { headers }));
+ * ```
+ */
+export const requestPatchEffect = <T = unknown>(
+  client: EbayApiClient,
+  path: string,
+  body?: unknown,
+  config?: EbayRequestConfig,
+): Effect.Effect<T, EbayApiError> =>
+  Effect.tryPromise({
+    try: () =>
+      config === undefined ? client.patch<T>(path, body) : client.patch<T>(path, body, config),
+    catch: (cause) => new EbayApiError({ method: 'PATCH', path, cause }),
   });
 
 /**

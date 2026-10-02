@@ -1,13 +1,31 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import {
+  type DownloadedFile,
+  type DownloadTooLargeError,
+  requestDownloadEffect,
+} from '@/api/shared/download.js';
 import {
   buildEndpointParams,
+  decodeEndpointInputEffect,
   type EbayApiError,
   type EndpointInputError,
   requestGetEffect,
   requireObjectEffect,
   requireStringEffect,
 } from '@/api/shared/request.js';
+import { categoryTreeIdInputSchema } from '@/schemas/taxonomy/categoryTree.js';
+import type { components } from '@/types/sell-apps/listing-metadata/commerceTaxonomyV1Oas3.js';
+import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Effect } from 'effect';
+
+/**
+ * fetchItemAspects streams a whole marketplace's aspect file before the inline-size check,
+ * so it gets more than the client's 30 s default; larger trees still end in a bounded failure.
+ */
+const ITEM_ASPECTS_DOWNLOAD: EbayRequestConfig = { timeoutMs: 120_000 };
+
+/** Category tree identifier accepted by fetchItemAspects and getExpiredCategories. */
+export type CategoryTreeIdInput = InferEffectSchema<typeof categoryTreeIdInputSchema>;
 
 /** Input accepted by getDefaultCategoryTreeId. */
 export interface GetDefaultCategoryTreeIdInput {
@@ -64,66 +82,79 @@ export interface GetCompatibilityPropertyValuesInput {
 }
 
 /**
- * Raw Taxonomy API response payload.
- *
- * The current generated type tree does not include a commerce taxonomy module,
- * so taxonomy endpoints return eBay's payload unchanged instead of inventing an
- * internal response model.
- *
- * @see https://developer.ebay.com/api-docs/commerce/taxonomy/overview.html
- */
-type TaxonomyRawResponse = Record<string, unknown>;
-
-/**
- * Response returned by eBay Taxonomy API getDefaultCategoryTreeId.
+ * Response returned by eBay Taxonomy API getDefaultCategoryTreeId; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getDefaultCategoryTreeId
  */
-export type GetDefaultCategoryTreeIdResponse = TaxonomyRawResponse;
+export type GetDefaultCategoryTreeIdResponse =
+  | components['schemas']['BaseCategoryTree']
+  | undefined;
 
 /**
  * Response returned by eBay Taxonomy API getCategoryTree.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategoryTree
  */
-export type GetCategoryTreeResponse = TaxonomyRawResponse;
+export type GetCategoryTreeResponse = components['schemas']['CategoryTree'];
 
 /**
  * Response returned by eBay Taxonomy API getCategorySubtree.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySubtree
  */
-export type GetCategorySubtreeResponse = TaxonomyRawResponse;
+export type GetCategorySubtreeResponse = components['schemas']['CategorySubtree'];
 
 /**
- * Response returned by eBay Taxonomy API getCategorySuggestions.
+ * Response returned by eBay Taxonomy API getCategorySuggestions; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions
  */
-export type GetCategorySuggestionsResponse = TaxonomyRawResponse;
+export type GetCategorySuggestionsResponse =
+  | components['schemas']['CategorySuggestionResponse']
+  | undefined;
 
 /**
- * Response returned by eBay Taxonomy API getItemAspectsForCategory.
+ * Response returned by eBay Taxonomy API getItemAspectsForCategory; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getItemAspectsForCategory
  */
-export type GetItemAspectsForCategoryResponse = TaxonomyRawResponse;
+export type GetItemAspectsForCategoryResponse = components['schemas']['AspectMetadata'] | undefined;
 
 /**
- * Response returned by eBay Taxonomy API getCompatibilityProperties.
+ * Response returned by eBay Taxonomy API getCompatibilityProperties; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityProperties
  */
-export type GetCompatibilityPropertiesResponse = TaxonomyRawResponse;
+export type GetCompatibilityPropertiesResponse =
+  | components['schemas']['GetCompatibilityMetadataResponse']
+  | undefined;
 
 /**
- * Response returned by eBay Taxonomy API getCompatibilityPropertyValues.
+ * Response returned by eBay Taxonomy API getCompatibilityPropertyValues; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityPropertyValues
  */
-export type GetCompatibilityPropertyValuesResponse = TaxonomyRawResponse;
+export type GetCompatibilityPropertyValuesResponse =
+  | components['schemas']['GetCompatibilityPropertyValuesResponse']
+  | undefined;
 
-/** Taxonomy API - category trees, category suggestions, and compatibility metadata. */
+/**
+ * Response returned by eBay Taxonomy API getExpiredCategories; `undefined` when eBay answers
+ * HTTP 204 because the tree has no mapped expired categories.
+ *
+ * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getExpiredCategories
+ */
+export type GetExpiredCategoriesResponse = components['schemas']['ExpiredCategories'] | undefined;
+
+/**
+ * Taxonomy API - category trees, category suggestions, item aspects, expired-category
+ * mappings, and compatibility metadata.
+ */
 export class TaxonomyApi {
   private readonly basePath = '/commerce/taxonomy/v1';
 
@@ -133,7 +164,7 @@ export class TaxonomyApi {
    * Retrieves the default category tree ID for a marketplace.
    *
    * @param input - Marketplace identifier used to select the default tree.
-   * @returns An Effect that succeeds with eBay's getDefaultCategoryTreeId response.
+   * @returns An Effect that succeeds with eBay's getDefaultCategoryTreeId response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -244,7 +275,7 @@ export class TaxonomyApi {
    * Retrieves category suggestions for listing search text.
    *
    * @param input - Category tree identifier and query text.
-   * @returns An Effect that succeeds with eBay's getCategorySuggestions response.
+   * @returns An Effect that succeeds with eBay's getCategorySuggestions response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -287,7 +318,7 @@ export class TaxonomyApi {
    * Retrieves item aspects for a category.
    *
    * @param input - Category tree and category identifiers.
-   * @returns An Effect that succeeds with eBay's getItemAspectsForCategory response.
+   * @returns An Effect that succeeds with eBay's getItemAspectsForCategory response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -330,7 +361,7 @@ export class TaxonomyApi {
    * Retrieves compatibility property names for a category.
    *
    * @param input - Category tree and compatibility-enabled category identifiers.
-   * @returns An Effect that succeeds with eBay's getCompatibilityProperties response.
+   * @returns An Effect that succeeds with eBay's getCompatibilityProperties response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -373,7 +404,7 @@ export class TaxonomyApi {
    * Retrieves compatibility values for one property within a category.
    *
    * @param input - Category tree, category, and compatibility property identifiers.
-   * @returns An Effect that succeeds with eBay's getCompatibilityPropertyValues response.
+   * @returns An Effect that succeeds with eBay's getCompatibilityPropertyValues response, or undefined on HTTP 204.
    *
    * @example
    * ```ts
@@ -423,4 +454,61 @@ export class TaxonomyApi {
       );
     });
   };
+
+  /**
+   * Downloads the aspects of every leaf category in a category tree as eBay's gzipped JSON file.
+   *
+   * eBay documents the file as possibly over 100 MB compressed; files above
+   * MAX_INLINE_DOWNLOAD_BYTES (25 MiB) fail with DownloadTooLargeError, so use
+   * getItemAspectsForCategory for per-category lookups.
+   *
+   * @param input - Category tree identifier.
+   * @returns An Effect with the gzipped bytes, eBay's content type, and its file name.
+   *
+   * @example
+   * ```ts
+   * const file = await Effect.runPromise(taxonomyApi.fetchItemAspects({ categoryTreeId: '3' }));
+   * ```
+   *
+   * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/fetchItemAspects
+   */
+  public fetchItemAspects = (
+    input: CategoryTreeIdInput,
+  ): Effect.Effect<DownloadedFile, EbayApiError | EndpointInputError | DownloadTooLargeError> =>
+    this.categoryTreeResourcePath(input, 'fetch_item_aspects').pipe(
+      Effect.flatMap((path) => requestDownloadEffect(this.client, path, ITEM_ASPECTS_DOWNLOAD)),
+    );
+
+  /**
+   * Retrieves the mappings of expired leaf categories to the active categories replacing them.
+   *
+   * @param input - Category tree identifier.
+   * @returns An Effect that succeeds with eBay's ExpiredCategories, or undefined on HTTP 204.
+   *
+   * @example
+   * ```ts
+   * const expired = await Effect.runPromise(
+   *   taxonomyApi.getExpiredCategories({ categoryTreeId: '0' }),
+   * );
+   * ```
+   *
+   * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getExpiredCategories
+   */
+  public getExpiredCategories = (
+    input: CategoryTreeIdInput,
+  ): Effect.Effect<GetExpiredCategoriesResponse, EbayApiError | EndpointInputError> =>
+    this.categoryTreeResourcePath(input, 'get_expired_categories').pipe(
+      Effect.flatMap((path) => requestGetEffect<GetExpiredCategoriesResponse>(this.client, path)),
+    );
+
+  private categoryTreeResourcePath = (
+    input: CategoryTreeIdInput,
+    resource: string,
+  ): Effect.Effect<string, EndpointInputError> =>
+    decodeEndpointInputEffect(categoryTreeIdInputSchema, input, 'categoryTreeId').pipe(
+      Effect.map(
+        ({ categoryTreeId }) =>
+          `${this.basePath}/category_tree/${encodeURIComponent(categoryTreeId)}/${resource}`,
+      ),
+    );
 }

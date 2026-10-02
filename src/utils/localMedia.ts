@@ -2,9 +2,14 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { MEDIA_DIRS_ENV, MEDIA_ROOT_ENV, type MediaAccessConfig } from '@/config/mediaAccess.js';
 import { Data, Effect } from 'effect';
+import {
+  FEED_FILE_MIME_BY_EXTENSION,
+  feedFileProblem,
+  MAX_FEED_FILE_BYTES,
+} from './localFeedFiles.js';
 
-/** Media families the upload tools accept. */
-export type LocalMediaKind = 'image' | 'video' | 'document' | 'postOrderDocument';
+/** Local file families the upload tools accept. */
+export type LocalMediaKind = 'image' | 'video' | 'document' | 'postOrderDocument' | 'feedFile';
 
 /** A validated local media file, read into memory. */
 export interface LocalMediaFile {
@@ -14,11 +19,11 @@ export interface LocalMediaFile {
   readonly path: string;
   /** Base name sent to eBay as the upload file name. */
   readonly fileName: string;
-  /** MIME type derived from the extension and confirmed against the file signature. */
+  /** MIME type derived from the extension, confirmed by file signature (binary media and archives) or by UTF-8 text checks (XML/CSV feed files). */
   readonly mimeType: string;
   /** File size in bytes. */
   readonly size: number;
-  /** Whether the file is an image or a video. */
+  /** Upload policy the file was validated against. */
   readonly kind: LocalMediaKind;
   /** File contents. */
   readonly bytes: Buffer;
@@ -80,6 +85,7 @@ const MEDIA_POLICIES = {
     types: { ...DOCUMENT_MIME_BY_EXTENSION, bmp: 'image/bmp', gif: 'image/gif' },
     limit: MAX_POST_ORDER_DOCUMENT_BYTES,
   },
+  feedFile: { types: FEED_FILE_MIME_BY_EXTENSION, limit: MAX_FEED_FILE_BYTES },
 };
 
 const HEIC_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1']);
@@ -194,17 +200,26 @@ const sameFamily = (expected: string, sniffed: string): boolean =>
   (kindOf(expected) === 'video' && kindOf(sniffed) === 'video') ||
   (HEIF_FAMILY.has(expected) && HEIF_FAMILY.has(sniffed));
 
+/** Explains why media bytes do not carry the extension's signature; `undefined` when they do. */
+const mediaSignatureProblem = (bytes: Buffer, mimeType: string): string | undefined => {
+  const sniffed = sniffMediaType(bytes);
+  if (sniffed && sameFamily(mimeType, sniffed)) {
+    return;
+  }
+  return `content does not look like ${mimeType}${sniffed ? ` (detected ${sniffed})` : ''}`;
+};
+
 /**
  * Resolves, authorises, validates, and reads one local media reference.
  *
  * The reference is resolved (`media://` under `EBAY_MCP_MEDIA_ROOT`, otherwise an
  * absolute path), symlinks are followed with `realpath`, and the real path must sit
  * inside one of the allowed directories. The extension must be one eBay accepts for
- * the requested kind, the size must be within eBay's limit, and the file signature
- * must agree with the extension.
+ * the requested kind, the size must be within eBay's limit, and the content must agree
+ * with the extension (file signature for binary types; UTF-8 text checks for XML/CSV feeds).
  *
  * @param source - Absolute path or `media://` reference.
- * @param kind - Upload policy: image, video, listing document or post-order document.
+ * @param kind - Upload policy: image, video, listing document, post-order document or feed file.
  * @param access - Parsed allowlist from {@link getMediaAccessConfig}.
  * @returns An Effect that succeeds with the validated file (contents included) or fails with `LocalMediaError`.
  *
@@ -264,14 +279,12 @@ export const loadLocalMedia = (
     if (bytes.length === 0 || bytes.length > limit) {
       return yield* Effect.fail(fail(source, `file must contain 1 to ${limit} bytes`));
     }
-    const sniffed = sniffMediaType(bytes);
-    if (!(sniffed && sameFamily(mimeType, sniffed))) {
-      return yield* Effect.fail(
-        fail(
-          source,
-          `content does not look like ${mimeType}${sniffed ? ` (detected ${sniffed})` : ''}`,
-        ),
-      );
+    const contentProblem =
+      kind === 'feedFile'
+        ? feedFileProblem(bytes, mimeType)
+        : mediaSignatureProblem(bytes, mimeType);
+    if (contentProblem) {
+      return yield* Effect.fail(fail(source, contentProblem));
     }
     return {
       source,

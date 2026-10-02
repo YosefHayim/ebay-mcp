@@ -1,8 +1,12 @@
 import { z } from '@/utils/effectSchema.js';
 import { MarketplaceId } from '@/types/ebayEnums.js';
+import { shippingMetadataInputSchema } from '@/schemas/metadata/shipping.js';
 import { defineTool } from '@/tools/defineTool.js';
 import type { ToolEntry } from '@/tools/registry.js';
 import { Effect } from 'effect';
+
+const SHIPPING_LANGUAGE_NOTE =
+  'Set acceptLanguage to fr-CA (EBAY_CA), fr-BE or nl-BE (EBAY_BE) to localize the metadata for the French Canada and Belgian marketplaces. Use the returned values when configuring fulfillment policies (ebay_create_fulfillment_policy).';
 
 /** Marketplace-scoped metadata request with an optional category filter. */
 const marketplaceMetadataSchema = z.object({
@@ -264,6 +268,41 @@ export const metadataEntries: ToolEntry[] = [
     description: 'Get site visibility policies for a marketplace',
     inputSchema: marketplaceMetadataSchema.shape,
     handler: (api, args) => Effect.runPromise(api.metadata.getSiteVisibilityPolicies(args)),
+  }),
+  defineTool({
+    name: 'ebay_get_exclude_shipping_locations',
+    description: `Metadata API: list the regions, countries and special locations (e.g. PO Box, APO/FPO) a seller can exclude from shipping on a marketplace. ${SHIPPING_LANGUAGE_NOTE}`,
+    inputSchema: shippingMetadataInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.metadata.getExcludeShippingLocations(args)),
+  }),
+  defineTool({
+    name: 'ebay_get_handling_times',
+    description: `Metadata API: list the handling times (maximum business days to ship after cleared payment, flagged when extended) a marketplace allows. ${SHIPPING_LANGUAGE_NOTE}`,
+    inputSchema: shippingMetadataInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.metadata.getHandlingTimes(args)),
+  }),
+  defineTool({
+    name: 'ebay_get_shipping_carriers',
+    description: `Metadata API: list the shipping carriers supported on a marketplace. Each shippingCarrier value is the enum to use when supplying shipment tracking. ${SHIPPING_LANGUAGE_NOTE}`,
+    inputSchema: shippingMetadataInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.metadata.getShippingCarriers(args)),
+  }),
+  defineTool({
+    name: 'ebay_get_shipping_locations',
+    description: `Metadata API: list the regions, countries and special locations a seller can ship to on a marketplace. ${SHIPPING_LANGUAGE_NOTE}`,
+    inputSchema: shippingMetadataInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.metadata.getShippingLocations(args)),
+  }),
+  defineTool({
+    name: 'ebay_get_shipping_services',
+    description: `Metadata API: list the shipping services available on a marketplace with carrier, category, domestic/international flag, shipping times, cost types and package limits. Only services with validForSellingFlow=true can be used in listings or fulfillment policies. ${SHIPPING_LANGUAGE_NOTE}`,
+    inputSchema: shippingMetadataInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.metadata.getShippingServices(args)),
   }),
   defineTool({
     name: 'ebay_get_compatibilities_by_specification',

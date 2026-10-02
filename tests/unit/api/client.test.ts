@@ -152,6 +152,72 @@ describe('EbayApiClient Unit Tests', () => {
     });
   });
 
+  describe('PATCH requests', () => {
+    it('sends the JSON body and per-request headers with the bearer token', async () => {
+      const preferences = { endOfAuctionEmailPreferences: { emailCopyToSeller: true } };
+      nock('https://api.sandbox.ebay.com', {
+        reqheaders: {
+          authorization: 'Bearer mock_access_token',
+          'x-ebay-c-marketplace-id': 'EBAY_GB',
+        },
+      })
+        .patch('/sell/account/v2/user_preferences', preferences)
+        .reply(204);
+
+      await apiClient.patch('/sell/account/v2/user_preferences', preferences, {
+        headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB' },
+      });
+
+      expect(nock.isDone()).toBe(true);
+    });
+  });
+
+  describe('Responses with headers', () => {
+    it('keep the task Location header for asynchronous PUT and DELETE requests', async () => {
+      const location = 'https://api.sandbox.ebay.com/sell/stores/v1/store/tasks/T1';
+      nock('https://api.sandbox.ebay.com')
+        .put('/sell/stores/v1/store/categories/C1', { categoryName: 'Lamps' })
+        .reply(204, '', { Location: location })
+        .delete('/sell/stores/v1/store/categories/C1')
+        .reply(202, '', { Location: location });
+
+      const renamed = await apiClient.putForResponse('/sell/stores/v1/store/categories/C1', {
+        categoryName: 'Lamps',
+      });
+      const deleted = await apiClient.deleteForResponse('/sell/stores/v1/store/categories/C1');
+
+      expect(renamed).toMatchObject({ status: 204, headers: { location } });
+      expect(deleted).toMatchObject({ status: 202, headers: { location } });
+    });
+
+    it('send the optional DELETE body eBay documents for category deletes', async () => {
+      nock('https://api.sandbox.ebay.com')
+        .delete('/sell/stores/v1/store/categories/C1', { listingDestinationCategoryId: 'C2' })
+        .reply(202);
+
+      await apiClient.deleteForResponse('/sell/stores/v1/store/categories/C1', undefined, {
+        listingDestinationCategoryId: 'C2',
+      });
+
+      expect(nock.isDone()).toBe(true);
+    });
+
+    it('keep content headers for GET downloads', async () => {
+      nock('https://api.sandbox.ebay.com')
+        .get('/sell/feed/v1/task/T1/download_result_file')
+        .reply(200, 'a,b', { 'Content-Disposition': 'attachment; filename="r.csv"' });
+
+      const response = await apiClient.getForResponse(
+        '/sell/feed/v1/task/T1/download_result_file',
+        undefined,
+        { responseType: 'arraybuffer' },
+      );
+
+      expect(Buffer.isBuffer(response.data)).toBe(true);
+      expect(response.headers['content-disposition']).toBe('attachment; filename="r.csv"');
+    });
+  });
+
   describe('429 Rate Limit Errors', () => {
     it('handle 429 errors with Retry-After header', async () => {
       nock('https://api.sandbox.ebay.com')

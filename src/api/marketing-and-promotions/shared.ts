@@ -1,4 +1,3 @@
-import type { EbayRequestConfig } from '@/api/client.js';
 import type { operations } from '@/types/sell-apps/marketing-and-promotions/sellMarketingV1Oas3.js';
 
 export const MARKETING_BASE_PATH = '/sell/marketing/v1';
@@ -17,7 +16,3 @@ export type MarketingOperationResponse<Operation extends keyof operations> =
         : 204 extends keyof operations[Operation]['responses']
           ? JsonContent<operations[Operation]['responses'][204]>
           : void;
-
-export const marketplaceHeader = (marketplaceId: string): EbayRequestConfig => ({
-  headers: { 'X-EBAY-C-MARKETPLACE-ID': marketplaceId },
-});

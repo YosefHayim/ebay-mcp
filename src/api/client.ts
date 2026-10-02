@@ -40,6 +40,8 @@ export interface EbayRequestConfig {
   absolute?: boolean;
   /** Per-request timeout override, e.g. for large media uploads. */
   timeoutMs?: number;
+  /** Stop reading an `arraybuffer` body past this many bytes (see HttpRequestOptions); every verb forwards it. */
+  maxBytes?: number;
   /**
    * Token the request must authenticate with. Omit for the default
    * user-first token, or pass `'application'` for endpoints eBay documents as
@@ -93,6 +95,8 @@ interface EbayRequestOptions {
   readonly absolute?: boolean;
   /** Per-request timeout override. */
   readonly timeoutMs?: number;
+  /** Binary body read limit passed to the HTTP adapter. */
+  readonly maxBytes?: number;
   /** Token the request must authenticate with; omit for the default path. */
   readonly tokenType?: EbayTokenType;
 }
@@ -375,6 +379,7 @@ export class EbayApiClient {
         body: options.data,
         timeoutMs: options.timeoutMs ?? this.timeoutMs,
         responseType: options.responseType,
+        maxBytes: options.maxBytes,
       }).pipe(
         Effect.map((response) => {
           logResponse(
@@ -548,6 +553,27 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
+      tokenType: config?.tokenType,
+    });
+  }
+
+  /**
+   * Make a GET request and keep the status and headers of the successful
+   * response — for file downloads whose name and type arrive in headers.
+   */
+  async getForResponse<T = unknown>(
+    endpoint: string,
+    params?: Record<string, unknown>,
+    config?: EbayRequestConfig,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('GET', endpoint, {
+      params: { ...params, ...config?.params },
+      headers: config?.headers,
+      responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -579,6 +605,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -587,13 +614,46 @@ export class EbayApiClient {
    * Make a PUT request to eBay API
    */
   async put<T = unknown>(endpoint: string, data?: unknown, config?: EbayRequestConfig): Promise<T> {
-    return await this.request<T>('PUT', endpoint, {
+    return (await this.putForResponse<T>(endpoint, data, config)).data;
+  }
+
+  /**
+   * Make a PUT request and keep the status and headers of the successful
+   * response — for asynchronous updates that return a task `Location` header.
+   */
+  async putForResponse<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: EbayRequestConfig,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('PUT', endpoint, {
       data,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
+      tokenType: config?.tokenType,
+    });
+  }
+
+  /**
+   * Make a PATCH request to eBay API
+   */
+  async patch<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: EbayRequestConfig,
+  ): Promise<T> {
+    return await this.request<T>('PATCH', endpoint, {
+      data,
+      params: config?.params,
+      headers: config?.headers,
+      responseType: config?.responseType,
+      absolute: config?.absolute,
+      timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -602,12 +662,27 @@ export class EbayApiClient {
    * Make a DELETE request to eBay API
    */
   async delete<T = unknown>(endpoint: string, config?: EbayRequestConfig): Promise<T> {
-    return await this.request<T>('DELETE', endpoint, {
+    return (await this.deleteForResponse<T>(endpoint, config)).data;
+  }
+
+  /**
+   * Make a DELETE request and keep the status and headers of the successful
+   * response — for asynchronous deletes that return a task `Location` header.
+   * `data` is the optional body a few eBay DELETE calls document.
+   */
+  async deleteForResponse<T = unknown>(
+    endpoint: string,
+    config?: EbayRequestConfig,
+    data?: unknown,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('DELETE', endpoint, {
+      data,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }

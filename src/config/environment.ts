@@ -165,6 +165,13 @@ export const getDefaultScopes = (environment: EbayEnvironment): string[] => {
 export const POST_ORDER_DOCUMENT_SCOPE =
   'https://api.ebay.com/oauth/api_scope/commerce.post_order.document';
 
+/** Optional Finances API scope for order earnings; requested only through `EBAY_OAUTH_SCOPES`. */
+export const FINANCES_EARNINGS_SCOPE =
+  'https://api.ebay.com/oauth/api_scope/sell.finances.earnings.read';
+
+/** Limited-release Logistics API scope; requested only through `EBAY_OAUTH_SCOPES`. */
+export const LOGISTICS_SCOPE = 'https://api.ebay.com/oauth/api_scope/sell.logistics';
+
 /**
  * Recognized scopes, including optional scopes that are never requested by default.
  * @param environment - eBay environment for the base scope catalogue.
@@ -173,6 +180,8 @@ export const POST_ORDER_DOCUMENT_SCOPE =
 export const getKnownScopes = (environment: EbayEnvironment): string[] => [
   ...getDefaultScopes(environment),
   POST_ORDER_DOCUMENT_SCOPE,
+  FINANCES_EARNINGS_SCOPE,
+  LOGISTICS_SCOPE,
 ];
 
 /** Environment variable naming the exact OAuth scopes the consent URL should request. */

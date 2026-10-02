@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-10-02
+
+### Added
+
+- **Complete Sell API coverage from the refreshed specs (#183)**: 71 new tools covering every operation the spec refresh found uncovered. Four new `EBAY_MCP_TOOLS` families: `finances`, `feed`, `stores` and `logistics`.
+  - **Finances**: 11 read-only tools for payouts, transactions, transfers, seller funds, billing activity and order earnings. Most calls go to eBay's `apiz` host.
+  - **Feed**: 23 tools for order, inventory and customer-service-metric report tasks, LMS and Seller Hub upload tasks, and recurring schedules. They also download task and schedule files and upload local feed files.
+  - **Stores**: 8 tools for store details and category changes. Category changes are asynchronous; poll the task they return.
+  - **Logistics**: 6 tools for shipping quotes, postage purchase, shipments, cancellation and PDF labels.
+- **Account API v2 (#183)**: 14 tools for rate tables, split payouts, combined shipping rules and user preferences, in the `account` family. This includes `getRateTable`, which the sync report had missed because it fuzzily matched v1's `getRateTables`.
+- **Metadata, Taxonomy and Charity gaps (#183)**:
+  - Metadata gains shipping carriers, services, locations and handling times.
+  - Taxonomy gains expired categories and the bulk aspect export.
+  - Charity organization lookup and search join the `taxonomy` family.
+- **Embedded file downloads**: feed files, shipping labels and the aspect export come back as embedded MCP resources; nothing is written to disk. A file over 25 MiB fails as soon as its size is known.
+- **Feed file uploads**: `ebay_upload_feed_task_file` uploads a local `.xml`, `.csv`, `.zip` or `.gz` file of up to 15 MiB. It reads files only from folders allowed by `EBAY_MCP_MEDIA_DIRS` / `EBAY_MCP_MEDIA_ROOT`, as the media tools do.
+- **Optional OAuth scopes**: `sell.finances.earnings.read` (order earnings) and `sell.logistics` (Logistics) are now recognized and mapped to their tools, but are never added to default consent requests.
+
+### Fixed
+
+- **`pnpm sync` on specs with dangling references**: eBay's Account v2 spec references a schema it never defines. Type generation now substitutes a documented placeholder instead of aborting.
+
+### Changed
+
+- Update documented coverage to **384 tools across 360 cached OpenAPI endpoints**, with no missing operations in the local sync report.
+- The HTTP client supports PATCH, keeps response headers for GET/PUT/DELETE, and can send an optional DELETE body. Binary reads can stop at a byte limit.
+
 ## [1.17.0] - 2026-09-23
 
 ### Added

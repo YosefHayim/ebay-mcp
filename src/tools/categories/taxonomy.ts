@@ -1,5 +1,7 @@
 import { z } from '@/utils/effectSchema.js';
+import { categoryTreeIdInputSchema } from '@/schemas/taxonomy/categoryTree.js';
 import { defineTool } from '@/tools/defineTool.js';
+import { formatFileResult } from '@/tools/fileResult.js';
 import type { ToolEntry } from '@/tools/registry.js';
 import { Effect } from 'effect';
 
@@ -82,5 +84,27 @@ export const taxonomyEntries: ToolEntry[] = [
       description: 'Required and recommended item specifics for the category',
     },
     handler: (api, args) => Effect.runPromise(api.taxonomy.getItemAspectsForCategory(args)),
+  }),
+  defineTool({
+    name: 'ebay_fetch_item_aspects',
+    description:
+      "Taxonomy API: download the aspects (item specifics) of every leaf category in a category tree as eBay's gzipped JSON file, returned as an embedded resource with eBay's content type (application/octet-stream); gunzip it to read the JSON. eBay notes the file can exceed 100 MB compressed: anything above 25 MiB fails with DownloadTooLargeError instead of being returned, so use ebay_get_item_aspects_for_category for per-category lookups, especially on large trees such as EBAY_US (0).",
+    inputSchema: categoryTreeIdInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.taxonomy.fetchItemAspects(args)),
+    formatResult: (file, args) =>
+      formatFileResult(
+        file,
+        `ebay-taxonomy://category_tree/${encodeURIComponent(args.categoryTreeId)}/item_aspects`,
+        `Taxonomy item aspects for category tree ${args.categoryTreeId}`,
+      ),
+  }),
+  defineTool({
+    name: 'ebay_get_expired_categories',
+    description:
+      'Taxonomy API: list expired leaf categories in a category tree with the active categories that replaced them (fromCategoryId to toCategoryId; several may merge into one). Only mapped (merged or split) categories are returned; an empty success (HTTP 204) means the tree has none.',
+    inputSchema: categoryTreeIdInputSchema.shape,
+    annotations: { readOnlyHint: true },
+    handler: (api, args) => Effect.runPromise(api.taxonomy.getExpiredCategories(args)),
   }),
 ];

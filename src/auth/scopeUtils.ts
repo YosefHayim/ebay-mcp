@@ -3,11 +3,40 @@
  */
 
 import {
+  FINANCES_EARNINGS_SCOPE,
   getDefaultScopes,
   getKnownScopes,
+  LOGISTICS_SCOPE,
   POST_ORDER_DOCUMENT_SCOPE,
   validateScopes,
 } from '@/config/environment.js';
+
+/** Finances tools that need the optional order-earnings scope. */
+const FINANCES_EARNINGS_TOOLS = [
+  'ebay_get_order_earnings',
+  'ebay_get_order_earnings_by_id',
+  'ebay_get_order_earnings_summary',
+];
+
+/** Logistics tools; the whole API is limited release behind its own scope. */
+const LOGISTICS_TOOLS = [
+  'ebay_create_shipping_quote',
+  'ebay_get_shipping_quote',
+  'ebay_create_shipment_from_shipping_quote',
+  'ebay_get_shipment',
+  'ebay_cancel_shipment',
+  'ebay_download_shipping_label_file',
+];
+
+/** Requirement for tools whose scope is recognized but never requested by default. */
+const optionalConsent = (
+  tools: readonly string[],
+  scope: string,
+  description: string,
+): Record<string, ScopeRequirement> =>
+  Object.fromEntries(
+    tools.map((tool) => [tool, { requiredScopes: [scope], minimumScope: scope, description }]),
+  );
 
 /**
  * Result of scope validation
@@ -125,6 +154,17 @@ export const getRequiredScopesForTool = (toolName: string): ScopeRequirement | n
   }
   // Scope requirements mapping based on eBay API documentation
   const scopeMap: Record<string, ScopeRequirement> = {
+    ...optionalConsent(
+      FINANCES_EARNINGS_TOOLS,
+      FINANCES_EARNINGS_SCOPE,
+      'Requires the optional sell.finances.earnings.read scope; add it to EBAY_OAUTH_SCOPES and repeat user consent',
+    ),
+    ...optionalConsent(
+      LOGISTICS_TOOLS,
+      LOGISTICS_SCOPE,
+      'Requires the limited-release sell.logistics scope; eligible keysets add it to EBAY_OAUTH_SCOPES and repeat user consent',
+    ),
+
     // Inventory Management Tools
     ebay_get_inventory_items: {
       requiredScopes: [
@@ -474,6 +514,8 @@ export const getScopeTypeDescription = (scope: string): string => {
     'sell.marketing.readonly': 'View your eBay marketing activities',
     'sell.analytics.readonly': 'View your selling analytics data',
     'sell.finances': 'View and manage your payment and order information',
+    'sell.finances.earnings.read': 'View your order earnings',
+    'sell.logistics': 'Create shipping quotes and purchase shipping labels',
     'sell.payment.dispute': 'View and manage disputes and related details',
     'commerce.identity.readonly': 'View basic user information from eBay account',
     'sell.reputation': 'View and manage your reputation data',

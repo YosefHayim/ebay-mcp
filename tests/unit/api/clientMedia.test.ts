@@ -39,6 +39,9 @@ describe('EbayApiClient media transport', () => {
   });
 
   afterEach(() => {
+    // Cancel replies still waiting on `.delay()`: after a client timeout they would answer an
+    // already-aborted request and surface as unhandled errors in later tests.
+    nock.abortPendingRequests();
     nock.cleanAll();
     nock.enableNetConnect();
   });
@@ -157,12 +160,13 @@ describe('EbayApiClient media transport', () => {
   });
 
   it('applies the per-request timeout to put and delete', async () => {
+    // The replies wait far longer than any runner takes to reach afterEach, which cancels them.
     nock('https://apim.sandbox.ebay.com')
       .put('/commerce/media/v1_beta/image/SLOW')
-      .delay(200)
+      .delay(60_000)
       .reply(204)
       .delete('/commerce/media/v1_beta/image/SLOW')
-      .delay(200)
+      .delay(60_000)
       .reply(204);
     const slowUrl = 'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/SLOW';
 
