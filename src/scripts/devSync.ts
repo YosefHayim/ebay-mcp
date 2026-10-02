@@ -9,6 +9,7 @@ import { Effect, Either } from 'effect';
 import { getErrorMessage } from '@/utils/errors.js';
 import { httpRequest } from '@/utils/http.js';
 import process from 'node:process';
+import { replaceDanglingSchemaRefs } from './specRefs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -313,7 +314,22 @@ function generateTypes(): number {
           Effect.either(
             Effect.try({
               try: () => {
-                execSync(`npx openapi-typescript "${fullPath}" -o "${outputPath}" --silent`, {
+                const { spec, danglingRefs } = replaceDanglingSchemaRefs(JSON.parse(content));
+                if (danglingRefs.length === 0) {
+                  execSync(`npx openapi-typescript "${fullPath}" -o "${outputPath}" --silent`, {
+                    stdio: 'pipe',
+                    cwd: PROJECT_ROOT,
+                  });
+                  return;
+                }
+
+                // openapi-typescript aborts on the first unresolved $ref, so feed it the
+                // rewritten spec on stdin instead of the upstream file.
+                console.log(
+                  `  ${ui.warning('⚠')} ${camelCaseName}: undefined upstream schemas typed as unknown: ${danglingRefs.join(', ')}`,
+                );
+                execSync(`npx openapi-typescript -o "${outputPath}" --silent`, {
+                  input: JSON.stringify(spec),
                   stdio: 'pipe',
                   cwd: PROJECT_ROOT,
                 });
