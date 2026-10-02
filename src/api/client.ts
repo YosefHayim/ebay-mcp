@@ -658,12 +658,15 @@ export class EbayApiClient {
   /**
    * Make a DELETE request and keep the status and headers of the successful
    * response — for asynchronous deletes that return a task `Location` header.
+   * `data` is the optional body a few eBay DELETE calls document.
    */
   async deleteForResponse<T = unknown>(
     endpoint: string,
     config?: EbayRequestConfig,
+    data?: unknown,
   ): Promise<EbayResponse<T>> {
     return await this.requestResponse<T>('DELETE', endpoint, {
+      data,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,

@@ -190,6 +190,18 @@ describe('EbayApiClient Unit Tests', () => {
       expect(deleted).toMatchObject({ status: 202, headers: { location } });
     });
 
+    it('send the optional DELETE body eBay documents for category deletes', async () => {
+      nock('https://api.sandbox.ebay.com')
+        .delete('/sell/stores/v1/store/categories/C1', { listingDestinationCategoryId: 'C2' })
+        .reply(202);
+
+      await apiClient.deleteForResponse('/sell/stores/v1/store/categories/C1', undefined, {
+        listingDestinationCategoryId: 'C2',
+      });
+
+      expect(nock.isDone()).toBe(true);
+    });
+
     it('keep content headers for GET downloads', async () => {
       nock('https://api.sandbox.ebay.com')
         .get('/sell/feed/v1/task/T1/download_result_file')
