@@ -288,3 +288,22 @@ it('rejects a combined shipping call without a marketplace before contacting eBa
   expect(result.isError).toBe(true);
   expect(endpoint.isDone()).toBe(false);
 });
+
+it('rejects a payout percentage outside 0-100 before contacting eBay', async () => {
+  const endpoint = nock(HOST).post(`${BASE}/payout_settings/update_percentage`).reply(204);
+
+  const result = await client.callTool({
+    name: 'ebay_update_payout_percentage',
+    arguments: {
+      payoutSplit: {
+        payoutInstruments: [
+          { instrumentId: 'BANK-1', payoutPercentage: '101' },
+          { instrumentId: 'PAYONEER-1', payoutPercentage: '-1' },
+        ],
+      },
+    },
+  });
+
+  expect(result.isError).toBe(true);
+  expect(endpoint.isDone()).toBe(false);
+});

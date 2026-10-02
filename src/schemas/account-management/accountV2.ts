@@ -249,9 +249,12 @@ export const updatePayoutPercentageInputSchema = z.object({
         .array(
           z.object({
             instrumentId: nonempty.describe('Payout instrument ID from ebay_get_payout_settings'),
-            payoutPercentage: nonempty.describe(
-              'Whole-number percentage 0-100 as a string, e.g. "70"; both instruments must total 100',
-            ),
+            payoutPercentage: z
+              .string()
+              .regex(/^(100|[1-9]?\d)$/, 'Must be a whole-number percentage from 0 to 100')
+              .describe(
+                'Whole-number percentage 0-100 as a string, e.g. "70"; both instruments must total 100',
+              ),
           }),
         )
         .min(1)
