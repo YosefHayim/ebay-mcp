@@ -606,7 +606,19 @@ export class EbayApiClient {
    * Make a PUT request to eBay API
    */
   async put<T = unknown>(endpoint: string, data?: unknown, config?: EbayRequestConfig): Promise<T> {
-    return await this.request<T>('PUT', endpoint, {
+    return (await this.putForResponse<T>(endpoint, data, config)).data;
+  }
+
+  /**
+   * Make a PUT request and keep the status and headers of the successful
+   * response — for asynchronous updates that return a task `Location` header.
+   */
+  async putForResponse<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    config?: EbayRequestConfig,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('PUT', endpoint, {
       data,
       params: config?.params,
       headers: config?.headers,
@@ -640,7 +652,18 @@ export class EbayApiClient {
    * Make a DELETE request to eBay API
    */
   async delete<T = unknown>(endpoint: string, config?: EbayRequestConfig): Promise<T> {
-    return await this.request<T>('DELETE', endpoint, {
+    return (await this.deleteForResponse<T>(endpoint, config)).data;
+  }
+
+  /**
+   * Make a DELETE request and keep the status and headers of the successful
+   * response — for asynchronous deletes that return a task `Location` header.
+   */
+  async deleteForResponse<T = unknown>(
+    endpoint: string,
+    config?: EbayRequestConfig,
+  ): Promise<EbayResponse<T>> {
+    return await this.requestResponse<T>('DELETE', endpoint, {
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
