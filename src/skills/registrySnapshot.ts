@@ -11,14 +11,20 @@ const FAMILY_BLURBS: Record<string, string> = {
     'ChatGPT connector protocol tools (`search`/`fetch`) — not used when driving the API directly',
   'token-management': 'OAuth URL, token status, refresh, and credential diagnostics',
   account:
-    'Business policies (payment, return, fulfillment), privileges, program opt-in, sales tax',
+    'Business policies (payment, return, fulfillment), privileges, program opt-in, sales tax, rate tables, payout settings, combined shipping rules, user preferences',
+  finances: 'Payouts, transactions, transfers, seller funds, billing activity, and order earnings',
   inventory:
     'Inventory items, offers, locations, inventory groups, bulk publish — the REST listing model',
+  feed: 'Asynchronous order, inventory, and customer-service-metric feed tasks, schedules, and files',
+  stores: 'eBay Store details, store categories, and category task status',
   fulfillment: 'Orders, shipping fulfillments, refunds, and payment disputes',
+  logistics: 'Shipping quotes, label purchase, and shipments (limited-release Logistics API)',
   marketing: 'Promoted Listings campaigns, ads, promotions, and marketing reports',
   analytics: 'Seller standards, traffic reports, and customer-service metrics',
-  metadata: 'Marketplace policies, item conditions, listing constraints, automotive compatibility',
-  taxonomy: 'Category trees, category suggestions, and required item aspects',
+  metadata:
+    'Marketplace policies, item conditions, listing constraints, automotive compatibility, shipping carriers and services',
+  taxonomy:
+    'Category trees, category suggestions, required item aspects, expired categories, and charities',
   communication: 'Buyer messages, member messages, and notification settings',
   browse: 'Sold/completed listing search (Finding API) for pricing comps',
   other: 'Feedback, recommendations, and assorted Sell-API helpers',

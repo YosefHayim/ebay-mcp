@@ -54,13 +54,17 @@ Three parallel naming systems on purpose — do **not** mass-rename to force one
 | --- | --- | --- | --- |
 | `connector` | `connector.ts` | — (catalogue meta) | — |
 | `token-management` | `tokenManagement.ts` | via `auth/` | — |
-| `account` | `account.ts` | `account-management/` | `account-management/` |
+| `account` | `account.ts`, `accountV2.ts` | `account-management/` (v1 + `accountV2.ts`) | `account-management/` |
+| `finances` | `finances.ts` | `account-management/` (finances) | `account-management/` |
 | `inventory` | `inventory.ts` | `listing-management/` (items/offers/locations + facade) | `inventory-management/` |
+| `feed` | `feed.ts` | `listing-management/` (feed) | `inventory-management/` |
+| `stores` | `stores.ts` | `listing-management/` (stores) | `inventory-management/` |
 | `fulfillment` | `fulfillment.ts` | `order-management/` | `fulfillment/` |
+| `logistics` | `logistics.ts` | `order-management/` (logistics) | `fulfillment/` |
 | `marketing` | `marketing.ts` | `marketing-and-promotions/` (campaigns/ads/promotions/reports + facade) | `marketing/` (same slices + barrel) |
 | `analytics` | `analytics.ts` | `analytics-and-report/` | `analytics/` |
 | `metadata` | `metadata.ts` | `listing-metadata/` | `metadata/` |
-| `taxonomy` | `taxonomy.ts` | `listing-metadata/` (taxonomy) | `taxonomy/` |
+| `taxonomy` | `taxonomy.ts`, `charity.ts` | `listing-metadata/` (taxonomy, charity) | `taxonomy/` |
 | `communication` | `communication.ts` | `communication/` | `communication/` |
 | `browse` | `browse.ts` | `other/` (Finding) | `other/` |
 | `other` | `other.ts` | `other/` | `other/` |

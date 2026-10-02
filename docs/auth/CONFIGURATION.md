@@ -104,7 +104,7 @@ These credentials are obtained from the [eBay Developer Portal](https://develope
 - **Behavior:**
   - `all` (or unset) — every tool is advertised at startup (original behavior).
   - `dynamic` — only three discovery tools are advertised (`list_ebay_tools`, `enable_ebay_tools`, `disable_ebay_tools`); the agent searches the catalogue and enables tools on demand, which then appear natively. Requires a host that honors `tools/listChanged` (e.g. Claude); not suitable for hosts that ignore it.
-  - A comma-separated family list — registers **only** those families, frozen for the session; works on every host. The list is literal (ChatGPT connectors must include `connector`). Valid families: `connector`, `token-management`, `account`, `inventory`, `fulfillment`, `marketing`, `analytics`, `metadata`, `taxonomy`, `communication`, `other`, `developer`, `trading`, `browse`. An unknown family name fails validation at startup.
+  - A comma-separated family list — registers **only** those families, frozen for the session; works on every host. The list is literal (ChatGPT connectors must include `connector`). Valid families: `connector`, `token-management`, `account`, `finances`, `inventory`, `feed`, `stores`, `fulfillment`, `logistics`, `marketing`, `analytics`, `metadata`, `taxonomy`, `communication`, `other`, `developer`, `trading`, `browse`. An unknown family name fails validation at startup.
 
 #### `EBAY_READ_ONLY`
 
@@ -117,7 +117,7 @@ These credentials are obtained from the [eBay Developer Portal](https://develope
 
 #### `EBAY_MCP_MEDIA_DIRS`
 
-- **Description:** Directories the media upload tools (`ebay_upload_images`, `ebay_upload_video`, `ebay_attach_media_to_inventory_item`) may read local files from
+- **Description:** Directories the media upload tools (`ebay_upload_images`, `ebay_upload_video`, `ebay_attach_media_to_inventory_item`, the document uploads) and the Feed upload tool (`ebay_upload_feed_task_file`) may read local files from
 - **Example:** `/srv/media:/home/seller/listings` (macOS/Linux, `:`-delimited) or `C:\media;D:\listings` (Windows, `;`-delimited)
 - **Required:** No — local file access stays **off** until this or `EBAY_MCP_MEDIA_ROOT` is set
 - **Default:** unset (the media tools refuse every path and explain how to enable access)
@@ -641,6 +641,11 @@ the keyset never received.
 
 3. Re-run the OAuth flow. Entries that are not eBay OAuth scope URIs are ignored with a startup
    notice, and an empty or unusable value falls back to the published table for your environment
+
+Optional scopes are never part of the published table: `commerce.post_order.document`
+(post-order documents), `sell.finances.earnings.read` (order earnings), and `sell.logistics`
+(the limited-release Logistics API). Add one to `EBAY_OAUTH_SCOPES` only when your keyset was
+granted it, then repeat consent.
 
 #### "Failed to exchange code for token"
 

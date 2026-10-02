@@ -4,7 +4,7 @@ Guidance for coding agents (and humans) working **on** this repo. For using the 
 
 ## What this is
 
-A local [MCP](https://modelcontextprotocol.io) server exposing 313 tools across 100% of eBay's Sell APIs. TypeScript/Node.js (ESM), built with `@modelcontextprotocol/sdk`, Effect-backed validation, a Zod SDK adapter, and OpenAPI-generated types.
+A local [MCP](https://modelcontextprotocol.io) server exposing 384 tools across 100% of eBay's Sell APIs. TypeScript/Node.js (ESM), built with `@modelcontextprotocol/sdk`, Effect-backed validation, a Zod SDK adapter, and OpenAPI-generated types.
 
 - **Entry points:** `src/index.ts` (STDIO transport — default) and `src/serverHttp.ts` (HTTP transport).
 - **Runtime:** Node.js ≥ 20. Package manager: pnpm (`pnpm@10.14.0`); npm scripts work too.
@@ -83,7 +83,8 @@ Other useful scripts:
 - **Docs:** endpoint-backed API methods require TSDoc with `@param`, `@returns`, a small `@example`, and the official eBay `@see` URL. Exported shared utilities document params/returns; public generated-response aliases include `@see`.
 - **Types:** no `as any` — narrow, or use a documented boundary cast; no hand-written source excluded from typecheck. `types/` is generated — model new shapes from the specs, don't hand-edit.
 - **Tools:** the Effect-backed endpoint input schema is the SSOT; import runtime schema helpers from `@/utils/effectSchema.js` and inference/helper types from `@/utils/effectSchemaTypes.js`; never add compatibility re-export facades. Derive the MCP wire schema from `.shape`, and let `defineTool` decode raw args through Effect before handlers run one endpoint Effect without response reshaping. Marketing's catalog adapter must keep one public definition per handler and is not a pattern for new tools.
-- **Local files:** only the media tools (`tools/categories/media.ts`) read the filesystem, and only through `utils/localMedia.ts` against the `EBAY_MCP_MEDIA_DIRS` / `EBAY_MCP_MEDIA_ROOT` allowlist (realpath + containment). `ebay_attach_media_to_inventory_item` is the one deliberate multi-endpoint composite besides `ebay_get_offers_by_skus`; do not add others without the same per-item result reporting.
+- **Local files:** only the media tools (`tools/categories/media.ts`) and the Feed upload tool (`ebay_upload_feed_task_file` in `tools/categories/feed.ts`) read the filesystem, and only through `utils/localMedia.ts` against the `EBAY_MCP_MEDIA_DIRS` / `EBAY_MCP_MEDIA_ROOT` allowlist (realpath + containment). `ebay_attach_media_to_inventory_item` is the one deliberate multi-endpoint composite besides `ebay_get_offers_by_skus`; do not add others without the same per-item result reporting.
+- **Downloads:** binary endpoints use `requestDownloadEffect` (`api/shared/download.ts`) and the tool's `formatResult` returns `formatFileResult` (an embedded MCP resource); never write files to disk. Files over `MAX_INLINE_DOWNLOAD_BYTES` (25 MiB) fail with `DownloadTooLargeError`.
 - **API params:** endpoint methods pass an allowed-key object to the shared params builder. The builder owns omission/normalization; endpoints own wire names.
 - **Mapping/UI:** API returns generated eBay DTOs. UI maps only at the presentation boundary; no one-use `toXRow` helpers and no `?? 'unknown'` display fallbacks.
 - **Size:** split by purpose, not line count alone. Biome warns past ~300 lines/file and ~60 lines/function on logic dirs; declarative/generated/table files stay warning-exempt.
