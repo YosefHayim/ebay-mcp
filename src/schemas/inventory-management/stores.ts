@@ -4,9 +4,9 @@ const nonempty = z.string().min(1).regex(/\S/, 'Must contain a non-whitespace ch
 const storeCategoryId = nonempty.describe(
   'eBay Store custom category ID from ebay_get_store_categories (not an eBay marketplace category ID)',
 );
-const categoryName = nonempty.describe(
-  "Seller-specified store category name (max 35 characters); cannot be empty or 'Other'",
-);
+const categoryName = nonempty
+  .max(35)
+  .describe("Seller-specified store category name (max 35 characters); cannot be empty or 'Other'");
 
 /** Empty input for Stores API reads that take no parameters (getStore, getStoreCategories, getStoreTasks). */
 export const emptyStoreInputSchema = z.object({});
@@ -23,7 +23,9 @@ export const addStoreCategoryInputSchema = z.object({
   categoryName,
   destinationParentCategoryId: nonempty
     .optional()
-    .describe('Parent store category ID; omit or pass -999 to add a top-level category'),
+    .describe(
+      'Parent store category ID; omit or pass the string "-999" to add a top-level category',
+    ),
   listingDestinationCategoryId: nonempty
     .optional()
     .describe(

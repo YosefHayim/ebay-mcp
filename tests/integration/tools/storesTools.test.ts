@@ -258,4 +258,16 @@ describe('stores category change failures', () => {
     expect(result.isError).toBe(true);
     expect(request.isDone()).toBe(false);
   });
+
+  it('rejects a category name longer than 35 characters before contacting eBay', async () => {
+    const request = nock(HOST).post(`${STORE}/categories`).reply(202);
+
+    const result = await client.callTool({
+      name: 'ebay_add_store_category',
+      arguments: { categoryName: 'x'.repeat(36) },
+    });
+
+    expect(result.isError).toBe(true);
+    expect(request.isDone()).toBe(false);
+  });
 });
