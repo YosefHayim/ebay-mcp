@@ -1,6 +1,7 @@
 import type { EbayApiClient } from '@/api/client.js';
 import {
   decodeEndpointInputEffect,
+  EndpointInputError,
   requestDeleteEffect,
   requestGetEffect,
   requestPutEffect,
@@ -97,13 +98,21 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 
   /**
    * Updates a schedule; the input is validated against its (possibly changed) template.
-   * @param input - Schedule identifier and UpdateUserScheduleRequest body.
+   * @param input - Schedule identifier and UpdateUserScheduleRequest body with at least one field.
    * @returns An Effect completing on eBay's empty HTTP 204 response.
    * @example feed.updateSchedule({ scheduleId: 'S-1', schedule: { preferredTriggerHour: '11Z' } })
    * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/updateSchedule
    */
   const updateSchedule = (input: UpdateFeedScheduleInput) =>
     decodeEndpointInputEffect(updateFeedScheduleInputSchema, input).pipe(
+      Effect.filterOrFail(
+        ({ schedule }) => Object.keys(schedule).length > 0,
+        () =>
+          new EndpointInputError({
+            parameter: 'schedule',
+            message: 'Provide at least one schedule field to update',
+          }),
+      ),
       Effect.flatMap(({ scheduleId, schedule }) => {
         const body: UpdateUserScheduleRequest = schedule;
         return requestPutEffect<void>(client, feedResourcePath('/schedule', scheduleId), body);

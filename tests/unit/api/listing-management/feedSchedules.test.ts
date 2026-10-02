@@ -6,7 +6,10 @@ import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const BASE = '/sell/feed/v1';
-/** Every operationId in eBay's Sell Feed v1 spec (sell_feed_v1_oas3.json). */
+/**
+ * Sell Feed v1 operationIds as of the 2026-10-01 spec, pinning the FeedApi facade to them.
+ * Spec coverage itself is checked by `pnpm sync --report`, which reads the downloaded spec.
+ */
 const FEED_OPERATION_IDS = [
   'getOrderTasks',
   'createOrderTask',
@@ -62,7 +65,6 @@ describe('FeedApi', () => {
       unknown
     >;
 
-    expect(FEED_OPERATION_IDS).toHaveLength(23);
     expect(
       FEED_OPERATION_IDS.filter((operationId) => typeof api[operationId] !== 'function'),
     ).toEqual([]);
@@ -164,7 +166,8 @@ describe('Feed schedule failures', () => {
       feed.createSchedule({ schedule: { ...schedule, scheduleTemplateId: '' } }),
       feed.createSchedule({ schedule: { ...schedule, preferredTriggerDayOfMonth: 32 } }),
       feed.getSchedule({ scheduleId: ' ' }),
-      feed.updateSchedule({ scheduleId: '', schedule: {} }),
+      feed.updateSchedule({ scheduleId: '', schedule: { scheduleName: 'Daily' } }),
+      feed.updateSchedule({ scheduleId: 'S-1', schedule: {} }),
       feed.deleteSchedule({ scheduleId: '' }),
       feed.getLatestResultFile({ scheduleId: '' }),
       feed.getScheduleTemplate({ scheduleTemplateId: '' }),
@@ -192,7 +195,11 @@ describe('Feed schedule failures', () => {
       [feed.getSchedules(page), 'GET', '/schedule'],
       [feed.createSchedule({ schedule }), 'POST', '/schedule'],
       [feed.getSchedule({ scheduleId: 'S-1' }), 'GET', '/schedule/S-1'],
-      [feed.updateSchedule({ scheduleId: 'S-1', schedule: {} }), 'PUT', '/schedule/S-1'],
+      [
+        feed.updateSchedule({ scheduleId: 'S-1', schedule: { scheduleName: 'Daily' } }),
+        'PUT',
+        '/schedule/S-1',
+      ],
       [feed.deleteSchedule({ scheduleId: 'S-1' }), 'DELETE', '/schedule/S-1'],
       [
         feed.getLatestResultFile({ scheduleId: 'S-1' }),
