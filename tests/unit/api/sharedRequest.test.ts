@@ -3,6 +3,7 @@ import { Effect } from 'effect';
 import {
   buildEndpointParams,
   EbayApiError,
+  marketplaceHeader,
   optionalNonNegativeNumberEffect,
   optionalPositiveNumberEffect,
   optionalStringEffect,
@@ -71,6 +72,12 @@ describe('shared API request helpers', () => {
     expect(offsetError).toMatchObject({
       _tag: 'EndpointInputError',
       parameter: 'offset',
+    });
+  });
+
+  it('builds a per-call marketplace header config', () => {
+    expect(marketplaceHeader('EBAY_GB')).toEqual({
+      headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB' },
     });
   });
 

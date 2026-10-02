@@ -41,6 +41,22 @@ export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
 }> {}
 
 /**
+ * Builds the per-call `X-EBAY-C-MARKETPLACE-ID` header for operations whose marketplace
+ * differs from the client's configured `EBAY_MARKETPLACE_ID`.
+ *
+ * @param marketplaceId - eBay marketplace ID, e.g. `EBAY_GB`.
+ * @returns A request config carrying only the marketplace header.
+ *
+ * @example
+ * ```ts
+ * yield* requestGetEffect(client, path, undefined, marketplaceHeader('EBAY_GB'));
+ * ```
+ */
+export const marketplaceHeader = (marketplaceId: string): EbayRequestConfig => ({
+  headers: { 'X-EBAY-C-MARKETPLACE-ID': marketplaceId },
+});
+
+/**
  * Builds query params from an endpoint-owned allow-list.
  *
  * @param params - Camel-case local parameter names mapped to their eBay wire names and values.
