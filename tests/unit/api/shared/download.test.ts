@@ -1,5 +1,9 @@
 import type { EbayApiClient } from '@/api/client.js';
-import { fileNameFromDisposition, requestDownloadEffect } from '@/api/shared/download.js';
+import {
+  fileNameFromDisposition,
+  MAX_INLINE_DOWNLOAD_BYTES,
+  requestDownloadEffect,
+} from '@/api/shared/download.js';
 import { formatFileResult } from '@/tools/fileResult.js';
 import { Effect } from 'effect';
 import { describe, expect, it, vi } from 'vitest';
@@ -60,6 +64,28 @@ describe('requestDownloadEffect', () => {
 
     expect(file.contentType).toBe('application/octet-stream');
     expect(file.fileName).toBeUndefined();
+  });
+
+  it('refuses files above the inline MCP limit with a tagged error', async () => {
+    const client = {
+      getForResponse: vi.fn().mockResolvedValue({
+        data: Buffer.alloc(MAX_INLINE_DOWNLOAD_BYTES + 1),
+        status: 200,
+        headers: { 'content-type': 'application/octet-stream' },
+      }),
+    } as unknown as EbayApiClient;
+
+    const error = await Effect.runPromise(
+      Effect.flip(
+        requestDownloadEffect(client, '/commerce/taxonomy/v1/category_tree/0/fetch_item_aspects'),
+      ),
+    );
+
+    expect(error).toMatchObject({
+      _tag: 'DownloadTooLargeError',
+      bytes: MAX_INLINE_DOWNLOAD_BYTES + 1,
+      limit: MAX_INLINE_DOWNLOAD_BYTES,
+    });
   });
 
   it('fails with a tagged EbayApiError', async () => {
