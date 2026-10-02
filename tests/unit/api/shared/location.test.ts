@@ -15,6 +15,8 @@ describe('locatedResourceId', () => {
 
   it.each([
     [undefined],
+    ['not a url'],
+    ['https://api.ebay.com/sell/feed/v1/order_task/task-%'],
     ['http://api.ebay.com/sell/feed/v1/order_task/1'],
     ['https://api.ebay.com/sell/feed/v1/schedule/1'],
     ['https://api.ebay.com/sell/feed/v1/order_task/'],

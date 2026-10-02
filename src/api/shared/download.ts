@@ -9,16 +9,14 @@ import { Data, Effect } from 'effect';
 export const MAX_INLINE_DOWNLOAD_BYTES = 25 * 1024 * 1024;
 
 const DEFAULT_CONTENT_TYPE = 'application/octet-stream';
-const ENCODED_FILE_NAME = /filename\*\s*=\s*(?:UTF-8|utf-8)?''([^;]+)/;
+const ENCODED_FILE_NAME = /filename\*\s*=\s*(?:UTF-8|utf-8)?'[^']*'([^;]+)/;
 const QUOTED_FILE_NAME = /filename\s*=\s*"([^"]+)"/;
 const BARE_FILE_NAME = /filename\s*=\s*([^;\s]+)/;
 
 const decodeFileName = (encoded: string): string | undefined => {
   try {
     return decodeURIComponent(encoded);
-  } catch {
-    return;
-  }
+  } catch {}
 };
 
 /**

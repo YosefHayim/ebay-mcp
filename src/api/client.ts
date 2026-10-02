@@ -40,7 +40,7 @@ export interface EbayRequestConfig {
   absolute?: boolean;
   /** Per-request timeout override, e.g. for large media uploads. */
   timeoutMs?: number;
-  /** Stop reading an `arraybuffer` body past this many bytes (see HttpRequestOptions). */
+  /** Stop reading an `arraybuffer` body past this many bytes (see HttpRequestOptions); every verb forwards it. */
   maxBytes?: number;
   /**
    * Token the request must authenticate with. Omit for the default
@@ -553,6 +553,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -604,6 +605,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -631,6 +633,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -650,6 +653,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }
@@ -678,6 +682,7 @@ export class EbayApiClient {
       responseType: config?.responseType,
       absolute: config?.absolute,
       timeoutMs: config?.timeoutMs,
+      maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
     });
   }

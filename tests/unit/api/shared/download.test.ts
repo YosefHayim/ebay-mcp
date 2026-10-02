@@ -13,6 +13,7 @@ describe('fileNameFromDisposition', () => {
     ['attachment; filename="report.csv.gz"', 'report.csv.gz'],
     ['attachment; filename=label.pdf', 'label.pdf'],
     ["attachment; filename*=UTF-8''r%C3%A9sum%C3%A9.zip", 'résumé.zip'],
+    ["attachment; filename*=UTF-8'en'r%C3%A9sum%C3%A9.zip", 'résumé.zip'],
     ['attachment; filename="plain.xml"; filename*=UTF-8\'\'encoded.xml', 'encoded.xml'],
   ])('reads %s', (header, expected) => {
     expect(fileNameFromDisposition(header)).toBe(expected);
