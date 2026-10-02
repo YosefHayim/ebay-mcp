@@ -82,11 +82,14 @@ export interface GetCompatibilityPropertyValuesInput {
 }
 
 /**
- * Response returned by eBay Taxonomy API getDefaultCategoryTreeId.
+ * Response returned by eBay Taxonomy API getDefaultCategoryTreeId; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getDefaultCategoryTreeId
  */
-export type GetDefaultCategoryTreeIdResponse = components['schemas']['BaseCategoryTree'];
+export type GetDefaultCategoryTreeIdResponse =
+  | components['schemas']['BaseCategoryTree']
+  | undefined;
 
 /**
  * Response returned by eBay Taxonomy API getCategoryTree.
@@ -103,34 +106,42 @@ export type GetCategoryTreeResponse = components['schemas']['CategoryTree'];
 export type GetCategorySubtreeResponse = components['schemas']['CategorySubtree'];
 
 /**
- * Response returned by eBay Taxonomy API getCategorySuggestions.
+ * Response returned by eBay Taxonomy API getCategorySuggestions; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions
  */
-export type GetCategorySuggestionsResponse = components['schemas']['CategorySuggestionResponse'];
+export type GetCategorySuggestionsResponse =
+  | components['schemas']['CategorySuggestionResponse']
+  | undefined;
 
 /**
- * Response returned by eBay Taxonomy API getItemAspectsForCategory.
+ * Response returned by eBay Taxonomy API getItemAspectsForCategory; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getItemAspectsForCategory
  */
-export type GetItemAspectsForCategoryResponse = components['schemas']['AspectMetadata'];
+export type GetItemAspectsForCategoryResponse = components['schemas']['AspectMetadata'] | undefined;
 
 /**
- * Response returned by eBay Taxonomy API getCompatibilityProperties.
+ * Response returned by eBay Taxonomy API getCompatibilityProperties; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityProperties
  */
 export type GetCompatibilityPropertiesResponse =
-  components['schemas']['GetCompatibilityMetadataResponse'];
+  | components['schemas']['GetCompatibilityMetadataResponse']
+  | undefined;
 
 /**
- * Response returned by eBay Taxonomy API getCompatibilityPropertyValues.
+ * Response returned by eBay Taxonomy API getCompatibilityPropertyValues; `undefined` when eBay answers HTTP 204
+ * with no content.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityPropertyValues
  */
 export type GetCompatibilityPropertyValuesResponse =
-  components['schemas']['GetCompatibilityPropertyValuesResponse'];
+  | components['schemas']['GetCompatibilityPropertyValuesResponse']
+  | undefined;
 
 /**
  * Response returned by eBay Taxonomy API getExpiredCategories; `undefined` when eBay answers
