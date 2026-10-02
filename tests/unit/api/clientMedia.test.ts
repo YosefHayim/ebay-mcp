@@ -39,6 +39,9 @@ describe('EbayApiClient media transport', () => {
   });
 
   afterEach(() => {
+    // Cancel replies still waiting on `.delay()`: after a client timeout they would answer an
+    // already-aborted request and surface as unhandled errors in later tests on slow runners.
+    nock.abortPendingRequests();
     nock.cleanAll();
     nock.enableNetConnect();
   });
