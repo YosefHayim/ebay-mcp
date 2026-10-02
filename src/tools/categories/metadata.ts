@@ -6,7 +6,7 @@ import type { ToolEntry } from '@/tools/registry.js';
 import { Effect } from 'effect';
 
 const SHIPPING_LANGUAGE_NOTE =
-  'Set acceptLanguage to fr-CA (EBAY_CA), fr-BE or nl-BE (EBAY_BE) for the French Canada and Belgian marketplaces. Manage the values through fulfillment policies (ebay_create_fulfillment_policy).';
+  'Set acceptLanguage to fr-CA (EBAY_CA), fr-BE or nl-BE (EBAY_BE) to localize the metadata for the French Canada and Belgian marketplaces. Use the returned values when configuring fulfillment policies (ebay_create_fulfillment_policy).';
 
 /** Marketplace-scoped metadata request with an optional category filter. */
 const marketplaceMetadataSchema = z.object({

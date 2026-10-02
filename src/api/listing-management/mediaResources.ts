@@ -1,10 +1,6 @@
 import type { EbayApiClient } from '@/api/client.js';
 import { locatedResourceId } from '@/api/shared/location.js';
-import {
-  decodeEndpointInputEffect,
-  EbayApiError,
-  type EndpointInputError,
-} from '@/api/shared/request.js';
+import { decodeEndpointInputEffect, EbayApiError } from '@/api/shared/request.js';
 import { getIdentityBaseUrl, getMediaBaseUrl } from '@/config/environment.js';
 import {
   createDocumentFromUrlInputSchema,

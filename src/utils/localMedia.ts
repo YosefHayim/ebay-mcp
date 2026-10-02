@@ -19,7 +19,7 @@ export interface LocalMediaFile {
   readonly path: string;
   /** Base name sent to eBay as the upload file name. */
   readonly fileName: string;
-  /** MIME type derived from the extension and confirmed against the file signature. */
+  /** MIME type derived from the extension, confirmed by file signature (binary media and archives) or by UTF-8 text checks (XML/CSV feed files). */
   readonly mimeType: string;
   /** File size in bytes. */
   readonly size: number;
