@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -26,19 +26,19 @@ import type {
 } from '@/schemas/account-management/accountV2.js';
 import type { components } from '@/types/sell-apps/account-management/sellAccountV2Oas3.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
-type GetRateTableInput = InferEffectSchema<typeof getRateTableInputSchema>;
-type UpdateShippingCostInput = InferEffectSchema<typeof updateShippingCostInputSchema>;
-type GetPayoutSettingsInput = InferEffectSchema<typeof getPayoutSettingsInputSchema>;
-type UpdatePayoutPercentageInput = InferEffectSchema<typeof updatePayoutPercentageInputSchema>;
-type GetCombinedShippingRulesInput = InferEffectSchema<typeof getCombinedShippingRulesInputSchema>;
-type CalculatedShippingRulesInput = InferEffectSchema<typeof calculatedShippingRulesInputSchema>;
-type FlatShippingRulesInput = InferEffectSchema<typeof flatShippingRulesInputSchema>;
-type PromotionalShippingRuleInput = InferEffectSchema<typeof promotionalShippingRuleInputSchema>;
-type UpdateCombinedPaymentsInput = InferEffectSchema<typeof updateCombinedPaymentsInputSchema>;
-type GetUserPreferencesInput = InferEffectSchema<typeof getUserPreferencesInputSchema>;
-type SetUserPreferencesInput = InferEffectSchema<typeof setUserPreferencesInputSchema>;
+type GetRateTableInput = z.infer<typeof getRateTableInputSchema>;
+type UpdateShippingCostInput = z.infer<typeof updateShippingCostInputSchema>;
+type GetPayoutSettingsInput = z.infer<typeof getPayoutSettingsInputSchema>;
+type UpdatePayoutPercentageInput = z.infer<typeof updatePayoutPercentageInputSchema>;
+type GetCombinedShippingRulesInput = z.infer<typeof getCombinedShippingRulesInputSchema>;
+type CalculatedShippingRulesInput = z.infer<typeof calculatedShippingRulesInputSchema>;
+type FlatShippingRulesInput = z.infer<typeof flatShippingRulesInputSchema>;
+type PromotionalShippingRuleInput = z.infer<typeof promotionalShippingRuleInputSchema>;
+type UpdateCombinedPaymentsInput = z.infer<typeof updateCombinedPaymentsInputSchema>;
+type GetUserPreferencesInput = z.infer<typeof getUserPreferencesInputSchema>;
+type SetUserPreferencesInput = z.infer<typeof setUserPreferencesInputSchema>;
 
 type Schemas = components['schemas'];
 /** Generated request body for updateShippingCost. */
@@ -118,8 +118,8 @@ export class AccountV2Api {
     const { client, basePath } = this;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetRateTableInput>(input, 'input');
-      const rateTableId = yield* requireStringEffect(request.rateTableId, 'rateTableId');
+      const validInput = yield* requireObjectEffect<GetRateTableInput>(input, 'input');
+      const rateTableId = yield* requireStringEffect(validInput.rateTableId, 'rateTableId');
 
       return yield* requestGetEffect<RateTableDetailsResponse>(
         client,
@@ -152,15 +152,15 @@ export class AccountV2Api {
     const { client, basePath } = this;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UpdateShippingCostInput>(input, 'input');
-      const rateTableId = yield* requireStringEffect(request.rateTableId, 'rateTableId');
-      const body = yield* requireObjectEffect<RateTableUpdate>(
-        request.rateTableUpdate,
+      const validInput = yield* requireObjectEffect<UpdateShippingCostInput>(input, 'input');
+      const rateTableId = yield* requireStringEffect(validInput.rateTableId, 'rateTableId');
+      const rateTableUpdate = yield* requireObjectEffect<RateTableUpdate>(
+        validInput.rateTableUpdate,
         'rateTableUpdate',
       );
       const path = `${basePath}/rate_table/${encodeURIComponent(rateTableId)}/update_shipping_cost`;
 
-      return yield* requestPostEffect<void>(client, path, body);
+      return yield* requestPostEffect<void>(client, path, rateTableUpdate);
     });
   };
 
@@ -213,13 +213,13 @@ export class AccountV2Api {
     const path = `${this.basePath}/payout_settings/update_percentage`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UpdatePayoutPercentageInput>(input, 'input');
-      const body = yield* requireObjectEffect<UpdatePayoutPercentageRequest>(
-        request.payoutSplit,
+      const validInput = yield* requireObjectEffect<UpdatePayoutPercentageInput>(input, 'input');
+      const payoutSplit = yield* requireObjectEffect<UpdatePayoutPercentageRequest>(
+        validInput.payoutSplit,
         'payoutSplit',
       );
 
-      return yield* requestPostEffect<void>(client, path, body);
+      return yield* requestPostEffect<void>(client, path, payoutSplit);
     });
   };
 
@@ -329,8 +329,8 @@ export class AccountV2Api {
     const path = `${this.basePath}/combined_shipping_rules`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetCombinedShippingRulesInput>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
+      const validInput = yield* requireObjectEffect<GetCombinedShippingRulesInput>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
 
       return yield* requestGetEffect<CombinedShippingRulesResponse>(
         client,
@@ -475,9 +475,9 @@ export class AccountV2Api {
     const path = `${this.basePath}/user_preferences`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetUserPreferencesInput>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
-      const fieldgroups = yield* optionalStringEffect(request.fieldgroups, 'fieldgroups');
+      const validInput = yield* requireObjectEffect<GetUserPreferencesInput>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
+      const fieldgroups = yield* optionalStringEffect(validInput.fieldgroups, 'fieldgroups');
       const params = buildEndpointParams({
         fieldgroups: { wireName: 'fieldgroups', value: fieldgroups },
       });
@@ -523,14 +523,19 @@ export class AccountV2Api {
     const path = `${this.basePath}/user_preferences`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<SetUserPreferencesInput>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
-      const body = yield* requireObjectEffect<SetUserPreferencesRequest>(
-        request.preferences,
+      const validInput = yield* requireObjectEffect<SetUserPreferencesInput>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
+      const preferences = yield* requireObjectEffect<SetUserPreferencesRequest>(
+        validInput.preferences,
         'preferences',
       );
 
-      return yield* requestPatchEffect<void>(client, path, body, marketplaceHeader(marketplaceId));
+      return yield* requestPatchEffect<void>(
+        client,
+        path,
+        preferences,
+        marketplaceHeader(marketplaceId),
+      );
     });
   };
 
@@ -547,11 +552,11 @@ export class AccountV2Api {
     const path = `${this.basePath}/combined_shipping_rules/${operation}`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<Record<string, unknown>>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
-      const body = yield* requireObjectEffect<Body>(request[bodyField], bodyField);
+      const validInput = yield* requireObjectEffect<Record<string, unknown>>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
+      const rules = yield* requireObjectEffect<Body>(validInput[bodyField], bodyField);
 
-      return yield* requestPostEffect<void>(client, path, body, marketplaceHeader(marketplaceId));
+      return yield* requestPostEffect<void>(client, path, rules, marketplaceHeader(marketplaceId));
     });
   };
 }

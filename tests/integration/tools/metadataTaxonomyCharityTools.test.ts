@@ -2,7 +2,7 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { MAX_INLINE_DOWNLOAD_BYTES } from '@/api/shared/download.js';
 import { createEbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
@@ -55,10 +55,10 @@ let client: Client;
 let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
 const callTool = async (name: string, args: Record<string, unknown>) => {
-  const result = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
-  const [first] = result.content;
+  const toolResult = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
+  const [first] = toolResult.content;
   const text = first?.type === 'text' ? first.text : '';
-  return { isError: result.isError === true, payload: JSON.parse(text) as unknown };
+  return { isError: toolResult.isError === true, payload: JSON.parse(text) as unknown };
 };
 
 beforeEach(async () => {
@@ -113,30 +113,30 @@ describe('Metadata shipping tools', () => {
     ['get_shipping_locations', 'shippingLocations'],
     ['get_shipping_services', 'shippingServices'],
   ])('ebay_%s returns eBay metadata for the marketplace', async (resource, field) => {
-    const body = { [field]: [{ description: 'eBay value' }] };
-    const endpoint = nock(HOST).get(`${SHIPPING}/EBAY_US/${resource}`).reply(200, body);
+    const metadata = { [field]: [{ description: 'eBay value' }] };
+    const endpoint = nock(HOST).get(`${SHIPPING}/EBAY_US/${resource}`).reply(200, metadata);
 
-    const { isError, payload } = await callTool(`ebay_${resource}`, { marketplaceId: 'EBAY_US' });
+    const metadataResult = await callTool(`ebay_${resource}`, { marketplaceId: 'EBAY_US' });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(isError).toBe(false);
-    expect(payload).toEqual(body);
+    expect(metadataResult.isError).toBe(false);
+    expect(metadataResult.payload).toEqual(metadata);
   });
 
   it('sends Accept-Language for French Canada metadata', async () => {
-    const body = { shippingServices: [{ shippingService: 'CA_PostLettermail' }] };
+    const services = { shippingServices: [{ shippingService: 'CA_PostLettermail' }] };
     const endpoint = nock(HOST)
       .matchHeader('accept-language', 'fr-CA')
       .get(`${SHIPPING}/EBAY_CA/get_shipping_services`)
-      .reply(200, body);
+      .reply(200, services);
 
-    const { payload } = await callTool('ebay_get_shipping_services', {
+    const servicesResult = await callTool('ebay_get_shipping_services', {
       marketplaceId: 'EBAY_CA',
       acceptLanguage: 'fr-CA',
     });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(payload).toEqual(body);
+    expect(servicesResult.payload).toEqual(services);
   });
 });
 
@@ -152,7 +152,7 @@ describe('Taxonomy tools', () => {
       'Content-Disposition': 'attachment; filename="FetchItemAspectsResponse.gz"',
     });
 
-    const result = CallToolResultSchema.parse(
+    const aspectsResult = CallToolResultSchema.parse(
       await client.callTool({
         name: 'ebay_fetch_item_aspects',
         arguments: { categoryTreeId: '3' },
@@ -160,12 +160,12 @@ describe('Taxonomy tools', () => {
     );
 
     expect(endpoint.isDone()).toBe(true);
-    expect(result.isError).not.toBe(true);
-    expect(result.content[0]).toEqual({
+    expect(aspectsResult.isError).not.toBe(true);
+    expect(aspectsResult.content[0]).toEqual({
       type: 'text',
       text: `Taxonomy item aspects for category tree 3 FetchItemAspectsResponse.gz (application/octet-stream, ${gzip.length} bytes)`,
     });
-    const resource = result.content.find((item) => item.type === 'resource');
+    const resource = aspectsResult.content.find((block) => block.type === 'resource');
     expect(resource?.resource).toMatchObject({
       uri: 'ebay-taxonomy://category_tree/3/item_aspects',
       mimeType: 'application/octet-stream',
@@ -185,34 +185,34 @@ describe('Taxonomy tools', () => {
         'Content-Type': 'application/octet-stream',
       });
 
-    const { isError, payload } = await callTool('ebay_fetch_item_aspects', { categoryTreeId: '0' });
+    const oversizedAspects = await callTool('ebay_fetch_item_aspects', { categoryTreeId: '0' });
 
-    expect(isError).toBe(true);
-    expect(payload).toMatchObject({
+    expect(oversizedAspects.isError).toBe(true);
+    expect(oversizedAspects.payload).toMatchObject({
       error: expect.stringContaining(`above the ${MAX_INLINE_DOWNLOAD_BYTES}-byte limit`),
     });
   });
 
   it('returns expired-category mappings', async () => {
-    const body = { expiredCategories: [{ fromCategoryId: '111', toCategoryId: '222' }] };
-    const endpoint = nock(HOST).get(`${TREE}/0/get_expired_categories`).reply(200, body);
+    const mappings = { expiredCategories: [{ fromCategoryId: '111', toCategoryId: '222' }] };
+    const endpoint = nock(HOST).get(`${TREE}/0/get_expired_categories`).reply(200, mappings);
 
-    const { payload } = await callTool('ebay_get_expired_categories', { categoryTreeId: '0' });
+    const mappingsResult = await callTool('ebay_get_expired_categories', { categoryTreeId: '0' });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(payload).toEqual(body);
+    expect(mappingsResult.payload).toEqual(mappings);
   });
 
   it('reports success when eBay has no expired categories (HTTP 204)', async () => {
     const endpoint = nock(HOST).get(`${TREE}/0/get_expired_categories`).reply(204);
 
-    const { isError, payload } = await callTool('ebay_get_expired_categories', {
+    const emptyMappings = await callTool('ebay_get_expired_categories', {
       categoryTreeId: '0',
     });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(isError).toBe(false);
-    expect(payload).toEqual({ status: 'success' });
+    expect(emptyMappings.isError).toBe(false);
+    expect(emptyMappings.payload).toEqual({ status: 'success' });
   });
 });
 
@@ -225,13 +225,13 @@ describe('Charity getCharityOrg tool', () => {
       .get(`${CHARITY}/C-1`)
       .reply(200, charity);
 
-    const { payload } = await callTool('ebay_get_charity_org', {
+    const charityResult = await callTool('ebay_get_charity_org', {
       charityOrgId: 'C-1',
       marketplaceId: 'EBAY_GB',
     });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(payload).toEqual(charity);
+    expect(charityResult.payload).toEqual(charity);
     expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
   });
 
@@ -241,13 +241,13 @@ describe('Charity getCharityOrg tool', () => {
     ];
     nock(HOST).get(`${CHARITY}/C-1`).reply(400, { errors });
 
-    const { isError, payload } = await callTool('ebay_get_charity_org', {
+    const rejectedCharity = await callTool('ebay_get_charity_org', {
       charityOrgId: 'C-1',
       marketplaceId: 'EBAY_US',
     });
 
-    expect(isError).toBe(true);
-    expect(payload).toMatchObject({ status: 400, details: errors });
+    expect(rejectedCharity.isError).toBe(true);
+    expect(rejectedCharity.payload).toMatchObject({ status: 400, details: errors });
   });
 });
 
@@ -261,7 +261,7 @@ describe('Charity getCharityOrgs tool', () => {
       .query({ q: 'animal rescue', limit: '10', offset: '0' })
       .reply(200, page);
 
-    const { payload } = await callTool('ebay_get_charity_orgs', {
+    const keywordSearch = await callTool('ebay_get_charity_orgs', {
       marketplaceId: 'EBAY_US',
       q: 'animal rescue',
       limit: 10,
@@ -269,7 +269,7 @@ describe('Charity getCharityOrgs tool', () => {
     });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(payload).toEqual(page);
+    expect(keywordSearch.payload).toEqual(page);
   });
 
   it('searches charities by registration IDs', async () => {
@@ -278,22 +278,22 @@ describe('Charity getCharityOrgs tool', () => {
       .query({ registration_ids: '11-1111111,22-2222222' })
       .reply(200, { charityOrgs: [], total: 0 });
 
-    const { payload } = await callTool('ebay_get_charity_orgs', {
+    const registrationSearch = await callTool('ebay_get_charity_orgs', {
       marketplaceId: 'EBAY_US',
       registrationIds: '11-1111111,22-2222222',
     });
 
     expect(endpoint.isDone()).toBe(true);
-    expect(payload).toEqual({ charityOrgs: [], total: 0 });
+    expect(registrationSearch.payload).toEqual({ charityOrgs: [], total: 0 });
   });
 
   it('rejects a search without q or registrationIds before calling eBay', async () => {
-    const { isError, payload } = await callTool('ebay_get_charity_orgs', {
+    const { isError, payload: failure } = await callTool('ebay_get_charity_orgs', {
       marketplaceId: 'EBAY_US',
     });
 
     expect(isError).toBe(true);
-    expect(payload).toMatchObject({ error: expect.stringContaining('q or registrationIds') });
+    expect(failure).toMatchObject({ error: expect.stringContaining('q or registrationIds') });
     expect(mockOAuthClient.getOrRefreshAppAccessToken).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,7 @@ import {
   mapFindCompletedItemsResponse,
   mapFindingItem,
 } from '@/api/other/finding.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('Finding API helpers', () => {
   describe('getFindingServiceBaseUrl', () => {
@@ -127,11 +127,11 @@ describe('Finding API helpers', () => {
         ],
       };
 
-      const result = mapFindCompletedItemsResponse(raw, 'widget');
-      expect(result.keywords).toBe('widget');
-      expect(result.totalEntries).toBe(42);
-      expect(result.items).toHaveLength(1);
-      expect(result.items[0]).toMatchObject({
+      const completedItems = mapFindCompletedItemsResponse(raw, 'widget');
+      expect(completedItems.keywords).toBe('widget');
+      expect(completedItems.totalEntries).toBe(42);
+      expect(completedItems.items).toHaveLength(1);
+      expect(completedItems.items[0]).toMatchObject({
         itemId: '99',
         title: 'Sold Widget',
         price: { currency: 'USD', value: '12.00' },
@@ -179,7 +179,7 @@ describe('FindingApi', () => {
     };
     vi.mocked(mockClient.getWithFullUrl).mockResolvedValue(raw);
 
-    const result = await Effect.runPromise(
+    const completedItems = await Effect.runPromise(
       api.findCompletedItems({ keywords: 'camera', maxResults: 5 }),
     );
 
@@ -193,8 +193,8 @@ describe('FindingApi', () => {
         'itemFilter(0).name': 'SoldItemsOnly',
       }),
     );
-    expect(result.items).toEqual([{ itemId: '1', title: 'Sold' }]);
-    expect(result.keywords).toBe('camera');
+    expect(completedItems.items).toEqual([{ itemId: '1', title: 'Sold' }]);
+    expect(completedItems.keywords).toBe('camera');
   });
 
   it('defaults maxResults to 20', async () => {

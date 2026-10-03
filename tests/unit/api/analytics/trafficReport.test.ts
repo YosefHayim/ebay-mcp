@@ -22,7 +22,7 @@ it('getTrafficReport gets traffic report with required params', async () => {
   };
   vi.mocked(harness.client.get).mockResolvedValue(mockResponse);
 
-  const result = await Effect.runPromise(
+  const trafficReport = await Effect.runPromise(
     harness.api.getTrafficReport({
       dimension: 'LISTING',
       filter: 'listingId:123',
@@ -30,7 +30,7 @@ it('getTrafficReport gets traffic report with required params', async () => {
     }),
   );
 
-  expect(result).toEqual(mockResponse);
+  expect(trafficReport).toEqual(mockResponse);
   expect(harness.client.get).toHaveBeenCalledWith('/sell/analytics/v1/traffic_report', {
     dimension: 'LISTING',
     filter: 'listingId:123',

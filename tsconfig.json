@@ -16,7 +16,6 @@
   "exclude": [
     "node_modules",
     "build",
-    "docs",
     "tests",
     "vitest.config.cts",
     "src/types/ebay/sell/marketing-and-promotions/marketing-response-types.ts",

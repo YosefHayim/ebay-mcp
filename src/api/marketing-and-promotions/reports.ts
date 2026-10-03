@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   type EbayApiError,
   buildEndpointParams,
@@ -16,18 +16,18 @@ import type {
   deleteReportTaskInputSchema,
 } from '@/schemas/marketing/marketing.js';
 import type { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { MARKETING_BASE_PATH, type MarketingOperationResponse } from './shared.js';
 
-type GetReportInput = InferEffectSchema<typeof getReportInputSchema>;
-type GetReportMetadataInput = InferEffectSchema<typeof getReportMetadataInputSchema>;
-type GetReportMetadataForReportTypeInput = InferEffectSchema<
+type GetReportInput = z.infer<typeof getReportInputSchema>;
+type GetReportMetadataInput = z.infer<typeof getReportMetadataInputSchema>;
+type GetReportMetadataForReportTypeInput = z.infer<
   typeof getReportMetadataForReportTypeInputSchema
 >;
-type GetReportTasksInput = InferEffectSchema<typeof getReportTasksInputSchema>;
-type CreateReportTaskInput = InferEffectSchema<typeof createReportTaskInputSchema>;
-type GetReportTaskInput = InferEffectSchema<typeof getReportTaskInputSchema>;
-type DeleteReportTaskInput = InferEffectSchema<typeof deleteReportTaskInputSchema>;
+type GetReportTasksInput = z.infer<typeof getReportTasksInputSchema>;
+type CreateReportTaskInput = z.infer<typeof createReportTaskInputSchema>;
+type GetReportTaskInput = z.infer<typeof getReportTaskInputSchema>;
+type DeleteReportTaskInput = z.infer<typeof deleteReportTaskInputSchema>;
 
 /**
  * Response returned by eBay Marketing API getReport.
@@ -89,7 +89,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getReport({ reportId: 'report-1' }));
+   * const report = await Effect.runPromise(marketingApi.getReport({ reportId: 'report-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report/methods/getReport
@@ -107,7 +107,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getReportMetadata());
+   * const reportMetadata = await Effect.runPromise(marketingApi.getReportMetadata());
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_metadata/methods/getReportMetadata
@@ -131,7 +131,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getReportMetadataForReportType({ reportType: 'reportType-1' }));
+   * const reportMetadata = await Effect.runPromise(marketingApi.getReportMetadataForReportType({ reportType: 'reportType-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_metadata/methods/getReportMetadataForReportType
@@ -155,7 +155,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getReportTasks());
+   * const reportTasks = await Effect.runPromise(marketingApi.getReportTasks());
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/getReportTasks
@@ -180,7 +180,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.createReportTask({ request: { ... } }));
+   * const createdReportTask = await Effect.runPromise(marketingApi.createReportTask({ request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/createReportTask
@@ -200,7 +200,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getReportTask({ reportTaskId: 'reportTask-1' }));
+   * const reportTask = await Effect.runPromise(marketingApi.getReportTask({ reportTaskId: 'reportTask-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/getReportTask
@@ -220,7 +220,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.deleteReportTask({ reportTaskId: 'reportTask-1' }));
+   * await Effect.runPromise(marketingApi.deleteReportTask({ reportTaskId: 'reportTask-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/deleteReportTask

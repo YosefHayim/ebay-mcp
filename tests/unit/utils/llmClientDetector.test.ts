@@ -43,7 +43,7 @@ describe('LLM Client Detector', () => {
       const clients = detectLLMClients();
 
       expect(clients).toHaveLength(9);
-      expect(clients.map((c) => c.name)).toEqual([
+      expect(clients.map((client) => client.name)).toEqual([
         'claude',
         'cline',
         'continue',
@@ -60,7 +60,7 @@ describe('LLM Client Detector', () => {
       vi.mocked(fs.existsSync).mockImplementation((path) => path.toString().includes('Claude'));
 
       const clients = detectLLMClients();
-      const claude = clients.find((c) => c.name === 'claude');
+      const claude = clients.find((client) => client.name === 'claude');
 
       expect(claude).toBeDefined();
       expect(claude?.detected).toBe(true);
@@ -71,7 +71,7 @@ describe('LLM Client Detector', () => {
       vi.mocked(fs.existsSync).mockImplementation((path) => path.toString().includes('zed'));
 
       const clients = detectLLMClients();
-      const zed = clients.find((c) => c.name === 'zed');
+      const zed = clients.find((client) => client.name === 'zed');
 
       expect(zed).toBeDefined();
       expect(zed?.detected).toBe(true);
@@ -82,7 +82,7 @@ describe('LLM Client Detector', () => {
       vi.mocked(fs.existsSync).mockImplementation((path) => path.toString().includes('.cursor'));
 
       const clients = detectLLMClients();
-      const cursor = clients.find((c) => c.name === 'cursor');
+      const cursor = clients.find((client) => client.name === 'cursor');
 
       expect(cursor).toBeDefined();
       expect(cursor?.detected).toBe(true);
@@ -93,7 +93,7 @@ describe('LLM Client Detector', () => {
       vi.mocked(fs.existsSync).mockImplementation((path) => path.toString().includes('.codeium'));
 
       const clients = detectLLMClients();
-      const windsurf = clients.find((c) => c.name === 'windsurf');
+      const windsurf = clients.find((client) => client.name === 'windsurf');
 
       expect(windsurf).toBeDefined();
       expect(windsurf?.detected).toBe(true);
@@ -106,7 +106,7 @@ describe('LLM Client Detector', () => {
       );
 
       const clients = detectLLMClients();
-      const roocode = clients.find((c) => c.name === 'roocode');
+      const roocode = clients.find((client) => client.name === 'roocode');
 
       expect(roocode).toBeDefined();
       expect(roocode?.detected).toBe(true);
@@ -119,7 +119,7 @@ describe('LLM Client Detector', () => {
       );
 
       const clients = detectLLMClients();
-      const claudecode = clients.find((c) => c.name === 'claudecode');
+      const claudecode = clients.find((client) => client.name === 'claudecode');
 
       expect(claudecode).toBeDefined();
       expect(claudecode?.configExists).toBe(true);
@@ -130,7 +130,7 @@ describe('LLM Client Detector', () => {
       vi.mocked(fs.existsSync).mockImplementation((path) => path.toString().includes('amazonq'));
 
       const clients = detectLLMClients();
-      const amazonq = clients.find((c) => c.name === 'amazonq');
+      const amazonq = clients.find((client) => client.name === 'amazonq');
 
       expect(amazonq).toBeDefined();
       expect(amazonq?.detected).toBe(true);
@@ -209,58 +209,58 @@ describe('LLM Client Detector', () => {
     });
 
     it('configure Claude Desktop', () => {
-      const result = configureLLMClient('claude', projectRoot);
+      const configured = configureLLMClient('claude', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('configure Zed editor', () => {
-      const result = configureLLMClient('zed', projectRoot);
+      const configured = configureLLMClient('zed', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('configure Cursor IDE', () => {
-      const result = configureLLMClient('cursor', projectRoot);
+      const configured = configureLLMClient('cursor', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('configure Windsurf', () => {
-      const result = configureLLMClient('windsurf', projectRoot);
+      const configured = configureLLMClient('windsurf', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('configure Roo Code', () => {
-      const result = configureLLMClient('roocode', projectRoot);
+      const configured = configureLLMClient('roocode', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('configure Claude Code CLI', () => {
-      const result = configureLLMClient('claudecode', projectRoot);
+      const configured = configureLLMClient('claudecode', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('configure Amazon Q', () => {
-      const result = configureLLMClient('amazonq', projectRoot);
+      const configured = configureLLMClient('amazonq', projectRoot);
 
-      expect(result).toBe(true);
+      expect(configured).toBe(true);
       expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
     it('return false for unknown client', () => {
-      const result = configureLLMClient('unsupported-client', projectRoot);
+      const configured = configureLLMClient('unsupported-client', projectRoot);
 
-      expect(result).toBe(false);
+      expect(configured).toBe(false);
     });
   });
 
@@ -341,9 +341,9 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('claude', projectRoot);
+      const verified = verifyClientConfiguration('claude', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('verify Zed configuration', () => {
@@ -355,9 +355,9 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('zed', projectRoot);
+      const verified = verifyClientConfiguration('zed', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('verify Cursor configuration', () => {
@@ -369,9 +369,9 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('cursor', projectRoot);
+      const verified = verifyClientConfiguration('cursor', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('verify Windsurf configuration', () => {
@@ -383,9 +383,9 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('windsurf', projectRoot);
+      const verified = verifyClientConfiguration('windsurf', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('verify Roo Code configuration', () => {
@@ -397,9 +397,9 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('roocode', projectRoot);
+      const verified = verifyClientConfiguration('roocode', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('verify Claude Code CLI configuration', () => {
@@ -411,9 +411,9 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('claudecode', projectRoot);
+      const verified = verifyClientConfiguration('claudecode', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('verify Amazon Q configuration', () => {
@@ -425,17 +425,17 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('amazonq', projectRoot);
+      const verified = verifyClientConfiguration('amazonq', projectRoot);
 
-      expect(result).toBe(true);
+      expect(verified).toBe(true);
     });
 
     it('return false when config file does not exist', () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 
-      const result = verifyClientConfiguration('claude', projectRoot);
+      const verified = verifyClientConfiguration('claude', projectRoot);
 
-      expect(result).toBe(false);
+      expect(verified).toBe(false);
     });
 
     it('return false when ebay-mcp-server is not configured', () => {
@@ -445,15 +445,15 @@ describe('LLM Client Detector', () => {
         }),
       );
 
-      const result = verifyClientConfiguration('claude', projectRoot);
+      const verified = verifyClientConfiguration('claude', projectRoot);
 
-      expect(result).toBe(false);
+      expect(verified).toBe(false);
     });
 
     it('return false for unknown client', () => {
-      const result = verifyClientConfiguration('unsupported-client', projectRoot);
+      const verified = verifyClientConfiguration('unsupported-client', projectRoot);
 
-      expect(result).toBe(false);
+      expect(verified).toBe(false);
     });
   });
 
@@ -472,7 +472,7 @@ describe('LLM Client Detector', () => {
         const clients = detectLLMClients();
 
         // Claude Desktop uses a platform-specific path.
-        const claude = clients.find((c) => c.name === 'claude');
+        const claude = clients.find((client) => client.name === 'claude');
         expect(claude?.configPath).toContain(pathPart);
       });
     });

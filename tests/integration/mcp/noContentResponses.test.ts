@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { cleanupMocks, mockEbayApiEndpoint, mockEbayApiError } from '@tests/helpers/mockHttp.js';
@@ -26,8 +26,8 @@ const inventoryItem = {
   product: { title: 'MCP boundary test item' },
 };
 
-const parseTextPayload = (result: Awaited<ReturnType<Client['callTool']>>): unknown => {
-  const first = result.content[0];
+const parseTextPayload = (toolResult: Awaited<ReturnType<Client['callTool']>>): unknown => {
+  const first = toolResult.content[0];
   if (!first || first.type !== 'text') {
     throw new Error('Expected one MCP text content block');
   }
@@ -86,13 +86,13 @@ describe('204 responses at the MCP protocol boundary', () => {
       204,
     );
 
-    const result = await client.callTool({
+    const upsertResult = await client.callTool({
       name: 'ebay_create_or_replace_inventory_item',
       arguments: { sku: 'MCP-204', body: inventoryItem },
     });
 
-    expect(result.isError).not.toBe(true);
-    expect(parseTextPayload(result)).toEqual({ status: 'success' });
+    expect(upsertResult.isError).not.toBe(true);
+    expect(parseTextPayload(upsertResult)).toEqual({ status: 'success' });
   });
 
   it('returns status and eBay details for a rejected write', async () => {
@@ -104,13 +104,13 @@ describe('204 responses at the MCP protocol boundary', () => {
       400,
     );
 
-    const result = await client.callTool({
+    const rejectedWriteResult = await client.callTool({
       name: 'ebay_create_or_replace_inventory_item',
       arguments: { sku: 'MCP-400', body: inventoryItem },
     });
 
-    expect(result.isError).toBe(true);
-    expect(parseTextPayload(result)).toEqual({
+    expect(rejectedWriteResult.isError).toBe(true);
+    expect(parseTextPayload(rejectedWriteResult)).toEqual({
       error: 'Detailed error: Missing required field: availability',
       status: 400,
       details: [

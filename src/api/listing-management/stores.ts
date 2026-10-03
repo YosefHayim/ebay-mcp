@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayResponse } from '@/api/client.js';
+import type { EbayApiClient, EbayResponse } from '@/api/client/ebayApiClient.js';
 import { locatedResourceId } from '@/api/shared/location.js';
 import {
   EbayApiError,
@@ -17,7 +17,7 @@ import type {
   renameStoreCategoryInputSchema,
 } from '@/schemas/inventory-management/stores.js';
 import type { components } from '@/types/sell-apps/listing-management/sellStoresV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 const STORE_PATH = '/sell/stores/v1/store';
@@ -27,12 +27,12 @@ type AddStoreCategoryRequest = components['schemas']['AddStoreCategoryRequestTyp
 type DeleteStoreCategoryRequest = components['schemas']['DeleteStoreCategoryRequestType'];
 type RenameStoreCategoryRequest = components['schemas']['RenameStoreCategoryRequestType'];
 type MoveStoreCategoryRequest = components['schemas']['MoveStoreCategoryRequestType'];
-type EmptyStoreInput = InferEffectSchema<typeof emptyStoreInputSchema>;
-type GetStoreTaskInput = InferEffectSchema<typeof getStoreTaskInputSchema>;
-type AddStoreCategoryInput = InferEffectSchema<typeof addStoreCategoryInputSchema>;
-type RenameStoreCategoryInput = InferEffectSchema<typeof renameStoreCategoryInputSchema>;
-type DeleteStoreCategoryInput = InferEffectSchema<typeof deleteStoreCategoryInputSchema>;
-type MoveStoreCategoryInput = InferEffectSchema<typeof moveStoreCategoryInputSchema>;
+type EmptyStoreInput = z.infer<typeof emptyStoreInputSchema>;
+type GetStoreTaskInput = z.infer<typeof getStoreTaskInputSchema>;
+type AddStoreCategoryInput = z.infer<typeof addStoreCategoryInputSchema>;
+type RenameStoreCategoryInput = z.infer<typeof renameStoreCategoryInputSchema>;
+type DeleteStoreCategoryInput = z.infer<typeof deleteStoreCategoryInputSchema>;
+type MoveStoreCategoryInput = z.infer<typeof moveStoreCategoryInputSchema>;
 
 /**
  * Sends one asynchronous category change and reads its store task from `Location`.
@@ -52,8 +52,8 @@ const startCategoryTask = (
     try: send,
     catch: (cause) => new EbayApiError({ method, path, cause }),
   }).pipe(
-    Effect.flatMap((response) =>
-      locatedResourceId(response.headers.location, TASKS_PATH).pipe(
+    Effect.flatMap((taskResponse) =>
+      locatedResourceId(taskResponse.headers.location, TASKS_PATH).pipe(
         Effect.mapError((error) => new EbayApiError({ method, path, cause: error.cause })),
       ),
     ),
@@ -210,7 +210,7 @@ export class StoresApi {
 
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<AddStoreCategoryInput>(input, 'input');
-      const body: AddStoreCategoryRequest = {
+      const addCategoryRequest: AddStoreCategoryRequest = {
         categoryName: yield* requireStringEffect(endpointInput.categoryName, 'categoryName'),
         destinationParentCategoryId: yield* optionalStringEffect(
           endpointInput.destinationParentCategoryId,
@@ -222,7 +222,9 @@ export class StoresApi {
         ),
       };
 
-      return yield* startCategoryTask('POST', path, () => client.postForResponse(path, body));
+      return yield* startCategoryTask('POST', path, () =>
+        client.postForResponse(path, addCategoryRequest),
+      );
     });
   };
 
@@ -250,12 +252,14 @@ export class StoresApi {
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<RenameStoreCategoryInput>(input, 'input');
       const categoryId = yield* requireStringEffect(endpointInput.categoryId, 'categoryId');
-      const body: RenameStoreCategoryRequest = {
+      const renameCategoryRequest: RenameStoreCategoryRequest = {
         categoryName: yield* requireStringEffect(endpointInput.categoryName, 'categoryName'),
       };
       const path = `${STORE_PATH}/categories/${encodeURIComponent(categoryId)}`;
 
-      return yield* startCategoryTask('PUT', path, () => client.putForResponse(path, body));
+      return yield* startCategoryTask('PUT', path, () =>
+        client.putForResponse(path, renameCategoryRequest),
+      );
     });
   };
 
@@ -288,12 +292,12 @@ export class StoresApi {
         endpointInput.listingDestinationCategoryId,
         'listingDestinationCategoryId',
       );
-      const body: DeleteStoreCategoryRequest | undefined =
+      const deleteCategoryRequest: DeleteStoreCategoryRequest | undefined =
         listingDestinationCategoryId === undefined ? undefined : { listingDestinationCategoryId };
       const path = `${STORE_PATH}/categories/${encodeURIComponent(categoryId)}`;
 
       return yield* startCategoryTask('DELETE', path, () =>
-        client.deleteForResponse(path, undefined, body),
+        client.deleteForResponse(path, undefined, deleteCategoryRequest),
       );
     });
   };
@@ -322,7 +326,7 @@ export class StoresApi {
 
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<MoveStoreCategoryInput>(input, 'input');
-      const body: MoveStoreCategoryRequest = {
+      const moveCategoryRequest: MoveStoreCategoryRequest = {
         categoryId: yield* requireStringEffect(endpointInput.categoryId, 'categoryId'),
         destinationParentCategoryId: yield* requireStringEffect(
           endpointInput.destinationParentCategoryId,
@@ -334,7 +338,9 @@ export class StoresApi {
         ),
       };
 
-      return yield* startCategoryTask('POST', path, () => client.postForResponse(path, body));
+      return yield* startCategoryTask('POST', path, () =>
+        client.postForResponse(path, moveCategoryRequest),
+      );
     });
   };
 }

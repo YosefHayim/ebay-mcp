@@ -1,5 +1,5 @@
 import { MarketingApi } from '@/api/marketing-and-promotions/marketing.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { Effect } from 'effect';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,10 +23,10 @@ describe('MarketingApi', () => {
   });
 
   it('gets campaigns with endpoint-owned query params', async () => {
-    const response = { campaigns: [{ campaignId: 'campaign-1' }] };
-    vi.mocked(mockClient.get).mockResolvedValue(response);
+    const stubCampaigns = { campaigns: [{ campaignId: 'campaign-1' }] };
+    vi.mocked(mockClient.get).mockResolvedValue(stubCampaigns);
 
-    const result = await Effect.runPromise(
+    const campaigns = await Effect.runPromise(
       marketingApi.getCampaigns({
         campaignStatus: 'RUNNING',
         campaignTargetingTypes: 'AUTO',
@@ -41,12 +41,12 @@ describe('MarketingApi', () => {
       limit: 10,
       offset: 0,
     });
-    expect(result).toBe(response);
+    expect(campaigns).toBe(stubCampaigns);
   });
 
   it('omits query params when every optional value is unset', async () => {
-    const response = { campaigns: [] };
-    vi.mocked(mockClient.get).mockResolvedValue(response);
+    const emptyCampaigns = { campaigns: [] };
+    vi.mocked(mockClient.get).mockResolvedValue(emptyCampaigns);
 
     await Effect.runPromise(marketingApi.getCampaigns());
 
@@ -59,19 +59,19 @@ describe('MarketingApi', () => {
       marketplaceId: 'EBAY_US',
       startDate: '2026-07-06T00:00:00Z',
     };
-    const response = {};
-    vi.mocked(mockClient.post).mockResolvedValue(response);
+    const stubCreatedCampaign = {};
+    vi.mocked(mockClient.post).mockResolvedValue(stubCreatedCampaign);
 
-    const result = await Effect.runPromise(marketingApi.createCampaign({ request }));
+    const createdCampaign = await Effect.runPromise(marketingApi.createCampaign({ request }));
 
     expect(mockClient.post).toHaveBeenCalledWith('/sell/marketing/v1/ad_campaign', request);
-    expect(result).toBe(response);
+    expect(createdCampaign).toBe(stubCreatedCampaign);
   });
 
   it('uses the current createAdByListingId operation name and path', async () => {
     const request = { listingId: 'listing-1', bidPercentage: '5.0' };
-    const response = {};
-    vi.mocked(mockClient.post).mockResolvedValue(response);
+    const stubCreatedAd = {};
+    vi.mocked(mockClient.post).mockResolvedValue(stubCreatedAd);
 
     await Effect.runPromise(
       marketingApi.createAdByListingId({
@@ -105,8 +105,8 @@ describe('MarketingApi', () => {
   });
 
   it('sends marketplace headers for header-owned endpoints', async () => {
-    const response = { suggestedBudget: [] };
-    vi.mocked(mockClient.get).mockResolvedValue(response);
+    const stubSuggestedBudget = { suggestedBudget: [] };
+    vi.mocked(mockClient.get).mockResolvedValue(stubSuggestedBudget);
 
     await Effect.runPromise(marketingApi.suggestBudget({ marketplaceId: 'EBAY_US' }));
 
@@ -120,8 +120,8 @@ describe('MarketingApi', () => {
   });
 
   it('gets promotions with the required marketplace query param', async () => {
-    const response = { promotions: [] };
-    vi.mocked(mockClient.get).mockResolvedValue(response);
+    const stubPromotions = { promotions: [] };
+    vi.mocked(mockClient.get).mockResolvedValue(stubPromotions);
 
     await Effect.runPromise(
       marketingApi.getPromotions({
@@ -141,10 +141,10 @@ describe('MarketingApi', () => {
   });
 
   it('uses the current getReportMetadata operation name', async () => {
-    const response = { reportMetadata: [] };
-    vi.mocked(mockClient.get).mockResolvedValue(response);
+    const stubReportMetadata = { reportMetadata: [] };
+    vi.mocked(mockClient.get).mockResolvedValue(stubReportMetadata);
 
-    const result = await Effect.runPromise(
+    const reportMetadata = await Effect.runPromise(
       marketingApi.getReportMetadata({
         fundingModel: 'COST_PER_CLICK',
         channel: 'ON_SITE',
@@ -155,12 +155,12 @@ describe('MarketingApi', () => {
       funding_model: 'COST_PER_CLICK',
       channel: 'ON_SITE',
     });
-    expect(result).toBe(response);
+    expect(reportMetadata).toBe(stubReportMetadata);
   });
 
   it('gets email audiences with the required emailCampaignType query param', async () => {
-    const response = { audiences: [] };
-    vi.mocked(mockClient.get).mockResolvedValue(response);
+    const stubAudiences = { audiences: [] };
+    vi.mocked(mockClient.get).mockResolvedValue(stubAudiences);
 
     await Effect.runPromise(
       marketingApi.getAudiences({

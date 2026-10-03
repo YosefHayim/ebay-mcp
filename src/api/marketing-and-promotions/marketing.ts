@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { createMarketingAdsMethods } from './ads.js';
 import { createMarketingCampaignsMethods } from './campaigns.js';
 import { createMarketingPromotionsMethods } from './promotions.js';

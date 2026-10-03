@@ -17,7 +17,7 @@ export class ToolRegistryError extends Data.TaggedError('ToolRegistryError')<{
  * Interactive-UI binding resolved onto a {@link ToolEntry} when a tool opts into
  * the MCP Apps layer via `defineTool({ ui })`.
  *
- * `map` is intentionally type-erased to `(result: unknown) => ViewModel` so the
+ * `map` is intentionally type-erased to `(handlerOutput: unknown) => ViewModel` so the
  * entry stays non-generic and uniform across all 298 tools. The erasure is safe:
  * `defineTool` proves, against the handler's concrete return type, that `map`
  * produces the archetype's view model before erasing it here — so a drift between
@@ -28,7 +28,7 @@ export class ToolRegistryError extends Data.TaggedError('ToolRegistryError')<{
 export interface ResolvedToolUi {
   archetype: ViewArchetype;
   resourceUri: string;
-  map: (result: unknown) => ViewModel;
+  map: (handlerOutput: unknown) => ViewModel;
 }
 
 /** Runtime registry entry pairing a public tool definition with its executable handler. */
@@ -36,7 +36,7 @@ export interface ToolEntry {
   definition: ToolDefinition;
   handler: ToolHandler;
   /** Optional formatting of endpoint data into protocol content. */
-  formatResult?: (result: unknown, args: Record<string, unknown>) => CallToolResult;
+  formatResult?: (handlerOutput: unknown, args: Record<string, unknown>) => CallToolResult;
   /** Present only for tools that render an interactive view; consumed by the runtime seam. */
   ui?: ResolvedToolUi;
 }
@@ -173,7 +173,7 @@ export const getToolHandler = (toolName: string): ToolHandler | undefined =>
  *
  * @example
  * ```ts
- * const result = await executeTool(api, 'ebay_get_custom_policies', {});
+ * const customPolicies = await executeTool(api, 'ebay_get_custom_policies', {});
  * ```
  */
 export const executeTool = async (
@@ -194,7 +194,7 @@ export const executeTool = async (
       }
 
       return yield* Effect.tryPromise({
-        try: () => Promise.resolve(handler(api, args)),
+        try: async () => handler(api, args),
         catch: (error) => error,
       });
     }),

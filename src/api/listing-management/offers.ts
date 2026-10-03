@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   type EbayApiError,
   EndpointInputError,
@@ -276,7 +276,7 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(inventoryApi.bulkCreateOffer({ body: { requests: [] } }));
+   * const createdOffers = await Effect.runPromise(inventoryApi.bulkCreateOffer({ body: { requests: [] } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkCreateOffer
@@ -288,14 +288,17 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkCreateOfferInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkCreateOfferRequest>(validatedInput.body, 'body');
+      const bulkOfferRequest = yield* requireObjectEffect<BulkCreateOfferRequest>(
+        validatedInput.body,
+        'body',
+      );
       yield* Effect.forEach(
-        body.requests ?? [],
-        (request, index) => validateOfferFormatEffect(request, `body.requests[${index}]`),
+        bulkOfferRequest.requests ?? [],
+        (offerRequest, index) => validateOfferFormatEffect(offerRequest, `body.requests[${index}]`),
         { discard: true },
       );
 
-      return yield* requestPostEffect<BulkCreateOfferResponse>(client, path, body);
+      return yield* requestPostEffect<BulkCreateOfferResponse>(client, path, bulkOfferRequest);
     });
   },
 
@@ -307,7 +310,7 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(inventoryApi.bulkPublishOffer({ body: { offers: [] } }));
+   * const publishedOffers = await Effect.runPromise(inventoryApi.bulkPublishOffer({ body: { offers: [] } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkPublishOffer
@@ -319,9 +322,12 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkPublishOfferInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkPublishOfferRequest>(validatedInput.body, 'body');
+      const bulkPublishRequest = yield* requireObjectEffect<BulkPublishOfferRequest>(
+        validatedInput.body,
+        'body',
+      );
 
-      return yield* requestPostEffect<BulkPublishOfferResponse>(client, path, body);
+      return yield* requestPostEffect<BulkPublishOfferResponse>(client, path, bulkPublishRequest);
     });
   },
 
@@ -388,7 +394,7 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
         'marketplaceId',
       );
       const uniqueSkus = [...new Set(validatedInput.skus)];
-      const results = yield* Effect.forEach(
+      const skuResults = yield* Effect.forEach(
         uniqueSkus,
         (sku) =>
           Effect.map(
@@ -410,13 +416,13 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
           ),
         { concurrency: BATCH_GET_OFFERS_CONCURRENCY },
       );
-      const successCount = results.filter((result) => result.status === 'success').length;
+      const successCount = skuResults.filter((skuResult) => skuResult.status === 'success').length;
       return {
         requestedSkuCount: validatedInput.skus.length,
         uniqueSkuCount: uniqueSkus.length,
         successCount,
-        failureCount: results.length - successCount,
-        results,
+        failureCount: skuResults.length - successCount,
+        results: skuResults,
       };
     }),
 
@@ -440,10 +446,13 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<CreateOfferInput>(input, 'input');
-      const body = yield* requireObjectEffect<CreateOfferRequest>(validatedInput.body, 'body');
-      yield* validateOfferFormatEffect(body, 'body');
+      const offerDetails = yield* requireObjectEffect<CreateOfferRequest>(
+        validatedInput.body,
+        'body',
+      );
+      yield* validateOfferFormatEffect(offerDetails, 'body');
 
-      return yield* requestPostEffect<CreateOfferResponse>(client, path, body);
+      return yield* requestPostEffect<CreateOfferResponse>(client, path, offerDetails);
     });
   },
 
@@ -496,13 +505,16 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<UpdateOfferInput>(input, 'input');
       const offerId = yield* requireStringEffect(validatedInput.offerId, 'offerId');
-      const body = yield* requireObjectEffect<UpdateOfferRequest>(validatedInput.body, 'body');
-      yield* validateOfferFormatEffect(body, 'body');
+      const offerUpdate = yield* requireObjectEffect<UpdateOfferRequest>(
+        validatedInput.body,
+        'body',
+      );
+      yield* validateOfferFormatEffect(offerUpdate, 'body');
 
       return yield* requestPutEffect<CreateOfferResponse>(
         client,
         `${basePath}/offer/${offerId}`,
-        body,
+        offerUpdate,
       );
     });
   },
@@ -558,9 +570,12 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<GetListingFeesInput>(input, 'input');
-      const body = yield* requireObjectEffect<GetListingFeesRequest>(validatedInput.body, 'body');
+      const listingFeesRequest = yield* requireObjectEffect<GetListingFeesRequest>(
+        validatedInput.body,
+        'body',
+      );
 
-      return yield* requestPostEffect<GetListingFeesResponse>(client, path, body);
+      return yield* requestPostEffect<GetListingFeesResponse>(client, path, listingFeesRequest);
     });
   },
 
@@ -620,12 +635,13 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<PublishOfferByInventoryItemGroupRequest>(
-        validatedInput.body,
-        'body',
-      );
+      const publishGroupRequest =
+        yield* requireObjectEffect<PublishOfferByInventoryItemGroupRequest>(
+          validatedInput.body,
+          'body',
+        );
 
-      return yield* requestPostEffect<PublishOfferResponse>(client, path, body);
+      return yield* requestPostEffect<PublishOfferResponse>(client, path, publishGroupRequest);
     });
   },
 
@@ -688,15 +704,16 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<WithdrawOfferByInventoryItemGroupRequest>(
-        validatedInput.body,
-        'body',
-      );
+      const withdrawGroupRequest =
+        yield* requireObjectEffect<WithdrawOfferByInventoryItemGroupRequest>(
+          validatedInput.body,
+          'body',
+        );
 
       return yield* requestPostEffect<WithdrawOfferByInventoryItemGroupResponse>(
         client,
         path,
-        body,
+        withdrawGroupRequest,
       );
     });
   },

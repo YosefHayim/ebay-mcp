@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FeedbackApi } from '@/api/communication/feedback.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { Effect } from 'effect';
 
 let client: EbayApiClient;
@@ -141,6 +141,6 @@ describe('respondToFeedback', () => {
     );
 
     expect(error._tag).toBe('EndpointInputError');
-    expect(error.message).toContain('response is required');
+    expect(error.message).toContain('feedbackReply is required');
   });
 });

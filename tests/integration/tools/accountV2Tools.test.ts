@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { Effect } from 'effect';
@@ -35,7 +35,7 @@ const config: EbayConfig = {
   marketplaceId: 'EBAY_US',
 };
 
-const eur = (value: string) => ({ currency: 'EUR', value });
+const eur = (amount: string) => ({ currency: 'EUR', value: amount });
 const calculatedRules = {
   calculatedShippingRule: {
     combinedShippingRuleType: 'WEIGHT_OFF',
@@ -180,9 +180,9 @@ let client: Client;
 let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
 const callTool = async (name: string, args: Record<string, unknown>) => {
-  const result = await client.callTool({ name, arguments: args });
-  const [block] = result.content as { type: string; text: string }[];
-  return { isError: result.isError === true, payload: JSON.parse(block.text) as unknown };
+  const toolResult = await client.callTool({ name, arguments: args });
+  const [block] = toolResult.content as { type: string; text: string }[];
+  return { isError: toolResult.isError === true, payload: JSON.parse(block.text) as unknown };
 };
 
 beforeEach(async () => {
@@ -243,10 +243,10 @@ describe('write tools', () => {
       .matchHeader('content-type', JSON_CONTENT_TYPE)
       .reply(204);
 
-    const result = await callTool(entry.tool, entry.args);
+    const writeResult = await callTool(entry.tool, entry.args);
 
     expect(endpoint.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: { status: 'success' } });
+    expect(writeResult).toEqual({ isError: false, payload: { status: 'success' } });
   });
 });
 
@@ -258,10 +258,10 @@ describe('read tools', () => {
       .matchHeader('x-ebay-c-marketplace-id', entry.marketplace)
       .reply(200, entry.response);
 
-    const result = await callTool(entry.tool, entry.args);
+    const readResult = await callTool(entry.tool, entry.args);
 
     expect(endpoint.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: entry.response });
+    expect(readResult).toEqual({ isError: false, payload: entry.response });
   });
 });
 
@@ -269,30 +269,30 @@ it('surfaces an eBay validation error as isError with the eBay error detail', as
   const errors = [{ errorId: 20_500, domain: 'API_ACCOUNT', message: 'Must add up to 100.' }];
   nock(HOST).post(`${BASE}/payout_settings/update_percentage`).reply(400, { errors });
 
-  const result = await callTool('ebay_update_payout_percentage', {
+  const rejectedSplit = await callTool('ebay_update_payout_percentage', {
     payoutSplit: { payoutInstruments: [{ instrumentId: 'BANK-1', payoutPercentage: '90' }] },
   });
 
-  expect(result.isError).toBe(true);
-  expect(result.payload).toMatchObject({ status: 400, details: errors });
+  expect(rejectedSplit.isError).toBe(true);
+  expect(rejectedSplit.payload).toMatchObject({ status: 400, details: errors });
 });
 
 it('rejects a combined shipping call without a marketplace before contacting eBay', async () => {
   const endpoint = nock(HOST).post(`${RULES}/update_combined_payments`).reply(204);
 
-  const result = await client.callTool({
+  const missingMarketplace = await client.callTool({
     name: 'ebay_update_combined_payments',
     arguments: { combinedPayments: { combinedDuration: 'DAYS_30' } },
   });
 
-  expect(result.isError).toBe(true);
+  expect(missingMarketplace.isError).toBe(true);
   expect(endpoint.isDone()).toBe(false);
 });
 
 it('rejects a payout percentage outside 0-100 before contacting eBay', async () => {
   const endpoint = nock(HOST).post(`${BASE}/payout_settings/update_percentage`).reply(204);
 
-  const result = await client.callTool({
+  const outOfRangeSplit = await client.callTool({
     name: 'ebay_update_payout_percentage',
     arguments: {
       payoutSplit: {
@@ -304,6 +304,6 @@ it('rejects a payout percentage outside 0-100 before contacting eBay', async () 
     },
   });
 
-  expect(result.isError).toBe(true);
+  expect(outOfRangeSplit.isError).toBe(true);
   expect(endpoint.isDone()).toBe(false);
 });

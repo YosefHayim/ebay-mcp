@@ -7,8 +7,8 @@
  * use case here with zero dependencies, but it has sharp edges this module
  * centralizes so call sites never repeat them:
  *
- *  1. `fetch` does NOT reject on 4xx/5xx — we throw {@link HttpError} on `!res.ok`.
- *  2. `fetch` does NOT parse JSON — and `res.json()` throws on an empty (204) body.
+ *  1. `fetch` does NOT reject on 4xx/5xx — we throw {@link HttpError} on `!response.ok`.
+ *  2. `fetch` does NOT parse JSON — and `response.json()` throws on an empty (204) body.
  *  3. Timeouts need an `AbortController`.
  *  4. Query params need explicit `URLSearchParams` serialization.
  *  5. Error narrowing replaces `axios.isAxiosError` with {@link isHttpError}.
@@ -144,12 +144,12 @@ export const isHttpError = (error: unknown): error is HttpError => error instanc
  */
 export const describeHttpError = (error: unknown, fallback = 'Unknown error'): string => {
   if (isHttpError(error)) {
-    const { data } = error;
-    if (isRecord(data)) {
-      if (typeof data.error_description === 'string') {
-        return data.error_description;
+    const { data: errorBody } = error;
+    if (isRecord(errorBody)) {
+      if (typeof errorBody.error_description === 'string') {
+        return errorBody.error_description;
       }
-      const firstError = Array.isArray(data.errors) ? data.errors[0] : undefined;
+      const firstError = Array.isArray(errorBody.errors) ? errorBody.errors[0] : undefined;
       if (isRecord(firstError)) {
         const detail = firstError.longMessage ?? firstError.message;
         if (typeof detail === 'string') {
@@ -163,14 +163,14 @@ export const describeHttpError = (error: unknown, fallback = 'Unknown error'): s
 };
 
 /** Coerce a query-param value to a string without producing `[object Object]`. */
-const stringifyParam = (value: unknown): string => {
-  if (typeof value === 'string') {
-    return value;
+const stringifyParam = (param: unknown): string => {
+  if (typeof param === 'string') {
+    return param;
   }
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
+  if (typeof param === 'number' || typeof param === 'boolean' || typeof param === 'bigint') {
+    return String(param);
   }
-  return JSON.stringify(value);
+  return JSON.stringify(param);
 };
 
 /** Build the final request URL, appending serialized query params. */
@@ -179,13 +179,13 @@ const buildUrl = (url: string, baseUrl?: string, params?: Record<string, unknown
 
   if (params) {
     const search = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
-      if (value == null) {
+    for (const [name, param] of Object.entries(params)) {
+      if (param == null) {
         continue;
       }
-      const entries = Array.isArray(value) ? value : [value];
+      const entries = Array.isArray(param) ? param : [param];
       for (const entry of entries) {
-        search.append(key, stringifyParam(entry));
+        search.append(name, stringifyParam(entry));
       }
     }
     const query = search.toString();
@@ -204,31 +204,31 @@ interface PreparedBody {
 }
 
 /** Serialize the request body and infer a content-type when the caller omitted one. */
-const prepareBody = (body: unknown): PreparedBody => {
-  if (body == null) {
+const prepareBody = (requestBody: unknown): PreparedBody => {
+  if (requestBody == null) {
     return { body: undefined };
   }
-  if (typeof body === 'string') {
-    return { body };
+  if (typeof requestBody === 'string') {
+    return { body: requestBody };
   }
-  if (body instanceof URLSearchParams) {
-    return { body: body.toString(), contentType: 'application/x-www-form-urlencoded' };
+  if (requestBody instanceof URLSearchParams) {
+    return { body: requestBody.toString(), contentType: 'application/x-www-form-urlencoded' };
   }
-  if (body instanceof Uint8Array || body instanceof ArrayBuffer) {
-    return { body: body as BodyInit };
+  if (requestBody instanceof Uint8Array || requestBody instanceof ArrayBuffer) {
+    return { body: requestBody as BodyInit };
   }
-  if (body instanceof FormData || body instanceof Blob) {
+  if (requestBody instanceof FormData || requestBody instanceof Blob) {
     // fetch derives the content-type itself (multipart boundary / blob type).
-    return { body };
+    return { body: requestBody };
   }
-  return { body: JSON.stringify(body), contentType: 'application/json' };
+  return { body: JSON.stringify(requestBody), contentType: 'application/json' };
 };
 
 /** Lowercase response header names into a plain record for case-insensitive reads. */
 const collectHeaders = (response: Response): Record<string, string> => {
   const headers: Record<string, string> = {};
-  response.headers.forEach((value, key) => {
-    headers[key.toLowerCase()] = value;
+  response.headers.forEach((headerValue, headerName) => {
+    headers[headerName.toLowerCase()] = headerValue;
   });
   return headers;
 };
@@ -289,7 +289,7 @@ const parseErrorData = (text: string): unknown => {
  * Abort handle covering one request *and* the read of its body.
  *
  * `fetch` resolves as soon as the response headers arrive, so a deadline that
- * stops there leaves `res.text()` free to stall forever on a body that never
+ * stops there leaves `response.text()` free to stall forever on a body that never
  * finishes arriving. The same controller therefore stays armed until the body
  * has been decoded.
  */
@@ -335,7 +335,7 @@ const startDeadline = (timeoutMs?: number): RequestDeadline => {
  *
  * @example
  * ```ts
- * const response = await Effect.runPromise(httpRequestEffect<{ id: string }>({ url }));
+ * const resourceResponse = await Effect.runPromise(httpRequestEffect<{ id: string }>({ url }));
  * ```
  */
 export const httpRequestEffect = <T = unknown>(
@@ -343,7 +343,7 @@ export const httpRequestEffect = <T = unknown>(
 ): Effect.Effect<HttpResponse<T>, HttpError> => {
   const { method = 'GET', responseType = 'json', timeoutMs } = options;
   const url = buildUrl(options.url, options.baseUrl, options.params);
-  const { body, contentType } = prepareBody(options.body);
+  const { body: wireBody, contentType } = prepareBody(options.body);
 
   const headers: Record<string, string> = { ...options.headers };
   if (contentType && !Object.keys(headers).some((key) => key.toLowerCase() === 'content-type')) {
@@ -377,7 +377,7 @@ export const httpRequestEffect = <T = unknown>(
 
     return Effect.gen(function* () {
       const response = yield* Effect.tryPromise({
-        try: () => fetch(url, { method, headers, body, signal: deadline.signal }),
+        try: () => fetch(url, { method, headers, body: wireBody, signal: deadline.signal }),
         catch: (error) => failure(error, 'response headers'),
       });
       const responseHeaders = collectHeaders(response);
@@ -387,25 +387,25 @@ export const httpRequestEffect = <T = unknown>(
           try: () => response.text(),
           catch: (error) => failure(error, 'error body', response),
         });
-        const data = parseErrorData(errorText);
+        const errorBody = parseErrorData(errorText);
         return yield* Effect.fail(
           new HttpError(`Request to ${url} failed with status ${response.status}`, {
             url,
             status: response.status,
             statusText: response.statusText,
-            data,
+            data: errorBody,
             headers: responseHeaders,
           }),
         );
       }
 
-      const data = yield* Effect.tryPromise({
+      const decodedBody = yield* Effect.tryPromise({
         try: () => decodeBody<T>(response, responseType, options.maxBytes),
         catch: (error) => failure(error, 'response body', response),
       });
 
       return {
-        data,
+        data: decodedBody,
         status: response.status,
         statusText: response.statusText,
         headers: responseHeaders,
@@ -425,7 +425,7 @@ export const httpRequestEffect = <T = unknown>(
  *
  * @example
  * ```ts
- * const response = await httpRequest<{ id: string }>({ url: '/resource', baseUrl });
+ * const resourceResponse = await httpRequest<{ id: string }>({ url: '/resource', baseUrl });
  * ```
  */
 export const httpRequest = async <T = unknown>(

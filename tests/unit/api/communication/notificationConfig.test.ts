@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NotificationApi } from '@/api/communication/notification.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { Effect } from 'effect';
 
 let client: EbayApiClient;

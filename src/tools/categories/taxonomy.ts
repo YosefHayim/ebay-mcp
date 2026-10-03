@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import { categoryTreeIdInputSchema } from '@/schemas/taxonomy/categoryTree.js';
 import { defineTool } from '@/tools/defineTool.js';
 import { formatFileResult } from '@/tools/fileResult.js';

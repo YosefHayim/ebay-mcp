@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -66,7 +66,7 @@ type UpdateConversationRequest = components['schemas']['UpdateConversationReques
 
 /**
  * Message API - Buyer-seller messaging
- * Based on: docs/sell-apps/communication/commerce_message_v1_oas3.json
+ * Based on: commerce_message_v1_oas3.json
  */
 export class MessageApi {
   private readonly basePath = '/commerce/message/v1';
@@ -81,7 +81,7 @@ export class MessageApi {
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(
+   * const updatedConversations = await Effect.runPromise(
    *   messageApi.bulkUpdateConversation({ conversations: [{ conversationId: 'c1' }] }),
    * );
    * ```
@@ -95,12 +95,16 @@ export class MessageApi {
     const path = `${this.basePath}/bulk_update_conversation`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<BulkUpdateConversationsRequest>(
+      const bulkUpdateRequest = yield* requireObjectEffect<BulkUpdateConversationsRequest>(
         updateData,
         'updateData',
       );
 
-      return yield* requestPostEffect<BulkUpdateConversationsResponse>(client, path, body);
+      return yield* requestPostEffect<BulkUpdateConversationsResponse>(
+        client,
+        path,
+        bulkUpdateRequest,
+      );
     });
   };
 
@@ -126,25 +130,28 @@ export class MessageApi {
     const path = `${this.basePath}/conversation`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetConversationsInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<GetConversationsInput>(input, 'input');
       const conversationType = yield* requireStringEffect(
-        request.conversationType,
+        validatedInput.conversationType,
         'conversationType',
       );
       const conversationStatus = yield* optionalStringEffect(
-        request.conversationStatus,
+        validatedInput.conversationStatus,
         'conversationStatus',
       );
-      const endTime = yield* optionalStringEffect(request.endTime, 'endTime');
-      const limit = yield* optionalPositiveNumberEffect(request.limit, 'limit');
-      const offset = yield* optionalNonNegativeNumberEffect(request.offset, 'offset');
+      const endTime = yield* optionalStringEffect(validatedInput.endTime, 'endTime');
+      const limit = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
+      const offset = yield* optionalNonNegativeNumberEffect(validatedInput.offset, 'offset');
       const otherPartyUsername = yield* optionalStringEffect(
-        request.otherPartyUsername,
+        validatedInput.otherPartyUsername,
         'otherPartyUsername',
       );
-      const referenceId = yield* optionalStringEffect(request.referenceId, 'referenceId');
-      const referenceType = yield* optionalStringEffect(request.referenceType, 'referenceType');
-      const startTime = yield* optionalStringEffect(request.startTime, 'startTime');
+      const referenceId = yield* optionalStringEffect(validatedInput.referenceId, 'referenceId');
+      const referenceType = yield* optionalStringEffect(
+        validatedInput.referenceType,
+        'referenceType',
+      );
+      const startTime = yield* optionalStringEffect(validatedInput.startTime, 'startTime');
       const params = buildEndpointParams({
         conversationType: { wireName: 'conversation_type', value: conversationType },
         conversationStatus: { wireName: 'conversation_status', value: conversationStatus },
@@ -183,14 +190,17 @@ export class MessageApi {
     const basePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetConversationInput>(input, 'input');
-      const conversationId = yield* requireStringEffect(request.conversationId, 'conversationId');
+      const validatedInput = yield* requireObjectEffect<GetConversationInput>(input, 'input');
+      const conversationId = yield* requireStringEffect(
+        validatedInput.conversationId,
+        'conversationId',
+      );
       const conversationType = yield* requireStringEffect(
-        request.conversationType,
+        validatedInput.conversationType,
         'conversationType',
       );
-      const limit = yield* optionalPositiveNumberEffect(request.limit, 'limit');
-      const offset = yield* optionalNonNegativeNumberEffect(request.offset, 'offset');
+      const limit = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
+      const offset = yield* optionalNonNegativeNumberEffect(validatedInput.offset, 'offset');
       const params = buildEndpointParams({
         conversationType: { wireName: 'conversation_type', value: conversationType },
         limit: { wireName: 'limit', value: limit },
@@ -227,9 +237,12 @@ export class MessageApi {
     const path = `${this.basePath}/send_message`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<SendMessageRequest>(messageData, 'messageData');
+      const messageRequest = yield* requireObjectEffect<SendMessageRequest>(
+        messageData,
+        'messageData',
+      );
 
-      return yield* requestPostEffect<SendMessageResponse>(client, path, body);
+      return yield* requestPostEffect<SendMessageResponse>(client, path, messageRequest);
     });
   };
 
@@ -255,9 +268,12 @@ export class MessageApi {
     const path = `${this.basePath}/update_conversation`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<UpdateConversationRequest>(updateData, 'updateData');
+      const conversationUpdate = yield* requireObjectEffect<UpdateConversationRequest>(
+        updateData,
+        'updateData',
+      );
 
-      return yield* requestPostEffect<void>(client, path, body);
+      return yield* requestPostEffect<void>(client, path, conversationUpdate);
     });
   };
 }

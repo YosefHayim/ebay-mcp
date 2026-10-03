@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { createFeedReportTaskMethods } from './feedReportTasks.js';
 import { createFeedScheduleMethods } from './feedSchedules.js';
 import { createFeedTaskMethods } from './feedTasks.js';

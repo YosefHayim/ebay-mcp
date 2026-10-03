@@ -61,7 +61,7 @@ export const replaceDanglingSchemaRefs = (spec: unknown): ResolvableSpec => {
         return { description: `Undefined upstream schema ${name}` };
       }
     }
-    return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, rewrite(value)]));
+    return Object.fromEntries(Object.entries(node).map(([key, child]) => [key, rewrite(child)]));
   };
 
   const rewritten = rewrite(spec);

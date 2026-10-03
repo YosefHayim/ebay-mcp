@@ -14,19 +14,19 @@ import type {
 } from '@/api/other/browseTypes.js';
 
 /** Read a Browse money field ({ value, currency }). */
-const parseBrowseMoney = (value: unknown): BrowseMoney | undefined => {
-  if (!isRecord(value)) {
+const parseBrowseMoney = (rawMoney: unknown): BrowseMoney | undefined => {
+  if (!isRecord(rawMoney)) {
     return;
   }
 
-  if (typeof value.value === 'string' && typeof value.currency === 'string') {
-    return { currency: value.currency, value: value.value };
+  if (typeof rawMoney.value === 'string' && typeof rawMoney.currency === 'string') {
+    return { currency: rawMoney.currency, value: rawMoney.value };
   }
 };
 
 /** Read a string property when present and non-empty. */
-const optionalString = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.length > 0 ? value : undefined;
+const optionalString = (rawField: unknown): string | undefined =>
+  typeof rawField === 'string' && rawField.length > 0 ? rawField : undefined;
 
 /** Read a string array property when present. */
 /**
@@ -35,19 +35,23 @@ const optionalString = (value: unknown): string | undefined =>
  * eBay returns `estimatedAvailabilities` as either a bare object or a
  * single-element array, depending on the listing.
  */
-const pickAvailabilityContainer = (value: unknown): Record<string, unknown> | undefined => {
-  if (isRecord(value)) {
-    return value;
+const pickAvailabilityContainer = (
+  estimatedAvailabilities: unknown,
+): Record<string, unknown> | undefined => {
+  if (isRecord(estimatedAvailabilities)) {
+    return estimatedAvailabilities;
   }
 
-  if (Array.isArray(value) && isRecord(value[0])) {
-    return value[0];
+  if (Array.isArray(estimatedAvailabilities) && isRecord(estimatedAvailabilities[0])) {
+    return estimatedAvailabilities[0];
   }
 };
 
-const optionalStringArray = (value: unknown): readonly string[] | undefined =>
-  Array.isArray(value) && value.every((entry) => typeof entry === 'string') && value.length > 0
-    ? value
+const optionalStringArray = (rawField: unknown): readonly string[] | undefined =>
+  Array.isArray(rawField) &&
+  rawField.every((entry) => typeof entry === 'string') &&
+  rawField.length > 0
+    ? rawField
     : undefined;
 
 /** Seller username and feedback score, both optional on a Browse payload. */
@@ -149,7 +153,7 @@ export const mapItemSummary = (raw: unknown): ActiveItemSummary | undefined => {
  *
  * @example
  * ```ts
- * const result = mapSearchActiveItemsResponse(rawJson, { query: 'gpu', offset: 0, limit: 20 });
+ * const searchPage = mapSearchActiveItemsResponse(rawJson, { query: 'gpu', offset: 0, limit: 20 });
  * ```
  */
 export const mapSearchActiveItemsResponse = (

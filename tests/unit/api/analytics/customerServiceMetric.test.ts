@@ -21,7 +21,7 @@ it('getCustomerServiceMetric gets customer service metrics with marketplace para
   };
   vi.mocked(harness.client.get).mockResolvedValue(mockResponse);
 
-  const result = await Effect.runPromise(
+  const serviceMetric = await Effect.runPromise(
     harness.api.getCustomerServiceMetric({
       customerServiceMetricType: 'TRANSACTION',
       evaluationType: 'CURRENT',
@@ -29,7 +29,7 @@ it('getCustomerServiceMetric gets customer service metrics with marketplace para
     }),
   );
 
-  expect(result).toEqual(mockResponse);
+  expect(serviceMetric).toEqual(mockResponse);
   expect(harness.client.get).toHaveBeenCalledWith(
     '/sell/analytics/v1/customer_service_metric/TRANSACTION/CURRENT',
     {

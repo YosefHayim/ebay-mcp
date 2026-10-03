@@ -180,7 +180,7 @@ export const findOfferFormatViolation = (
  *
  * @example
  * ```ts
- * yield* validateOfferFormatEffect(body, 'body');
+ * yield* validateOfferFormatEffect(offerDetails, 'body');
  * ```
  */
 export const validateOfferFormatEffect = (

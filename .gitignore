@@ -189,19 +189,14 @@ secrets/
 .secrets/
 credentials.json
 
-# General (excluding docs/CLAUDE.md which tracks development progress)
+# Local agent instruction files
 /CLAUDE.md
-!docs/CLAUDE.md
 GEMINI.md
 .claude
 .mcp.json
 
 # Generated reports
 devSyncReport.json
-
-# Project docs — kept out of version control per maintainer preference.
-# Files already committed stay tracked; new files under docs/ are ignored.
-/docs/
 
 # Bun lock file (project uses pnpm)
 bun.lock
@@ -214,26 +209,15 @@ Taskfile.yml
 .*
 *.json
 *.md
-!AGENTS.md
-!CLAUDE.md
-!README*.md
+!README.md
 
 # Tracked structure & config deliverables the broad rules above would otherwise
 # hide (those rules target local agent scratch files, not project config/docs).
 !/.github/
 !/.github/**
-# Releases are changeset-driven, so an ignored .changeset/ silently drops release
-# notes: the file is written, committed without complaint, and never lands.
-!/.changeset/
-!/.changeset/**
 !/biome.json
 !/tsconfig.base.json
-!/ui/tsconfig.json
-!/ARCHITECTURE.md
-!/CODE-STYLE.md
-!/CONTEXT.md
-!/LANGUAGE.md
-!/PROJECT.md
+!/mcp-apps/tsconfig.json
 
 # Kiro CLI agent config (local)
 .kiro

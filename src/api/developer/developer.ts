@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -20,7 +20,7 @@ import type { DeveloperAnalyticsComponents as AnalyticsComponents } from '@/type
 import type { DeveloperClientRegistrationComponents as ClientComponents } from '@/types/application-settings/developerClientRegistrationV1Oas3.js';
 import type { DeveloperKeyManagementComponents as KeyComponents } from '@/types/application-settings/developerKeyManagementV1Oas3.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
 /** Response returned by Developer Analytics rate-limit endpoints. */
 type RateLimitsResponse = AnalyticsComponents['schemas']['RateLimitsResponse'];
@@ -34,19 +34,19 @@ type SigningKey = KeyComponents['schemas']['SigningKey'];
 type QuerySigningKeysResponse = KeyComponents['schemas']['QuerySigningKeysResponse'];
 /** Request body for creating a signing key. */
 type CreateSigningKeyRequest = KeyComponents['schemas']['CreateSigningKeyRequest'];
-type GetRateLimitsInput = InferEffectSchema<typeof getRateLimitsInputSchema>;
-type GetUserRateLimitsInput = InferEffectSchema<typeof getUserRateLimitsInputSchema>;
-type RegisterClientInput = InferEffectSchema<typeof registerClientInputSchema>;
-type GetSigningKeysInput = InferEffectSchema<typeof getSigningKeysInputSchema>;
-type CreateSigningKeyInput = InferEffectSchema<typeof createSigningKeyInputSchema>;
-type GetSigningKeyInput = InferEffectSchema<typeof getSigningKeyInputSchema>;
+type GetRateLimitsInput = z.infer<typeof getRateLimitsInputSchema>;
+type GetUserRateLimitsInput = z.infer<typeof getUserRateLimitsInputSchema>;
+type RegisterClientInput = z.infer<typeof registerClientInputSchema>;
+type GetSigningKeysInput = z.infer<typeof getSigningKeysInputSchema>;
+type CreateSigningKeyInput = z.infer<typeof createSigningKeyInputSchema>;
+type GetSigningKeyInput = z.infer<typeof getSigningKeyInputSchema>;
 
 /**
  * Developer API - Rate limits, client registration, and signing keys
  * Based on:
- * - docs/sell-apps/application-settings/developer_analytics_v1_beta_oas3.json
- * - docs/sell-apps/application-settings/developer_client_registration_v1_oas3.json
- * - docs/sell-apps/application-settings/developer_key_management_v1_oas3.json
+ * - developer_analytics_v1_beta_oas3.json
+ * - developer_client_registration_v1_oas3.json
+ * - developer_key_management_v1_oas3.json
  */
 export class DeveloperApi {
   private readonly analyticsBasePath = '/developer/analytics/v1_beta';

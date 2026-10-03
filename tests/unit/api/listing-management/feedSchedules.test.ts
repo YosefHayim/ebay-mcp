@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { FeedApi } from '@/api/listing-management/feed.js';
 import { createFeedScheduleMethods } from '@/api/listing-management/feedSchedules.js';
 import { MAX_INLINE_DOWNLOAD_BYTES } from '@/api/shared/download.js';

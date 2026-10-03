@@ -3,7 +3,6 @@ name: Report failure
 # Reusable (workflow_call): open (or comment on) a `ci-failure` issue with the
 # failing job's captured log tail, so the error is readable straight from the
 # issue — no Actions-log streaming. The gate calls this only on a main failure.
-# See docs/adr/current/0004-ci-workflow-architecture.md.
 
 on:
   workflow_call:

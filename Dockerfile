@@ -32,8 +32,6 @@ RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Copy built application and runtime assets from builder
 COPY --from=builder /app/build ./build
-# Scopes / docs referenced at runtime
-COPY --from=builder /app/docs ./docs
 # Icon assets served by the HTTP transport at /icons
 COPY --from=builder /app/public ./public
 

@@ -163,30 +163,30 @@ describe('Environment Configuration', () => {
       process.env.EBAY_ENVIRONMENT = 'production';
       process.env.EBAY_REDIRECT_URI = 'https://example.com/callback';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      expect(envValidation.isValid).toBe(true);
+      expect(envValidation.errors).toHaveLength(0);
     });
 
     it('fail validation when CLIENT_ID is missing', () => {
       delete process.env.EBAY_CLIENT_ID;
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('EBAY_CLIENT_ID is not set. OAuth will not work.');
+      expect(envValidation.isValid).toBe(false);
+      expect(envValidation.errors).toContain('EBAY_CLIENT_ID is not set. OAuth will not work.');
     });
 
     it('fail validation when CLIENT_SECRET is missing', () => {
       process.env.EBAY_CLIENT_ID = 'test_id';
       delete process.env.EBAY_CLIENT_SECRET;
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('EBAY_CLIENT_SECRET is not set. OAuth will not work.');
+      expect(envValidation.isValid).toBe(false);
+      expect(envValidation.errors).toContain('EBAY_CLIENT_SECRET is not set. OAuth will not work.');
     });
 
     it('fail validation for invalid environment value', () => {
@@ -194,10 +194,10 @@ describe('Environment Configuration', () => {
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
       process.env.EBAY_ENVIRONMENT = 'invalid';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.includes('EBAY_ENVIRONMENT'))).toBe(true);
+      expect(envValidation.isValid).toBe(false);
+      expect(envValidation.errors.some((error) => error.includes('EBAY_ENVIRONMENT'))).toBe(true);
     });
 
     it('warn when ENVIRONMENT is not set', () => {
@@ -205,10 +205,12 @@ describe('Environment Configuration', () => {
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
       delete process.env.EBAY_ENVIRONMENT;
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(true);
-      expect(result.warnings.some((w) => w.includes('EBAY_ENVIRONMENT not set'))).toBe(true);
+      expect(envValidation.isValid).toBe(true);
+      expect(
+        envValidation.warnings.some((warning) => warning.includes('EBAY_ENVIRONMENT not set')),
+      ).toBe(true);
     });
 
     it('warn when REDIRECT_URI is not set', () => {
@@ -216,10 +218,12 @@ describe('Environment Configuration', () => {
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
       delete process.env.EBAY_REDIRECT_URI;
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(true);
-      expect(result.warnings.some((w) => w.includes('EBAY_REDIRECT_URI'))).toBe(true);
+      expect(envValidation.isValid).toBe(true);
+      expect(envValidation.warnings.some((warning) => warning.includes('EBAY_REDIRECT_URI'))).toBe(
+        true,
+      );
     });
 
     it('warn when REDIRECT_URI is a URL instead of a RuName', () => {
@@ -227,12 +231,14 @@ describe('Environment Configuration', () => {
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
       process.env.EBAY_REDIRECT_URI = 'http://localhost:3000/oauth/callback';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
       // eBay answers a URL redirect_uri with an opaque "temporarily_unavailable",
       // so the misconfiguration has to be named here to be diagnosable.
-      expect(result.isValid).toBe(true);
-      expect(result.warnings.some((w) => w.includes('must be your eBay RuName'))).toBe(true);
+      expect(envValidation.isValid).toBe(true);
+      expect(
+        envValidation.warnings.some((warning) => warning.includes('must be your eBay RuName')),
+      ).toBe(true);
     });
 
     it('accept a RuName redirect URI without warning', () => {
@@ -240,9 +246,11 @@ describe('Environment Configuration', () => {
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
       process.env.EBAY_REDIRECT_URI = 'Your-App-Your-App-abcdef-ghij';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.warnings.some((w) => w.includes('EBAY_REDIRECT_URI'))).toBe(false);
+      expect(envValidation.warnings.some((warning) => warning.includes('EBAY_REDIRECT_URI'))).toBe(
+        false,
+      );
     });
 
     it('not require client credentials in proxy auth mode', () => {
@@ -252,11 +260,11 @@ describe('Environment Configuration', () => {
       process.env.EBAY_MCP_DISABLE_AUTH_HEADER = 'true';
       process.env.EBAY_MCP_API_BASE_URL = 'http://localhost:8080';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toHaveLength(0);
-      expect(result.infos.some((i) => i.includes('Proxy auth mode'))).toBe(true);
+      expect(envValidation.isValid).toBe(true);
+      expect(envValidation.errors).toHaveLength(0);
+      expect(envValidation.infos.some((info) => info.includes('Proxy auth mode'))).toBe(true);
     });
 
     it('report an unparseable base URL as a fatal error', () => {
@@ -264,10 +272,12 @@ describe('Environment Configuration', () => {
       process.env.EBAY_CLIENT_SECRET = 'test_secret';
       process.env.EBAY_MCP_API_BASE_URL = 'not a url';
 
-      const result = validateEnvironmentConfig();
+      const envValidation = validateEnvironmentConfig();
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.includes('EBAY_MCP_API_BASE_URL'))).toBe(true);
+      expect(envValidation.isValid).toBe(false);
+      expect(envValidation.errors.some((error) => error.includes('EBAY_MCP_API_BASE_URL'))).toBe(
+        true,
+      );
     });
   });
 
@@ -310,7 +320,7 @@ describe('Environment Configuration', () => {
 
       expect(proxy.disableAuthHeader).toBe(true);
       expect(proxy.apiBaseUrl).toBe('http://localhost:8080');
-      expect(proxy.infos.some((i) => i.includes('Proxy auth mode'))).toBe(true);
+      expect(proxy.infos.some((info) => info.includes('Proxy auth mode'))).toBe(true);
     });
 
     it('treats any value other than "true" as auth enabled', () => {
@@ -324,7 +334,7 @@ describe('Environment Configuration', () => {
       const proxy = getProxyAuthConfig();
 
       expect(proxy.apiBaseUrl).toBeUndefined();
-      expect(proxy.errors.some((e) => e.includes('not a valid URL'))).toBe(true);
+      expect(proxy.errors.some((error) => error.includes('not a valid URL'))).toBe(true);
     });
 
     it('warns when auth is disabled but no base URL is set', () => {
@@ -332,7 +342,9 @@ describe('Environment Configuration', () => {
 
       const proxy = getProxyAuthConfig();
 
-      expect(proxy.warnings.some((w) => w.includes('EBAY_MCP_API_BASE_URL is not set'))).toBe(true);
+      expect(
+        proxy.warnings.some((warning) => warning.includes('EBAY_MCP_API_BASE_URL is not set')),
+      ).toBe(true);
     });
 
     it('warns about cleartext http to a non-loopback host while auth is on', () => {
@@ -340,7 +352,9 @@ describe('Environment Configuration', () => {
 
       const proxy = getProxyAuthConfig();
 
-      expect(proxy.warnings.some((w) => w.includes('transmitted unencrypted'))).toBe(true);
+      expect(proxy.warnings.some((warning) => warning.includes('transmitted unencrypted'))).toBe(
+        true,
+      );
     });
 
     it('does not warn for cleartext http to a loopback host', () => {
@@ -359,7 +373,9 @@ describe('Environment Configuration', () => {
 
       const proxy = getProxyAuthConfig();
 
-      expect(proxy.warnings.some((w) => w.includes('transmitted unencrypted'))).toBe(false);
+      expect(proxy.warnings.some((warning) => warning.includes('transmitted unencrypted'))).toBe(
+        false,
+      );
     });
   });
 

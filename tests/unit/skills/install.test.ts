@@ -82,8 +82,8 @@ describe('owned-file writes', () => {
 
   it('writes nothing on a dry run', () => {
     const target = ownedTarget();
-    const result = applyWrite(planWrite(target, OWNED), { dryRun: true });
-    expect(result.written).toBe(false);
+    const writeOutcome = applyWrite(planWrite(target, OWNED), { dryRun: true });
+    expect(writeOutcome.written).toBe(false);
     expect(existsSync(target.path)).toBe(false);
   });
 });
@@ -147,8 +147,8 @@ describe('managed-block writes', () => {
       home: dir,
     });
 
-    for (const item of rendered) {
-      applyWrite(planWrite(item.target, item.payload));
+    for (const renderedSkill of rendered) {
+      applyWrite(planWrite(renderedSkill.target, renderedSkill.payload));
     }
 
     const content = readFileSync(join(dir, 'AGENTS.md'), 'utf-8');

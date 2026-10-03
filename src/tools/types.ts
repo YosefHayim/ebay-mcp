@@ -1,5 +1,5 @@
-import type { EbaySellerApi } from '@/api/index.js';
-import type { EffectBackedRawShape } from '@/utils/effectSchemaTypes.js';
+import type { EbaySellerApi } from '@/api/ebaySellerApi.js';
+import type { z } from 'zod';
 
 /** JSON-schema-like output contract attached to a tool definition. */
 export interface OutputArgs {
@@ -19,11 +19,11 @@ export interface ToolAnnotations {
   openWorldHint?: boolean;
 }
 
-/** Public definition for a tool, including name, Effect-backed schemas, metadata, and annotations. */
+/** Public definition for a tool, including name, Zod schemas, metadata, and annotations. */
 export interface ToolDefinition {
   name: string;
   description: string;
-  inputSchema: EffectBackedRawShape;
+  inputSchema: z.ZodRawShape;
   title?: string;
   outputSchema?: OutputArgs;
   annotations?: ToolAnnotations;

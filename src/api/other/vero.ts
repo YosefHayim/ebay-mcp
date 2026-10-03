@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -20,15 +20,15 @@ import type {
 } from '@/schemas/other/otherApis.js';
 import type { components } from '@/types/sell-apps/other-apis/commerceVeroV1Oas3.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
 /** Generated request body for createVeroReport. */
 type CreateVeroReportRequest = components['schemas']['VeroReportItemsRequest'];
-type CreateVeroReportInput = InferEffectSchema<typeof createVeroReportInputSchema>;
-type GetVeroReportInput = InferEffectSchema<typeof getVeroReportInputSchema>;
-type GetVeroReportItemsInput = InferEffectSchema<typeof getVeroReportItemsInputSchema>;
-type GetVeroReasonCodeInput = InferEffectSchema<typeof getVeroReasonCodeInputSchema>;
-type GetVeroReasonCodesInput = InferEffectSchema<typeof getVeroReasonCodesInputSchema>;
+type CreateVeroReportInput = z.infer<typeof createVeroReportInputSchema>;
+type GetVeroReportInput = z.infer<typeof getVeroReportInputSchema>;
+type GetVeroReportItemsInput = z.infer<typeof getVeroReportItemsInputSchema>;
+type GetVeroReasonCodeInput = z.infer<typeof getVeroReasonCodeInputSchema>;
+type GetVeroReasonCodesInput = z.infer<typeof getVeroReasonCodesInputSchema>;
 
 /**
  * Response returned by createVeroReport.
@@ -98,12 +98,12 @@ export class VeroApi {
 
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<CreateVeroReportInput>(input, 'input');
-      const body = yield* requireObjectEffect<CreateVeroReportRequest>(
+      const veroReport = yield* requireObjectEffect<CreateVeroReportRequest>(
         endpointInput.reportData,
         'reportData',
       );
 
-      return yield* requestPostEffect<CreateVeroReportResponse>(client, path, body);
+      return yield* requestPostEffect<CreateVeroReportResponse>(client, path, veroReport);
     });
   };
 

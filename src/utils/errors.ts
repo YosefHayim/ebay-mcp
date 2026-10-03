@@ -1,4 +1,4 @@
-import type { EbayClientRequestErrorKind } from '@/api/clientRequestError.js';
+import type { EbayClientRequestErrorKind } from '@/api/client/ebayClientRequestError.js';
 import { Cause, Runtime } from 'effect';
 
 /**
@@ -87,10 +87,10 @@ const collectEbayErrorNode = (node: Record<string, unknown>, acc: EbayErrorAccum
     acc.status = node.status;
   }
 
-  const data = asRecord(node.data);
-  if (data && Array.isArray(data.errors)) {
-    acc.errors = data.errors;
-    const detail = firstEbayErrorMessage(data.errors);
+  const errorBody = asRecord(node.data);
+  if (errorBody && Array.isArray(errorBody.errors)) {
+    acc.errors = errorBody.errors;
+    const detail = firstEbayErrorMessage(errorBody.errors);
     if (detail && !acc.messageLocked) {
       acc.message = detail;
     }

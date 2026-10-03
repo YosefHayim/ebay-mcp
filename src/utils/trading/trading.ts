@@ -1,5 +1,5 @@
 import { FormatType } from '@/types/ebayEnums.js';
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /** Listing format selector shared by the Trading listing tools. */
 const listingFormatSchema = z

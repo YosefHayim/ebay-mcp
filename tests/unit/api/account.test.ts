@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AccountApi } from '@/api/account-management/account.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import type { components } from '@/types/sell-apps/account-management/sellAccountV1Oas3.js';
 
 type CustomPolicy = components['schemas']['CustomPolicy'];
@@ -57,10 +57,10 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(accountApi.getCustomPolicies());
+      const customPolicies = await Effect.runPromise(accountApi.getCustomPolicies());
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/custom_policy/');
-      expect(result).toEqual(mockResponse);
+      expect(customPolicies).toEqual(mockResponse);
     });
 
     it('gets custom policies with a policy type filter', async () => {
@@ -82,12 +82,12 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const customPolicy = await Effect.runPromise(
         accountApi.getCustomPolicy({ customPolicyId: '1234567890' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/custom_policy/1234567890');
-      expect(result).toEqual(mockPolicy);
+      expect(customPolicy).toEqual(mockPolicy);
     });
 
     it('creates a custom policy', async () => {
@@ -103,10 +103,10 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'post').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(accountApi.createCustomPolicy({ policy }));
+      const createdPolicy = await Effect.runPromise(accountApi.createCustomPolicy({ policy }));
 
       expect(mockClient.post).toHaveBeenCalledWith('/sell/account/v1/custom_policy/', policy);
-      expect(result.customPolicyId).toBe('9876543210');
+      expect(createdPolicy.customPolicyId).toBe('9876543210');
     });
 
     it('updates a custom policy', async () => {
@@ -143,14 +143,14 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const fulfillmentPolicies = await Effect.runPromise(
         accountApi.getFulfillmentPolicies({ marketplaceId: 'EBAY_US' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/fulfillment_policy', {
         marketplace_id: 'EBAY_US',
       });
-      expect(result).toEqual(mockResponse);
+      expect(fulfillmentPolicies).toEqual(mockResponse);
     });
 
     it('gets a fulfillment policy by ID', async () => {
@@ -162,12 +162,12 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const fulfillmentPolicy = await Effect.runPromise(
         accountApi.getFulfillmentPolicy({ fulfillmentPolicyId: '1234567890' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/fulfillment_policy/1234567890');
-      expect(result).toEqual(mockPolicy);
+      expect(fulfillmentPolicy).toEqual(mockPolicy);
     });
 
     it('gets a fulfillment policy by name', async () => {
@@ -179,7 +179,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const fulfillmentPolicy = await Effect.runPromise(
         accountApi.getFulfillmentPolicyByName({
           marketplaceId: 'EBAY_US',
           name: 'Standard Shipping',
@@ -193,7 +193,7 @@ describe('AccountApi', () => {
           name: 'Standard Shipping',
         },
       );
-      expect(result).toEqual(mockPolicy);
+      expect(fulfillmentPolicy).toEqual(mockPolicy);
     });
 
     it('creates, updates, and deletes a fulfillment policy', async () => {
@@ -244,14 +244,14 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const paymentPolicies = await Effect.runPromise(
         accountApi.getPaymentPolicies({ marketplaceId: 'EBAY_US' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/payment_policy', {
         marketplace_id: 'EBAY_US',
       });
-      expect(result).toEqual(mockResponse);
+      expect(paymentPolicies).toEqual(mockResponse);
     });
 
     it('gets a payment policy by ID', async () => {
@@ -263,12 +263,12 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const paymentPolicy = await Effect.runPromise(
         accountApi.getPaymentPolicy({ paymentPolicyId: '1234567890' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/payment_policy/1234567890');
-      expect(result).toEqual(mockPolicy);
+      expect(paymentPolicy).toEqual(mockPolicy);
     });
 
     it('gets a payment policy by name', async () => {
@@ -280,7 +280,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const paymentPolicy = await Effect.runPromise(
         accountApi.getPaymentPolicyByName({
           marketplaceId: 'EBAY_US',
           name: 'Immediate Payment',
@@ -294,7 +294,7 @@ describe('AccountApi', () => {
           name: 'Immediate Payment',
         },
       );
-      expect(result).toEqual(mockPolicy);
+      expect(paymentPolicy).toEqual(mockPolicy);
     });
 
     it('creates, updates, and deletes a payment policy', async () => {
@@ -341,14 +341,14 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const returnPolicies = await Effect.runPromise(
         accountApi.getReturnPolicies({ marketplaceId: 'EBAY_US' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/return_policy', {
         marketplace_id: 'EBAY_US',
       });
-      expect(result).toEqual(mockResponse);
+      expect(returnPolicies).toEqual(mockResponse);
     });
 
     it('gets a return policy by ID', async () => {
@@ -360,12 +360,12 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const returnPolicy = await Effect.runPromise(
         accountApi.getReturnPolicy({ returnPolicyId: '1234567890' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/return_policy/1234567890');
-      expect(result).toEqual(mockPolicy);
+      expect(returnPolicy).toEqual(mockPolicy);
     });
 
     it('gets a return policy by name', async () => {
@@ -377,7 +377,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockPolicy);
 
-      const result = await Effect.runPromise(
+      const returnPolicy = await Effect.runPromise(
         accountApi.getReturnPolicyByName({
           marketplaceId: 'EBAY_US',
           name: '30 Day Returns',
@@ -391,7 +391,7 @@ describe('AccountApi', () => {
           name: '30 Day Returns',
         },
       );
-      expect(result).toEqual(mockPolicy);
+      expect(returnPolicy).toEqual(mockPolicy);
     });
 
     it('creates, updates, and deletes a return policy', async () => {
@@ -470,7 +470,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockSubscription);
 
-      const result = await Effect.runPromise(
+      const subscription = await Effect.runPromise(
         accountApi.getSubscription({ limit: '10', continuationToken: 'next-page' }),
       );
 
@@ -478,7 +478,7 @@ describe('AccountApi', () => {
         limit: '10',
         continuation_token: 'next-page',
       });
-      expect(result).toEqual(mockSubscription);
+      expect(subscription).toEqual(mockSubscription);
     });
   });
 
@@ -492,7 +492,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const paymentsProgram = await Effect.runPromise(
         accountApi.getPaymentsProgram({
           marketplaceId: 'EBAY_US',
           paymentsProgramType: 'EBAY_PAYMENTS',
@@ -502,7 +502,7 @@ describe('AccountApi', () => {
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/account/v1/payments_program/EBAY_US/EBAY_PAYMENTS',
       );
-      expect(result).toEqual(mockResponse);
+      expect(paymentsProgram).toEqual(mockResponse);
     });
 
     it('gets payments program onboarding status', async () => {
@@ -514,7 +514,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const onboarding = await Effect.runPromise(
         accountApi.getPaymentsProgramOnboarding({
           marketplaceId: 'EBAY_US',
           paymentsProgramType: 'EBAY_PAYMENTS',
@@ -524,7 +524,7 @@ describe('AccountApi', () => {
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/account/v1/payments_program/EBAY_US/EBAY_PAYMENTS/onboarding',
       );
-      expect(result).toEqual(mockResponse);
+      expect(onboarding).toEqual(mockResponse);
     });
   });
 
@@ -536,12 +536,12 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(accountApi.getSalesTaxes({ countryCode: 'US' }));
+      const salesTaxes = await Effect.runPromise(accountApi.getSalesTaxes({ countryCode: 'US' }));
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/sales_tax', {
         country_code: 'US',
       });
-      expect(result).toEqual(mockResponse);
+      expect(salesTaxes).toEqual(mockResponse);
     });
 
     it('gets a specific sales tax table entry', async () => {
@@ -553,12 +553,12 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockSalesTax);
 
-      const result = await Effect.runPromise(
+      const salesTax = await Effect.runPromise(
         accountApi.getSalesTax({ countryCode: 'US', jurisdictionId: 'CA' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/account/v1/sales_tax/US/CA');
-      expect(result).toEqual(mockSalesTax);
+      expect(salesTax).toEqual(mockSalesTax);
     });
 
     it('creates, bulk creates, and deletes sales tax entries', async () => {
@@ -628,7 +628,7 @@ describe('AccountApi', () => {
 
       vi.spyOn(mockClient, 'get').mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const eligibility = await Effect.runPromise(
         accountApi.getAdvertisingEligibility({
           marketplaceId: 'EBAY_US',
           programTypes: 'PLA',
@@ -644,7 +644,7 @@ describe('AccountApi', () => {
           },
         },
       );
-      expect(result).toEqual(mockResponse);
+      expect(eligibility).toEqual(mockResponse);
     });
   });
 });

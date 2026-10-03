@@ -1,10 +1,10 @@
 /**
  * Marketing API schemas — campaigns slice.
  *
- * Effect-backed schemas for Marketing endpoints. The barrel `marketing.ts` re-exports all slices.
+ * Zod schemas for Marketing endpoints. The barrel `marketing.ts` re-exports all slices.
  */
 
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import { amountSchema, alertSchema } from './common.js';
 
 // ============================================================================

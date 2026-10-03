@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
  * Finances API input schemas.

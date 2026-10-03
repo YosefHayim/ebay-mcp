@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { Effect } from 'effect';
@@ -40,10 +40,10 @@ let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
 /** Calls a stores tool and decodes the single JSON text block every stores tool returns. */
 const callStoresTool = async (name: string, args: Record<string, unknown> = {}) => {
-  const result = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
-  const [block] = result.content;
+  const toolResult = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
+  const [block] = toolResult.content;
   return {
-    isError: result.isError === true,
+    isError: toolResult.isError === true,
     payload: block?.type === 'text' ? (JSON.parse(block.text) as unknown) : undefined,
   };
 };
@@ -116,12 +116,12 @@ describe('stores tool registration', () => {
 describe('stores read tools', () => {
   it('returns the store details from getStore', async () => {
     const store = { name: 'Camera Corner', url: 'https://www.ebay.com/str/cameracorner' };
-    const request = nock(HOST).get(STORE).reply(200, store);
+    const storeScope = nock(HOST).get(STORE).reply(200, store);
 
-    const result = await callStoresTool('ebay_get_store');
+    const storeResult = await callStoresTool('ebay_get_store');
 
-    expect(result).toEqual({ isError: false, payload: store });
-    expect(request.isDone()).toBe(true);
+    expect(storeResult).toEqual({ isError: false, payload: store });
+    expect(storeScope.isDone()).toBe(true);
   });
 
   it('returns the category hierarchy from getStoreCategories', async () => {
@@ -136,94 +136,94 @@ describe('stores read tools', () => {
         },
       ],
     };
-    const request = nock(HOST).get(`${STORE}/categories`).reply(200, categories);
+    const categoriesScope = nock(HOST).get(`${STORE}/categories`).reply(200, categories);
 
-    const result = await callStoresTool('ebay_get_store_categories');
+    const categoriesResult = await callStoresTool('ebay_get_store_categories');
 
-    expect(result).toEqual({ isError: false, payload: categories });
-    expect(request.isDone()).toBe(true);
+    expect(categoriesResult).toEqual({ isError: false, payload: categories });
+    expect(categoriesScope.isDone()).toBe(true);
   });
 
   it('returns one task status from getStoreTask', async () => {
     const task = { task: { id: 'TASK-1', type: 'ADD_CATEGORY', status: 'COMPLETED' } };
-    const request = nock(HOST).get(`${STORE}/tasks/TASK-1`).reply(200, task);
+    const taskScope = nock(HOST).get(`${STORE}/tasks/TASK-1`).reply(200, task);
 
-    const result = await callStoresTool('ebay_get_store_task', { taskId: 'TASK-1' });
+    const taskResult = await callStoresTool('ebay_get_store_task', { taskId: 'TASK-1' });
 
-    expect(result).toEqual({ isError: false, payload: task });
-    expect(request.isDone()).toBe(true);
+    expect(taskResult).toEqual({ isError: false, payload: task });
+    expect(taskScope.isDone()).toBe(true);
   });
 
   it('returns every task status from getStoreTasks', async () => {
     const tasks = { task: [{ id: 'TASK-1', type: 'MOVE_CATEGORY', status: 'IN_PROGRESS' }] };
-    const request = nock(HOST).get(`${STORE}/tasks`).reply(200, tasks);
+    const tasksScope = nock(HOST).get(`${STORE}/tasks`).reply(200, tasks);
 
-    const result = await callStoresTool('ebay_get_store_tasks');
+    const tasksResult = await callStoresTool('ebay_get_store_tasks');
 
-    expect(result).toEqual({ isError: false, payload: tasks });
-    expect(request.isDone()).toBe(true);
+    expect(tasksResult).toEqual({ isError: false, payload: tasks });
+    expect(tasksScope.isDone()).toBe(true);
   });
 });
 
 describe('stores category change tools', () => {
   it('adds a category and returns the task from the Location header', async () => {
-    const body = { categoryName: 'Vintage Cameras', destinationParentCategoryId: '100' };
+    const newCategory = { categoryName: 'Vintage Cameras', destinationParentCategoryId: '100' };
     const location = taskLocation('TASK-ADD');
-    const request = nock(HOST)
-      .post(`${STORE}/categories`, body)
+    const addScope = nock(HOST)
+      .post(`${STORE}/categories`, newCategory)
       .reply(202, '', { Location: location });
 
-    const result = await callStoresTool('ebay_add_store_category', body);
+    const addResult = await callStoresTool('ebay_add_store_category', newCategory);
 
-    expect(result).toEqual({ isError: false, payload: { taskId: 'TASK-ADD', location } });
-    expect(request.isDone()).toBe(true);
+    expect(addResult).toEqual({ isError: false, payload: { taskId: 'TASK-ADD', location } });
+    expect(addScope.isDone()).toBe(true);
   });
 
   it('renames a category with the ID in the path and the new name in the body', async () => {
     const location = taskLocation('TASK-RENAME');
-    const request = nock(HOST)
+    const renameScope = nock(HOST)
       .put(`${STORE}/categories/101`, { categoryName: 'Film Cameras' })
       .reply(204, '', { Location: location });
 
-    const result = await callStoresTool('ebay_rename_store_category', {
+    const renameResult = await callStoresTool('ebay_rename_store_category', {
       categoryId: '101',
       categoryName: 'Film Cameras',
     });
 
-    expect(result).toEqual({ isError: false, payload: { taskId: 'TASK-RENAME', location } });
-    expect(request.isDone()).toBe(true);
+    expect(renameResult).toEqual({ isError: false, payload: { taskId: 'TASK-RENAME', location } });
+    expect(renameScope.isDone()).toBe(true);
   });
 
   it('moves a category through move_category', async () => {
-    const body = {
+    const categoryMove = {
       categoryId: '101',
       destinationParentCategoryId: '-999',
       listingDestinationCategoryId: '100',
     };
     const location = taskLocation('TASK-MOVE');
-    const request = nock(HOST)
-      .post(`${STORE}/categories/move_category`, body)
+    const moveScope = nock(HOST)
+      .post(`${STORE}/categories/move_category`, categoryMove)
       .reply(202, '', { Location: location });
 
-    const result = await callStoresTool('ebay_move_store_category', body);
+    const moveResult = await callStoresTool('ebay_move_store_category', categoryMove);
 
-    expect(result).toEqual({ isError: false, payload: { taskId: 'TASK-MOVE', location } });
-    expect(request.isDone()).toBe(true);
+    expect(moveResult).toEqual({ isError: false, payload: { taskId: 'TASK-MOVE', location } });
+    expect(moveScope.isDone()).toBe(true);
   });
 
   it('deletes a category and returns the task from the Location header', async () => {
     const location = taskLocation('TASK-DELETE');
-    const request = nock(HOST)
+    const deleteScope = nock(HOST)
       .delete(`${STORE}/categories/101`, { listingDestinationCategoryId: '102' })
       .reply(202, '', { Location: location });
 
-    const result = await callStoresTool('ebay_delete_store_category', {
+    const deleteResult = await callStoresTool('ebay_delete_store_category', {
       categoryId: '101',
       listingDestinationCategoryId: '102',
     });
 
-    expect(result).toEqual({ isError: false, payload: { taskId: 'TASK-DELETE', location } });
-    expect(request.isDone()).toBe(true);
+    expect(deleteResult).toEqual({ isError: false, payload: { taskId: 'TASK-DELETE', location } });
+    expect(deleteScope.isDone()).toBe(true);
   });
 });
 
@@ -238,36 +238,36 @@ describe('stores category change failures', () => {
           'You cannot make additional category changes until your previous change request has completed.',
       },
     ];
-    const request = nock(HOST).post(`${STORE}/categories`).reply(400, { errors });
+    const addScope = nock(HOST).post(`${STORE}/categories`).reply(400, { errors });
 
-    const result = await callStoresTool('ebay_add_store_category', { categoryName: 'Lenses' });
+    const rejectedAdd = await callStoresTool('ebay_add_store_category', { categoryName: 'Lenses' });
 
-    expect(result.isError).toBe(true);
-    expect(result.payload).toMatchObject({ status: 400, details: errors });
-    expect(request.isDone()).toBe(true);
+    expect(rejectedAdd.isError).toBe(true);
+    expect(rejectedAdd.payload).toMatchObject({ status: 400, details: errors });
+    expect(addScope.isDone()).toBe(true);
   });
 
   it('rejects a move without a destination parent before contacting eBay', async () => {
-    const request = nock(HOST).post(`${STORE}/categories/move_category`).reply(202);
+    const moveScope = nock(HOST).post(`${STORE}/categories/move_category`).reply(202);
 
-    const result = await client.callTool({
+    const invalidMove = await client.callTool({
       name: 'ebay_move_store_category',
       arguments: { categoryId: '101' },
     });
 
-    expect(result.isError).toBe(true);
-    expect(request.isDone()).toBe(false);
+    expect(invalidMove.isError).toBe(true);
+    expect(moveScope.isDone()).toBe(false);
   });
 
   it('rejects a category name longer than 35 characters before contacting eBay', async () => {
-    const request = nock(HOST).post(`${STORE}/categories`).reply(202);
+    const addScope = nock(HOST).post(`${STORE}/categories`).reply(202);
 
-    const result = await client.callTool({
+    const oversizedAdd = await client.callTool({
       name: 'ebay_add_store_category',
       arguments: { categoryName: 'x'.repeat(36) },
     });
 
-    expect(result.isError).toBe(true);
-    expect(request.isDone()).toBe(false);
+    expect(oversizedAdd.isError).toBe(true);
+    expect(addScope.isDone()).toBe(false);
   });
 });

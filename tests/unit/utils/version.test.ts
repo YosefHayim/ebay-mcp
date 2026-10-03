@@ -89,10 +89,10 @@ describe('getUpdateInfo', () => {
   it('reports current/latest/name when a newer version exists', async () => {
     mockUpdate = { latest: '99.0.0' };
 
-    const info = await getUpdateInfo();
+    const updateInfo = await getUpdateInfo();
 
     expect(fetchInfo).toHaveBeenCalled();
-    expect(info).toEqual({ current: CURRENT, latest: '99.0.0', name: 'ebay-mcp' });
+    expect(updateInfo).toEqual({ current: CURRENT, latest: '99.0.0', name: 'ebay-mcp' });
   });
 
   it('returns undefined when the latest version equals the current one', async () => {

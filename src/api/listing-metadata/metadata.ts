@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -670,7 +670,7 @@ export class MetadataApi {
         validatedInput.marketplaceId,
         'marketplaceId',
       );
-      const body = yield* requireObjectEffect<SpecificationRequest>(
+      const specificationRequest = yield* requireObjectEffect<SpecificationRequest>(
         validatedInput.specification,
         'specification',
       );
@@ -678,7 +678,7 @@ export class MetadataApi {
       return yield* requestPostEffect<SpecificationResponse>(
         client,
         path,
-        body,
+        specificationRequest,
         compatibilityHeaders(marketplaceId),
       );
     });
@@ -717,12 +717,15 @@ export class MetadataApi {
         validatedInput.marketplaceId,
         'marketplaceId',
       );
-      const body = yield* requireObjectEffect<PropertyNamesRequest>(validatedInput.data, 'data');
+      const propertyNamesRequest = yield* requireObjectEffect<PropertyNamesRequest>(
+        validatedInput.data,
+        'data',
+      );
 
       return yield* requestPostEffect<PropertyNamesResponse>(
         client,
         path,
-        body,
+        propertyNamesRequest,
         compatibilityHeaders(marketplaceId),
       );
     });
@@ -759,12 +762,15 @@ export class MetadataApi {
         validatedInput.marketplaceId,
         'marketplaceId',
       );
-      const body = yield* requireObjectEffect<PropertyValuesRequest>(validatedInput.data, 'data');
+      const propertyValuesRequest = yield* requireObjectEffect<PropertyValuesRequest>(
+        validatedInput.data,
+        'data',
+      );
 
       return yield* requestPostEffect<PropertyValuesResponse>(
         client,
         path,
-        body,
+        propertyValuesRequest,
         compatibilityHeaders(marketplaceId),
       );
     });
@@ -804,15 +810,16 @@ export class MetadataApi {
         validatedInput.marketplaceId,
         'marketplaceId',
       );
-      const body = yield* requireObjectEffect<MultiCompatibilityPropertyValuesRequest>(
-        validatedInput.data,
-        'data',
-      );
+      const multiPropertyValuesRequest =
+        yield* requireObjectEffect<MultiCompatibilityPropertyValuesRequest>(
+          validatedInput.data,
+          'data',
+        );
 
       return yield* requestPostEffect<MultiCompatibilityPropertyValuesResponse>(
         client,
         path,
-        body,
+        multiPropertyValuesRequest,
         compatibilityHeaders(marketplaceId),
       );
     });
@@ -851,12 +858,15 @@ export class MetadataApi {
         validatedInput.marketplaceId,
         'marketplaceId',
       );
-      const body = yield* requireObjectEffect<ProductRequest>(validatedInput.data, 'data');
+      const productRequest = yield* requireObjectEffect<ProductRequest>(
+        validatedInput.data,
+        'data',
+      );
 
       return yield* requestPostEffect<ProductResponse>(
         client,
         path,
-        body,
+        productRequest,
         compatibilityHeaders(marketplaceId),
       );
     });

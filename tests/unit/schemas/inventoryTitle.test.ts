@@ -1,10 +1,8 @@
 import { inventoryItemSchema } from '@/schemas/inventory-management/inventory.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
-import { Effect, Either } from 'effect';
 import { describe, expect, it } from 'vitest';
 
-const acceptsInventoryItem = (value: unknown): boolean =>
-  Either.isRight(Effect.runSync(Effect.either(decodeEffectSchema(inventoryItemSchema, value))));
+const acceptsInventoryItem = (inventoryItem: unknown): boolean =>
+  inventoryItemSchema.safeParse(inventoryItem).success;
 
 describe('inventory item product title', () => {
   it('accepts the 80-character eBay boundary', () => {

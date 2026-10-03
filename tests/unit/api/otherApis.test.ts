@@ -7,7 +7,7 @@ import { VeroApi } from '@/api/other/vero.js';
 import { TranslationApi } from '@/api/other/translation.js';
 import { EDeliveryApi } from '@/api/other/edelivery.js';
 import { IdentityApi } from '@/api/other/identity.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { Effect } from 'effect';
 
 describe('Other APIs', () => {
@@ -426,12 +426,15 @@ describe('Other APIs', () => {
 
     it('creates address preference with body input', async () => {
       const mockResponse = { preferenceId: 'PREF123' };
-      const body = { shipFromAddress: { city: 'New York' } };
+      const addressPreference = { shipFromAddress: { city: 'New York' } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.createAddressPreference({ body }));
+      await Effect.runPromise(api.createAddressPreference({ body: addressPreference }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/address_preference', body);
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/logistics/v1/address_preference',
+        addressPreference,
+      );
     });
 
     it('gets consign preferences', async () => {
@@ -445,12 +448,15 @@ describe('Other APIs', () => {
 
     it('creates consign preference with body input', async () => {
       const mockResponse = { preferenceId: 'CONS123' };
-      const body = { consignAddress: { consignPreferenceName: 'Main' } };
+      const consignPreference = { consignAddress: { consignPreferenceName: 'Main' } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.createConsignPreference({ body }));
+      await Effect.runPromise(api.createConsignPreference({ body: consignPreference }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/consign_preference', body);
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/logistics/v1/consign_preference',
+        consignPreference,
+      );
     });
 
     // Agents & Services
@@ -500,12 +506,12 @@ describe('Other APIs', () => {
     // Bundles
     it('creates bundle with body input', async () => {
       const mockResponse = { bundleId: 'BUNDLE123' };
-      const body = { bundle: { trackingNumbers: ['TRACK1', 'TRACK2'] } };
+      const bundleRequest = { bundle: { trackingNumbers: ['TRACK1', 'TRACK2'] } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.createBundle({ body }));
+      await Effect.runPromise(api.createBundle({ body: bundleRequest }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/bundle', body);
+      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/bundle', bundleRequest);
     });
 
     it('gets bundle by ID', async () => {
@@ -537,12 +543,12 @@ describe('Other APIs', () => {
     // Packages (Single)
     it('creates package with body input', async () => {
       const mockResponse = { packageId: 'PKG123' };
-      const body = { packageInfo: { packageWeight: 1000 } };
+      const packageRequest = { packageInfo: { packageWeight: 1000 } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.createPackage({ body }));
+      await Effect.runPromise(api.createPackage({ body: packageRequest }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/package', body);
+      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/package', packageRequest);
     });
 
     it('gets package by ID', async () => {
@@ -599,40 +605,40 @@ describe('Other APIs', () => {
     // Packages (Bulk)
     it('bulk cancels packages with body input', async () => {
       const mockResponse = { results: [] };
-      const body = { requests: { packageIds: ['PKG1', 'PKG2'] } };
+      const bulkPackagesRequest = { requests: { packageIds: ['PKG1', 'PKG2'] } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.bulkCancelPackages({ body }));
+      await Effect.runPromise(api.bulkCancelPackages({ body: bulkPackagesRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
         '/sell/logistics/v1/package/bulk_cancel_packages',
-        body,
+        bulkPackagesRequest,
       );
     });
 
     it('bulk confirms packages with body input', async () => {
       const mockResponse = { results: [] };
-      const body = { requests: { packageIds: ['PKG1', 'PKG2'] } };
+      const bulkPackagesRequest = { requests: { packageIds: ['PKG1', 'PKG2'] } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.bulkConfirmPackages({ body }));
+      await Effect.runPromise(api.bulkConfirmPackages({ body: bulkPackagesRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
         '/sell/logistics/v1/package/bulk_confirm_packages',
-        body,
+        bulkPackagesRequest,
       );
     });
 
     it('bulk deletes packages with body input', async () => {
       const mockResponse = { results: [] };
-      const body = { requests: { packageIds: ['PKG1', 'PKG2'] } };
+      const bulkPackagesRequest = { requests: { packageIds: ['PKG1', 'PKG2'] } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.bulkDeletePackages({ body }));
+      await Effect.runPromise(api.bulkDeletePackages({ body: bulkPackagesRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
         '/sell/logistics/v1/package/bulk_delete_packages',
-        body,
+        bulkPackagesRequest,
       );
     });
 
@@ -681,12 +687,12 @@ describe('Other APIs', () => {
     // Other
     it('creates complaint with body input', async () => {
       const mockResponse = { complaintId: 'COMPLAINT123' };
-      const body = { complaintRequest: { description: 'Package damaged' } };
+      const complaint = { complaintRequest: { description: 'Package damaged' } };
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.createComplaint({ body }));
+      await Effect.runPromise(api.createComplaint({ body: complaint }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/complaint', body);
+      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/complaint', complaint);
     });
 
     it('rejects missing tracking number before getTracking requests eBay', async () => {

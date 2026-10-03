@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Effect } from 'effect';
 import { DeveloperApi } from '@/api/developer/developer.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('DeveloperApi', () => {
   let client: EbayApiClient;
@@ -36,10 +36,10 @@ describe('DeveloperApi', () => {
       };
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.getRateLimits({}));
+      const rateLimits = await Effect.runPromise(api.getRateLimits({}));
 
       expect(client.get).toHaveBeenCalledWith('/developer/analytics/v1_beta/rate_limit/');
-      expect(result).toEqual(mockResponse);
+      expect(rateLimits).toEqual(mockResponse);
     });
 
     it('get rate limits with apiContext parameter', async () => {
@@ -95,10 +95,10 @@ describe('DeveloperApi', () => {
       };
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.getUserRateLimits({}));
+      const userRateLimits = await Effect.runPromise(api.getUserRateLimits({}));
 
       expect(client.get).toHaveBeenCalledWith('/developer/analytics/v1_beta/user_rate_limit/');
-      expect(result).toEqual(mockResponse);
+      expect(userRateLimits).toEqual(mockResponse);
     });
 
     it('get user rate limits with apiContext parameter', async () => {
@@ -159,13 +159,13 @@ describe('DeveloperApi', () => {
 
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.registerClient({ clientSettings }));
+      const registration = await Effect.runPromise(api.registerClient({ clientSettings }));
 
       expect(client.post).toHaveBeenCalledWith(
         '/developer/client_registration/v1/client/register',
         clientSettings,
       );
-      expect(result).toEqual(mockResponse);
+      expect(registration).toEqual(mockResponse);
     });
 
     it('handle registration with minimal settings', async () => {
@@ -180,13 +180,13 @@ describe('DeveloperApi', () => {
 
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.registerClient({ clientSettings }));
+      const registration = await Effect.runPromise(api.registerClient({ clientSettings }));
 
       expect(client.post).toHaveBeenCalledWith(
         '/developer/client_registration/v1/client/register',
         clientSettings,
       );
-      expect(result).toEqual(mockResponse);
+      expect(registration).toEqual(mockResponse);
     });
   });
 
@@ -213,21 +213,21 @@ describe('DeveloperApi', () => {
 
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.getSigningKeys({}));
+      const signingKeyList = await Effect.runPromise(api.getSigningKeys({}));
 
       expect(client.get).toHaveBeenCalledWith('/developer/key_management/v1/signing_key');
-      expect(result).toEqual(mockResponse);
-      expect(result.signingKeys).toHaveLength(2);
+      expect(signingKeyList).toEqual(mockResponse);
+      expect(signingKeyList.signingKeys).toHaveLength(2);
     });
 
     it('return empty array when no signing keys exist', async () => {
       const mockResponse = { signingKeys: [] };
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.getSigningKeys({}));
+      const signingKeyList = await Effect.runPromise(api.getSigningKeys({}));
 
       expect(client.get).toHaveBeenCalledWith('/developer/key_management/v1/signing_key');
-      expect(result.signingKeys).toHaveLength(0);
+      expect(signingKeyList.signingKeys).toHaveLength(0);
     });
   });
 
@@ -244,11 +244,11 @@ describe('DeveloperApi', () => {
 
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.createSigningKey({}));
+      const signingKey = await Effect.runPromise(api.createSigningKey({}));
 
       expect(client.post).toHaveBeenCalledWith('/developer/key_management/v1/signing_key', {});
-      expect(result).toEqual(mockResponse);
-      expect(result.signingKeyId).toBe('new_key_123');
+      expect(signingKey).toEqual(mockResponse);
+      expect(signingKey.signingKeyId).toBe('new_key_123');
     });
 
     it('create a signing key with request body', async () => {
@@ -268,13 +268,13 @@ describe('DeveloperApi', () => {
 
       vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.createSigningKey(input));
+      const signingKey = await Effect.runPromise(api.createSigningKey(input));
 
       expect(client.post).toHaveBeenCalledWith(
         '/developer/key_management/v1/signing_key',
         input.request,
       );
-      expect(result).toEqual(mockResponse);
+      expect(signingKey).toEqual(mockResponse);
     });
   });
 
@@ -290,11 +290,11 @@ describe('DeveloperApi', () => {
 
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(api.getSigningKey({ signingKeyId: 'key_001' }));
+      const signingKey = await Effect.runPromise(api.getSigningKey({ signingKeyId: 'key_001' }));
 
       expect(client.get).toHaveBeenCalledWith('/developer/key_management/v1/signing_key/key_001');
-      expect(result).toEqual(mockResponse);
-      expect(result.signingKeyId).toBe('key_001');
+      expect(signingKey).toEqual(mockResponse);
+      expect(signingKey.signingKeyId).toBe('key_001');
     });
 
     it('returns typed input error when signingKeyId is empty', async () => {

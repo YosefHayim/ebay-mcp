@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   EbayApiError,
   EndpointInputError,
@@ -176,23 +176,23 @@ const videoStatusFinal = (video: Video): boolean =>
  * standing still while status requests kept going, so the boundary is checked
  * before the first poll rather than inside the loop.
  *
- * @param value - Caller-supplied duration in milliseconds, or undefined.
+ * @param durationMs - Caller-supplied duration in milliseconds, or undefined.
  * @param fallback - Duration used when the caller supplied none.
  * @param name - Parameter name used in the validation message.
  * @param minimum - Smallest accepted value.
  * @returns An Effect with the duration to use, or a tagged input error.
  */
 const requireDurationMs = (
-  value: number | undefined,
+  durationMs: number | undefined,
   fallback: number,
   name: string,
   minimum: number,
 ): Effect.Effect<number, EndpointInputError> => {
-  if (value === undefined) {
+  if (durationMs === undefined) {
     return Effect.succeed(fallback);
   }
 
-  if (!Number.isFinite(value) || value < minimum) {
+  if (!Number.isFinite(durationMs) || durationMs < minimum) {
     return Effect.fail(
       new EndpointInputError({
         parameter: name,
@@ -201,7 +201,7 @@ const requireDurationMs = (
     );
   }
 
-  return Effect.succeed(value);
+  return Effect.succeed(durationMs);
 };
 
 /**
@@ -289,7 +289,7 @@ export class MediaApi {
         fileName,
       );
 
-      const response = yield* Effect.tryPromise({
+      const imageResponse = yield* Effect.tryPromise({
         try: () =>
           client.postForResponse<ImageResponse | undefined>(url, form, {
             absolute: true,
@@ -297,7 +297,7 @@ export class MediaApi {
           }),
         catch: apiFailure('POST', path),
       });
-      const imageUrl = response.data?.imageUrl;
+      const imageUrl = imageResponse.data?.imageUrl;
       if (!imageUrl) {
         return yield* Effect.fail(
           new EbayApiError({
@@ -310,9 +310,9 @@ export class MediaApi {
 
       return {
         source: upload.source,
-        imageId: idFromLocation(response.headers.location),
+        imageId: idFromLocation(imageResponse.headers.location),
         imageUrl,
-        expirationDate: response.data?.expirationDate,
+        expirationDate: imageResponse.data?.expirationDate,
       };
     });
   };
@@ -346,7 +346,7 @@ export class MediaApi {
                 index,
                 uploaded: [...uploaded],
                 cause,
-                message: `upload of ${file.source} (file ${index + 1} of ${files.length}) failed: ${getErrorMessage(cause)}${uploaded.length > 0 ? `; already uploaded: ${uploaded.map((item) => item.imageUrl).join(', ')}` : ''}`,
+                message: `upload of ${file.source} (file ${index + 1} of ${files.length}) failed: ${getErrorMessage(cause)}${uploaded.length > 0 ? `; already uploaded: ${uploaded.map((uploadedImage) => uploadedImage.imageUrl).join(', ')}` : ''}`,
               }),
           ),
         );
@@ -408,17 +408,17 @@ export class MediaApi {
     return Effect.gen(function* () {
       const validated = yield* requireObjectEffect<CreateVideoInput>(input, 'input');
       const title = yield* requireStringEffect(validated.title, 'title');
-      const body: CreateVideoRequest = {
+      const videoRequest: CreateVideoRequest = {
         title,
         size: validated.size,
         description: validated.description,
         classification: ['ITEM'],
       };
-      const response = yield* Effect.tryPromise({
-        try: () => client.postForResponse<undefined>(url, body, { absolute: true }),
+      const videoResponse = yield* Effect.tryPromise({
+        try: () => client.postForResponse<undefined>(url, videoRequest, { absolute: true }),
         catch: apiFailure('POST', path),
       });
-      const videoId = idFromLocation(response.headers.location);
+      const videoId = idFromLocation(videoResponse.headers.location);
       if (!videoId) {
         return yield* Effect.fail(
           new EbayApiError({

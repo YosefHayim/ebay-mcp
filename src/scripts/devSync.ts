@@ -10,11 +10,13 @@ import { getErrorMessage } from '@/utils/errors.js';
 import { httpRequest } from '@/utils/http.js';
 import process from 'node:process';
 import { replaceDanglingSchemaRefs } from './specRefs.js';
+import { specSources } from './specSources.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '../..');
-const DOCS_DIR = join(PROJECT_ROOT, 'docs');
+/** Local, git-ignored cache of downloaded eBay OpenAPI specs. */
+const SPECS_DIR = join(PROJECT_ROOT, '.cache/ebay-specs');
 const TYPES_DIR = join(PROJECT_ROOT, 'src/types');
 const TOOLS_DIRS = [join(PROJECT_ROOT, 'src/tools/categories')];
 
@@ -128,44 +130,6 @@ function showSpinner(message: string): () => void {
   };
 }
 
-const SPEC_FOLDER_MAP: Record<string, string> = {
-  'developer_analytics_v1_beta_oas3.json': 'application-settings',
-  'developer_key_management_v1_oas3.json': 'application-settings',
-  'developer_client_registration_v1_oas3.json': 'application-settings',
-  'sell_inventory_v1_oas3.json': 'sell-apps/listing-management',
-  'sell_feed_v1_oas3.json': 'sell-apps/listing-management',
-  'commerce_media_v1_beta_oas3.json': 'sell-apps/listing-management',
-  'sell_stores_v1_oas3.json': 'sell-apps/listing-management',
-  'sell_metadata_v1_oas3.json': 'sell-apps/listing-metadata',
-  'commerce_taxonomy_v1_oas3.json': 'sell-apps/listing-metadata',
-  'commerce_charity_v1_oas3.json': 'sell-apps/listing-metadata',
-  'sell_account_v1_oas3.json': 'sell-apps/account-management',
-  'sell_account_v2_oas3.json': 'sell-apps/account-management',
-  'sell_finances_v1_oas3.json': 'sell-apps/account-management',
-  'commerce_message_v1_oas3.json': 'sell-apps/communication',
-  'commerce_notification_v1_oas3.json': 'sell-apps/communication',
-  'sell_negotiation_v1_oas3.json': 'sell-apps/communication',
-  'commerce_feedback_v1_beta_oas3.json': 'sell-apps/communication',
-  'sell_fulfillment_v1_oas3.json': 'sell-apps/order-management',
-  'sell_logistics_v1_oas3.json': 'sell-apps/order-management',
-  'sell_marketing_v1_oas3.json': 'sell-apps/marketing-and-promotions',
-  'sell_recommendation_v1_oas3.json': 'sell-apps/marketing-and-promotions',
-  'sell_analytics_v1_oas3.json': 'sell-apps/analytics-and-report',
-  'commerce_translation_v1_beta_oas3.json': 'sell-apps/other-apis',
-  'sell_compliance_v1_oas3.json': 'sell-apps/other-apis',
-  'commerce_identity_v1_oas3.json': 'sell-apps/other-apis',
-  'sell_edelivery_international_shipping_oas3.json': 'sell-apps/other-apis',
-  'commerce_vero_v1_oas3.json': 'sell-apps/other-apis',
-  'buy_browse_v1_oas3.json': 'buy-apps/inventory-discovery',
-  'buy_feed_v1_beta_oas3.json': 'buy-apps/inventory-discovery',
-  'buy_feed_v1_oas3.json': 'buy-apps/inventory-discovery',
-  'buy_deal_v1_oas3.json': 'buy-apps/marketing-and-discounts',
-  'buy_marketing_v1_beta_oas3.json': 'buy-apps/marketing-and-discounts',
-  'commerce_catalog_v1_beta_oas3.json': 'buy-apps/marketplace-metadata',
-  'buy_order_v2_oas3.json': 'buy-apps/checkout-and-bidding',
-  'buy_offer_v1_beta_oas3.json': 'buy-apps/checkout-and-bidding',
-};
-
 interface OpenAPISpec {
   openapi?: string;
   swagger?: string;
@@ -191,45 +155,28 @@ interface SyncReport {
 async function downloadSpecs(): Promise<number> {
   console.log(ui.bold('\n📥 Downloading OpenAPI Specifications\n'));
 
-  const readmePath = join(DOCS_DIR, 'sell-apps/README.md');
-  if (!existsSync(readmePath)) {
-    console.log(ui.warning(`  ⚠ README not found at ${readmePath}`));
-    console.log(ui.dim('    Create docs/sell-apps/README.md with spec URLs'));
-    return 0;
-  }
-
-  const readmeContent = readFileSync(readmePath, 'utf-8');
-  const urlRegex = /(https:\/\/[^\s)]+\.json)/g;
-  const urls = Array.from(readmeContent.matchAll(urlRegex)).map((m) => m[1]);
-
-  if (urls.length === 0) {
-    console.log(ui.warning('  ⚠ No spec URLs found in README'));
-    return 0;
-  }
-
-  console.log(ui.dim(`  Found ${urls.length} spec URLs\n`));
+  console.log(ui.dim(`  Found ${specSources.length} spec URLs\n`));
 
   let downloaded = 0;
   let failed = 0;
-  for (const url of urls) {
+  for (const { api, folder, url } of specSources) {
     const fileName = basename(url);
-    const folderName = SPEC_FOLDER_MAP[fileName] || 'other-apis';
-    const folderPath = join(DOCS_DIR, folderName);
+    const folderPath = join(SPECS_DIR, folder);
     const filePath = join(folderPath, fileName);
 
-    const stopSpinner = showSpinner(`Downloading ${fileName}...`);
+    const stopSpinner = showSpinner(`Downloading ${api} (${fileName})...`);
 
     const downloadedSpec = await Effect.runPromise(
       Effect.either(
         Effect.tryPromise({
           try: async () => {
             mkdirSync(folderPath, { recursive: true });
-            const response = await httpRequest<Buffer>({
+            const specResponse = await httpRequest<Buffer>({
               url,
               responseType: 'arraybuffer',
               timeoutMs: 20_000,
             });
-            writeFileSync(filePath, response.data);
+            writeFileSync(filePath, specResponse.data);
           },
           catch: (error) => error,
         }).pipe(Effect.ensuring(Effect.sync(stopSpinner))),
@@ -237,10 +184,12 @@ async function downloadSpecs(): Promise<number> {
     );
 
     if (Either.isLeft(downloadedSpec)) {
-      console.log(`  ${ui.error('✗')} ${fileName}: ${getErrorMessage(downloadedSpec.left)}`);
+      console.log(
+        `  ${ui.error('✗')} ${api} (${fileName}): ${getErrorMessage(downloadedSpec.left)}`,
+      );
       failed++;
     } else {
-      console.log(`  ${ui.success('✓')} ${fileName}`);
+      console.log(`  ${ui.success('✓')} ${api} (${fileName})`);
       downloaded++;
     }
   }
@@ -293,7 +242,7 @@ function generateTypes(): number {
           continue;
         }
 
-        const relativePath = fullPath.replace(DOCS_DIR + '/', '');
+        const relativePath = fullPath.replace(SPECS_DIR + '/', '');
         const outputDir = join(TYPES_DIR, dirname(relativePath));
 
         mkdirSync(outputDir, { recursive: true });
@@ -352,7 +301,7 @@ function generateTypes(): number {
     }
   }
 
-  processDirectory(DOCS_DIR);
+  processDirectory(SPECS_DIR);
 
   console.log(ui.dim(`\n  Generated: ${generated}, Skipped: ${skipped}`));
   return generated;
@@ -404,7 +353,7 @@ function extractEndpointsFromSpecs(): EndpointInfo[] {
     }
   }
 
-  processDirectory(DOCS_DIR);
+  processDirectory(SPECS_DIR);
   return endpoints;
 }
 
@@ -615,7 +564,9 @@ function analyzeEndpoints(): { total: number; implemented: number; missing: Endp
   const implementedApiMethods = getImplementedApiMethods();
 
   // Normalize all tool names
-  const normalizedTools = new Set(Array.from(implementedTools).map((t) => normalizeForMatching(t)));
+  const normalizedTools = new Set(
+    Array.from(implementedTools).map((toolName) => normalizeForMatching(toolName)),
+  );
 
   // Combine tools and API methods for matching
   const allImplemented = new Set([...normalizedTools, ...implementedApiMethods]);
@@ -758,7 +709,7 @@ ${ui.bold('What this does:')}
     report.specsDownloaded = await downloadSpecs();
   }
 
-  // If the download step ran but fetched nothing (missing manifest or blocked
+  // If the download step ran but fetched nothing (for example, blocked
   // requests), the coverage numbers below describe the cached specs on disk —
   // not eBay's current API. Flag it loudly so a stale run is never mistaken for
   // a clean "100% coverage, 0 missing" result.
@@ -803,9 +754,9 @@ void Effect.runPromise(
       catch: (error) => error,
     }),
   ),
-).then((result) => {
-  if (Either.isLeft(result)) {
-    console.error(ui.error('\n  Sync failed:'), getErrorMessage(result.left));
+).then((syncOutcome) => {
+  if (Either.isLeft(syncOutcome)) {
+    console.error(ui.error('\n  Sync failed:'), getErrorMessage(syncOutcome.left));
     process.exitCode = 1;
   }
 });

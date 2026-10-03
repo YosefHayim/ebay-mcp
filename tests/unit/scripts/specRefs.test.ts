@@ -103,10 +103,10 @@ describe('replaceDanglingSchemaRefs', () => {
       paths: { '/x': { get: { schema: { $ref: '#/components/schemas/Amount' } } } },
     };
 
-    const result = replaceDanglingSchemaRefs(resolvable);
+    const refRepair = replaceDanglingSchemaRefs(resolvable);
 
-    expect(result.danglingRefs).toEqual([]);
-    expect(result.spec).toBe(resolvable);
+    expect(refRepair.danglingRefs).toEqual([]);
+    expect(refRepair.spec).toBe(resolvable);
   });
 
   it('does not mutate the input document', () => {

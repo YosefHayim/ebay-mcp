@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { StoresApi } from '@/api/listing-management/stores.js';
 import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -82,17 +82,17 @@ describe('StoresApi asynchronous category changes', () => {
   it('adds a category with the request body and returns the task from Location', async () => {
     const location = taskLocation('TASK-ADD');
     client.postForResponse.mockResolvedValue(taskAccepted(202, 'TASK-ADD'));
-    const body = {
+    const newCategory = {
       categoryName: 'Vintage Cameras',
       destinationParentCategoryId: '-999',
       listingDestinationCategoryId: '42',
     };
 
-    expect(await Effect.runPromise(stores.addStoreCategory(body))).toEqual({
+    expect(await Effect.runPromise(stores.addStoreCategory(newCategory))).toEqual({
       taskId: 'TASK-ADD',
       location,
     });
-    expect(client.postForResponse).toHaveBeenCalledWith(`${STORE}/categories`, body);
+    expect(client.postForResponse).toHaveBeenCalledWith(`${STORE}/categories`, newCategory);
   });
 
   it('adds a category with only its name', async () => {
@@ -100,8 +100,8 @@ describe('StoresApi asynchronous category changes', () => {
 
     await Effect.runPromise(stores.addStoreCategory({ categoryName: 'Lenses' }));
 
-    const [, body] = client.postForResponse.mock.calls[0];
-    expect(JSON.parse(JSON.stringify(body))).toEqual({ categoryName: 'Lenses' });
+    const [, sentCategory] = client.postForResponse.mock.calls[0];
+    expect(JSON.parse(JSON.stringify(sentCategory))).toEqual({ categoryName: 'Lenses' });
   });
 
   it('renames a category with the ID in the path and the name in the body', async () => {
@@ -148,17 +148,20 @@ describe('StoresApi asynchronous category changes', () => {
   it('moves a category through the move_category action', async () => {
     const location = taskLocation('TASK-MOVE');
     client.postForResponse.mockResolvedValue(taskAccepted(202, 'TASK-MOVE'));
-    const body = {
+    const categoryMove = {
       categoryId: '123',
       destinationParentCategoryId: '456',
       listingDestinationCategoryId: '789',
     };
 
-    expect(await Effect.runPromise(stores.moveStoreCategory(body))).toEqual({
+    expect(await Effect.runPromise(stores.moveStoreCategory(categoryMove))).toEqual({
       taskId: 'TASK-MOVE',
       location,
     });
-    expect(client.postForResponse).toHaveBeenCalledWith(`${STORE}/categories/move_category`, body);
+    expect(client.postForResponse).toHaveBeenCalledWith(
+      `${STORE}/categories/move_category`,
+      categoryMove,
+    );
   });
 });
 

@@ -1,11 +1,10 @@
-import { z } from '@/utils/effectSchema.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import { ReasonForRefund } from '@/types/ebayEnums.js';
 
 /**
  * Fulfillment/Order Management API Schemas
  *
- * This file contains Effect-backed schemas for all Order Management and Fulfillment endpoints.
+ * This file contains Zod schemas for all Order Management and Fulfillment endpoints.
  */
 
 // ============================================================================
@@ -564,93 +563,3 @@ export const fetchEvidenceContentInputSchema = z.object({
 // ============================================================================
 // JSON Schema Conversion Functions
 // ============================================================================
-
-/**
- * Converts Fulfillment API Effect-backed schemas to JSON Schema format for MCP tools.
- *
- * @returns Fulfillment API JSON schemas keyed by endpoint or shared model name.
- * @example
- * ```ts
- * const schemas = getFulfillmentJsonSchemas();
- * ```
- */
-export const getFulfillmentJsonSchemas = () => {
-  return {
-    // Orders
-    getOrdersInput: zodToJsonSchema(getOrdersInputSchema, 'getOrdersInput'),
-    getOrdersOutput: zodToJsonSchema(getOrdersOutputSchema, 'getOrdersOutput'),
-    getOrderInput: zodToJsonSchema(getOrderInputSchema, 'getOrderInput'),
-    getOrderOutput: zodToJsonSchema(getOrderOutputSchema, 'getOrderOutput'),
-    orderDetails: zodToJsonSchema(orderSchema, 'orderDetails'),
-    getCancellationRequestsInput: zodToJsonSchema(
-      getCancellationRequestsInputSchema,
-      'getCancellationRequestsInput',
-    ),
-    getRefundedOrdersInput: zodToJsonSchema(getRefundedOrdersInputSchema, 'getRefundedOrdersInput'),
-
-    // Shipping Fulfillment
-    createShippingFulfillmentInput: zodToJsonSchema(
-      createShippingFulfillmentInputSchema,
-      'createShippingFulfillmentInput',
-    ),
-    createShippingFulfillmentOutput: zodToJsonSchema(
-      createShippingFulfillmentOutputSchema,
-      'createShippingFulfillmentOutput',
-    ),
-    getShippingFulfillmentsInput: zodToJsonSchema(
-      getShippingFulfillmentsInputSchema,
-      'getShippingFulfillmentsInput',
-    ),
-    getShippingFulfillmentsOutput: zodToJsonSchema(
-      getShippingFulfillmentsOutputSchema,
-      'getShippingFulfillmentsOutput',
-    ),
-    getShippingFulfillmentInput: zodToJsonSchema(
-      getShippingFulfillmentInputSchema,
-      'getShippingFulfillmentInput',
-    ),
-    getShippingFulfillmentOutput: zodToJsonSchema(
-      getShippingFulfillmentOutputSchema,
-      'getShippingFulfillmentOutput',
-    ),
-    shippingFulfillmentDetails: zodToJsonSchema(
-      shippingFulfillmentSchema,
-      'shippingFulfillmentDetails',
-    ),
-
-    // Refunds
-    issueRefundInput: zodToJsonSchema(issueRefundInputSchema, 'issueRefundInput'),
-    issueRefundOutput: zodToJsonSchema(issueRefundOutputSchema, 'issueRefundOutput'),
-
-    // Payment Disputes
-    getPaymentDisputeInput: zodToJsonSchema(getPaymentDisputeInputSchema, 'getPaymentDisputeInput'),
-    getActivitiesInput: zodToJsonSchema(getActivitiesInputSchema, 'getActivitiesInput'),
-    getPaymentDisputeSummariesInput: zodToJsonSchema(
-      getPaymentDisputeSummariesInputSchema,
-      'getPaymentDisputeSummariesInput',
-    ),
-    getPaymentDisputeSummariesOutput: zodToJsonSchema(
-      getPaymentDisputeSummariesOutputSchema,
-      'getPaymentDisputeSummariesOutput',
-    ),
-    acceptPaymentDisputeInput: zodToJsonSchema(
-      acceptPaymentDisputeInputSchema,
-      'acceptPaymentDisputeInput',
-    ),
-    contestPaymentDisputeInput: zodToJsonSchema(
-      contestPaymentDisputeInputSchema,
-      'contestPaymentDisputeInput',
-    ),
-    addEvidenceInput: zodToJsonSchema(addEvidenceInputSchema, 'addEvidenceInput'),
-    updateEvidenceInput: zodToJsonSchema(updateEvidenceInputSchema, 'updateEvidenceInput'),
-    uploadEvidenceFileInput: zodToJsonSchema(
-      uploadEvidenceFileInputSchema,
-      'uploadEvidenceFileInput',
-    ),
-    fetchEvidenceContentInput: zodToJsonSchema(
-      fetchEvidenceContentInputSchema,
-      'fetchEvidenceContentInput',
-    ),
-    paymentDisputeDetails: zodToJsonSchema(paymentDisputeSchema, 'paymentDisputeDetails'),
-  };
-};

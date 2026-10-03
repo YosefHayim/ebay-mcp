@@ -4,7 +4,7 @@ import { Effect } from 'effect';
 import nock from 'nock';
 import process from 'node:process';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 
@@ -121,12 +121,12 @@ describe('browse tools registered MCP contract', () => {
   ])('sends the eBay filter grammar for %j', async ({ args, expected }) => {
     const captured = captureSearchQuery();
 
-    const result = await client.callTool({
+    const searchResult = await client.callTool({
       name: 'ebay_find_active_items',
       arguments: { query: 'camera', ...args },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(searchResult.isError).not.toBe(true);
     expect(captured.current.filter).toBe(expected);
     expect(nock.isDone()).toBe(true);
   });
@@ -161,12 +161,12 @@ describe('browse tools registered MCP contract', () => {
   ])('rejects a $label before any eBay request', async ({ args }) => {
     const endpoint = nock(HOST).get(SEARCH).query(true).reply(200, { itemSummaries: [] });
 
-    const result = await client.callTool({
+    const rejectedSearch = await client.callTool({
       name: 'ebay_find_active_items',
       arguments: { query: 'camera', ...args },
     });
 
-    expect(result.isError).toBe(true);
+    expect(rejectedSearch.isError).toBe(true);
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -189,15 +189,18 @@ describe('browse tools registered MCP contract', () => {
         ],
       });
 
-    const result = await client.callTool({
+    const auctionSearch = await client.callTool({
       name: 'ebay_find_active_items',
       arguments: { query: 'camera', limit: 200, offset: 0 },
     });
-    const text = result.content.find((item) => item.type === 'text');
-    const payload = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<string, unknown>;
+    const text = auctionSearch.content.find((block) => block.type === 'text');
+    const searchPage = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<
+      string,
+      unknown
+    >;
 
-    expect(payload).toMatchObject({ total: 12, offset: 40, limit: 10 });
-    expect((payload.items as Record<string, unknown>[])[0]).toMatchObject({
+    expect(searchPage).toMatchObject({ total: 12, offset: 40, limit: 10 });
+    expect((searchPage.items as Record<string, unknown>[])[0]).toMatchObject({
       price: { currency: 'USD', value: '42.50' },
       bidCount: 7,
     });
@@ -224,18 +227,21 @@ describe('browse tools registered MCP contract', () => {
       },
       expected: false,
     },
-  ])('surfaces hasNext=$expected when $label', async ({ body, expected }) => {
-    nock(HOST).get(SEARCH).query(true).reply(200, body);
+  ])('surfaces hasNext=$expected when $label', async ({ body: searchCollection, expected }) => {
+    nock(HOST).get(SEARCH).query(true).reply(200, searchCollection);
 
-    const result = await client.callTool({
+    const pagedSearch = await client.callTool({
       name: 'ebay_find_active_items',
       arguments: { query: 'camera', limit: 1, offset: 0 },
     });
-    const text = result.content.find((item) => item.type === 'text');
-    const payload = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<string, unknown>;
+    const text = pagedSearch.content.find((block) => block.type === 'text');
+    const searchPage = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<
+      string,
+      unknown
+    >;
 
-    expect(result.isError).not.toBe(true);
-    expect(payload.hasNext).toBe(expected);
+    expect(pagedSearch.isError).not.toBe(true);
+    expect(searchPage.hasNext).toBe(expected);
   });
 
   // eBay documents every Browse method as requiring a client-credentials
@@ -248,12 +254,12 @@ describe('browse tools registered MCP contract', () => {
       .query(true)
       .reply(200, { total: 0, itemSummaries: [] });
 
-    const result = await client.callTool({
+    const searchResult = await client.callTool({
       name: 'ebay_find_active_items',
       arguments: { query: 'camera' },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(searchResult.isError).not.toBe(true);
     expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalled();
     expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
     scope.done();
@@ -265,12 +271,12 @@ describe('browse tools registered MCP contract', () => {
       .get('/buy/browse/v1/item/v1%7C110587051479%7C0')
       .reply(200, { itemId: 'v1|110587051479|0', title: 'Camera' });
 
-    const result = await client.callTool({
+    const detailResult = await client.callTool({
       name: 'ebay_get_item_details',
       arguments: { itemId: 'v1|110587051479|0' },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(detailResult.isError).not.toBe(true);
     expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalled();
     expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
     scope.done();
@@ -281,12 +287,12 @@ describe('browse tools registered MCP contract', () => {
       .get('/buy/browse/v1/item/v1%7C110587051479%7C0')
       .reply(200, { itemId: 'v1|110587051479|0', title: 'Camera' });
 
-    const result = await client.callTool({
+    const detailResult = await client.callTool({
       name: 'ebay_get_item_details',
       arguments: { itemId: 'v1|110587051479|0' },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(detailResult.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 });

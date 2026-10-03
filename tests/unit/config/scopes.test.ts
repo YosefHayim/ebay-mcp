@@ -83,10 +83,10 @@ describe('Scope Validation', () => {
         'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
       ];
 
-      const result = validateScopes(commonScopes, 'production');
+      const scopeValidation = validateScopes(commonScopes, 'production');
 
-      expect(result.warnings).toHaveLength(0);
-      expect(result.validScopes).toEqual(commonScopes);
+      expect(scopeValidation.warnings).toHaveLength(0);
+      expect(scopeValidation.validScopes).toEqual(commonScopes);
     });
 
     it('validate all common scopes successfully for sandbox', () => {
@@ -95,10 +95,10 @@ describe('Scope Validation', () => {
         'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
       ];
 
-      const result = validateScopes(commonScopes, 'sandbox');
+      const scopeValidation = validateScopes(commonScopes, 'sandbox');
 
-      expect(result.warnings).toHaveLength(0);
-      expect(result.validScopes).toEqual(commonScopes);
+      expect(scopeValidation.warnings).toHaveLength(0);
+      expect(scopeValidation.validScopes).toEqual(commonScopes);
     });
 
     it('warn when requesting sandbox-only scope in production', () => {
@@ -107,12 +107,12 @@ describe('Scope Validation', () => {
         'https://api.ebay.com/oauth/api_scope/sell.item',
       ];
 
-      const result = validateScopes(sandboxOnlyScopes, 'production');
+      const scopeValidation = validateScopes(sandboxOnlyScopes, 'production');
 
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0]).toContain('only available in sandbox environment');
+      expect(scopeValidation.warnings.length).toBeGreaterThan(0);
+      expect(scopeValidation.warnings[0]).toContain('only available in sandbox environment');
       // Still includes the scopes (let eBay reject them)
-      expect(result.validScopes).toEqual(sandboxOnlyScopes);
+      expect(scopeValidation.validScopes).toEqual(sandboxOnlyScopes);
     });
 
     it('not warn for common scopes that exist in both environments', () => {
@@ -121,21 +121,21 @@ describe('Scope Validation', () => {
         'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
       ];
 
-      const result = validateScopes(commonScopes, 'sandbox');
+      const scopeValidation = validateScopes(commonScopes, 'sandbox');
 
-      expect(result.warnings.length).toBe(0);
-      expect(result.validScopes).toEqual(commonScopes);
+      expect(scopeValidation.warnings.length).toBe(0);
+      expect(scopeValidation.validScopes).toEqual(commonScopes);
     });
 
     it('warn for unrecognized scopes', () => {
       const unknownScopes = ['https://api.ebay.com/oauth/api_scope/unknown.scope'];
 
-      const result = validateScopes(unknownScopes, 'production');
+      const scopeValidation = validateScopes(unknownScopes, 'production');
 
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0]).toContain('not recognized');
+      expect(scopeValidation.warnings.length).toBeGreaterThan(0);
+      expect(scopeValidation.warnings[0]).toContain('not recognized');
       // Still includes the scope
-      expect(result.validScopes).toEqual(unknownScopes);
+      expect(scopeValidation.validScopes).toEqual(unknownScopes);
     });
 
     it('handle mix of valid and invalid scopes', () => {
@@ -145,27 +145,27 @@ describe('Scope Validation', () => {
         'https://api.ebay.com/oauth/api_scope/unknown.scope', // Unknown
       ];
 
-      const result = validateScopes(mixedScopes, 'production');
+      const scopeValidation = validateScopes(mixedScopes, 'production');
 
-      expect(result.warnings.length).toBe(2); // Two invalid scopes
-      expect(result.validScopes).toEqual(mixedScopes); // All included
+      expect(scopeValidation.warnings.length).toBe(2); // Two invalid scopes
+      expect(scopeValidation.validScopes).toEqual(mixedScopes); // All included
     });
 
     it('return no warnings for empty scope list', () => {
-      const result = validateScopes([], 'production');
+      const scopeValidation = validateScopes([], 'production');
 
-      expect(result.warnings).toHaveLength(0);
-      expect(result.validScopes).toEqual([]);
+      expect(scopeValidation.warnings).toHaveLength(0);
+      expect(scopeValidation.validScopes).toEqual([]);
     });
 
     it('provide detailed warning messages', () => {
       const sandboxOnlyScope = ['https://api.ebay.com/oauth/api_scope/sell.item.draft'];
 
-      const result = validateScopes(sandboxOnlyScope, 'production');
+      const scopeValidation = validateScopes(sandboxOnlyScope, 'production');
 
-      expect(result.warnings[0]).toMatch(/sell\.item\.draft/);
-      expect(result.warnings[0]).toMatch(/only available in sandbox environment/);
-      expect(result.warnings[0]).toMatch(/may be rejected/);
+      expect(scopeValidation.warnings[0]).toMatch(/sell\.item\.draft/);
+      expect(scopeValidation.warnings[0]).toMatch(/only available in sandbox environment/);
+      expect(scopeValidation.warnings[0]).toMatch(/may be rejected/);
     });
   });
 
@@ -224,8 +224,8 @@ describe('Scope Validation', () => {
       const parsed = new URL(url);
 
       const scope = parsed.searchParams.get('scope')!;
-      customScopes.forEach((s) => {
-        expect(scope).toContain(s);
+      customScopes.forEach((customScope) => {
+        expect(scope).toContain(customScope);
       });
     });
 

@@ -32,7 +32,7 @@ export interface SecurityCheckResult {
  * @returns A security check result for the active Node.js process.
  * @example
  * ```ts
- * const result = checkNodeVersion();
+ * const nodeVersionCheck = checkNodeVersion();
  * ```
  */
 export const checkNodeVersion = (): SecurityCheckResult => {
@@ -64,7 +64,7 @@ export const checkNodeVersion = (): SecurityCheckResult => {
  * @returns A security check result for credential file ignore coverage.
  * @example
  * ```ts
- * const result = checkGitignore(process.cwd());
+ * const gitignoreCheck = checkGitignore(process.cwd());
  * ```
  */
 export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
@@ -110,7 +110,7 @@ export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
  * @returns A security check result for the eBay API reachability probe.
  * @example
  * ```ts
- * const result = await checkNetworkConnectivity();
+ * const connectivityCheck = await checkNetworkConnectivity();
  * ```
  */
 export const checkNetworkConnectivity = async (): Promise<SecurityCheckResult> => {
@@ -145,9 +145,9 @@ export const checkNetworkConnectivity = async (): Promise<SecurityCheckResult> =
     };
   }
 
-  const response = reached.right;
+  const healthResponse = reached.right;
 
-  if (response.ok || response.status === 404) {
+  if (healthResponse.ok || healthResponse.status === 404) {
     // 404 is fine, means we can reach eBay servers
     return {
       check: 'Network Connectivity',
@@ -160,7 +160,7 @@ export const checkNetworkConnectivity = async (): Promise<SecurityCheckResult> =
   return {
     check: 'Network Connectivity',
     passed: false,
-    message: `Unexpected response from eBay API: ${response.status}`,
+    message: `Unexpected response from eBay API: ${healthResponse.status}`,
     severity: 'warning',
     fix: 'Check your internet connection and firewall settings',
   };
@@ -173,7 +173,7 @@ export const checkNetworkConnectivity = async (): Promise<SecurityCheckResult> =
  * @returns A security check result for build output presence.
  * @example
  * ```ts
- * const result = checkProjectBuild(process.cwd());
+ * const buildCheck = checkProjectBuild(process.cwd());
  * ```
  */
 export const checkProjectBuild = (projectRoot: string): SecurityCheckResult => {
@@ -204,7 +204,7 @@ export const checkProjectBuild = (projectRoot: string): SecurityCheckResult => {
  * @returns A security check result for dependency installation state.
  * @example
  * ```ts
- * const result = checkDependencies(process.cwd());
+ * const dependencyCheck = checkDependencies(process.cwd());
  * ```
  */
 export const checkDependencies = (projectRoot: string): SecurityCheckResult => {
@@ -235,7 +235,7 @@ export const checkDependencies = (projectRoot: string): SecurityCheckResult => {
  * @returns A security check result for credential tracking risk.
  * @example
  * ```ts
- * const result = checkGitTracking(process.cwd());
+ * const gitTrackingCheck = checkGitTracking(process.cwd());
  * ```
  */
 export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
@@ -339,26 +339,30 @@ export const runSecurityChecks = async (projectRoot: string): Promise<SecurityCh
 export const displaySecurityResults = (results: SecurityCheckResult[]): void => {
   writeCliLine(chalk.bold.cyan('\n🔒 Security & Environment Checks\n'));
 
-  for (const result of results) {
-    const icon = result.passed ? chalk.green('✓') : chalk.red('✗');
+  for (const checkResult of results) {
+    const icon = checkResult.passed ? chalk.green('✓') : chalk.red('✗');
     let severity = chalk.gray('[INFO]');
-    if (result.severity === 'critical') {
+    if (checkResult.severity === 'critical') {
       severity = chalk.red('[CRITICAL]');
-    } else if (result.severity === 'warning') {
+    } else if (checkResult.severity === 'warning') {
       severity = chalk.yellow('[WARNING]');
     }
 
-    writeCliLine(`${icon} ${chalk.bold(result.check)}: ${severity}`);
-    writeCliLine(`  ${chalk.gray(result.message)}`);
+    writeCliLine(`${icon} ${chalk.bold(checkResult.check)}: ${severity}`);
+    writeCliLine(`  ${chalk.gray(checkResult.message)}`);
 
-    if (result.fix) {
-      writeCliLine(`  ${chalk.yellow('→ Fix:')} ${result.fix}`);
+    if (checkResult.fix) {
+      writeCliLine(`  ${chalk.yellow('→ Fix:')} ${checkResult.fix}`);
     }
     writeCliLine('');
   }
 
-  const critical = results.filter((r) => !r.passed && r.severity === 'critical');
-  const warnings = results.filter((r) => !r.passed && r.severity === 'warning');
+  const critical = results.filter(
+    (checkResult) => !checkResult.passed && checkResult.severity === 'critical',
+  );
+  const warnings = results.filter(
+    (checkResult) => !checkResult.passed && checkResult.severity === 'warning',
+  );
 
   if (critical.length > 0) {
     writeCliLine(
@@ -386,4 +390,4 @@ export const displaySecurityResults = (results: SecurityCheckResult[]): void => 
  * ```
  */
 export const hasCriticalFailures = (results: SecurityCheckResult[]): boolean =>
-  results.some((r) => !r.passed && r.severity === 'critical');
+  results.some((check) => !check.passed && check.severity === 'critical');

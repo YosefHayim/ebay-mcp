@@ -31,23 +31,11 @@
   <a href="https://mseep.ai/app/yosefhayim-ebay-api-mcp-server"><img src="https://mseep.net/pr/yosefhayim-ebay-api-mcp-server-badge.png" alt="MseeP.ai Security Assessment Badge" height="40" /></a>
 </p>
 
-<p align="center">
-  <strong>English</strong> ·
-  <a href="README.zh-CN.md">简体中文</a> ·
-  <a href="README.es.md">Español</a> ·
-  <a href="README.pt-BR.md">Português (BR)</a> ·
-  <a href="README.ja.md">日本語</a> ·
-  <a href="README.ko.md">한국어</a> ·
-  <a href="README.fr.md">Français</a> ·
-  <a href="README.de.md">Deutsch</a> ·
-  <a href="README.ru.md">Русский</a>
-</p>
-
 ---
 
 **eBay MCP** is a local [Model Context Protocol](https://modelcontextprotocol.io) server that connects AI assistants — [Claude Desktop](https://claude.ai/download), [Claude Code](https://code.claude.com/docs/en/overview), [Cursor](https://cursor.com/), [Cline](https://cline.bot/), [Windsurf](https://windsurf.com/), [Zed](https://zed.dev/), [Continue.dev](https://docs.continue.dev/), [Roo Code](https://roocode.com/), and [Amazon Q Developer](https://aws.amazon.com/q/developer/) — directly to **[eBay's Sell APIs](https://developer.ebay.com/api-docs/sell/static/overview.html)**. It exposes **384 tools** spanning **100% of eBay's Sell API surface** (360 unique endpoints) for inventory management, order fulfillment, promoted-listings marketing, analytics, and developer tooling. Everything runs on your machine over STDIO or local HTTP — **no cloud relay**, and your eBay credentials never leave your computer.
 
-> **Disclaimer:** Unofficial, third-party project — **not affiliated with or endorsed by eBay Inc.** Provided "as is" without warranty. You are responsible for complying with [eBay's API License Agreement](https://developer.ebay.com/join/api-license-agreement) and [data-handling requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html), keeping your credentials secure, and staying within rate limits. Test in sandbox before production. See [LICENSE](LICENSE), [SECURITY.md](SECURITY.md), and [EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md).
+> **Disclaimer:** Unofficial, third-party project — **not affiliated with or endorsed by eBay Inc.** Provided "as is" without warranty. You are responsible for complying with [eBay's API License Agreement](https://developer.ebay.com/join/api-license-agreement) and [data-handling requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html), keeping your credentials secure, and staying within rate limits. Test in sandbox before production. See [LICENSE](LICENSE).
 
 ## Table of contents
 
@@ -75,7 +63,7 @@
 - **9 AI clients, auto-configured** — Claude Desktop, Cursor, Zed, Cline, Continue.dev, Windsurf, Roo Code, Claude Code CLI, and Amazon Q Developer.
 - **OAuth 2.0 built in** — full user-token management with automatic refresh, and smart fallback from user tokens (10k–50k req/day) to client credentials (1k req/day).
 - **Resilient by default** — automatic retry with exponential backoff on `429` rate limits, and consistent, loud error surfacing.
-- **Type-safe** — [TypeScript](https://www.typescriptlang.org/) end to end, [Effect](https://effect.website/docs)-backed tool input validation, and [OpenAPI](https://www.openapis.org/)-generated types.
+- **Type-safe** — [TypeScript](https://www.typescriptlang.org/) end to end, [Zod](https://zod.dev/)-validated tool inputs, and [OpenAPI](https://www.openapis.org/)-generated types.
 - **Local-first & private** — runs over STDIO or local HTTP; your credentials and data never leave your machine.
 - **Sandbox and production** — switch environments with a single variable.
 - **One-command setup** — `npm run setup` configures credentials, OAuth, and your MCP client, with a browser auto-opened for the OAuth flow.
@@ -276,7 +264,7 @@ Both talk to the same eBay endpoints — the difference is everything you'd othe
 | Interface | Natural language through your AI assistant | Hand-written HTTP requests and JSON parsing |
 | OAuth & token refresh | Built in, with automatic refresh | You implement and maintain it |
 | Rate-limit handling | Automatic retry with exponential backoff | Manual `429` handling and backoff |
-| Input validation | Effect-backed schemas + TypeScript types on every tool | None — you validate your own payloads |
+| Input validation | Zod schemas + TypeScript types on every tool | None — you validate your own payloads |
 | Setup | One wizard (`npm run setup`) | Per-call auth, headers, and marketplace wiring |
 | AI client support | 9 clients auto-configured | Not applicable |
 | API coverage | 384 tools across 100% of the Sell APIs, ready to call | Build each request from the docs |
@@ -393,7 +381,7 @@ https://github.com/user-attachments/assets/0173c8df-221c-4943-a4ce-cd20bce79f4b
 <details open>
 <summary><strong>Environment variables, tool exposure, auth &amp; client compatibility</strong></summary>
 
-> 📖 Full reference — every environment variable, OAuth step, and scope — is in the [Configuration Guide](docs/auth/CONFIGURATION.md). `npm run setup` writes the `.env` for you; the variables below are for reference.
+> `npm run setup` writes the `.env` for you; the variables below are for reference.
 
 ```bash
 EBAY_CLIENT_ID=your_client_id
@@ -435,7 +423,7 @@ The family list is literal — you get exactly what you name. ChatGPT connectors
 | **Client credentials** (default) | 1,000 req/day   | Development, testing    | Automatic with Client ID + Secret |
 | **User token** (recommended)     | 10k–50k req/day | Production, high volume | OAuth via `npm run setup`         |
 
-User-token limits vary by account tier (Individual 10k · Commercial 25k · Enterprise 50k+). On a `429`, the server retries with exponential backoff and surfaces the error. See the [Configuration Guide](docs/auth/CONFIGURATION.md) and [OAuth Quick Reference](docs/auth/OAUTH_QUICK_REFERENCE.md) for details, and monitor usage in the [Developer Portal](https://developer.ebay.com/my/api_usage).
+User-token limits vary by account tier (Individual 10k · Commercial 25k · Enterprise 50k+). On a `429`, the server retries with exponential backoff and surfaces the error. Monitor usage in the [Developer Portal](https://developer.ebay.com/my/api_usage).
 
 ### MCP client compatibility
 
@@ -511,7 +499,7 @@ On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read t
 | **Chart** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
 | **Stat** | `ebay_get_rate_limits`, `ebay_get_user_rate_limits` |
 
-The views build into self-contained HTML with `npm run build` (or `npm run build:ui`); they ship in the published package and load with no network access of their own.
+The views build into self-contained HTML with `pnpm build` (or `pnpm build:mcp-apps`); they ship in the published package and load with no network access of their own.
 
 </details>
 
@@ -540,8 +528,8 @@ Common tasks, phrased as you'd ask your AI assistant:
 
 ## Logging & troubleshooting
 
-- **Logging** — Winston-based, written to stderr (MCP-safe) with optional file output. See [docs/logging.md](docs/logging.md).
-- **Troubleshooting** — server not appearing, auth errors, rate limits, empty results. Start with `npm run diagnose`, then see [docs/troubleshooting.md](docs/troubleshooting.md).
+- **Logging** — Winston-based, written to stderr (MCP-safe) with optional file output.
+- **Troubleshooting** — server not appearing, auth errors, rate limits, empty results. Start with `npm run diagnose`.
 
 ## FAQ
 
@@ -576,7 +564,7 @@ Yes. It works with Claude Desktop and Claude Code out of the box, with Cursor an
 <details>
 <summary><strong>Why don't I see the interactive tables and charts?</strong></summary>
 
-Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that announce the capability (e.g. Claude); other clients get the same data as plain JSON. Also confirm you have not set `EBAY_MCP_UI=off` and that the views are built (`npm run build` runs `build:ui`).
+Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that announce the capability (e.g. Claude); other clients get the same data as plain JSON. Also confirm you have not set `EBAY_MCP_UI=off` and that the views are built (`pnpm build` runs `build:mcp-apps`).
 
 </details>
 
@@ -625,14 +613,14 @@ Yes. Switch with the `EBAY_ENVIRONMENT` variable (`sandbox` or `production`).
 <details>
 <summary><strong>Are my credentials and data secure?</strong></summary>
 
-Credentials are stored locally in your `.env` file and used only to call eBay directly. See [SECURITY.md](SECURITY.md) and [EBAY_COMPLIANCE.md](EBAY_COMPLIANCE.md).
+Credentials are stored locally in your `.env` file and used only to call eBay directly.
 
 </details>
 
 <details>
 <summary><strong>How is this different from calling the eBay API directly?</strong></summary>
 
-You interact in natural language through your AI assistant. OAuth token management, automatic retries with backoff, and type-safe Effect-backed validation are built in. See the [comparison table](#ebay-mcp-vs-the-raw-ebay-api) above.
+You interact in natural language through your AI assistant. OAuth token management, automatic retries with backoff, and type-safe Zod validation are built in. See the [comparison table](#ebay-mcp-vs-the-raw-ebay-api) above.
 
 </details>
 
@@ -667,7 +655,7 @@ Complete the OAuth flow with `npm run setup` to authenticate with a user token (
 <details>
 <summary><strong>What is it built with?</strong></summary>
 
-TypeScript and Node.js (ESM), using the official MCP SDK, Effect-backed validation with a Zod-compatible MCP adapter, and OpenAPI-generated types.
+TypeScript and Node.js (ESM), using the official MCP SDK, Zod schemas for tool inputs, Effect for typed async errors, and OpenAPI-generated types.
 
 </details>
 
@@ -687,28 +675,28 @@ No. "Runs locally" means the server process runs on your machine — it still ne
 
 ## Contributing
 
-Contributions welcome. Fork → branch → add tests → `npm run check && npm test` → commit with [Conventional Commits](https://www.conventionalcommits.org/) → open a PR.
+Contributions welcome. Fork → branch → add tests → run the checks below → commit with [Conventional Commits](https://www.conventionalcommits.org/) → open a PR.
 
-- Working on the codebase or with a coding agent? Start with **[AGENTS.md](AGENTS.md)** — build/test commands, module map, and the add-an-endpoint workflow.
-- Code style lives in **[CODE-STYLE.md](CODE-STYLE.md)**. Architecture and decision context live in **[ARCHITECTURE.md](ARCHITECTURE.md)** and [ADRs](docs/adr/current/).
-- Full contribution guidelines: **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+```bash
+pnpm typecheck && pnpm typecheck:mcp-apps   # TypeScript (server + MCP Apps views)
+pnpm check:ci                              # Biome lint + format
+pnpm test && pnpm test:integration         # Vitest unit + integration
+pnpm build                                 # Build to build/
+```
 
 ## Resources
 
 Project docs:
 
-- [Configuration Guide](docs/auth/CONFIGURATION.md) — every environment variable, OAuth step, and eBay scope.
-- [OAuth Quick Reference](docs/auth/OAUTH_QUICK_REFERENCE.md) — scopes, troubleshooting, and examples.
-- [Logging Guide](docs/logging.md) and [Troubleshooting Guide](docs/troubleshooting.md) — operational help after setup.
-- [Architecture](ARCHITECTURE.md), [CODE-STYLE.md](CODE-STYLE.md), [AGENTS.md](AGENTS.md), and [llms.txt](llms.txt) — contributor and agent entry points.
-- [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and the [Issue Tracker](https://github.com/YosefHayim/ebay-mcp/issues).
+- [llms.txt](llms.txt) — a compact project summary for AI agents.
+- [Releases](https://github.com/YosefHayim/ebay-mcp/releases) and the [Issue Tracker](https://github.com/YosefHayim/ebay-mcp/issues).
 
 Official specs and tooling:
 
 - [eBay Developer Portal](https://developer.ebay.com/), [Sell API docs](https://developer.ebay.com/api-docs/sell/static/overview.html), [API License Agreement](https://developer.ebay.com/join/api-license-agreement), [Data Handling Requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html), and [API Status](https://developer.ebay.com/support/api-status).
 - [Model Context Protocol](https://modelcontextprotocol.io/) and the [MCP Apps SDK](https://github.com/modelcontextprotocol/ext-apps).
-- [Node.js](https://nodejs.org/en), [npm package](https://www.npmjs.com/package/ebay-mcp), [TypeScript](https://www.typescriptlang.org/), [Effect](https://effect.website/docs), [Biome](https://biomejs.dev/), [Vitest](https://vitest.dev/), and [GitHub Actions](https://docs.github.com/en/actions).
-- [AGENTS.md convention](https://agents.md/), [Claude Code](https://code.claude.com/docs/en/overview), [GitHub Copilot repository instructions](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions), and [llms.txt](https://llmstxt.org/).
+- [Node.js](https://nodejs.org/en), [npm package](https://www.npmjs.com/package/ebay-mcp), [TypeScript](https://www.typescriptlang.org/), [Zod](https://zod.dev/), [Effect](https://effect.website/docs), [Biome](https://biomejs.dev/), [Vitest](https://vitest.dev/), and [GitHub Actions](https://docs.github.com/en/actions).
+- [Claude Code](https://code.claude.com/docs/en/overview) and [llms.txt](https://llmstxt.org/).
 
 ## License
 

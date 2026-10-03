@@ -37,21 +37,21 @@ const mergeManagedBlock = (existing: string, layer: SkillLayer, inner: string): 
  *   always preserved (never `skip-foreign`).
  *
  * @param target Resolved destination.
- * @param payload Rendered content — a full file for owned targets, inner block
+ * @param renderedContent Rendered content — a full file for owned targets, inner block
  *   content for managed targets.
  * @returns The planned action and the exact bytes that would be written.
  *
  * @example
  * ```ts
- * const plan = planWrite(target, payload);
+ * const plan = planWrite(target, renderedContent);
  * ```
  */
-export const planWrite = (target: SkillTarget, payload: string): WritePlan => {
+export const planWrite = (target: SkillTarget, renderedContent: string): WritePlan => {
   const exists = existsSync(target.path);
   const previousContents = exists ? readFileSync(target.path, 'utf-8') : undefined;
 
   if (target.kind === 'managed-block') {
-    const nextContents = mergeManagedBlock(previousContents ?? '', target.layer, payload);
+    const nextContents = mergeManagedBlock(previousContents ?? '', target.layer, renderedContent);
     let action: WritePlan['action'] = 'create';
     if (exists) {
       action = nextContents === previousContents ? 'unchanged' : 'update';
@@ -61,13 +61,13 @@ export const planWrite = (target: SkillTarget, payload: string): WritePlan => {
 
   // owned-file
   if (!exists) {
-    return { target, action: 'create', nextContents: payload };
+    return { target, action: 'create', nextContents: renderedContent };
   }
   if (!isOwnedByUs(previousContents ?? '', target.layer)) {
-    return { target, action: 'skip-foreign', nextContents: payload, previousContents };
+    return { target, action: 'skip-foreign', nextContents: renderedContent, previousContents };
   }
-  const action = previousContents === payload ? 'unchanged' : 'update';
-  return { target, action, nextContents: payload, previousContents };
+  const action = previousContents === renderedContent ? 'unchanged' : 'update';
+  return { target, action, nextContents: renderedContent, previousContents };
 };
 
 /** Outcome of applying a {@link WritePlan}. */
@@ -91,7 +91,7 @@ export interface ApplyResult {
  *
  * @example
  * ```ts
- * const result = applyWrite(plan, { dryRun: true });
+ * const writeOutcome = applyWrite(plan, { dryRun: true });
  * ```
  */
 export const applyWrite = (

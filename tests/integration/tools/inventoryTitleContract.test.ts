@@ -4,7 +4,7 @@ import { Effect } from 'effect';
 import nock from 'nock';
 import process from 'node:process';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 
@@ -86,12 +86,12 @@ describe('inventory title registered MCP validation', () => {
       .put('/sell/inventory/v1/inventory_item/TITLE-80', { product: { title } })
       .reply(204);
 
-    const result = await client.callTool({
+    const maxTitleWrite = await client.callTool({
       name: 'ebay_create_or_replace_inventory_item',
       arguments: { sku: 'TITLE-80', body: { product: { title } } },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(maxTitleWrite.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 
@@ -100,12 +100,12 @@ describe('inventory title registered MCP validation', () => {
       .put('/sell/inventory/v1/inventory_item/TITLE-81')
       .reply(204);
 
-    const result = await client.callTool({
+    const overlongTitleWrite = await client.callTool({
       name: 'ebay_create_or_replace_inventory_item',
       arguments: { sku: 'TITLE-81', body: { product: { title: 'x'.repeat(81) } } },
     });
 
-    expect(result.isError).toBe(true);
+    expect(overlongTitleWrite.isError).toBe(true);
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -114,12 +114,12 @@ describe('inventory title registered MCP validation', () => {
       .put('/sell/inventory/v1/inventory_item/NO-TITLE', { condition: 'NEW' })
       .reply(204);
 
-    const result = await client.callTool({
+    const untitledDraftWrite = await client.callTool({
       name: 'ebay_create_or_replace_inventory_item',
       arguments: { sku: 'NO-TITLE', body: { condition: 'NEW' } },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(untitledDraftWrite.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 });

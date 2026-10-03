@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { FinancesApi } from '@/api/account-management/finances.js';
 import type { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
 import { Effect } from 'effect';
@@ -35,10 +35,10 @@ describe('FinancesApi apiz collections', () => {
     ['getPayouts', '/payout', () => finances.getPayouts(page)],
     ['getTransactions', '/transaction', () => finances.getTransactions(page)],
   ])('%s sends filter, limit, offset and sort to the apiz host', async (_, path, run) => {
-    const response = { total: 1 };
-    client.get.mockResolvedValue(response);
+    const financesPage = { total: 1 };
+    client.get.mockResolvedValue(financesPage);
 
-    expect(await Effect.runPromise(run())).toBe(response);
+    expect(await Effect.runPromise(run())).toBe(financesPage);
     expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, page, { absolute: true });
   });
 
@@ -131,14 +131,14 @@ describe('FinancesApi hosts', () => {
   });
 
   it('calls getBillingActivities on the default api host with its query', async () => {
-    const response = { billingActivities: [] };
-    client.get.mockResolvedValue(response);
+    const billingActivities = { billingActivities: [] };
+    client.get.mockResolvedValue(billingActivities);
 
     expect(
       await Effect.runPromise(
         finances.getBillingActivities({ filter: 'orderId:{12-34}', limit: 10, offset: 0 }),
       ),
-    ).toBe(response);
+    ).toBe(billingActivities);
     expect(client.get).toHaveBeenCalledWith('/sell/finances/v1/billing_activity', {
       filter: 'orderId:{12-34}',
       limit: 10,

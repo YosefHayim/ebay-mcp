@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 const nonempty = z.string().min(1).regex(/\S/, 'Must contain a non-whitespace character');
 const storeCategoryId = nonempty.describe(

@@ -15,7 +15,7 @@ import {
 describe('Scope Utils', () => {
   describe('validateScopesDetailed', () => {
     it('validate production scopes', () => {
-      const result = validateScopesDetailed(
+      const scopeValidation = validateScopesDetailed(
         [
           'https://api.ebay.com/oauth/api_scope/sell.inventory',
           'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
@@ -23,13 +23,13 @@ describe('Scope Utils', () => {
         'production',
       );
 
-      expect(result.isValid).toBe(true);
-      expect(result.validScopes).toHaveLength(2);
-      expect(result.invalidScopes).toHaveLength(0);
+      expect(scopeValidation.isValid).toBe(true);
+      expect(scopeValidation.validScopes).toHaveLength(2);
+      expect(scopeValidation.invalidScopes).toHaveLength(0);
     });
 
     it('detect invalid scopes', () => {
-      const result = validateScopesDetailed(
+      const scopeValidation = validateScopesDetailed(
         [
           'https://api.ebay.com/oauth/api_scope/sell.inventory',
           'https://api.ebay.com/oauth/api_scope/invalid.scope',
@@ -37,13 +37,15 @@ describe('Scope Utils', () => {
         'production',
       );
 
-      expect(result.isValid).toBe(false);
-      expect(result.validScopes).toHaveLength(1);
-      expect(result.invalidScopes).toContain('https://api.ebay.com/oauth/api_scope/invalid.scope');
+      expect(scopeValidation.isValid).toBe(false);
+      expect(scopeValidation.validScopes).toHaveLength(1);
+      expect(scopeValidation.invalidScopes).toContain(
+        'https://api.ebay.com/oauth/api_scope/invalid.scope',
+      );
     });
 
     it('validate sandbox scopes', () => {
-      const result = validateScopesDetailed(
+      const scopeValidation = validateScopesDetailed(
         [
           'https://api.ebay.com/oauth/api_scope/sell.inventory',
           'https://api.ebay.com/oauth/api_scope/buy.order.readonly',
@@ -51,7 +53,9 @@ describe('Scope Utils', () => {
         'sandbox',
       );
 
-      expect(result.validScopes).toContain('https://api.ebay.com/oauth/api_scope/sell.inventory');
+      expect(scopeValidation.validScopes).toContain(
+        'https://api.ebay.com/oauth/api_scope/sell.inventory',
+      );
     });
   });
 
@@ -110,38 +114,41 @@ describe('Scope Utils', () => {
         'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
       ];
 
-      const result = hasRequiredScopes(tokenScopes, [
+      const hasScopes = hasRequiredScopes(tokenScopes, [
         'https://api.ebay.com/oauth/api_scope/sell.inventory',
       ]);
 
-      expect(result).toBe(true);
+      expect(hasScopes).toBe(true);
     });
 
     it('return true when token has one of multiple required scopes', () => {
       const tokenScopes = ['https://api.ebay.com/oauth/api_scope/sell.inventory.readonly'];
 
-      const result = hasRequiredScopes(tokenScopes, [
+      const hasScopes = hasRequiredScopes(tokenScopes, [
         'https://api.ebay.com/oauth/api_scope/sell.inventory.readonly',
         'https://api.ebay.com/oauth/api_scope/sell.inventory',
       ]);
 
-      expect(result).toBe(true);
+      expect(hasScopes).toBe(true);
     });
 
     it('return false when token lacks required scopes', () => {
       const tokenScopes = ['https://api.ebay.com/oauth/api_scope/sell.inventory'];
 
-      const result = hasRequiredScopes(tokenScopes, [
+      const hasScopes = hasRequiredScopes(tokenScopes, [
         'https://api.ebay.com/oauth/api_scope/sell.fulfillment',
       ]);
 
-      expect(result).toBe(false);
+      expect(hasScopes).toBe(false);
     });
 
     it('handle empty token scopes', () => {
-      const result = hasRequiredScopes([], ['https://api.ebay.com/oauth/api_scope/sell.inventory']);
+      const hasScopes = hasRequiredScopes(
+        [],
+        ['https://api.ebay.com/oauth/api_scope/sell.inventory'],
+      );
 
-      expect(result).toBe(false);
+      expect(hasScopes).toBe(false);
     });
   });
 

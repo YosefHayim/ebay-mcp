@@ -1,20 +1,15 @@
 import { config } from 'dotenv';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { CREDENTIAL_ENV_PATH } from '@/config/credentialFile.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
 import { getToolGatingConfigError } from '@/config/toolFamilies.js';
 import { getMediaAccessConfig } from '@/config/mediaAccess.js';
-import { getErrorMessage } from '@/utils/errors.js';
+import { productionScopes, sandboxScopes } from '@/config/oauthScopes.js';
 import { getVersion } from '@/utils/version.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
-
-// Get the current directory for loading scope files and .env
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Load .env from the package root (two levels up from src/config/), not process.cwd().
 // MCP servers inherit cwd from the host (e.g. Claude Code's project dir), so
@@ -27,14 +22,6 @@ const writeConfigDiagnostic = (message: string): void => {
 
 /** Supported eBay API environment key. */
 export type EbayEnvironment = 'production' | 'sandbox';
-
-/** One row in the checked-in eBay OAuth scope JSON files. */
-interface ScopeDefinition {
-  /** OAuth scope URI. */
-  Scope: string;
-  /** Human-readable scope description from eBay's scope table. */
-  Description: string;
-}
 
 /** Result returned when validating requested OAuth scopes. */
 export interface ScopeValidationResult {
@@ -99,50 +86,6 @@ export const getUiRuntimeConfig = (): UiRuntimeConfig => ({
   enabled: process.env.EBAY_MCP_UI !== 'off',
 });
 
-/** Loads and parses scopes from one checked-in scope JSON file. */
-const loadScopes = (fileName: string, label: string): string[] => {
-  const loaded = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: () => {
-          const scopesPath = join(__dirname, '../../docs/auth', fileName);
-          const scopesData = readFileSync(scopesPath, 'utf-8');
-          const scopes: ScopeDefinition[] = JSON.parse(scopesData);
-
-          // Filter out empty objects and extract unique scope strings
-          const uniqueScopes = new Set<string>();
-          scopes.forEach((item) => {
-            if (item.Scope) {
-              uniqueScopes.add(item.Scope);
-            }
-          });
-          return Array.from(uniqueScopes);
-        },
-        catch: (error) => error,
-      }),
-    ),
-  );
-
-  if (Either.isLeft(loaded)) {
-    const error = loaded.left;
-    writeConfigDiagnostic(`Failed to load ${label} scopes: ${getErrorMessage(error)}`);
-    // Return a minimal set of core scopes as fallback
-    return ['https://api.ebay.com/oauth/api_scope'];
-  }
-
-  return loaded.right;
-};
-
-/**
- * Loads and parses production scopes from the checked-in eBay scope table.
- */
-const getProductionScopes = (): string[] => loadScopes('production_scopes.json', 'production');
-
-/**
- * Loads and parses sandbox scopes from the checked-in eBay scope table.
- */
-const getSandboxScopes = (): string[] => loadScopes('sandbox_scopes.json', 'sandbox');
-
 /**
  * Gets default OAuth scopes for the specified eBay environment.
  *
@@ -154,11 +97,7 @@ const getSandboxScopes = (): string[] => loadScopes('sandbox_scopes.json', 'sand
  * ```
  */
 export const getDefaultScopes = (environment: EbayEnvironment): string[] => {
-  if (environment === 'production') {
-    return getProductionScopes();
-  }
-
-  return getSandboxScopes();
+  return [...(environment === 'production' ? productionScopes : sandboxScopes)];
 };
 
 /** Optional scope requiring keyset eligibility and fresh user consent. */
@@ -241,7 +180,7 @@ export const getRequestedScopes = (
  * @returns Requested scopes plus warnings for environment-only or unknown scopes.
  * @example
  * ```ts
- * const result = validateScopes(scopes, 'sandbox');
+ * const scopeValidation = validateScopes(scopes, 'sandbox');
  * ```
  */
 export const validateScopes = (

@@ -82,7 +82,7 @@ describe('MCP runtime', () => {
       content: Array<{ type: string; text: string }>;
     }>;
 
-    const result = await handler({
+    const createLocationResult = await handler({
       merchantLocationKey: 'WH1',
       body: {
         location: {
@@ -97,11 +97,11 @@ describe('MCP runtime', () => {
       },
     });
 
-    expect(result.content).toHaveLength(1);
-    expect(result.content[0]?.type).toBe('text');
-    expect(typeof result.content[0]?.text).toBe('string');
-    expect(result).not.toMatchObject({ isError: true });
-    expect(JSON.parse(result.content[0]!.text)).toEqual({ status: 'success' });
+    expect(createLocationResult.content).toHaveLength(1);
+    expect(createLocationResult.content[0]?.type).toBe('text');
+    expect(typeof createLocationResult.content[0]?.text).toBe('string');
+    expect(createLocationResult).not.toMatchObject({ isError: true });
+    expect(JSON.parse(createLocationResult.content[0]!.text)).toEqual({ status: 'success' });
   });
 
   it('preserves structured eBay details for a failed registered tool call', async () => {
@@ -141,11 +141,11 @@ describe('MCP runtime', () => {
       content: Array<{ type: string; text: string }>;
       isError?: boolean;
     }>;
-    const result = await handler({ merchantLocationKey: 'WH1', body: {} });
-    const payload = JSON.parse(result.content[0]?.text ?? '{}');
+    const failedCallResult = await handler({ merchantLocationKey: 'WH1', body: {} });
+    const parsedError = JSON.parse(failedCallResult.content[0]?.text ?? '{}');
 
-    expect(result.isError).toBe(true);
-    expect(payload).toEqual({
+    expect(failedCallResult.isError).toBe(true);
+    expect(parsedError).toEqual({
       error: 'Invalid value for header Accept-Language',
       status: 400,
       details: eBayErrors,

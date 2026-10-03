@@ -1,4 +1,4 @@
-import { EbayClientRequestError } from '@/api/clientRequestError.js';
+import { EbayClientRequestError } from '@/api/client/ebayClientRequestError.js';
 import { EbayApiError } from '@/api/shared/request.js';
 import { getEbayErrorDetails } from '@/utils/errors.js';
 import { Effect } from 'effect';

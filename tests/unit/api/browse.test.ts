@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Effect } from 'effect';
 import { BrowseApi } from '@/api/other/browse.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 const ERR_LIMIT_MUST_BE_BETWEEN = /limit must be an integer between 1 and 200/;
 const ERR_SORT_MUST_BE_ONE = /sort must be one of/;
@@ -46,7 +46,7 @@ describe('searchActiveItems: request shape', () => {
       itemSummaries: [{ itemId: 'v1|1|0', title: 'One' }],
     });
 
-    const result = await Effect.runPromise(
+    const searchPage = await Effect.runPromise(
       api.searchActiveItems({ query: 'camera', limit: 5, offset: 10 }),
     );
 
@@ -59,21 +59,21 @@ describe('searchActiveItems: request shape', () => {
       },
       APP_TOKEN_CONFIG,
     );
-    expect(result.items).toEqual([{ itemId: 'v1|1|0', title: 'One' }]);
-    expect(result.total).toBe(2);
+    expect(searchPage.items).toEqual([{ itemId: 'v1|1|0', title: 'One' }]);
+    expect(searchPage.total).toBe(2);
   });
   it('defaults limit to 20 and offset to 0', async () => {
     vi.mocked(mockClient.get).mockResolvedValue({});
 
-    const result = await Effect.runPromise(api.searchActiveItems({ query: 'lens' }));
+    const searchPage = await Effect.runPromise(api.searchActiveItems({ query: 'lens' }));
 
     expect(mockClient.get).toHaveBeenCalledWith(
       '/buy/browse/v1/item_summary/search',
       expect.objectContaining({ q: 'lens', limit: 20, offset: 0 }),
       APP_TOKEN_CONFIG,
     );
-    expect(result.limit).toBe(20);
-    expect(result.offset).toBe(0);
+    expect(searchPage.limit).toBe(20);
+    expect(searchPage.offset).toBe(0);
   });
   it('passes sort, category ids, and the combined filter expression', async () => {
     vi.mocked(mockClient.get).mockResolvedValue({});
@@ -295,14 +295,16 @@ describe('getItemDetails', () => {
       title: 'Camera',
     });
 
-    const result = await Effect.runPromise(api.getItemDetails({ itemId: 'v1|110587051479|0' }));
+    const itemDetails = await Effect.runPromise(
+      api.getItemDetails({ itemId: 'v1|110587051479|0' }),
+    );
 
     expect(mockClient.get).toHaveBeenCalledWith(
       '/buy/browse/v1/item/v1%7C110587051479%7C0',
       undefined,
       APP_TOKEN_CONFIG,
     );
-    expect(result).toEqual({ itemId: 'v1|110587051479|0', title: 'Camera' });
+    expect(itemDetails).toEqual({ itemId: 'v1|110587051479|0', title: 'Camera' });
   });
 
   it('fails with a tagged input error when the response has no item', async () => {
