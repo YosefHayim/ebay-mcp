@@ -34,9 +34,25 @@ describe('quoteEnvValue', () => {
     expect(quoteEnvValue('')).toBe('');
   });
 
-  it('quotes whitespace values and escapes embedded double quotes', () => {
+  it('quotes whitespace values with double quotes', () => {
     expect(quoteEnvValue('a b')).toBe('"a b"');
-    expect(quoteEnvValue('a"b')).toBe('"a\\"b"');
+  });
+
+  it.each([
+    ['an embedded double quote', 'say "hi" #1'],
+    ['a backslash', 'C:\\new folder'],
+    ['a literal backslash-n', 'line\\nbreak #x'],
+    ['a single quote', "it's #1"],
+    ['double and single quotes', `a"b'c #d`],
+    ['a trailing backslash', 'ends with \\'],
+  ])('round-trips a value with %s through dotenv', (_label, envValue) => {
+    const parsed = dotenv.parse(`SECRET=${quoteEnvValue(envValue)}`);
+
+    expect(parsed.SECRET).toBe(envValue);
+  });
+
+  it('throws instead of corrupting a value that contains every quote mark', () => {
+    expect(() => quoteEnvValue(`a"b'c\`d`)).toThrow('quote marks');
   });
 });
 
