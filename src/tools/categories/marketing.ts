@@ -4,7 +4,7 @@ import * as marketingSchemas from '@/schemas/marketing/marketing.js';
 import { defineTool } from '@/tools/defineTool.js';
 import type { OutputArgs } from '@/tools/types.js';
 import type { ToolEntry } from '@/tools/registry.js';
-import type { EffectBackedSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
 const emptyResponseSchema: OutputArgs = {
   type: 'object',
@@ -12,7 +12,7 @@ const emptyResponseSchema: OutputArgs = {
   description: 'Empty response on successful operation',
 };
 
-const toOutputSchema = (schema: EffectBackedSchema, name: string): OutputArgs =>
+const toOutputSchema = (schema: z.ZodTypeAny, name: string): OutputArgs =>
   zodToJsonSchema(schema, { name, $refStrategy: 'none' }) as OutputArgs;
 
 /** Marketing API tools for campaigns, ads, promotions, reports, and email campaigns. */

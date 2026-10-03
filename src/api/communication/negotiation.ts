@@ -16,10 +16,10 @@ import type {
   sendOfferToInterestedBuyersSchema,
 } from '@/utils/communication/negotiation.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
-type FindEligibleItemsInput = InferEffectSchema<typeof findEligibleItemsSchema>;
-type SendOfferToInterestedBuyersInput = InferEffectSchema<typeof sendOfferToInterestedBuyersSchema>;
+type FindEligibleItemsInput = z.infer<typeof findEligibleItemsSchema>;
+type SendOfferToInterestedBuyersInput = z.infer<typeof sendOfferToInterestedBuyersSchema>;
 /** Request body accepted by sendOfferToInterestedBuyers. */
 type CreateOffersRequest = components['schemas']['CreateOffersRequest'];
 

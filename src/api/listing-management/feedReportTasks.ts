@@ -10,7 +10,7 @@ import {
   getOrderTasksInputSchema,
 } from '@/schemas/inventory-management/feed.js';
 import type { components } from '@/types/sell-apps/listing-management/sellFeedV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 import {
   exclusiveFeedFilters,
@@ -20,17 +20,13 @@ import {
   postFeedTask,
 } from './feedRequest.js';
 
-type FeedTaskIdInput = InferEffectSchema<typeof feedTaskIdInputSchema>;
-type GetOrderTasksInput = InferEffectSchema<typeof getOrderTasksInputSchema>;
-type CreateOrderTaskInput = InferEffectSchema<typeof createOrderTaskInputSchema>;
-type GetInventoryTasksInput = InferEffectSchema<typeof getInventoryTasksInputSchema>;
-type CreateInventoryTaskInput = InferEffectSchema<typeof createInventoryTaskInputSchema>;
-type GetServiceMetricTasksInput = InferEffectSchema<
-  typeof getCustomerServiceMetricTasksInputSchema
->;
-type CreateServiceMetricTaskInput = InferEffectSchema<
-  typeof createCustomerServiceMetricTaskInputSchema
->;
+type FeedTaskIdInput = z.infer<typeof feedTaskIdInputSchema>;
+type GetOrderTasksInput = z.infer<typeof getOrderTasksInputSchema>;
+type CreateOrderTaskInput = z.infer<typeof createOrderTaskInputSchema>;
+type GetInventoryTasksInput = z.infer<typeof getInventoryTasksInputSchema>;
+type CreateInventoryTaskInput = z.infer<typeof createInventoryTaskInputSchema>;
+type GetServiceMetricTasksInput = z.infer<typeof getCustomerServiceMetricTasksInputSchema>;
+type CreateServiceMetricTaskInput = z.infer<typeof createCustomerServiceMetricTaskInputSchema>;
 type CreateOrderTaskRequest = components['schemas']['CreateOrderTaskRequest'];
 type CreateInventoryTaskRequest = components['schemas']['CreateInventoryTaskRequest'];
 type CreateServiceMetricsTaskRequest = components['schemas']['CreateServiceMetricsTaskRequest'];

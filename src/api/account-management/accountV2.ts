@@ -26,19 +26,19 @@ import type {
 } from '@/schemas/account-management/accountV2.js';
 import type { components } from '@/types/sell-apps/account-management/sellAccountV2Oas3.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
-type GetRateTableInput = InferEffectSchema<typeof getRateTableInputSchema>;
-type UpdateShippingCostInput = InferEffectSchema<typeof updateShippingCostInputSchema>;
-type GetPayoutSettingsInput = InferEffectSchema<typeof getPayoutSettingsInputSchema>;
-type UpdatePayoutPercentageInput = InferEffectSchema<typeof updatePayoutPercentageInputSchema>;
-type GetCombinedShippingRulesInput = InferEffectSchema<typeof getCombinedShippingRulesInputSchema>;
-type CalculatedShippingRulesInput = InferEffectSchema<typeof calculatedShippingRulesInputSchema>;
-type FlatShippingRulesInput = InferEffectSchema<typeof flatShippingRulesInputSchema>;
-type PromotionalShippingRuleInput = InferEffectSchema<typeof promotionalShippingRuleInputSchema>;
-type UpdateCombinedPaymentsInput = InferEffectSchema<typeof updateCombinedPaymentsInputSchema>;
-type GetUserPreferencesInput = InferEffectSchema<typeof getUserPreferencesInputSchema>;
-type SetUserPreferencesInput = InferEffectSchema<typeof setUserPreferencesInputSchema>;
+type GetRateTableInput = z.infer<typeof getRateTableInputSchema>;
+type UpdateShippingCostInput = z.infer<typeof updateShippingCostInputSchema>;
+type GetPayoutSettingsInput = z.infer<typeof getPayoutSettingsInputSchema>;
+type UpdatePayoutPercentageInput = z.infer<typeof updatePayoutPercentageInputSchema>;
+type GetCombinedShippingRulesInput = z.infer<typeof getCombinedShippingRulesInputSchema>;
+type CalculatedShippingRulesInput = z.infer<typeof calculatedShippingRulesInputSchema>;
+type FlatShippingRulesInput = z.infer<typeof flatShippingRulesInputSchema>;
+type PromotionalShippingRuleInput = z.infer<typeof promotionalShippingRuleInputSchema>;
+type UpdateCombinedPaymentsInput = z.infer<typeof updateCombinedPaymentsInputSchema>;
+type GetUserPreferencesInput = z.infer<typeof getUserPreferencesInputSchema>;
+type SetUserPreferencesInput = z.infer<typeof setUserPreferencesInputSchema>;
 
 type Schemas = components['schemas'];
 /** Generated request body for updateShippingCost. */

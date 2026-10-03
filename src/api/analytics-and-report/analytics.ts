@@ -16,16 +16,12 @@ import type {
   getTrafficReportInputSchema,
 } from '@/schemas/analytics/analytics.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
-type GetTrafficReportInput = InferEffectSchema<typeof getTrafficReportInputSchema>;
-type FindSellerStandardsProfilesInput = InferEffectSchema<
-  typeof findSellerStandardsProfilesInputSchema
->;
-type GetSellerStandardsProfileInput = InferEffectSchema<
-  typeof getSellerStandardsProfileInputSchema
->;
-type GetCustomerServiceMetricInput = InferEffectSchema<typeof getCustomerServiceMetricInputSchema>;
+type GetTrafficReportInput = z.infer<typeof getTrafficReportInputSchema>;
+type FindSellerStandardsProfilesInput = z.infer<typeof findSellerStandardsProfilesInputSchema>;
+type GetSellerStandardsProfileInput = z.infer<typeof getSellerStandardsProfileInputSchema>;
+type GetCustomerServiceMetricInput = z.infer<typeof getCustomerServiceMetricInputSchema>;
 
 /**
  * Traffic report response returned by eBay Analytics getTrafficReport.

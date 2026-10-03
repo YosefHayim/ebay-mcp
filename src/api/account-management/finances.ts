@@ -22,22 +22,22 @@ import {
   getTransferInputSchema,
 } from '@/schemas/account-management/finances.js';
 import type { components } from '@/types/sell-apps/account-management/sellFinancesV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 const BASE_PATH = '/sell/finances/v1';
 
-type GetOrderEarningsInput = InferEffectSchema<typeof getOrderEarningsInputSchema>;
-type GetOrderEarningsByIdInput = InferEffectSchema<typeof getOrderEarningsByIdInputSchema>;
-type GetOrderEarningsSummaryInput = InferEffectSchema<typeof getOrderEarningsSummaryInputSchema>;
-type GetPayoutInput = InferEffectSchema<typeof getPayoutInputSchema>;
-type GetPayoutsInput = InferEffectSchema<typeof getPayoutsInputSchema>;
-type GetPayoutSummaryInput = InferEffectSchema<typeof getPayoutSummaryInputSchema>;
-type GetSellerFundsSummaryInput = InferEffectSchema<typeof getSellerFundsSummaryInputSchema>;
-type GetTransactionsInput = InferEffectSchema<typeof getTransactionsInputSchema>;
-type GetTransactionSummaryInput = InferEffectSchema<typeof getTransactionSummaryInputSchema>;
-type GetTransferInput = InferEffectSchema<typeof getTransferInputSchema>;
-type GetBillingActivitiesInput = InferEffectSchema<typeof getBillingActivitiesInputSchema>;
+type GetOrderEarningsInput = z.infer<typeof getOrderEarningsInputSchema>;
+type GetOrderEarningsByIdInput = z.infer<typeof getOrderEarningsByIdInputSchema>;
+type GetOrderEarningsSummaryInput = z.infer<typeof getOrderEarningsSummaryInputSchema>;
+type GetPayoutInput = z.infer<typeof getPayoutInputSchema>;
+type GetPayoutsInput = z.infer<typeof getPayoutsInputSchema>;
+type GetPayoutSummaryInput = z.infer<typeof getPayoutSummaryInputSchema>;
+type GetSellerFundsSummaryInput = z.infer<typeof getSellerFundsSummaryInputSchema>;
+type GetTransactionsInput = z.infer<typeof getTransactionsInputSchema>;
+type GetTransactionSummaryInput = z.infer<typeof getTransactionSummaryInputSchema>;
+type GetTransferInput = z.infer<typeof getTransferInputSchema>;
+type GetBillingActivitiesInput = z.infer<typeof getBillingActivitiesInputSchema>;
 /** Query fields shared by the paginated Finances collections. */
 type FinancesPageQuery = Pick<GetTransactionsInput, 'filter' | 'limit' | 'offset' | 'sort'>;
 

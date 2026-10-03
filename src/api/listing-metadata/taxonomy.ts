@@ -15,7 +15,7 @@ import {
 } from '@/api/shared/request.js';
 import { categoryTreeIdInputSchema } from '@/schemas/taxonomy/categoryTree.js';
 import type { components } from '@/types/sell-apps/listing-metadata/commerceTaxonomyV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 /**
@@ -25,7 +25,7 @@ import { Effect } from 'effect';
 const ITEM_ASPECTS_DOWNLOAD: EbayRequestConfig = { timeoutMs: 120_000 };
 
 /** Category tree identifier accepted by fetchItemAspects and getExpiredCategories. */
-export type CategoryTreeIdInput = InferEffectSchema<typeof categoryTreeIdInputSchema>;
+export type CategoryTreeIdInput = z.infer<typeof categoryTreeIdInputSchema>;
 
 /** Input accepted by getDefaultCategoryTreeId. */
 export interface GetDefaultCategoryTreeIdInput {

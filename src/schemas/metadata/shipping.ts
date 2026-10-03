@@ -1,5 +1,5 @@
 import { MarketplaceId } from '@/types/ebayEnums.js';
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
  * Input shared by the five Metadata API `shipping:marketplace` methods (carriers, services,

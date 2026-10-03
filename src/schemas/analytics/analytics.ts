@@ -1,10 +1,9 @@
-import { z } from '@/utils/effectSchema.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 
 /**
  * Analytics API Schemas
  *
- * This file contains Effect-backed schemas for the Sell Analytics API.
+ * This file contains Zod schemas for the Sell Analytics API.
  * Schemas are organized by type and include all analytics-related endpoints.
  */
 
@@ -191,70 +190,3 @@ export const getTrafficReportInputSchema = z.object({
 // ============================================================================
 // JSON Schema Conversion Functions
 // ============================================================================
-
-/**
- * Converts Analytics API Effect-backed schemas to JSON Schema format for MCP tools.
- *
- * @returns Analytics API JSON schemas keyed by endpoint or shared model name.
- * @example
- * ```ts
- * const schemas = getAnalyticsJsonSchemas();
- * ```
- */
-export const getAnalyticsJsonSchemas = () => {
-  return {
-    // Customer Service Metrics
-    getCustomerServiceMetricInput: zodToJsonSchema(
-      getCustomerServiceMetricInputSchema,
-      'getCustomerServiceMetricInput',
-    ),
-    getCustomerServiceMetricOutput: zodToJsonSchema(
-      getCustomerServiceMetricResponseSchema,
-      'getCustomerServiceMetricOutput',
-    ),
-
-    // Seller Standards Profiles
-    findSellerStandardsProfilesInput: zodToJsonSchema(
-      findSellerStandardsProfilesInputSchema,
-      'findSellerStandardsProfilesInput',
-    ),
-    findSellerStandardsProfilesOutput: zodToJsonSchema(
-      findSellerStandardsProfilesResponseSchema,
-      'findSellerStandardsProfilesOutput',
-    ),
-    getSellerStandardsProfileInput: zodToJsonSchema(
-      getSellerStandardsProfileInputSchema,
-      'getSellerStandardsProfileInput',
-    ),
-    getSellerStandardsProfileOutput: zodToJsonSchema(
-      standardsProfileSchema,
-      'getSellerStandardsProfileOutput',
-    ),
-
-    // Traffic Reports
-    getTrafficReportInput: zodToJsonSchema(getTrafficReportInputSchema, 'getTrafficReportInput'),
-    getTrafficReportOutput: zodToJsonSchema(reportSchema, 'getTrafficReportOutput'),
-
-    // Common Types
-    benchmarkMetadata: zodToJsonSchema(benchmarkMetadataSchema, 'benchmarkMetadata'),
-    cycle: zodToJsonSchema(cycleSchema, 'cycle'),
-    definition: zodToJsonSchema(definitionSchema, 'definition'),
-    dimension: zodToJsonSchema(dimensionSchema, 'dimension'),
-    dimensionMetric: zodToJsonSchema(dimensionMetricSchema, 'dimensionMetric'),
-    distribution: zodToJsonSchema(distributionSchema, 'distribution'),
-    error: zodToJsonSchema(errorSchema, 'error'),
-    errorParameter: zodToJsonSchema(errorParameterSchema, 'errorParameter'),
-    evaluationCycle: zodToJsonSchema(evaluationCycleSchema, 'evaluationCycle'),
-    header: zodToJsonSchema(headerSchema, 'header'),
-    metadata: zodToJsonSchema(metadataSchema, 'metadata'),
-    metadataHeader: zodToJsonSchema(metadataHeaderSchema, 'metadataHeader'),
-    metadataRecord: zodToJsonSchema(metadataRecordSchema, 'metadataRecord'),
-    metric: zodToJsonSchema(metricSchema, 'metric'),
-    metricBenchmark: zodToJsonSchema(metricBenchmarkSchema, 'metricBenchmark'),
-    metricDistribution: zodToJsonSchema(metricDistributionSchema, 'metricDistribution'),
-    record: zodToJsonSchema(recordSchema, 'record'),
-    report: zodToJsonSchema(reportSchema, 'report'),
-    standardsProfile: zodToJsonSchema(standardsProfileSchema, 'standardsProfile'),
-    value: zodToJsonSchema(valueSchema, 'value'),
-  };
-};

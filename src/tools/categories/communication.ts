@@ -46,7 +46,7 @@ import {
 /**
  * Communication API tools for member messages, notifications, and seller feedback.
  *
- * Each tool derives its transport schema from the same Effect-backed object whose inferred
+ * Each tool derives its transport schema from the same Zod object whose inferred
  * args are passed directly to the endpoint method. Handlers stay at the MCP
  * boundary: they run one endpoint Effect and avoid response or input reshaping.
  */

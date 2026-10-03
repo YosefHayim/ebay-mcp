@@ -129,7 +129,7 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
         '| `config/` | Environment loading, constants, marketplace defaults |',
         '| `tools/` | Tool wiring — `registry.ts`, `contracts.ts`, `defineTool.ts`, and `categories/` (13 family files that co-locate each tool definition with its handler via `defineTool`) |',
         "| `skills/` | Agent-skills generator (this skill's source) |",
-        '| `schemas/` | Shared Effect-backed schemas |',
+        '| `schemas/` | Shared Zod schemas per API family |',
         "| `types/` | TypeScript types — **auto-generated** from OpenAPI specs (don't hand-edit) |",
         '| `scripts/` | CLI tooling: `setup.ts`, `skills.ts`, `devSync.ts`, `diagnostics.ts` |',
         '| `utils/` | Shared utilities (logging, http, errors) |',
@@ -149,7 +149,7 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
       heading: 'Conventions',
       body: [
         '- **No `any`** — specific types; prefer narrowing over assertions. `types/` is generated, so model new shapes from the specs.',
-        '- Validate tool inputs with Effect-backed schemas from `@/utils/effectSchema.js`; derive related schemas rather than duplicating fields.',
+        "- Validate tool inputs with Zod schemas (`import { z } from 'zod'`); derive related schemas rather than duplicating fields.",
         '- Commit with Conventional Commits; merged PR labels (`major`/`minor`, else patch) pick the release bump.',
         '- Logs go to **stderr** only — stdout is reserved for the MCP protocol.',
       ].join('\n'),

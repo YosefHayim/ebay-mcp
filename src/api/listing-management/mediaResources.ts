@@ -10,17 +10,17 @@ import {
   postOrderDocumentMetadataSchema,
 } from '@/schemas/inventory-management/mediaDocuments.js';
 import type { components } from '@/types/sell-apps/listing-management/commerceMediaV1BetaOas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 import type { MediaUpload } from './media.js';
 
 const BASE_PATH = '/commerce/media/v1_beta';
 const UPLOAD_TIMEOUT_MS = 10 * 60_000;
-type CreateDocumentInput = InferEffectSchema<typeof createDocumentInputSchema>;
-type CreateDocumentFromUrlInput = InferEffectSchema<typeof createDocumentFromUrlInputSchema>;
-type CreateImageFromUrlInput = InferEffectSchema<typeof createImageFromUrlInputSchema>;
-type DocumentIdInput = InferEffectSchema<typeof documentIdInputSchema>;
-type PostOrderMetadata = InferEffectSchema<typeof postOrderDocumentMetadataSchema>;
+type CreateDocumentInput = z.infer<typeof createDocumentInputSchema>;
+type CreateDocumentFromUrlInput = z.infer<typeof createDocumentFromUrlInputSchema>;
+type CreateImageFromUrlInput = z.infer<typeof createImageFromUrlInputSchema>;
+type DocumentIdInput = z.infer<typeof documentIdInputSchema>;
+type PostOrderMetadata = z.infer<typeof postOrderDocumentMetadataSchema>;
 
 /** Created listing document. @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocument */
 export type CreateDocumentResponse = components['schemas']['CreateDocumentResponse'];

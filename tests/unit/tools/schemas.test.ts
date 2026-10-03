@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { Effect, Either } from 'effect';
 import {
   timeDurationSchema,
   amountSchema,
@@ -12,20 +11,6 @@ import {
   offerSchema,
   locationSchema as inventoryLocationSchema,
 } from '@/tools/schemas.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
-import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
-
-type DecodeResult<TValue> = { success: true; data: TValue } | { success: false; error: unknown };
-
-const decodeResult = <TSchema extends EffectBackedSchema>(
-  schema: TSchema,
-  value: unknown,
-): DecodeResult<InferEffectSchema<TSchema>> => {
-  const decoded = Effect.runSync(Effect.either(decodeEffectSchema(schema, value)));
-  return Either.isRight(decoded)
-    ? { success: true, data: decoded.right }
-    : { success: false, error: decoded.left };
-};
 
 describe('Schema Validation', () => {
   describe('Common Schemas', () => {
@@ -36,7 +21,7 @@ describe('Schema Validation', () => {
           value: 30,
         };
 
-        const result = decodeResult(timeDurationSchema, validDuration);
+        const result = timeDurationSchema.safeParse(validDuration);
         expect(result.success).toBe(true);
       });
 
@@ -46,7 +31,7 @@ describe('Schema Validation', () => {
           value: 30,
         };
 
-        const result = decodeResult(timeDurationSchema, invalidDuration);
+        const result = timeDurationSchema.safeParse(invalidDuration);
         expect(result.success).toBe(false);
       });
 
@@ -55,7 +40,7 @@ describe('Schema Validation', () => {
           unit: 'DAY',
         };
 
-        const result = decodeResult(timeDurationSchema, missingFields);
+        const result = timeDurationSchema.safeParse(missingFields);
         expect(result.success).toBe(false);
       });
 
@@ -66,7 +51,7 @@ describe('Schema Validation', () => {
           extraField: 'extra',
         };
 
-        const result = decodeResult(timeDurationSchema, withExtra);
+        const result = timeDurationSchema.safeParse(withExtra);
         expect(result.success).toBe(true);
         if (result.success) {
           expect(result.data).toHaveProperty('extraField');
@@ -81,7 +66,7 @@ describe('Schema Validation', () => {
           value: '99.99',
         };
 
-        const result = decodeResult(amountSchema, validAmount);
+        const result = amountSchema.safeParse(validAmount);
         expect(result.success).toBe(true);
       });
 
@@ -90,7 +75,7 @@ describe('Schema Validation', () => {
 
         currencies.forEach((currency) => {
           const amount = { currency, value: '100.00' };
-          const result = decodeResult(amountSchema, amount);
+          const result = amountSchema.safeParse(amount);
           expect(result.success).toBe(true);
         });
       });
@@ -99,8 +84,8 @@ describe('Schema Validation', () => {
         const missingValue = { currency: 'USD' };
         const missingCurrency = { value: '99.99' };
 
-        expect(decodeResult(amountSchema, missingValue).success).toBe(false);
-        expect(decodeResult(amountSchema, missingCurrency).success).toBe(false);
+        expect(amountSchema.safeParse(missingValue).success).toBe(false);
+        expect(amountSchema.safeParse(missingCurrency).success).toBe(false);
       });
     });
 
@@ -111,14 +96,14 @@ describe('Schema Validation', () => {
           regionType: 'COUNTRY',
         };
 
-        const result = decodeResult(regionSchema, validRegion);
+        const result = regionSchema.safeParse(validRegion);
         expect(result.success).toBe(true);
       });
 
       it('allow optional fields', () => {
         const minimalRegion = {};
 
-        const result = decodeResult(regionSchema, minimalRegion);
+        const result = regionSchema.safeParse(minimalRegion);
         expect(result.success).toBe(true);
       });
 
@@ -133,7 +118,7 @@ describe('Schema Validation', () => {
 
         regionTypes.forEach((regionType) => {
           const region = { regionName: 'Test', regionType };
-          const result = decodeResult(regionSchema, region);
+          const result = regionSchema.safeParse(region);
           expect(result.success).toBe(true);
         });
       });
@@ -149,12 +134,12 @@ describe('Schema Validation', () => {
           regionExcluded: [{ regionName: 'Alaska', regionType: 'STATE_OR_PROVINCE' }],
         };
 
-        const result = decodeResult(regionSetSchema, validRegionSet);
+        const result = regionSetSchema.safeParse(validRegionSet);
         expect(result.success).toBe(true);
       });
 
       it('allow empty region set', () => {
-        const result = decodeResult(regionSetSchema, {});
+        const result = regionSetSchema.safeParse({});
         expect(result.success).toBe(true);
       });
     });
@@ -183,7 +168,7 @@ describe('Schema Validation', () => {
           ],
         };
 
-        const result = decodeResult(fulfillmentPolicySchema, validPolicy);
+        const result = fulfillmentPolicySchema.safeParse(validPolicy);
         expect(result.success).toBe(true);
       });
 
@@ -191,8 +176,8 @@ describe('Schema Validation', () => {
         const missingName = { marketplaceId: 'EBAY_US' };
         const missingMarketplace = { name: 'Test Policy' };
 
-        expect(decodeResult(fulfillmentPolicySchema, missingName).success).toBe(false);
-        expect(decodeResult(fulfillmentPolicySchema, missingMarketplace).success).toBe(false);
+        expect(fulfillmentPolicySchema.safeParse(missingName).success).toBe(false);
+        expect(fulfillmentPolicySchema.safeParse(missingMarketplace).success).toBe(false);
       });
     });
 
@@ -205,14 +190,14 @@ describe('Schema Validation', () => {
           paymentMethods: [{ paymentMethodType: 'PAYPAL' }],
         };
 
-        const result = decodeResult(paymentPolicySchema, validPolicy);
+        const result = paymentPolicySchema.safeParse(validPolicy);
         expect(result.success).toBe(true);
       });
 
       it('require name and marketplaceId', () => {
         const missingName = { marketplaceId: 'EBAY_US' };
 
-        expect(decodeResult(paymentPolicySchema, missingName).success).toBe(false);
+        expect(paymentPolicySchema.safeParse(missingName).success).toBe(false);
       });
     });
 
@@ -226,7 +211,7 @@ describe('Schema Validation', () => {
           returnPeriod: { unit: 'DAY', value: 30 },
         };
 
-        const result = decodeResult(returnPolicySchema, validPolicy);
+        const result = returnPolicySchema.safeParse(validPolicy);
         expect(result.success).toBe(true);
       });
 
@@ -237,7 +222,7 @@ describe('Schema Validation', () => {
           returnsAccepted: false,
         };
 
-        const result = decodeResult(returnPolicySchema, noReturns);
+        const result = returnPolicySchema.safeParse(noReturns);
         expect(result.success).toBe(true);
       });
     });
@@ -264,7 +249,7 @@ describe('Schema Validation', () => {
           },
         };
 
-        const result = decodeResult(inventoryItemSchema, validItem);
+        const result = inventoryItemSchema.safeParse(validItem);
         expect(result.success).toBe(true);
       });
 
@@ -277,7 +262,7 @@ describe('Schema Validation', () => {
           },
         };
 
-        const result = decodeResult(inventoryItemSchema, missingAvailability);
+        const result = inventoryItemSchema.safeParse(missingAvailability);
         expect(result.success).toBe(true);
       });
 
@@ -290,7 +275,7 @@ describe('Schema Validation', () => {
             condition,
             product: { title: 'Test' },
           };
-          const result = decodeResult(inventoryItemSchema, item);
+          const result = inventoryItemSchema.safeParse(item);
           expect(result.success).toBe(true);
         });
       });
@@ -314,7 +299,7 @@ describe('Schema Validation', () => {
           categoryId: '1234',
         };
 
-        const result = decodeResult(offerSchema, validOffer);
+        const result = offerSchema.safeParse(validOffer);
         expect(result.success).toBe(true);
       });
 
@@ -322,8 +307,8 @@ describe('Schema Validation', () => {
         const missingSku = { marketplaceId: 'EBAY_US', format: 'FIXED_PRICE' };
         const missingMarketplace = { sku: 'TEST-001', format: 'FIXED_PRICE' };
 
-        expect(decodeResult(offerSchema, missingSku).success).toBe(false);
-        expect(decodeResult(offerSchema, missingMarketplace).success).toBe(false);
+        expect(offerSchema.safeParse(missingSku).success).toBe(false);
+        expect(offerSchema.safeParse(missingMarketplace).success).toBe(false);
       });
 
       it('validate listing formats', () => {
@@ -335,7 +320,7 @@ describe('Schema Validation', () => {
             marketplaceId: 'EBAY_US',
             format,
           };
-          const result = decodeResult(offerSchema, offer);
+          const result = offerSchema.safeParse(offer);
           expect(result.success).toBe(true);
         });
       });
@@ -359,7 +344,7 @@ describe('Schema Validation', () => {
           locationTypes: ['WAREHOUSE'],
         };
 
-        const result = decodeResult(inventoryLocationSchema, validLocation);
+        const result = inventoryLocationSchema.safeParse(validLocation);
         expect(result.success).toBe(true);
       });
 
@@ -369,7 +354,7 @@ describe('Schema Validation', () => {
           merchantLocationStatus: 'ENABLED',
         };
 
-        const result = decodeResult(inventoryLocationSchema, missingLocation);
+        const result = inventoryLocationSchema.safeParse(missingLocation);
         expect(result.success).toBe(true);
       });
     });
@@ -380,7 +365,7 @@ describe('Schema Validation', () => {
       const schemas = [regionSchema, regionSetSchema];
 
       schemas.forEach((schema) => {
-        const result = decodeResult(schema, {});
+        const result = schema.safeParse({});
         expect(result.success).toBe(true);
       });
     });
@@ -392,14 +377,14 @@ describe('Schema Validation', () => {
 
       schemas.forEach((schema) => {
         invalidValues.forEach((value) => {
-          const result = decodeResult(schema, value);
+          const result = schema.safeParse(value);
           expect(result.success).toBe(false);
         });
       });
     });
 
     it('preserve extra fields with passthrough', () => {
-      const schemaWithExtra = decodeResult(amountSchema, {
+      const schemaWithExtra = amountSchema.safeParse({
         currency: 'USD',
         value: '99.99',
         metadata: { source: 'test' },

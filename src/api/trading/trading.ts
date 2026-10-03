@@ -18,7 +18,7 @@ import type {
 import { FormatType } from '@/types/ebayEnums.js';
 import { isRecord } from '@/utils/typeGuards.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import {
   TRADING_AUCTION_LISTING_TYPE,
   type TradingItemFields,
@@ -29,17 +29,17 @@ import {
 } from './listingFormat.js';
 
 /** Input accepted by getActiveListings. */
-type GetActiveListingsInput = InferEffectSchema<typeof getActiveListingsSchema>;
+type GetActiveListingsInput = z.infer<typeof getActiveListingsSchema>;
 /** Input accepted by getListing. */
-type GetListingInput = InferEffectSchema<typeof getListingSchema>;
+type GetListingInput = z.infer<typeof getListingSchema>;
 /** Input accepted by createListing. */
-type CreateListingInput = InferEffectSchema<typeof createListingSchema>;
+type CreateListingInput = z.infer<typeof createListingSchema>;
 /** Input accepted by reviseListing. */
-type ReviseListingInput = InferEffectSchema<typeof reviseListingSchema>;
+type ReviseListingInput = z.infer<typeof reviseListingSchema>;
 /** Input accepted by endListing. */
-type EndListingInput = InferEffectSchema<typeof endListingSchema>;
+type EndListingInput = z.infer<typeof endListingSchema>;
 /** Input accepted by relistItem. */
-type RelistItemInput = InferEffectSchema<typeof relistItemSchema>;
+type RelistItemInput = z.infer<typeof relistItemSchema>;
 
 const asRecordArray = (value: unknown): Record<string, unknown>[] => {
   if (!Array.isArray(value)) {

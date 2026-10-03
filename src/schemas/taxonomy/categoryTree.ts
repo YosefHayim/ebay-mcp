@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /** Input for Taxonomy API methods addressed only by category tree (fetchItemAspects, getExpiredCategories). */
 export const categoryTreeIdInputSchema = z.object({

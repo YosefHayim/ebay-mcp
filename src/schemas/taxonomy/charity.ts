@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /** Marketplace sent as the Charity API's required X-EBAY-C-MARKETPLACE-ID header. */
 const charityMarketplaceIdSchema = z

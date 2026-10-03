@@ -37,29 +37,29 @@ import type {
   updateSubscriptionSchema,
 } from '@/utils/communication/notification.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
-type GetPublicKeyInput = InferEffectSchema<typeof getPublicKeySchema>;
-type GetConfigInput = InferEffectSchema<typeof getConfigSchema>;
-type UpdateConfigInput = InferEffectSchema<typeof updateConfigSchema>;
-type GetDestinationsInput = InferEffectSchema<typeof getDestinationsSchema>;
-type CreateDestinationInput = InferEffectSchema<typeof createDestinationSchema>;
-type GetDestinationInput = InferEffectSchema<typeof getDestinationSchema>;
-type UpdateDestinationInput = InferEffectSchema<typeof updateDestinationSchema>;
-type DeleteDestinationInput = InferEffectSchema<typeof deleteDestinationSchema>;
-type GetSubscriptionsInput = InferEffectSchema<typeof getSubscriptionsSchema>;
-type CreateSubscriptionInput = InferEffectSchema<typeof createSubscriptionSchema>;
-type GetSubscriptionInput = InferEffectSchema<typeof getSubscriptionSchema>;
-type UpdateSubscriptionInput = InferEffectSchema<typeof updateSubscriptionSchema>;
-type DeleteSubscriptionInput = InferEffectSchema<typeof deleteSubscriptionSchema>;
-type DisableSubscriptionInput = InferEffectSchema<typeof disableSubscriptionSchema>;
-type EnableSubscriptionInput = InferEffectSchema<typeof enableSubscriptionSchema>;
-type TestSubscriptionInput = InferEffectSchema<typeof testSubscriptionSchema>;
-type GetTopicInput = InferEffectSchema<typeof getTopicSchema>;
-type GetTopicsInput = InferEffectSchema<typeof getTopicsSchema>;
-type CreateSubscriptionFilterInput = InferEffectSchema<typeof createSubscriptionFilterSchema>;
-type GetSubscriptionFilterInput = InferEffectSchema<typeof getSubscriptionFilterSchema>;
-type DeleteSubscriptionFilterInput = InferEffectSchema<typeof deleteSubscriptionFilterSchema>;
+type GetPublicKeyInput = z.infer<typeof getPublicKeySchema>;
+type GetConfigInput = z.infer<typeof getConfigSchema>;
+type UpdateConfigInput = z.infer<typeof updateConfigSchema>;
+type GetDestinationsInput = z.infer<typeof getDestinationsSchema>;
+type CreateDestinationInput = z.infer<typeof createDestinationSchema>;
+type GetDestinationInput = z.infer<typeof getDestinationSchema>;
+type UpdateDestinationInput = z.infer<typeof updateDestinationSchema>;
+type DeleteDestinationInput = z.infer<typeof deleteDestinationSchema>;
+type GetSubscriptionsInput = z.infer<typeof getSubscriptionsSchema>;
+type CreateSubscriptionInput = z.infer<typeof createSubscriptionSchema>;
+type GetSubscriptionInput = z.infer<typeof getSubscriptionSchema>;
+type UpdateSubscriptionInput = z.infer<typeof updateSubscriptionSchema>;
+type DeleteSubscriptionInput = z.infer<typeof deleteSubscriptionSchema>;
+type DisableSubscriptionInput = z.infer<typeof disableSubscriptionSchema>;
+type EnableSubscriptionInput = z.infer<typeof enableSubscriptionSchema>;
+type TestSubscriptionInput = z.infer<typeof testSubscriptionSchema>;
+type GetTopicInput = z.infer<typeof getTopicSchema>;
+type GetTopicsInput = z.infer<typeof getTopicsSchema>;
+type CreateSubscriptionFilterInput = z.infer<typeof createSubscriptionFilterSchema>;
+type GetSubscriptionFilterInput = z.infer<typeof getSubscriptionFilterSchema>;
+type DeleteSubscriptionFilterInput = z.infer<typeof deleteSubscriptionFilterSchema>;
 /** Destination request body accepted by destination writes. */
 type DestinationRequest = components['schemas']['DestinationRequest'];
 /** Subscription creation request body. */

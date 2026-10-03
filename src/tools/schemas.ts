@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import {
   TimeDurationUnit,
   RegionType,
@@ -25,7 +25,7 @@ import {
 } from '@/types/ebayEnums.js';
 
 /**
- * Reusable Effect-backed schemas for eBay API tool input validation
+ * Reusable Zod schemas for eBay API tool input validation
  *
  * These schemas provide type-safe validation while remaining flexible
  * enough to accept the full complexity of eBay API request objects.

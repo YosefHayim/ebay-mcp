@@ -20,17 +20,17 @@ import type {
   shippingQuoteIdInputSchema,
 } from '@/schemas/fulfillment/logistics.js';
 import type { components } from '@/types/sell-apps/order-management/sellLogisticsV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 /** Generated request body for createShippingQuote. */
 type ShippingQuoteRequest = components['schemas']['ShippingQuoteRequest'];
 /** Generated request body for createFromShippingQuote. */
 type CreateShipmentFromQuoteRequest = components['schemas']['CreateShipmentFromQuoteRequest'];
-type CreateShippingQuoteInput = InferEffectSchema<typeof createShippingQuoteInputSchema>;
-type CreateFromShippingQuoteInput = InferEffectSchema<typeof createFromShippingQuoteInputSchema>;
-type ShippingQuoteIdInput = InferEffectSchema<typeof shippingQuoteIdInputSchema>;
-type ShipmentIdInput = InferEffectSchema<typeof shipmentIdInputSchema>;
+type CreateShippingQuoteInput = z.infer<typeof createShippingQuoteInputSchema>;
+type CreateFromShippingQuoteInput = z.infer<typeof createFromShippingQuoteInputSchema>;
+type ShippingQuoteIdInput = z.infer<typeof shippingQuoteIdInputSchema>;
+type ShipmentIdInput = z.infer<typeof shipmentIdInputSchema>;
 
 /**
  * Builds the per-call marketplace header; without an override the client's configured

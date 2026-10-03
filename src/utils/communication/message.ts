@@ -1,7 +1,7 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
- * Effect-backed schemas for Message API input validation.
+ * Zod schemas for Message API input validation.
  * OpenAPI spec: commerce_message_v1_oas3.json
  */
 

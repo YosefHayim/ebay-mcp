@@ -15,7 +15,7 @@ import type {
   components,
   operations,
 } from '@/types/sell-apps/listing-management/sellFeedV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 import {
   downloadFeedFile,
@@ -30,9 +30,9 @@ import type { MediaUpload } from './media.js';
 /** Feed files can be up to 15 MB, far larger than JSON calls. */
 const UPLOAD_TIMEOUT_MS = 10 * 60_000;
 
-type GetFeedTasksInput = InferEffectSchema<typeof getFeedTasksInputSchema>;
-type CreateFeedTaskInput = InferEffectSchema<typeof createFeedTaskInputSchema>;
-type FeedTaskIdInput = InferEffectSchema<typeof feedTaskIdInputSchema>;
+type GetFeedTasksInput = z.infer<typeof getFeedTasksInputSchema>;
+type CreateFeedTaskInput = z.infer<typeof createFeedTaskInputSchema>;
+type FeedTaskIdInput = z.infer<typeof feedTaskIdInputSchema>;
 type CreateTaskRequest = components['schemas']['CreateTaskRequest'];
 
 /** Multipart body documented for uploadFile: fileName, name=file, type=form-data, then the file. */

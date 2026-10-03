@@ -1,7 +1,7 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
- * Effect-backed schemas for Compliance API input validation
+ * Zod schemas for Compliance API input validation
  * Based on: src/api/other/compliance.ts
  * OpenAPI spec: sell_compliance_v1_oas3.json
  * Types from: src/types/sell_compliance_v1_oas3.ts

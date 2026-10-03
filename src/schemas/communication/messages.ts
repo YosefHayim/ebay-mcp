@@ -1,11 +1,10 @@
-import { z } from '@/utils/effectSchema.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import { MessageReferenceType, FeedbackRating } from '@/types/ebayEnums.js';
 
 /**
  * Communication API Schemas - Messages, Feedback, and Notifications
  *
- * This file contains Effect-backed schemas for all Communication endpoints including:
+ * This file contains Zod schemas for all Communication endpoints including:
  * - Message API
  * - Feedback API
  * - Notification API
@@ -408,95 +407,3 @@ export const sendOfferToInterestedBuyersOutputSchema = z.object({
 // ============================================================================
 // JSON Schema Conversion Functions
 // ============================================================================
-
-/**
- * Converts Communication API Effect-backed schemas to JSON Schema format for MCP tools.
- *
- * @returns Communication API JSON schemas keyed by endpoint or shared model name.
- * @example
- * ```ts
- * const schemas = getCommunicationJsonSchemas();
- * ```
- */
-export const getCommunicationJsonSchemas = () => {
-  return {
-    // Message API
-    sendMessageInput: zodToJsonSchema(sendMessageInputSchema, 'sendMessageInput'),
-    sendMessageOutput: zodToJsonSchema(sendMessageOutputSchema, 'sendMessageOutput'),
-    getConversationsInput: zodToJsonSchema(getConversationsInputSchema, 'getConversationsInput'),
-    getConversationsOutput: zodToJsonSchema(getConversationsOutputSchema, 'getConversationsOutput'),
-    getConversationInput: zodToJsonSchema(getConversationInputSchema, 'getConversationInput'),
-    getConversationOutput: zodToJsonSchema(getConversationOutputSchema, 'getConversationOutput'),
-
-    // Feedback API
-    leaveFeedbackInput: zodToJsonSchema(leaveFeedbackInputSchema, 'leaveFeedbackInput'),
-    leaveFeedbackOutput: zodToJsonSchema(leaveFeedbackOutputSchema, 'leaveFeedbackOutput'),
-    getFeedbackInput: zodToJsonSchema(getFeedbackInputSchema, 'getFeedbackInput'),
-    getFeedbackOutput: zodToJsonSchema(getFeedbackOutputSchema, 'getFeedbackOutput'),
-    getFeedbackSummaryOutput: zodToJsonSchema(
-      getFeedbackSummaryOutputSchema,
-      'getFeedbackSummaryOutput',
-    ),
-    getAwaitingFeedbackInput: zodToJsonSchema(
-      getAwaitingFeedbackInputSchema,
-      'getAwaitingFeedbackInput',
-    ),
-    getAwaitingFeedbackOutput: zodToJsonSchema(
-      getAwaitingFeedbackOutputSchema,
-      'getAwaitingFeedbackOutput',
-    ),
-    respondToFeedbackInput: zodToJsonSchema(respondToFeedbackInputSchema, 'respondToFeedbackInput'),
-    respondToFeedbackOutput: zodToJsonSchema(
-      respondToFeedbackOutputSchema,
-      'respondToFeedbackOutput',
-    ),
-
-    // Notification API
-    createNotificationDestinationInput: zodToJsonSchema(
-      createNotificationDestinationInputSchema,
-      'createNotificationDestinationInput',
-    ),
-    createNotificationDestinationOutput: zodToJsonSchema(
-      createNotificationDestinationOutputSchema,
-      'createNotificationDestinationOutput',
-    ),
-    getNotificationDestinationsInput: zodToJsonSchema(
-      getNotificationDestinationsInputSchema,
-      'getNotificationDestinationsInput',
-    ),
-    getNotificationDestinationsOutput: zodToJsonSchema(
-      getNotificationDestinationsOutputSchema,
-      'getNotificationDestinationsOutput',
-    ),
-    createNotificationSubscriptionInput: zodToJsonSchema(
-      createNotificationSubscriptionInputSchema,
-      'createNotificationSubscriptionInput',
-    ),
-    createNotificationSubscriptionOutput: zodToJsonSchema(
-      createNotificationSubscriptionOutputSchema,
-      'createNotificationSubscriptionOutput',
-    ),
-    getNotificationSubscriptionsInput: zodToJsonSchema(
-      getNotificationSubscriptionsInputSchema,
-      'getNotificationSubscriptionsInput',
-    ),
-    getNotificationSubscriptionsOutput: zodToJsonSchema(
-      getNotificationSubscriptionsOutputSchema,
-      'getNotificationSubscriptionsOutput',
-    ),
-    getNotificationTopicsOutput: zodToJsonSchema(
-      getNotificationTopicsOutputSchema,
-      'getNotificationTopicsOutput',
-    ),
-
-    // Negotiation API
-    sendOfferToInterestedBuyersInput: zodToJsonSchema(
-      sendOfferToInterestedBuyersInputSchema,
-      'sendOfferToInterestedBuyersInput',
-    ),
-    sendOfferToInterestedBuyersOutput: zodToJsonSchema(
-      sendOfferToInterestedBuyersOutputSchema,
-      'sendOfferToInterestedBuyersOutput',
-    ),
-  };
-};

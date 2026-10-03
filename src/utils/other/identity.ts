@@ -1,7 +1,7 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
- * Effect-backed schemas for Identity API input validation
+ * Zod schemas for Identity API input validation
  * Based on: src/api/other/identity.ts
  * OpenAPI spec: commerce_identity_v1_oas3.json
  * Types from: src/types/commerce_identity_v1_oas3.ts

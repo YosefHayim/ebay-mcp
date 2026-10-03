@@ -1,5 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import {
   TimeDurationUnit,
   RegionType,
@@ -14,7 +13,7 @@ import {
 /**
  * Account Management API Schemas
  *
- * This file contains Effect-backed schemas for all Account Management endpoints.
+ * This file contains Zod schemas for all Account Management endpoints.
  * Schemas are organized by endpoint and include both input and output validation.
  */
 
@@ -648,104 +647,3 @@ export const getPrivilegesInputSchema = z.object({});
 // ============================================================================
 // JSON Schema Conversion Functions
 // ============================================================================
-
-/**
- * Converts Account Management API Effect-backed schemas to JSON Schema format for MCP tools.
- *
- * @returns Account Management API JSON schemas keyed by endpoint or shared model name.
- * @example
- * ```ts
- * const schemas = getAccountManagementJsonSchemas();
- * ```
- */
-export const getAccountManagementJsonSchemas = () => {
-  return {
-    // Custom Policies
-    getCustomPoliciesInput: zodToJsonSchema(getCustomPoliciesInputSchema, 'getCustomPoliciesInput'),
-    getCustomPoliciesOutput: zodToJsonSchema(customPolicyResponseSchema, 'getCustomPoliciesOutput'),
-    createCustomPolicyInput: zodToJsonSchema(
-      createCustomPolicyInputSchema,
-      'createCustomPolicyInput',
-    ),
-    createCustomPolicyOutput: zodToJsonSchema(
-      createCustomPolicyOutputSchema,
-      'createCustomPolicyOutput',
-    ),
-
-    // Fulfillment Policies
-    getFulfillmentPoliciesInput: zodToJsonSchema(
-      getFulfillmentPoliciesInputSchema,
-      'getFulfillmentPoliciesInput',
-    ),
-    getFulfillmentPoliciesOutput: zodToJsonSchema(
-      getFulfillmentPoliciesOutputSchema,
-      'getFulfillmentPoliciesOutput',
-    ),
-    createFulfillmentPolicyInput: zodToJsonSchema(
-      createFulfillmentPolicyInputSchema,
-      'createFulfillmentPolicyInput',
-    ),
-    createFulfillmentPolicyOutput: zodToJsonSchema(
-      createFulfillmentPolicyOutputSchema,
-      'createFulfillmentPolicyOutput',
-    ),
-    fulfillmentPolicyDetails: zodToJsonSchema(
-      fulfillmentPolicyResponseSchema,
-      'fulfillmentPolicyDetails',
-    ),
-
-    // Payment Policies
-    getPaymentPoliciesInput: zodToJsonSchema(
-      getPaymentPoliciesInputSchema,
-      'getPaymentPoliciesInput',
-    ),
-    getPaymentPoliciesOutput: zodToJsonSchema(
-      getPaymentPoliciesOutputSchema,
-      'getPaymentPoliciesOutput',
-    ),
-    createPaymentPolicyInput: zodToJsonSchema(
-      createPaymentPolicyInputSchema,
-      'createPaymentPolicyInput',
-    ),
-    createPaymentPolicyOutput: zodToJsonSchema(
-      createPaymentPolicyOutputSchema,
-      'createPaymentPolicyOutput',
-    ),
-    paymentPolicyDetails: zodToJsonSchema(paymentPolicyResponseSchema, 'paymentPolicyDetails'),
-
-    // Return Policies
-    getReturnPoliciesInput: zodToJsonSchema(getReturnPoliciesInputSchema, 'getReturnPoliciesInput'),
-    getReturnPoliciesOutput: zodToJsonSchema(
-      getReturnPoliciesOutputSchema,
-      'getReturnPoliciesOutput',
-    ),
-    createReturnPolicyInput: zodToJsonSchema(
-      createReturnPolicyInputSchema,
-      'createReturnPolicyInput',
-    ),
-    createReturnPolicyOutput: zodToJsonSchema(
-      createReturnPolicyOutputSchema,
-      'createReturnPolicyOutput',
-    ),
-    returnPolicyDetails: zodToJsonSchema(returnPolicyResponseSchema, 'returnPolicyDetails'),
-
-    // Sales Tax
-    getSalesTaxesOutput: zodToJsonSchema(getSalesTaxesOutputSchema, 'getSalesTaxesOutput'),
-    salesTaxDetails: zodToJsonSchema(salesTaxSchema, 'salesTaxDetails'),
-
-    // Programs
-    programRequest: zodToJsonSchema(programRequestSchema, 'programRequest'),
-    getOptedInProgramsInput: zodToJsonSchema(
-      getOptedInProgramsInputSchema,
-      'getOptedInProgramsInput',
-    ),
-    programsOutput: zodToJsonSchema(programsOutputSchema, 'programsOutput'),
-
-    // KYC & Privileges
-    getKycInput: zodToJsonSchema(getKycInputSchema, 'getKycInput'),
-    kycOutput: zodToJsonSchema(kycOutputSchema, 'kycOutput'),
-    getRateTablesInput: zodToJsonSchema(getRateTablesInputSchema, 'getRateTablesInput'),
-    getPrivilegesInput: zodToJsonSchema(getPrivilegesInputSchema, 'getPrivilegesInput'),
-    privilegesOutput: zodToJsonSchema(privilegesOutputSchema, 'privilegesOutput'),
-  };
-};

@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import { buildCredentialDisplay, maskToken } from '@/auth/credentialSession.js';
 import { getOAuthAuthorizationUrl, validateScopes } from '@/config/environment.js';
 import { defineTool } from '@/tools/defineTool.js';

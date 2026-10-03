@@ -33,41 +33,37 @@ import type {
   getEmailReportInputSchema,
 } from '@/schemas/marketing/marketing.js';
 import type { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { MARKETING_BASE_PATH, type MarketingOperationResponse } from './shared.js';
 
-type CreateItemPriceMarkdownPromotionInput = InferEffectSchema<
+type CreateItemPriceMarkdownPromotionInput = z.infer<
   typeof createItemPriceMarkdownPromotionInputSchema
 >;
-type GetItemPriceMarkdownPromotionInput = InferEffectSchema<
-  typeof getItemPriceMarkdownPromotionInputSchema
->;
-type UpdateItemPriceMarkdownPromotionInput = InferEffectSchema<
+type GetItemPriceMarkdownPromotionInput = z.infer<typeof getItemPriceMarkdownPromotionInputSchema>;
+type UpdateItemPriceMarkdownPromotionInput = z.infer<
   typeof updateItemPriceMarkdownPromotionInputSchema
 >;
-type DeleteItemPriceMarkdownPromotionInput = InferEffectSchema<
+type DeleteItemPriceMarkdownPromotionInput = z.infer<
   typeof deleteItemPriceMarkdownPromotionInputSchema
 >;
-type CreateItemPromotionInput = InferEffectSchema<typeof createItemPromotionInputSchema>;
-type GetItemPromotionInput = InferEffectSchema<typeof getItemPromotionInputSchema>;
-type UpdateItemPromotionInput = InferEffectSchema<typeof updateItemPromotionInputSchema>;
-type DeleteItemPromotionInput = InferEffectSchema<typeof deleteItemPromotionInputSchema>;
-type GetListingSetInput = InferEffectSchema<typeof getListingSetInputSchema>;
-type GetPromotionsInput = InferEffectSchema<typeof getPromotionsInputSchema>;
-type PausePromotionInput = InferEffectSchema<typeof pausePromotionInputSchema>;
-type ResumePromotionInput = InferEffectSchema<typeof resumePromotionInputSchema>;
-type GetPromotionReportsInput = InferEffectSchema<typeof getPromotionReportsInputSchema>;
-type GetPromotionSummaryReportInput = InferEffectSchema<
-  typeof getPromotionSummaryReportInputSchema
->;
-type GetEmailCampaignsInput = InferEffectSchema<typeof getEmailCampaignsInputSchema>;
-type CreateEmailCampaignInput = InferEffectSchema<typeof createEmailCampaignInputSchema>;
-type GetEmailCampaignInput = InferEffectSchema<typeof getEmailCampaignInputSchema>;
-type UpdateEmailCampaignInput = InferEffectSchema<typeof updateEmailCampaignInputSchema>;
-type DeleteEmailCampaignInput = InferEffectSchema<typeof deleteEmailCampaignInputSchema>;
-type GetAudiencesInput = InferEffectSchema<typeof getAudiencesInputSchema>;
-type GetEmailPreviewInput = InferEffectSchema<typeof getEmailPreviewInputSchema>;
-type GetEmailReportInput = InferEffectSchema<typeof getEmailReportInputSchema>;
+type CreateItemPromotionInput = z.infer<typeof createItemPromotionInputSchema>;
+type GetItemPromotionInput = z.infer<typeof getItemPromotionInputSchema>;
+type UpdateItemPromotionInput = z.infer<typeof updateItemPromotionInputSchema>;
+type DeleteItemPromotionInput = z.infer<typeof deleteItemPromotionInputSchema>;
+type GetListingSetInput = z.infer<typeof getListingSetInputSchema>;
+type GetPromotionsInput = z.infer<typeof getPromotionsInputSchema>;
+type PausePromotionInput = z.infer<typeof pausePromotionInputSchema>;
+type ResumePromotionInput = z.infer<typeof resumePromotionInputSchema>;
+type GetPromotionReportsInput = z.infer<typeof getPromotionReportsInputSchema>;
+type GetPromotionSummaryReportInput = z.infer<typeof getPromotionSummaryReportInputSchema>;
+type GetEmailCampaignsInput = z.infer<typeof getEmailCampaignsInputSchema>;
+type CreateEmailCampaignInput = z.infer<typeof createEmailCampaignInputSchema>;
+type GetEmailCampaignInput = z.infer<typeof getEmailCampaignInputSchema>;
+type UpdateEmailCampaignInput = z.infer<typeof updateEmailCampaignInputSchema>;
+type DeleteEmailCampaignInput = z.infer<typeof deleteEmailCampaignInputSchema>;
+type GetAudiencesInput = z.infer<typeof getAudiencesInputSchema>;
+type GetEmailPreviewInput = z.infer<typeof getEmailPreviewInputSchema>;
+type GetEmailReportInput = z.infer<typeof getEmailReportInputSchema>;
 
 /**
  * Response returned by eBay Marketing API createItemPriceMarkdownPromotion.

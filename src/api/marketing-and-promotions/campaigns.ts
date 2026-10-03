@@ -29,32 +29,28 @@ import type {
   updateCampaignIdentificationInputSchema,
 } from '@/schemas/marketing/marketing.js';
 import type { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { MARKETING_BASE_PATH, type MarketingOperationResponse } from './shared.js';
 
-type CloneCampaignInput = InferEffectSchema<typeof cloneCampaignInputSchema>;
-type GetCampaignsInput = InferEffectSchema<typeof getCampaignsInputSchema>;
-type CreateCampaignInput = InferEffectSchema<typeof createCampaignInputSchema>;
-type GetCampaignInput = InferEffectSchema<typeof getCampaignInputSchema>;
-type DeleteCampaignInput = InferEffectSchema<typeof deleteCampaignInputSchema>;
-type EndCampaignInput = InferEffectSchema<typeof endCampaignInputSchema>;
-type FindCampaignByAdReferenceInput = InferEffectSchema<
-  typeof findCampaignByAdReferenceInputSchema
->;
-type GetCampaignByNameInput = InferEffectSchema<typeof getCampaignByNameInputSchema>;
-type LaunchCampaignInput = InferEffectSchema<typeof launchCampaignInputSchema>;
-type PauseCampaignInput = InferEffectSchema<typeof pauseCampaignInputSchema>;
-type ResumeCampaignInput = InferEffectSchema<typeof resumeCampaignInputSchema>;
-type SetupQuickCampaignInput = InferEffectSchema<typeof setupQuickCampaignInputSchema>;
-type SuggestBudgetInput = InferEffectSchema<typeof suggestBudgetInputSchema>;
-type SuggestItemsInput = InferEffectSchema<typeof suggestItemsInputSchema>;
-type SuggestMaxCpcInput = InferEffectSchema<typeof suggestMaxCpcInputSchema>;
-type UpdateAdRateStrategyInput = InferEffectSchema<typeof updateAdRateStrategyInputSchema>;
-type UpdateBiddingStrategyInput = InferEffectSchema<typeof updateBiddingStrategyInputSchema>;
-type UpdateCampaignBudgetInput = InferEffectSchema<typeof updateCampaignBudgetInputSchema>;
-type UpdateCampaignIdentificationInput = InferEffectSchema<
-  typeof updateCampaignIdentificationInputSchema
->;
+type CloneCampaignInput = z.infer<typeof cloneCampaignInputSchema>;
+type GetCampaignsInput = z.infer<typeof getCampaignsInputSchema>;
+type CreateCampaignInput = z.infer<typeof createCampaignInputSchema>;
+type GetCampaignInput = z.infer<typeof getCampaignInputSchema>;
+type DeleteCampaignInput = z.infer<typeof deleteCampaignInputSchema>;
+type EndCampaignInput = z.infer<typeof endCampaignInputSchema>;
+type FindCampaignByAdReferenceInput = z.infer<typeof findCampaignByAdReferenceInputSchema>;
+type GetCampaignByNameInput = z.infer<typeof getCampaignByNameInputSchema>;
+type LaunchCampaignInput = z.infer<typeof launchCampaignInputSchema>;
+type PauseCampaignInput = z.infer<typeof pauseCampaignInputSchema>;
+type ResumeCampaignInput = z.infer<typeof resumeCampaignInputSchema>;
+type SetupQuickCampaignInput = z.infer<typeof setupQuickCampaignInputSchema>;
+type SuggestBudgetInput = z.infer<typeof suggestBudgetInputSchema>;
+type SuggestItemsInput = z.infer<typeof suggestItemsInputSchema>;
+type SuggestMaxCpcInput = z.infer<typeof suggestMaxCpcInputSchema>;
+type UpdateAdRateStrategyInput = z.infer<typeof updateAdRateStrategyInputSchema>;
+type UpdateBiddingStrategyInput = z.infer<typeof updateBiddingStrategyInputSchema>;
+type UpdateCampaignBudgetInput = z.infer<typeof updateCampaignBudgetInputSchema>;
+type UpdateCampaignIdentificationInput = z.infer<typeof updateCampaignIdentificationInputSchema>;
 
 /**
  * Response returned by eBay Marketing API cloneCampaign.

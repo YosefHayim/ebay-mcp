@@ -1,7 +1,7 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
- * Effect-backed schemas for Negotiation API input validation.
+ * Zod schemas for Negotiation API input validation.
  * OpenAPI spec: sell_negotiation_v1_oas3.json
  */
 

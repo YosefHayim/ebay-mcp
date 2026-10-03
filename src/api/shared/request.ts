@@ -1,6 +1,6 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
-import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import { formatZodIssues } from '@/utils/zodIssues.js';
+import type { z } from 'zod';
 import { Data, Effect } from 'effect';
 
 /**
@@ -43,10 +43,10 @@ export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
 }> {}
 
 /**
- * Decodes endpoint input through its Effect-backed schema (the tool's SSOT), reporting a
+ * Parses endpoint input through its Zod schema (the tool's SSOT), reporting a
  * failure as EndpointInputError so endpoint Effects keep one input-failure type.
  *
- * @param schema - Effect-backed endpoint input schema.
+ * @param schema - Zod endpoint input schema.
  * @param input - Raw endpoint input.
  * @param parameter - Parameter named in the failure; defaults to `input`.
  * @returns An Effect with the decoded input, or EndpointInputError.
@@ -56,14 +56,18 @@ export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
  * const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
  * ```
  */
-export const decodeEndpointInputEffect = <TSchema extends EffectBackedSchema>(
+export const decodeEndpointInputEffect = <TSchema extends z.ZodTypeAny>(
   schema: TSchema,
   input: unknown,
   parameter = 'input',
-): Effect.Effect<InferEffectSchema<TSchema>, EndpointInputError> =>
-  decodeEffectSchema(schema, input).pipe(
-    Effect.mapError((cause) => new EndpointInputError({ parameter, message: cause.message })),
-  );
+): Effect.Effect<z.infer<TSchema>, EndpointInputError> => {
+  const parsedInput = schema.safeParse(input);
+  return parsedInput.success
+    ? Effect.succeed(parsedInput.data)
+    : Effect.fail(
+        new EndpointInputError({ parameter, message: formatZodIssues(parsedInput.error) }),
+      );
+};
 
 /**
  * Builds the per-call `X-EBAY-C-MARKETPLACE-ID` header for operations whose marketplace
