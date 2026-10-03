@@ -34,9 +34,11 @@ arguments (`z.infer`).
 ```typescript
 import { z } from 'zod';
 
-/** Input accepted by ebay_get_inventory_item. */
+/**
+ * Validates the Inventory Management API get inventory item request payload.
+ */
 export const getInventoryItemInputSchema = z.object({
-  sku: z.string().min(1).describe('Seller-defined SKU of the inventory item'),
+  sku: z.string().describe('The seller-defined SKU value for the inventory item'),
 });
 ```
 

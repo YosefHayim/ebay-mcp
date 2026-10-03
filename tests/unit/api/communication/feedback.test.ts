@@ -141,6 +141,6 @@ describe('respondToFeedback', () => {
     );
 
     expect(error._tag).toBe('EndpointInputError');
-    expect(error.message).toContain('response is required');
+    expect(error.message).toContain('feedbackReply is required');
   });
 });

@@ -159,12 +159,12 @@ async function downloadSpecs(): Promise<number> {
 
   let downloaded = 0;
   let failed = 0;
-  for (const { folder, url } of specSources) {
+  for (const { api, folder, url } of specSources) {
     const fileName = basename(url);
     const folderPath = join(SPECS_DIR, folder);
     const filePath = join(folderPath, fileName);
 
-    const stopSpinner = showSpinner(`Downloading ${fileName}...`);
+    const stopSpinner = showSpinner(`Downloading ${api} (${fileName})...`);
 
     const downloadedSpec = await Effect.runPromise(
       Effect.either(
@@ -184,10 +184,12 @@ async function downloadSpecs(): Promise<number> {
     );
 
     if (Either.isLeft(downloadedSpec)) {
-      console.log(`  ${ui.error('✗')} ${fileName}: ${getErrorMessage(downloadedSpec.left)}`);
+      console.log(
+        `  ${ui.error('✗')} ${api} (${fileName}): ${getErrorMessage(downloadedSpec.left)}`,
+      );
       failed++;
     } else {
-      console.log(`  ${ui.success('✓')} ${fileName}`);
+      console.log(`  ${ui.success('✓')} ${api} (${fileName})`);
       downloaded++;
     }
   }

@@ -270,7 +270,7 @@ export class FeedbackApi {
     return Effect.gen(function* () {
       const replyRequest = yield* requireObjectEffect<RespondToFeedbackRequest>(
         feedbackReply,
-        'response',
+        'feedbackReply',
       );
 
       return yield* requestPostEffect<RespondToFeedbackResponse>(client, path, replyRequest);
