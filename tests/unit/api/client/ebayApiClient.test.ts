@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import nock from 'nock';
-import { EbayApiClient } from '@/api/client.js';
+import { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { getEbayConfig } from '@/config/environment.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { apiLogger } from '@/utils/logger.js';

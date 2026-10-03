@@ -1,7 +1,7 @@
 import XmlBuilder, { type XMLBuilder as XmlBuilderInstance } from 'fast-xml-builder';
 import { XMLParser } from 'fast-xml-parser';
-import type { EbayApiClient } from '@/api/client.js';
-import { TradingApiFailure } from '@/api/clientTradingError.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
+import { TradingApiFailure } from '@/api/client/tradingApiFailure.js';
 import { EbayApiError } from '@/api/shared/request.js';
 import { getBaseUrl, getTradingSiteId } from '@/config/environment.js';
 import { getErrorMessage } from '@/utils/errors.js';

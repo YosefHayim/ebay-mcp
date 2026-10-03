@@ -7,7 +7,7 @@ import { VeroApi } from '@/api/other/vero.js';
 import { TranslationApi } from '@/api/other/translation.js';
 import { EDeliveryApi } from '@/api/other/edelivery.js';
 import { IdentityApi } from '@/api/other/identity.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { Effect } from 'effect';
 
 describe('Other APIs', () => {

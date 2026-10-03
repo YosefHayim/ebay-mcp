@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { FinancesApi } from '@/api/account-management/finances.js';
 import type { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
 import { Effect } from 'effect';

@@ -1,4 +1,4 @@
-import type { TradingApiClient } from '@/api/clientTrading.js';
+import type { TradingApiClient } from '@/api/client/tradingApiClient.js';
 import {
   type EbayApiError,
   type EndpointInputError,

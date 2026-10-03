@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { decodeEndpointInputEffect, requestGetEffect } from '@/api/shared/request.js';
 import {
   createCustomerServiceMetricTaskInputSchema,

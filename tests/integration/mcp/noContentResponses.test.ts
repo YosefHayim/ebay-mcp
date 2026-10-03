@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { cleanupMocks, mockEbayApiEndpoint, mockEbayApiError } from '@tests/helpers/mockHttp.js';

@@ -1,4 +1,4 @@
-import type { EbaySellerApi } from '@/api/index.js';
+import type { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import type { EffectBackedRawShape } from '@/utils/effectSchemaTypes.js';
 
 /** JSON-schema-like output contract attached to a tool definition. */

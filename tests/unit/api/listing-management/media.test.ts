@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { MediaApi, type Video } from '@/api/listing-management/media.js';
 import { Effect, Exit } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

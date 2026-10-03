@@ -7,7 +7,7 @@ import {
   mapFindCompletedItemsResponse,
   mapFindingItem,
 } from '@/api/other/finding.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('Finding API helpers', () => {
   describe('getFindingServiceBaseUrl', () => {

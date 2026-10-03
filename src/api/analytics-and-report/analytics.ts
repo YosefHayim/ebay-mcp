@@ -1,5 +1,5 @@
 import type { components } from '@/types/sell-apps/analytics-and-report/sellAnalyticsV1Oas3.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Effect } from 'effect';
 import { executeTool } from '@/tools/index.js';
-import type { EbaySellerApi } from '@/api/index.js';
+import type { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import process from 'node:process';
 
 describe('Comprehensive Tools Coverage', () => {

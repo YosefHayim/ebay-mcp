@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { TaxonomyApi } from '@/api/listing-metadata/taxonomy.js';
 import { MAX_INLINE_DOWNLOAD_BYTES } from '@/api/shared/download.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';

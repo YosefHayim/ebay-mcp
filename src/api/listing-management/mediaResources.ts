@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { locatedResourceId } from '@/api/shared/location.js';
 import { decodeEndpointInputEffect, EbayApiError } from '@/api/shared/request.js';
 import { getIdentityBaseUrl, getMediaBaseUrl } from '@/config/environment.js';

@@ -1,6 +1,9 @@
 import { EbayOAuthClient, type EbayOAuthError } from '@/auth/oauth.js';
-import { clientRequestError, type EbayClientRequestError } from '@/api/clientRequestError.js';
-import { RateLimitTracker } from '@/api/rateLimitTracker.js';
+import {
+  clientRequestError,
+  type EbayClientRequestError,
+} from '@/api/client/ebayClientRequestError.js';
+import { RateLimitTracker } from '@/api/client/rateLimitTracker.js';
 import { getBaseUrl } from '@/config/environment.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { getErrorMessage } from '@/utils/errors.js';

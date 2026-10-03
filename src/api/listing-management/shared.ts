@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 export const INVENTORY_BASE_PATH = '/sell/inventory/v1';
 

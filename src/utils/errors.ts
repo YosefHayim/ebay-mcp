@@ -1,4 +1,4 @@
-import type { EbayClientRequestErrorKind } from '@/api/clientRequestError.js';
+import type { EbayClientRequestErrorKind } from '@/api/client/ebayClientRequestError.js';
 import { Cause, Runtime } from 'effect';
 
 /**

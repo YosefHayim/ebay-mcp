@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { EbayApiError, type EndpointInputError } from '@/api/shared/request.js';
 import type { SellComplianceComponents } from '@/types/sell-apps/other-apis/sellComplianceV1Oas3.js';
 import { Effect } from 'effect';

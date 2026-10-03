@@ -124,7 +124,7 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
         '| Path | Owns |',
         '| --- | --- |',
         '| `index.ts` / `serverHttp.ts` | MCP entry points (STDIO / HTTP) |',
-        '| `api/` | eBay API client implementations (one area per file) |',
+        '| `api/` | eBay API modules (one area per folder), `client/` (REST and Trading XML clients), and the `ebaySellerApi.ts` facade |',
         '| `auth/` | OAuth 2.0 flow and token management |',
         '| `config/` | Environment loading, constants, marketplace defaults |',
         '| `tools/` | Tool wiring — `registry.ts`, `contracts.ts`, `defineTool.ts`, and `categories/` (13 family files that co-locate each tool definition with its handler via `defineTool`) |',

@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   type EbayApiError,
   EndpointInputError,

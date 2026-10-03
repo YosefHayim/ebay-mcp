@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   fileNameFromDisposition,
   MAX_INLINE_DOWNLOAD_BYTES,

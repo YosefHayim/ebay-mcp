@@ -1,5 +1,5 @@
 import { MarketingApi } from '@/api/marketing-and-promotions/marketing.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { Effect } from 'effect';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

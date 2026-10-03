@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   BATCH_GET_OFFERS_CONCURRENCY,
   MAX_BATCH_GET_OFFERS_SKUS,

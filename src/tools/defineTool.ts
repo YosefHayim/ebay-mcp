@@ -1,5 +1,5 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import type { EbaySellerApi } from '@/api/index.js';
+import type { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import type { OutputArgs, ToolAnnotations } from '@/tools/types.js';
 import type { ResolvedToolUi, ToolEntry } from '@/tools/registry.js';
 import type { ToolHandler } from '@/tools/types.js';

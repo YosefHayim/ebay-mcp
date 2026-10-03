@@ -48,7 +48,7 @@ import {
 import { detectLLMClients, configureLLMClient } from '@/utils/llmClientDetector.js';
 import { validateSetup, displayRecommendations } from '@/scripts/setupValidator.js';
 import { loadExistingConfig, readEnvironment } from './setupShared.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { EbayOAuthClient } from '@/auth/oauth.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import type { EbayConfig } from '@/types/ebay.js';

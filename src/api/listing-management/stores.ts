@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayResponse } from '@/api/client.js';
+import type { EbayApiClient, EbayResponse } from '@/api/client/ebayApiClient.js';
 import { locatedResourceId } from '@/api/shared/location.js';
 import {
   EbayApiError,

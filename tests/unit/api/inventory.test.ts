@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { InventoryApi } from '@/api/listing-management/inventory.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import type { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
 

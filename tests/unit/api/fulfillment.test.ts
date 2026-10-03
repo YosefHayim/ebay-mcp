@@ -10,7 +10,7 @@ import {
   type ShippingFulfillmentDetails,
   type ShippingFulfillmentPagedCollection,
 } from '@/api/order-management/fulfillment.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('FulfillmentApi', () => {
   let fulfillmentApi: FulfillmentApi;

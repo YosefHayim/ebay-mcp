@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { createInventoryItemsMethods } from './items.js';
 import { createInventoryLocationsMethods } from './locations.js';
 import { createInventoryOffersMethods } from './offers.js';

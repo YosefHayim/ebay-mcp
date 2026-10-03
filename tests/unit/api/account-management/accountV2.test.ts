@@ -1,5 +1,5 @@
 import { AccountV2Api } from '@/api/account-management/accountV2.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { MarketplaceId } from '@/types/ebayEnums.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
 import { Effect } from 'effect';

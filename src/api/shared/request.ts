@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import { decodeEffectSchema } from '@/utils/effectSchema.js';
 import type { EffectBackedSchema, InferEffectSchema } from '@/utils/effectSchemaTypes.js';
 import { Data, Effect } from 'effect';

@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import type { EbaySellerApi } from '@/api/index.js';
+import type { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { executeTool } from '@/tools/index.js';
 import { Effect } from 'effect';
 

@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { CharityApi } from '@/api/listing-metadata/charity.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
 import { Effect } from 'effect';

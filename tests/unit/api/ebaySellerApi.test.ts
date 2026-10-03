@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { Effect } from 'effect';
 

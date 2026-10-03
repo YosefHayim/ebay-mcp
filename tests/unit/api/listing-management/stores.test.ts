@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { StoresApi } from '@/api/listing-management/stores.js';
 import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

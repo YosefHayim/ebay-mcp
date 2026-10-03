@@ -1,6 +1,6 @@
 import { McpServer, type RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { getEbayConfig, mcpConfig } from '@/config/environment.js';
 import { resolveToolGatingMode } from '@/config/toolFamilies.js';
 import { isReadOnlyModeEnabled, isReadOnlyTool } from '@/mcp/readOnlyFilter.js';

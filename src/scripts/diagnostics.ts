@@ -17,7 +17,7 @@ import { parseEnvFile } from '@/utils/envParser.js';
 import { detectLLMClients } from '@/utils/llmClientDetector.js';
 import { displayScopeVerification, parseScopeString } from '@/scripts/scopeHelper.js';
 import { readEnvironment } from './setupShared.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import { getUpdateInfo, getVersion } from '@/utils/version.js';
 import type { EbayConfig } from '@/types/ebay.js';

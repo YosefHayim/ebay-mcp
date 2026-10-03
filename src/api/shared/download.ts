@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig, EbayResponse } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig, EbayResponse } from '@/api/client/ebayApiClient.js';
 import { EbayApiError } from '@/api/shared/request.js';
 import { Data, Effect } from 'effect';
 

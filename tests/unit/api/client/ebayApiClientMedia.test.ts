@@ -1,5 +1,5 @@
 import process from 'node:process';
-import { EbayApiClient } from '@/api/client.js';
+import { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { Effect } from 'effect';
 import nock from 'nock';

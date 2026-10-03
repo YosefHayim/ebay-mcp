@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import nock from 'nock';
 import { executeTool } from '@/tools/index.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { mockEbayApiEndpoint, mockEbayApiError, cleanupMocks } from '@tests/helpers/mockHttp.js';
 import process from 'node:process';

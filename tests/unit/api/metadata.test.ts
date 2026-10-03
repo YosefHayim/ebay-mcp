@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { MetadataApi, compatibilityHeaders } from '@/api/listing-metadata/metadata.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
 import { Effect } from 'effect';

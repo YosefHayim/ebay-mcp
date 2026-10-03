@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Effect } from 'effect';
 import { DeveloperApi } from '@/api/developer/developer.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('DeveloperApi', () => {
   let client: EbayApiClient;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EbayApiClient } from '@/api/client.js';
-import { TradingApiClient } from '@/api/clientTrading.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
+import { TradingApiClient } from '@/api/client/tradingApiClient.js';
 import { Effect } from 'effect';
 import nock from 'nock';
 

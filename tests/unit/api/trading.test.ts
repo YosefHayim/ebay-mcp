@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import type { TradingApiClient } from '@/api/clientTrading.js';
+import type { TradingApiClient } from '@/api/client/tradingApiClient.js';
 import { TradingApi } from '@/api/trading/trading.js';
 import { Effect } from 'effect';
 
