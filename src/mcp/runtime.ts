@@ -42,10 +42,11 @@ export interface EbayMcpRuntime {
   initializeApi(): Promise<void>;
 }
 
-function formatToolSuccess(result: unknown) {
+function formatToolSuccess(handlerOutput: unknown) {
   // JSON.stringify(undefined) returns undefined (not a string), which produces an
   // invalid MCP content block and triggers client -32602 on empty-body 201/204s.
-  const successDocument = result === undefined || result === null ? { status: 'success' } : result;
+  const successDocument =
+    handlerOutput === undefined || handlerOutput === null ? { status: 'success' } : handlerOutput;
 
   return {
     content: [
@@ -59,19 +60,19 @@ function formatToolSuccess(result: unknown) {
 
 function formatToolFailure(error: unknown) {
   const { message, status, errors } = getEbayErrorDetails(error);
-  const payload: Record<string, unknown> = { error: message };
+  const failureDocument: Record<string, unknown> = { error: message };
   if (status !== undefined) {
-    payload.status = status;
+    failureDocument.status = status;
   }
   if (errors !== undefined) {
-    payload.details = errors;
+    failureDocument.details = errors;
   }
 
   return {
     content: [
       {
         type: 'text' as const,
-        text: JSON.stringify(payload, null, 2),
+        text: JSON.stringify(failureDocument, null, 2),
       },
     ],
     isError: true,
@@ -106,18 +107,18 @@ function registerTool(
           try: async () => handler(api, args),
           catch: (error) => error,
         }).pipe(
-          Effect.map((result) => {
+          Effect.map((handlerOutput) => {
             if (logToolExecution) {
               toolLogger.debug(`Tool ${definition.name} completed successfully`);
             }
 
             if (entry.formatResult) {
-              return entry.formatResult(result, args);
+              return entry.formatResult(handlerOutput, args);
             }
 
             return ui.shouldRender(entry)
-              ? buildUiToolResult(entry.ui, result)
-              : formatToolSuccess(result);
+              ? buildUiToolResult(entry.ui, handlerOutput)
+              : formatToolSuccess(handlerOutput);
           }),
           Effect.catchAll((error) => {
             if (logToolExecution) {

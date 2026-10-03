@@ -105,9 +105,9 @@ export class DotEnvCredentialStore implements CredentialStore {
         try: () => {
           // Drop non-string values so a missing refresh_token cannot persist as empty.
           const sanitizedUpdates: Record<string, string> = {};
-          for (const [key, value] of Object.entries(updates)) {
-            if (typeof value === 'string') {
-              sanitizedUpdates[key] = value;
+          for (const [name, envValue] of Object.entries(updates)) {
+            if (typeof envValue === 'string') {
+              sanitizedUpdates[name] = envValue;
             }
           }
 

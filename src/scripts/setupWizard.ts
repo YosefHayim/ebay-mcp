@@ -46,7 +46,7 @@ interface WizardConfig {
 interface WizardContext {
   answers: Record<string, unknown>;
   setNextStep: (stepId: string) => void;
-  showNote: (title: string, body: string) => void;
+  showNote: (title: string, message: string) => void;
   openBrowser: (url: string) => Promise<void>;
 }
 
@@ -54,8 +54,8 @@ interface RunWizardOptions {
   optionsProvider?: (
     stepId: string,
   ) => MaybePromise<{ value: string; label: string }[] | undefined>;
-  asyncValidate?: (stepId: string, value: unknown) => MaybePromise<string | null>;
-  onAfterStep?: (stepId: string, value: unknown, context: WizardContext) => MaybePromise<void>;
+  asyncValidate?: (stepId: string, answer: unknown) => MaybePromise<string | null>;
+  onAfterStep?: (stepId: string, answer: unknown, context: WizardContext) => MaybePromise<void>;
   onCancel?: () => void;
 }
 
@@ -132,10 +132,10 @@ const promptStep = async (
     },
   };
 
-  let response: Record<string, unknown>;
+  let promptAnswers: Record<string, unknown>;
   switch (step.type) {
     case 'select':
-      response = await prompts(
+      promptAnswers = await prompts(
         {
           type: 'select',
           name: 'value',
@@ -151,7 +151,7 @@ const promptStep = async (
       );
       break;
     case 'multiselect':
-      response = await prompts(
+      promptAnswers = await prompts(
         {
           type: 'multiselect',
           name: 'value',
@@ -166,17 +166,17 @@ const promptStep = async (
       );
       break;
     default:
-      response = await prompts(
+      promptAnswers = await prompts(
         {
           type: step.type,
           name: 'value',
           message: step.message,
           initial: step.default ?? '',
-          validate: (value: string) => {
+          validate: (input: string) => {
             const requiredRule = step.validate?.some((rule) => rule.rule === 'required');
             const isRequired = requiredRule || step.required === true;
-            if (!isRequired && value.trim().length === 0) return true;
-            if (isRequired && value.trim().length === 0) return 'This field is required';
+            if (!isRequired && input.trim().length === 0) return true;
+            if (isRequired && input.trim().length === 0) return 'This field is required';
             return true;
           },
         },
@@ -190,12 +190,12 @@ const promptStep = async (
     return { cancelled: true, value: undefined };
   }
 
-  const responseValue = response.value;
-  if (typeof responseValue === 'string' || responseValue === undefined) {
-    return { cancelled: false, value: responseValue };
+  const answer = promptAnswers.value;
+  if (typeof answer === 'string' || answer === undefined) {
+    return { cancelled: false, value: answer };
   }
-  if (Array.isArray(responseValue) && responseValue.every((value) => typeof value === 'string')) {
-    return { cancelled: false, value: responseValue };
+  if (Array.isArray(answer) && answer.every((choice) => typeof choice === 'string')) {
+    return { cancelled: false, value: answer };
   }
   return { cancelled: false, value: undefined };
 };
@@ -228,9 +228,9 @@ export const runWizard = async (
     setNextStep(stepId: string) {
       forcedNextStep = stepId;
     },
-    showNote(title: string, body: string) {
+    showNote(title: string, message: string) {
       writeCliLine(`\n  ${title}`);
-      writeCliLine(`  ${body}\n`);
+      writeCliLine(`  ${message}\n`);
     },
     openBrowser(url: string) {
       return openUrl(url);
@@ -251,16 +251,16 @@ export const runWizard = async (
     const optionsOverride = runOptions.optionsProvider
       ? await runOptions.optionsProvider(step.id)
       : undefined;
-    const result = await promptStep(step, optionsOverride, runOptions.onCancel);
+    const attempt = await promptStep(step, optionsOverride, runOptions.onCancel);
 
-    if (result.cancelled) {
+    if (attempt.cancelled) {
       return answers;
     }
 
     if (step.type !== 'note') {
       let validationError =
-        runOptions.asyncValidate && result.value !== undefined
-          ? await runOptions.asyncValidate(step.id, result.value)
+        runOptions.asyncValidate && attempt.value !== undefined
+          ? await runOptions.asyncValidate(step.id, attempt.value)
           : null;
 
       while (validationError) {
@@ -274,7 +274,7 @@ export const runWizard = async (
         answers[step.id] = retry.value;
       }
 
-      answers[step.id] = result.value;
+      answers[step.id] = attempt.value;
     }
 
     if (runOptions.onAfterStep) {

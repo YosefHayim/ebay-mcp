@@ -37,10 +37,10 @@ export class ToolInputError extends Data.TaggedError('ToolInputError')<{
  * @typeParam Result - The handler's awaited return type, supplied by {@link ToolSpec}.
  */
 export type ToolUiSpec<Result> =
-  | { archetype: 'table'; map: (result: Result) => TableViewModel }
-  | { archetype: 'card'; map: (result: Result) => CardViewModel }
-  | { archetype: 'chart'; map: (result: Result) => ChartViewModel }
-  | { archetype: 'stat'; map: (result: Result) => StatViewModel };
+  | { archetype: 'table'; map: (handlerOutput: Result) => TableViewModel }
+  | { archetype: 'card'; map: (handlerOutput: Result) => CardViewModel }
+  | { archetype: 'chart'; map: (handlerOutput: Result) => ChartViewModel }
+  | { archetype: 'stat'; map: (handlerOutput: Result) => StatViewModel };
 
 /**
  * Specification for a single MCP tool, co-locating its public definition with a
@@ -70,7 +70,10 @@ export interface ToolSpec<Shape extends z.ZodRawShape, Result = unknown> {
   /** Executes the tool against validated, fully-typed arguments; may be async. */
   handler: (api: EbaySellerApi, args: z.infer<z.ZodObject<Shape>>) => Result;
   /** Optional protocol formatter, run only at the MCP boundary. */
-  formatResult?: (result: Awaited<Result>, args: z.infer<z.ZodObject<Shape>>) => CallToolResult;
+  formatResult?: (
+    handlerOutput: Awaited<Result>,
+    args: z.infer<z.ZodObject<Shape>>,
+  ) => CallToolResult;
   /** Optional interactive view rendered by hosts that support MCP Apps. */
   ui?: ToolUiSpec<Awaited<Result>>;
 }
@@ -80,7 +83,7 @@ export interface ToolSpec<Shape extends z.ZodRawShape, Result = unknown> {
  * live on the non-generic {@link ToolEntry}, and resolves the archetype's
  * `resourceUri` from the single-source-of-truth {@link uiArchetypes} manifest.
  *
- * The `result as Result` cast is the type-erasure boundary: at runtime `map` only
+ * The `handlerOutput as Result` cast is the type-erasure boundary: at runtime `map` only
  * ever receives the very value its own handler returned, so the cast restores the
  * type the mapper was written and type-checked against.
  */
@@ -88,7 +91,7 @@ function resolveToolUi<Result>(ui: ToolUiSpec<Result>): ResolvedToolUi {
   return {
     archetype: ui.archetype,
     resourceUri: uiArchetypes[ui.archetype].uri,
-    map: (result: unknown): ViewModel => ui.map(result as Result),
+    map: (handlerOutput: unknown): ViewModel => ui.map(handlerOutput as Result),
   };
 }
 
@@ -156,8 +159,8 @@ export const defineTool = <Shape extends z.ZodRawShape, Result>(
     ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
     // Registry erases the result/argument types; defineTool checks their relationship here.
     formatResult: formatResult
-      ? (result, args) =>
-          formatResult(result as Awaited<Result>, args as z.infer<z.ZodObject<Shape>>)
+      ? (handlerOutput, args) =>
+          formatResult(handlerOutput as Awaited<Result>, args as z.infer<z.ZodObject<Shape>>)
       : undefined,
   };
 };
@@ -203,8 +206,8 @@ export const rawTool = <Shape extends z.ZodRawShape, Result>(
     ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
     // Registry erases the result/argument types; defineTool checks their relationship here.
     formatResult: formatResult
-      ? (result, args) =>
-          formatResult(result as Awaited<Result>, args as z.infer<z.ZodObject<Shape>>)
+      ? (handlerOutput, args) =>
+          formatResult(handlerOutput as Awaited<Result>, args as z.infer<z.ZodObject<Shape>>)
       : undefined,
   };
 };

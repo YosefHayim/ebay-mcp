@@ -55,9 +55,9 @@ export class TranslationApi {
     const path = `${this.basePath}/translate`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<TranslateInput>(input, 'input');
+      const translateRequest = yield* requireObjectEffect<TranslateInput>(input, 'input');
 
-      return yield* requestPostEffect<TranslateResponse>(client, path, body);
+      return yield* requestPostEffect<TranslateResponse>(client, path, translateRequest);
     });
   };
 }

@@ -188,12 +188,12 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getOrderEarningsInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(getOrderEarningsInputSchema, input);
 
       return yield* getFromApiz<OrderEarningsResponse>(
         `${BASE_PATH}/order_earnings`,
-        pageQuery(request),
-        request.marketplaceId,
+        pageQuery(validatedInput),
+        validatedInput.marketplaceId,
       );
     });
   };
@@ -318,12 +318,12 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getPayoutsInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(getPayoutsInputSchema, input);
 
       return yield* getFromApiz<PayoutsResponse | undefined>(
         `${BASE_PATH}/payout`,
-        pageQuery(request),
-        request.marketplaceId,
+        pageQuery(validatedInput),
+        validatedInput.marketplaceId,
       );
     });
   };
@@ -416,12 +416,12 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getTransactionsInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(getTransactionsInputSchema, input);
 
       return yield* getFromApiz<TransactionsResponse | undefined>(
         `${BASE_PATH}/transaction`,
-        pageQuery(request),
-        request.marketplaceId,
+        pageQuery(validatedInput),
+        validatedInput.marketplaceId,
       );
     });
   };
@@ -517,16 +517,19 @@ export class FinancesApi {
     const client = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getBillingActivitiesInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(
+        getBillingActivitiesInputSchema,
+        input,
+      );
       const config: EbayRequestConfig | undefined =
-        request.acceptLanguage === undefined
+        validatedInput.acceptLanguage === undefined
           ? undefined
-          : { headers: { 'Accept-Language': request.acceptLanguage } };
+          : { headers: { 'Accept-Language': validatedInput.acceptLanguage } };
 
       return yield* requestGetEffect<BillingActivityResponse>(
         client,
         `${BASE_PATH}/billing_activity`,
-        pageQuery(request),
+        pageQuery(validatedInput),
         config,
       );
     });

@@ -21,8 +21,8 @@ describe('Schema Validation', () => {
           value: 30,
         };
 
-        const result = timeDurationSchema.safeParse(validDuration);
-        expect(result.success).toBe(true);
+        const parsedDuration = timeDurationSchema.safeParse(validDuration);
+        expect(parsedDuration.success).toBe(true);
       });
 
       it('reject invalid unit', () => {
@@ -31,8 +31,8 @@ describe('Schema Validation', () => {
           value: 30,
         };
 
-        const result = timeDurationSchema.safeParse(invalidDuration);
-        expect(result.success).toBe(false);
+        const parsedDuration = timeDurationSchema.safeParse(invalidDuration);
+        expect(parsedDuration.success).toBe(false);
       });
 
       it('require unit and value', () => {
@@ -40,8 +40,8 @@ describe('Schema Validation', () => {
           unit: 'DAY',
         };
 
-        const result = timeDurationSchema.safeParse(missingFields);
-        expect(result.success).toBe(false);
+        const parsedDuration = timeDurationSchema.safeParse(missingFields);
+        expect(parsedDuration.success).toBe(false);
       });
 
       it('allow additional properties (passthrough)', () => {
@@ -51,10 +51,10 @@ describe('Schema Validation', () => {
           extraField: 'extra',
         };
 
-        const result = timeDurationSchema.safeParse(withExtra);
-        expect(result.success).toBe(true);
-        if (result.success) {
-          expect(result.data).toHaveProperty('extraField');
+        const parsedDuration = timeDurationSchema.safeParse(withExtra);
+        expect(parsedDuration.success).toBe(true);
+        if (parsedDuration.success) {
+          expect(parsedDuration.data).toHaveProperty('extraField');
         }
       });
     });
@@ -66,8 +66,8 @@ describe('Schema Validation', () => {
           value: '99.99',
         };
 
-        const result = amountSchema.safeParse(validAmount);
-        expect(result.success).toBe(true);
+        const parsedAmount = amountSchema.safeParse(validAmount);
+        expect(parsedAmount.success).toBe(true);
       });
 
       it('accept different currencies', () => {
@@ -75,8 +75,8 @@ describe('Schema Validation', () => {
 
         currencies.forEach((currency) => {
           const amount = { currency, value: '100.00' };
-          const result = amountSchema.safeParse(amount);
-          expect(result.success).toBe(true);
+          const parsedAmount = amountSchema.safeParse(amount);
+          expect(parsedAmount.success).toBe(true);
         });
       });
 
@@ -96,15 +96,15 @@ describe('Schema Validation', () => {
           regionType: 'COUNTRY',
         };
 
-        const result = regionSchema.safeParse(validRegion);
-        expect(result.success).toBe(true);
+        const parsedRegion = regionSchema.safeParse(validRegion);
+        expect(parsedRegion.success).toBe(true);
       });
 
       it('allow optional fields', () => {
         const minimalRegion = {};
 
-        const result = regionSchema.safeParse(minimalRegion);
-        expect(result.success).toBe(true);
+        const parsedRegion = regionSchema.safeParse(minimalRegion);
+        expect(parsedRegion.success).toBe(true);
       });
 
       it('validate all region types', () => {
@@ -118,8 +118,8 @@ describe('Schema Validation', () => {
 
         regionTypes.forEach((regionType) => {
           const region = { regionName: 'Test', regionType };
-          const result = regionSchema.safeParse(region);
-          expect(result.success).toBe(true);
+          const parsedRegion = regionSchema.safeParse(region);
+          expect(parsedRegion.success).toBe(true);
         });
       });
     });
@@ -134,13 +134,13 @@ describe('Schema Validation', () => {
           regionExcluded: [{ regionName: 'Alaska', regionType: 'STATE_OR_PROVINCE' }],
         };
 
-        const result = regionSetSchema.safeParse(validRegionSet);
-        expect(result.success).toBe(true);
+        const parsedRegionSet = regionSetSchema.safeParse(validRegionSet);
+        expect(parsedRegionSet.success).toBe(true);
       });
 
       it('allow empty region set', () => {
-        const result = regionSetSchema.safeParse({});
-        expect(result.success).toBe(true);
+        const parsedRegionSet = regionSetSchema.safeParse({});
+        expect(parsedRegionSet.success).toBe(true);
       });
     });
   });
@@ -168,8 +168,8 @@ describe('Schema Validation', () => {
           ],
         };
 
-        const result = fulfillmentPolicySchema.safeParse(validPolicy);
-        expect(result.success).toBe(true);
+        const parsedPolicy = fulfillmentPolicySchema.safeParse(validPolicy);
+        expect(parsedPolicy.success).toBe(true);
       });
 
       it('require name and marketplaceId', () => {
@@ -190,8 +190,8 @@ describe('Schema Validation', () => {
           paymentMethods: [{ paymentMethodType: 'PAYPAL' }],
         };
 
-        const result = paymentPolicySchema.safeParse(validPolicy);
-        expect(result.success).toBe(true);
+        const parsedPolicy = paymentPolicySchema.safeParse(validPolicy);
+        expect(parsedPolicy.success).toBe(true);
       });
 
       it('require name and marketplaceId', () => {
@@ -211,8 +211,8 @@ describe('Schema Validation', () => {
           returnPeriod: { unit: 'DAY', value: 30 },
         };
 
-        const result = returnPolicySchema.safeParse(validPolicy);
-        expect(result.success).toBe(true);
+        const parsedPolicy = returnPolicySchema.safeParse(validPolicy);
+        expect(parsedPolicy.success).toBe(true);
       });
 
       it('allow no returns accepted', () => {
@@ -222,8 +222,8 @@ describe('Schema Validation', () => {
           returnsAccepted: false,
         };
 
-        const result = returnPolicySchema.safeParse(noReturns);
-        expect(result.success).toBe(true);
+        const parsedPolicy = returnPolicySchema.safeParse(noReturns);
+        expect(parsedPolicy.success).toBe(true);
       });
     });
   });
@@ -249,8 +249,8 @@ describe('Schema Validation', () => {
           },
         };
 
-        const result = inventoryItemSchema.safeParse(validItem);
-        expect(result.success).toBe(true);
+        const parsedItem = inventoryItemSchema.safeParse(validItem);
+        expect(parsedItem.success).toBe(true);
       });
 
       it('allow missing availability (all fields optional)', () => {
@@ -262,21 +262,21 @@ describe('Schema Validation', () => {
           },
         };
 
-        const result = inventoryItemSchema.safeParse(missingAvailability);
-        expect(result.success).toBe(true);
+        const parsedItem = inventoryItemSchema.safeParse(missingAvailability);
+        expect(parsedItem.success).toBe(true);
       });
 
       it('accept different conditions', () => {
         const conditions = ['NEW', 'LIKE_NEW', 'NEW_OTHER', 'USED_EXCELLENT', 'USED_GOOD'];
 
         conditions.forEach((condition) => {
-          const item = {
+          const inventoryItem = {
             availability: { shipToLocationAvailability: { quantity: 1 } },
             condition,
             product: { title: 'Test' },
           };
-          const result = inventoryItemSchema.safeParse(item);
-          expect(result.success).toBe(true);
+          const parsedItem = inventoryItemSchema.safeParse(inventoryItem);
+          expect(parsedItem.success).toBe(true);
         });
       });
     });
@@ -299,8 +299,8 @@ describe('Schema Validation', () => {
           categoryId: '1234',
         };
 
-        const result = offerSchema.safeParse(validOffer);
-        expect(result.success).toBe(true);
+        const parsedOffer = offerSchema.safeParse(validOffer);
+        expect(parsedOffer.success).toBe(true);
       });
 
       it('require sku and marketplaceId', () => {
@@ -320,8 +320,8 @@ describe('Schema Validation', () => {
             marketplaceId: 'EBAY_US',
             format,
           };
-          const result = offerSchema.safeParse(offer);
-          expect(result.success).toBe(true);
+          const parsedOffer = offerSchema.safeParse(offer);
+          expect(parsedOffer.success).toBe(true);
         });
       });
     });
@@ -344,8 +344,8 @@ describe('Schema Validation', () => {
           locationTypes: ['WAREHOUSE'],
         };
 
-        const result = inventoryLocationSchema.safeParse(validLocation);
-        expect(result.success).toBe(true);
+        const parsedLocation = inventoryLocationSchema.safeParse(validLocation);
+        expect(parsedLocation.success).toBe(true);
       });
 
       it('allow missing location object (all fields optional)', () => {
@@ -354,8 +354,8 @@ describe('Schema Validation', () => {
           merchantLocationStatus: 'ENABLED',
         };
 
-        const result = inventoryLocationSchema.safeParse(missingLocation);
-        expect(result.success).toBe(true);
+        const parsedLocation = inventoryLocationSchema.safeParse(missingLocation);
+        expect(parsedLocation.success).toBe(true);
       });
     });
   });
@@ -365,8 +365,8 @@ describe('Schema Validation', () => {
       const schemas = [regionSchema, regionSetSchema];
 
       schemas.forEach((schema) => {
-        const result = schema.safeParse({});
-        expect(result.success).toBe(true);
+        const parsedEmpty = schema.safeParse({});
+        expect(parsedEmpty.success).toBe(true);
       });
     });
 
@@ -376,9 +376,9 @@ describe('Schema Validation', () => {
       const invalidValues = [null, undefined, 'string', 123, [], true];
 
       schemas.forEach((schema) => {
-        invalidValues.forEach((value) => {
-          const result = schema.safeParse(value);
-          expect(result.success).toBe(false);
+        invalidValues.forEach((invalidValue) => {
+          const parsedInvalid = schema.safeParse(invalidValue);
+          expect(parsedInvalid.success).toBe(false);
         });
       });
     });

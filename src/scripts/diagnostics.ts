@@ -190,13 +190,13 @@ function displayConfigurationStatus(envVars: Record<string, string>): void {
   ];
 
   for (const check of checks) {
-    const value = envVars[check.key];
+    const envValue = envVars[check.key];
     let status: string;
     let displayValue: string;
 
-    if (value && value.trim() && !value.includes('_here')) {
+    if (envValue && envValue.trim() && !envValue.includes('_here')) {
       status = chalk.green('✓ Set');
-      displayValue = check.redact ? `${value.substring(0, 10)}...` : value;
+      displayValue = check.redact ? `${envValue.substring(0, 10)}...` : envValue;
     } else {
       status = chalk.red('✗ Not set');
       displayValue = chalk.gray('(not configured)');
@@ -237,19 +237,19 @@ function displayLLMClientStatus(): void {
 async function displayAuthenticationTest(config: EbayConfig): Promise<void> {
   console.log(chalk.bold.cyan('🔐 API Authentication Test\n'));
 
-  const result = await testEbayAuthentication(config);
+  const authCheck = await testEbayAuthentication(config);
 
-  if (result.success) {
+  if (authCheck.success) {
     console.log(chalk.green('  ✓ Successfully authenticated with eBay API\n'));
 
-    if (result.userInfo) {
+    if (authCheck.userInfo) {
       console.log(chalk.bold.white('  User Information:'));
-      console.log(chalk.gray(JSON.stringify(result.userInfo, null, 2)));
+      console.log(chalk.gray(JSON.stringify(authCheck.userInfo, null, 2)));
       console.log('');
     }
   } else {
     console.log(chalk.red('  ✗ Authentication failed\n'));
-    console.log(chalk.yellow(`  Error: ${result.error}\n`));
+    console.log(chalk.yellow(`  Error: ${authCheck.error}\n`));
   }
 }
 
@@ -409,9 +409,12 @@ if (isEntryModule(import.meta.url)) {
         catch: (error) => error,
       }),
     ),
-  ).then((result) => {
-    if (Either.isLeft(result)) {
-      console.error(chalk.red('\n❌ Diagnostics failed:'), getErrorMessage(result.left));
+  ).then((diagnosticsOutcome) => {
+    if (Either.isLeft(diagnosticsOutcome)) {
+      console.error(
+        chalk.red('\n❌ Diagnostics failed:'),
+        getErrorMessage(diagnosticsOutcome.left),
+      );
       process.exitCode = 1;
     }
   });

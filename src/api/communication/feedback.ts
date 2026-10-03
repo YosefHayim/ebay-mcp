@@ -141,20 +141,23 @@ export class FeedbackApi {
     const path = `${this.basePath}/feedback`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetFeedbackInput>(input, 'input');
-      const userId = yield* requireStringEffect(request.userId, 'userId');
-      const feedbackType = yield* requireStringEffect(request.feedbackType, 'feedbackType');
-      const feedbackId = yield* optionalStringEffect(request.feedbackId, 'feedbackId');
-      const filter = yield* optionalStringEffect(request.filter, 'filter');
-      const limit = yield* optionalPositiveNumberEffect(request.limit, 'limit');
-      const listingId = yield* optionalStringEffect(request.listingId, 'listingId');
-      const offset = yield* optionalNonNegativeNumberEffect(request.offset, 'offset');
+      const validatedInput = yield* requireObjectEffect<GetFeedbackInput>(input, 'input');
+      const userId = yield* requireStringEffect(validatedInput.userId, 'userId');
+      const feedbackType = yield* requireStringEffect(validatedInput.feedbackType, 'feedbackType');
+      const feedbackId = yield* optionalStringEffect(validatedInput.feedbackId, 'feedbackId');
+      const filter = yield* optionalStringEffect(validatedInput.filter, 'filter');
+      const limit = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
+      const listingId = yield* optionalStringEffect(validatedInput.listingId, 'listingId');
+      const offset = yield* optionalNonNegativeNumberEffect(validatedInput.offset, 'offset');
       const orderLineItemId = yield* optionalStringEffect(
-        request.orderLineItemId,
+        validatedInput.orderLineItemId,
         'orderLineItemId',
       );
-      const sort = yield* optionalStringEffect(request.sort, 'sort');
-      const transactionId = yield* optionalStringEffect(request.transactionId, 'transactionId');
+      const sort = yield* optionalStringEffect(validatedInput.sort, 'sort');
+      const transactionId = yield* optionalStringEffect(
+        validatedInput.transactionId,
+        'transactionId',
+      );
       const params = buildEndpointParams({
         userId: { wireName: 'user_id', value: userId },
         feedbackType: { wireName: 'feedback_type', value: feedbackType },
@@ -197,9 +200,12 @@ export class FeedbackApi {
     const path = `${this.basePath}/feedback_rating_summary`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetFeedbackRatingSummaryInput>(input, 'input');
-      const userId = yield* requireStringEffect(request.userId, 'userId');
-      const filter = yield* requireStringEffect(request.filter, 'filter');
+      const validatedInput = yield* requireObjectEffect<GetFeedbackRatingSummaryInput>(
+        input,
+        'input',
+      );
+      const userId = yield* requireStringEffect(validatedInput.userId, 'userId');
+      const filter = yield* requireStringEffect(validatedInput.filter, 'filter');
       const params = buildEndpointParams({
         userId: { wireName: 'user_id', value: userId },
         filter: { wireName: 'filter', value: filter },
@@ -231,16 +237,19 @@ export class FeedbackApi {
     const path = `${this.basePath}/feedback`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<LeaveFeedbackRequest>(feedbackData, 'feedbackData');
+      const feedbackRequest = yield* requireObjectEffect<LeaveFeedbackRequest>(
+        feedbackData,
+        'feedbackData',
+      );
 
-      return yield* requestPostEffect<LeaveFeedbackResponse>(client, path, body);
+      return yield* requestPostEffect<LeaveFeedbackResponse>(client, path, feedbackRequest);
     });
   };
 
   /**
    * Responds to feedback received from another eBay user.
    *
-   * @param response - Generated RespondToFeedbackRequest body.
+   * @param feedbackReply - Generated RespondToFeedbackRequest body.
    * @returns An Effect that succeeds with eBay's generated empty response.
    *
    * @example
@@ -253,15 +262,18 @@ export class FeedbackApi {
    * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/respond_to_feedback/methods/respondToFeedback
    */
   respondToFeedback = (
-    response: RespondToFeedbackRequest,
+    feedbackReply: RespondToFeedbackRequest,
   ): Effect.Effect<RespondToFeedbackResponse, EbayApiError | EndpointInputError> => {
     const client = this.client;
     const path = `${this.basePath}/respond_to_feedback`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<RespondToFeedbackRequest>(response, 'response');
+      const replyRequest = yield* requireObjectEffect<RespondToFeedbackRequest>(
+        feedbackReply,
+        'response',
+      );
 
-      return yield* requestPostEffect<RespondToFeedbackResponse>(client, path, body);
+      return yield* requestPostEffect<RespondToFeedbackResponse>(client, path, replyRequest);
     });
   };
 }

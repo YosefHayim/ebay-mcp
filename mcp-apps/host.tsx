@@ -34,10 +34,10 @@ import type { ToolCallRef, ViewArchetype, ViewModelByArchetype } from '@/tools/u
  * {@link ViewModel}; the discriminant check guards the single cast.
  */
 const extractView = <A extends ViewArchetype>(
-  result: CallToolResult,
+  toolResult: CallToolResult,
   archetype: A,
 ): ViewModelByArchetype[A] | null => {
-  const structured = result.structuredContent;
+  const structured = toolResult.structuredContent;
   if (
     structured &&
     typeof structured === 'object' &&
@@ -87,8 +87,8 @@ export const useViewModel = <A extends ViewArchetype>(archetype: A): ViewState<A
     appInfo: { name: `ebay-${archetype}-view`, version: '1.0.0' },
     capabilities: {},
     onAppCreated: (created) => {
-      created.ontoolresult = (result: CallToolResult) => {
-        const next = extractView(result, archetype);
+      created.ontoolresult = (toolResult: CallToolResult) => {
+        const next = extractView(toolResult, archetype);
         if (next) {
           setView(next);
         }
@@ -157,7 +157,7 @@ export const EmptyState = ({ label }: EmptyStateProps): ReactNode => (
 /** Turns a {@link ToolCallRef} into a concise natural-language instruction. */
 const describeRef = (ref: ToolCallRef): string => {
   const args = Object.entries(ref.arguments)
-    .map(([key, value]) => `${key}=${String(value)}`)
+    .map(([name, argument]) => `${name}=${String(argument)}`)
     .join(', ');
   return `Run the ${ref.tool} tool${args ? ` with ${args}` : ''}.`;
 };
@@ -211,8 +211,8 @@ export const runServerTool = async <A extends ViewArchetype>(
   if (!app) {
     return null;
   }
-  const result = await app.callServerTool({ name: ref.tool, arguments: ref.arguments });
-  return extractView(result, archetype);
+  const toolResult = await app.callServerTool({ name: ref.tool, arguments: ref.arguments });
+  return extractView(toolResult, archetype);
 };
 
 /**

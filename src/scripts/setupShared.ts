@@ -27,9 +27,9 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
 
   const parsed = dotenv.parse(readFileSync(envPath, 'utf-8'));
   const envConfig: Record<string, string> = {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (value && !value.includes('_here')) {
-      envConfig[key] = value;
+  for (const [key, envValue] of Object.entries(parsed)) {
+    if (envValue && !envValue.includes('_here')) {
+      envConfig[key] = envValue;
     }
   }
 
@@ -39,7 +39,7 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
 /**
  * Parse environment with safe sandbox default.
  *
- * @param value - Optional environment value from config or user input.
+ * @param environmentName - Optional environment value from config or user input.
  * @returns `production` only for an exact production value; otherwise `sandbox`.
  *
  * @example
@@ -47,5 +47,5 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
  * const environment = readEnvironment(config.EBAY_ENVIRONMENT);
  * ```
  */
-export const readEnvironment = (value?: string): 'sandbox' | 'production' =>
-  value === 'production' ? 'production' : 'sandbox';
+export const readEnvironment = (environmentName?: string): 'sandbox' | 'production' =>
+  environmentName === 'production' ? 'production' : 'sandbox';

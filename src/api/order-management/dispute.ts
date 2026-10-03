@@ -182,10 +182,14 @@ export interface UpdateEvidenceInput {
 }
 
 const requireUploadEvidenceFileBodyEffect = (
-  value: unknown,
+  evidenceFile: unknown,
 ): Effect.Effect<UploadEvidenceFileBody, EndpointInputError> => {
-  if (value instanceof ArrayBuffer || value instanceof Uint8Array || isRecord(value)) {
-    return Effect.succeed(value);
+  if (
+    evidenceFile instanceof ArrayBuffer ||
+    evidenceFile instanceof Uint8Array ||
+    isRecord(evidenceFile)
+  ) {
+    return Effect.succeed(evidenceFile);
   }
 
   return Effect.fail(
@@ -433,10 +437,10 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const body = yield* requireUploadEvidenceFileBodyEffect(input.body);
+      const evidenceFile = yield* requireUploadEvidenceFileBodyEffect(input.body);
       const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/upload_evidence_file`;
 
-      return yield* requestPostEffect<FileEvidence>(this.client, path, body, {
+      return yield* requestPostEffect<FileEvidence>(this.client, path, evidenceFile, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     });
@@ -467,10 +471,17 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const body = yield* requireObjectEffect<AddEvidencePaymentDisputeRequest>(input.body, 'body');
+      const addEvidenceRequest = yield* requireObjectEffect<AddEvidencePaymentDisputeRequest>(
+        input.body,
+        'body',
+      );
       const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/add_evidence`;
 
-      return yield* requestPostEffect<AddEvidencePaymentDisputeResponse>(this.client, path, body);
+      return yield* requestPostEffect<AddEvidencePaymentDisputeResponse>(
+        this.client,
+        path,
+        addEvidenceRequest,
+      );
     });
 
   /**
@@ -499,12 +510,16 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const body = yield* requireObjectEffect<UpdateEvidencePaymentDisputeRequest>(
+      const updateEvidenceRequest = yield* requireObjectEffect<UpdateEvidencePaymentDisputeRequest>(
         input.body,
         'body',
       );
       const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/update_evidence`;
 
-      return yield* requestPostEffect<UpdateEvidenceResponse>(this.client, path, body);
+      return yield* requestPostEffect<UpdateEvidenceResponse>(
+        this.client,
+        path,
+        updateEvidenceRequest,
+      );
     });
 }

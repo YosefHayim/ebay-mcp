@@ -7,7 +7,7 @@ import { createInventoryOffersMethods } from '@/api/listing-management/offers.js
 import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const usd = (value: string) => ({ currency: 'USD', value });
+const usd = (amount: string) => ({ currency: 'USD', value: amount });
 
 const auctionOffer = {
   sku: 'AUCTION-1',
@@ -251,11 +251,11 @@ describe('offer methods apply the format rules before calling eBay', () => {
   });
 
   it('rejects an inconsistent updateOffer body without a request', async () => {
-    const body = {
+    const inconsistentOffer = {
       pricingSummary: { auctionStartPrice: usd('10.00'), auctionReservePrice: usd('1.00') },
     };
     const error = await Effect.runPromise(
-      Effect.flip(methods.updateOffer({ offerId: 'OFFER-1', body })),
+      Effect.flip(methods.updateOffer({ offerId: 'OFFER-1', body: inconsistentOffer })),
     );
 
     expect(error).toMatchObject({ parameter: 'body.pricingSummary.auctionReservePrice' });

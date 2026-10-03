@@ -1,11 +1,11 @@
 import { offerSchema, updateOfferBodySchema } from '@/schemas/inventory-management/inventory.js';
 import { describe, expect, it } from 'vitest';
 
-const usd = (value: string) => ({ currency: 'USD', value });
+const usd = (amount: string) => ({ currency: 'USD', value: amount });
 
 describe('offer schema listing formats', () => {
   it('accepts auction pricing and a day-count duration', () => {
-    const result = offerSchema.safeParse({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'AUCTION-1',
       marketplaceId: 'EBAY_US',
       format: 'AUCTION',
@@ -13,29 +13,29 @@ describe('offer schema listing formats', () => {
       pricingSummary: { auctionStartPrice: usd('9.99'), auctionReservePrice: usd('25.00') },
     });
 
-    expect(result.success).toBe(true);
+    expect(parsedOffer.success).toBe(true);
   });
 
   it('no longer requires pricingSummary.price', () => {
-    const result = offerSchema.safeParse({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'AUCTION-1',
       marketplaceId: 'EBAY_US',
       format: 'AUCTION',
       pricingSummary: { auctionStartPrice: usd('9.99') },
     });
 
-    expect(result.success).toBe(true);
+    expect(parsedOffer.success).toBe(true);
   });
 
   it('rejects listing durations eBay does not define', () => {
-    const result = offerSchema.safeParse({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'SKU-1',
       marketplaceId: 'EBAY_US',
       format: 'AUCTION',
       listingDuration: 'DAYS_2',
     });
 
-    expect(result.success).toBe(false);
+    expect(parsedOffer.success).toBe(false);
   });
 
   it('still requires the offer keys', () => {
@@ -46,7 +46,7 @@ describe('offer schema listing formats', () => {
   });
 
   it('passes generated fields it does not model through to the request', () => {
-    const result = offerSchema.safeParse({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'SKU-1',
       marketplaceId: 'EBAY_US',
       format: 'FIXED_PRICE',
@@ -55,9 +55,9 @@ describe('offer schema listing formats', () => {
       pricingSummary: { originallySoldForRetailPriceOn: 'ON_EBAY' },
     });
 
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toMatchObject({
+    expect(parsedOffer.success).toBe(true);
+    if (parsedOffer.success) {
+      expect(parsedOffer.data).toMatchObject({
         regulatory: { energyEfficiencyLabel: { imageDescription: 'A+' } },
         listingPolicies: { shippingCostOverrides: [{ priority: 1 }] },
         pricingSummary: { originallySoldForRetailPriceOn: 'ON_EBAY' },
@@ -68,11 +68,11 @@ describe('offer schema listing formats', () => {
 
 describe('update offer body schema', () => {
   it('accepts auction fields without the offer keys', () => {
-    const result = updateOfferBodySchema.safeParse({
+    const parsedUpdate = updateOfferBodySchema.safeParse({
       listingDuration: 'DAYS_3',
       pricingSummary: { auctionStartPrice: usd('1.00') },
     });
 
-    expect(result.success).toBe(true);
+    expect(parsedUpdate.success).toBe(true);
   });
 });

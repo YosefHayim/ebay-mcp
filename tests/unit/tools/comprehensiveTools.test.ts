@@ -617,10 +617,10 @@ describe('Comprehensive Tools Coverage', () => {
       vi.mocked(mockApi.inventory.createOrReplaceInventoryItem).mockReturnValue(
         Effect.succeed(undefined),
       );
-      const body = { product: { title: 'Test' }, condition: 'NEW' };
+      const inventoryItem = { product: { title: 'Test' }, condition: 'NEW' };
       const input = {
         sku: 'SKU123',
-        body,
+        body: inventoryItem,
       };
       await executeTool(mockApi, 'ebay_create_or_replace_inventory_item', input);
       expect(mockApi.inventory.createOrReplaceInventoryItem).toHaveBeenCalledWith(input);
@@ -980,10 +980,10 @@ describe('Comprehensive Tools Coverage', () => {
 
     it('ebay_create_shipping_fulfillment', async () => {
       const mockResponse = {};
-      const body = { lineItems: [], trackingNumber: '123' };
+      const shippingFulfillment = { lineItems: [], trackingNumber: '123' };
       const input = {
         orderId: 'ORDER123',
-        body,
+        body: shippingFulfillment,
       };
       vi.mocked(mockApi.fulfillment.createShippingFulfillment).mockReturnValue(
         Effect.succeed(mockResponse),
@@ -994,13 +994,13 @@ describe('Comprehensive Tools Coverage', () => {
 
     it('ebay_issue_refund', async () => {
       const mockResponse = { refundId: 'REFUND123' };
-      const body = {
+      const refundRequest = {
         reasonForRefund: 'BUYER_CANCEL',
         orderLevelRefundAmount: { value: '10', currency: 'USD' },
       };
       const input = {
         orderId: 'ORDER123',
-        body,
+        body: refundRequest,
       };
       vi.mocked(mockApi.fulfillment.issueRefund).mockReturnValue(Effect.succeed(mockResponse));
       await executeTool(mockApi, 'ebay_issue_refund', input);
@@ -1431,65 +1431,65 @@ describe('Comprehensive Tools Coverage', () => {
 
     it('ebay_get_compatibility_property_names', async () => {
       const mockResponse = { names: [] };
-      const data = { categoryId: '6016' };
+      const propertyNamesRequest = { categoryId: '6016' };
       vi.mocked(mockApi.metadata.getCompatibilityPropertyNames).mockReturnValue(
         Effect.succeed(mockResponse),
       );
       await executeTool(mockApi, 'ebay_get_compatibility_property_names', {
         marketplaceId: 'EBAY_US',
-        data,
+        data: propertyNamesRequest,
       });
       expect(mockApi.metadata.getCompatibilityPropertyNames).toHaveBeenCalledWith({
         marketplaceId: 'EBAY_US',
-        data,
+        data: propertyNamesRequest,
       });
     });
 
     it('ebay_get_compatibility_property_values', async () => {
       const mockResponse = { values: [] };
-      const data = { categoryId: '6016', propertyName: 'Make' };
+      const propertyValuesRequest = { categoryId: '6016', propertyName: 'Make' };
       vi.mocked(mockApi.metadata.getCompatibilityPropertyValues).mockReturnValue(
         Effect.succeed(mockResponse),
       );
       await executeTool(mockApi, 'ebay_get_compatibility_property_values', {
         marketplaceId: 'EBAY_US',
-        data,
+        data: propertyValuesRequest,
       });
       expect(mockApi.metadata.getCompatibilityPropertyValues).toHaveBeenCalledWith({
         marketplaceId: 'EBAY_US',
-        data,
+        data: propertyValuesRequest,
       });
     });
 
     it('ebay_get_multi_compatibility_property_values', async () => {
       const mockResponse = { values: [] };
-      const data = { categoryId: '6016', propertyNames: ['Make', 'Model'] };
+      const multiPropertyValuesRequest = { categoryId: '6016', propertyNames: ['Make', 'Model'] };
       vi.mocked(mockApi.metadata.getMultiCompatibilityPropertyValues).mockReturnValue(
         Effect.succeed(mockResponse),
       );
       await executeTool(mockApi, 'ebay_get_multi_compatibility_property_values', {
         marketplaceId: 'EBAY_US',
-        data,
+        data: multiPropertyValuesRequest,
       });
       expect(mockApi.metadata.getMultiCompatibilityPropertyValues).toHaveBeenCalledWith({
         marketplaceId: 'EBAY_US',
-        data,
+        data: multiPropertyValuesRequest,
       });
     });
 
     it('ebay_get_product_compatibilities', async () => {
       const mockResponse = { compatibilities: [] };
-      const data = { productIdentifier: { epid: '12345' } };
+      const compatibilitiesRequest = { productIdentifier: { epid: '12345' } };
       vi.mocked(mockApi.metadata.getProductCompatibilities).mockReturnValue(
         Effect.succeed(mockResponse),
       );
       await executeTool(mockApi, 'ebay_get_product_compatibilities', {
         marketplaceId: 'EBAY_US',
-        data,
+        data: compatibilitiesRequest,
       });
       expect(mockApi.metadata.getProductCompatibilities).toHaveBeenCalledWith({
         marketplaceId: 'EBAY_US',
-        data,
+        data: compatibilitiesRequest,
       });
     });
 

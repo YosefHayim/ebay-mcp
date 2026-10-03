@@ -224,10 +224,17 @@ export class FulfillmentApi {
   ): Effect.Effect<CreateShippingFulfillmentResponse, EbayApiError | EndpointInputError> =>
     Effect.gen(this, function* () {
       const orderId = yield* requireStringEffect(input.orderId, 'orderId');
-      const body = yield* requireObjectEffect<ShippingFulfillmentDetails>(input.body, 'body');
+      const fulfillmentDetails = yield* requireObjectEffect<ShippingFulfillmentDetails>(
+        input.body,
+        'body',
+      );
       const path = `${this.basePath}/order/${orderId}/shipping_fulfillment`;
 
-      return yield* requestPostEffect<CreateShippingFulfillmentResponse>(this.client, path, body);
+      return yield* requestPostEffect<CreateShippingFulfillmentResponse>(
+        this.client,
+        path,
+        fulfillmentDetails,
+      );
     });
 
   /**
@@ -310,9 +317,9 @@ export class FulfillmentApi {
   ): Effect.Effect<Refund, EbayApiError | EndpointInputError> =>
     Effect.gen(this, function* () {
       const orderId = yield* requireStringEffect(input.orderId, 'orderId');
-      const body = yield* requireObjectEffect<IssueRefundRequest>(input.body, 'body');
+      const refundRequest = yield* requireObjectEffect<IssueRefundRequest>(input.body, 'body');
       const path = `${this.basePath}/order/${orderId}/issue_refund`;
 
-      return yield* requestPostEffect<Refund>(this.client, path, body);
+      return yield* requestPostEffect<Refund>(this.client, path, refundRequest);
     });
 }

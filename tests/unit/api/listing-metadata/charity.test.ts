@@ -18,11 +18,11 @@ describe('CharityApi getCharityOrg', () => {
     const charity = { charityOrgId: 'C/1', name: 'Example Rescue', registrationId: '12-3456789' };
     client.get.mockResolvedValue(charity);
 
-    const result = await Effect.runPromise(
+    const fetchedCharity = await Effect.runPromise(
       api.getCharityOrg({ charityOrgId: 'C/1', marketplaceId: 'EBAY_GB' }),
     );
 
-    expect(result).toBe(charity);
+    expect(fetchedCharity).toBe(charity);
     expect(client.get).toHaveBeenCalledWith(`${BASE}/charity_org/C%2F1`, undefined, {
       headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB' },
       tokenType: 'application',
@@ -44,11 +44,11 @@ describe('CharityApi getCharityOrgs', () => {
     const page = { charityOrgs: [{ charityOrgId: '1' }], total: 1, limit: 10, offset: 20 };
     client.get.mockResolvedValue(page);
 
-    const result = await Effect.runPromise(
+    const charityPage = await Effect.runPromise(
       api.getCharityOrgs({ marketplaceId: 'EBAY_US', q: 'animal rescue', limit: 10, offset: 20 }),
     );
 
-    expect(result).toBe(page);
+    expect(charityPage).toBe(page);
     expect(client.get).toHaveBeenCalledWith(
       `${BASE}/charity_org`,
       { q: 'animal rescue', limit: 10, offset: 20 },

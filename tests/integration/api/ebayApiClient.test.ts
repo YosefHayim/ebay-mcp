@@ -81,9 +81,9 @@ describe('EbayApiClient Integration Tests', () => {
 
       mockEbayApiEndpoint('/sell/inventory/v1/inventory_item', 'get', 'sandbox', mockResponse);
 
-      const result = await apiClient.get('/sell/inventory/v1/inventory_item');
+      const inventoryPage = await apiClient.get('/sell/inventory/v1/inventory_item');
 
-      expect(result).toEqual(mockResponse);
+      expect(inventoryPage).toEqual(mockResponse);
     });
 
     it('include query parameters in GET request', async () => {
@@ -96,12 +96,12 @@ describe('EbayApiClient Integration Tests', () => {
         mockResponse,
       );
 
-      const result = await apiClient.get('/sell/inventory/v1/inventory_item', {
+      const inventoryPage = await apiClient.get('/sell/inventory/v1/inventory_item', {
         limit: 10,
         offset: 0,
       });
 
-      expect(result).toEqual(mockResponse);
+      expect(inventoryPage).toEqual(mockResponse);
     });
 
     it('handle GET request errors', async () => {
@@ -134,9 +134,9 @@ describe('EbayApiClient Integration Tests', () => {
 
       mockEbayApiEndpoint('/sell/inventory/v1/offer', 'post', 'sandbox', mockResponse, 201);
 
-      const result = await apiClient.post('/sell/inventory/v1/offer', requestData);
+      const createdOffer = await apiClient.post('/sell/inventory/v1/offer', requestData);
 
-      expect(result).toEqual(mockResponse);
+      expect(createdOffer).toEqual(mockResponse);
     });
 
     it('handle POST request validation errors', async () => {
@@ -269,9 +269,9 @@ describe('EbayApiClient Integration Tests', () => {
       // Mock API call
       mockEbayApiEndpoint('/sell/inventory/v1/inventory_item', 'get', 'sandbox', { items: [] });
 
-      const result = await apiClient.get('/sell/inventory/v1/inventory_item');
+      const inventoryPage = await apiClient.get('/sell/inventory/v1/inventory_item');
 
-      expect(result).toBeDefined();
+      expect(inventoryPage).toBeDefined();
     });
   });
 

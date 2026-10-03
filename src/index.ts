@@ -14,7 +14,7 @@ import process from 'node:process';
 const args = process.argv.slice(2);
 
 const runCliCommand = async (label: string, command: () => Promise<void>): Promise<void> => {
-  const result = await Effect.runPromise(
+  const commandOutcome = await Effect.runPromise(
     Effect.either(
       Effect.tryPromise({
         try: command,
@@ -23,9 +23,9 @@ const runCliCommand = async (label: string, command: () => Promise<void>): Promi
     ),
   );
 
-  if (Either.isLeft(result)) {
+  if (Either.isLeft(commandOutcome)) {
     serverLogger.error(`${label} failed`, {
-      error: getErrorMessage(result.left, String(result.left)),
+      error: getErrorMessage(commandOutcome.left, String(commandOutcome.left)),
     });
     process.exit(1);
   }
@@ -87,8 +87,8 @@ class EbayMcpServer {
     const validation = validateEnvironmentConfig();
 
     // Log informational notices (e.g. proxy auth mode)
-    validation.infos.forEach((info) => {
-      serverLogger.info(info);
+    validation.infos.forEach((notice) => {
+      serverLogger.info(notice);
     });
 
     // Log warnings

@@ -122,8 +122,8 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { success: true });
 
-      const result = await defaultClient.get('/sell/inventory/v1/test');
-      expect(result).toEqual({ success: true });
+      const responseBody = await defaultClient.get('/sell/inventory/v1/test');
+      expect(responseBody).toEqual({ success: true });
     });
 
     it('override headers when config provides values', async () => {
@@ -147,8 +147,8 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { success: true });
 
-      const result = await customClient.get('/sell/inventory/v1/test');
-      expect(result).toEqual({ success: true });
+      const responseBody = await customClient.get('/sell/inventory/v1/test');
+      expect(responseBody).toEqual({ success: true });
     });
   });
 
@@ -207,14 +207,14 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/feed/v1/task/T1/download_result_file')
         .reply(200, 'a,b', { 'Content-Disposition': 'attachment; filename="r.csv"' });
 
-      const response = await apiClient.getForResponse(
+      const downloadResponse = await apiClient.getForResponse(
         '/sell/feed/v1/task/T1/download_result_file',
         undefined,
         { responseType: 'arraybuffer' },
       );
 
-      expect(Buffer.isBuffer(response.data)).toBe(true);
-      expect(response.headers['content-disposition']).toBe('attachment; filename="r.csv"');
+      expect(Buffer.isBuffer(downloadResponse.data)).toBe(true);
+      expect(downloadResponse.headers['content-disposition']).toBe('attachment; filename="r.csv"');
     });
   });
 
@@ -281,9 +281,9 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { success: true });
 
-      const result = await apiClient.get('/sell/inventory/v1/test');
+      const responseBody = await apiClient.get('/sell/inventory/v1/test');
 
-      expect(result).toEqual({ success: true });
+      expect(responseBody).toEqual({ success: true });
       expect(apiErrorSpy).toHaveBeenCalled();
 
       apiErrorSpy.mockRestore();
@@ -315,8 +315,8 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { success: true });
 
-      const result = await apiClient.get('/sell/inventory/v1/test');
-      expect(result).toEqual({ success: true });
+      const responseBody = await apiClient.get('/sell/inventory/v1/test');
+      expect(responseBody).toEqual({ success: true });
 
       apiErrorSpy.mockRestore();
     }, 10_000);
@@ -332,8 +332,8 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { success: true });
 
-      const result = await apiClient.get('/sell/inventory/v1/test');
-      expect(result).toEqual({ success: true });
+      const responseBody = await apiClient.get('/sell/inventory/v1/test');
+      expect(responseBody).toEqual({ success: true });
 
       apiErrorSpy.mockRestore();
     }, 10_000);
@@ -349,8 +349,8 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { success: true });
 
-      const result = await apiClient.get('/sell/inventory/v1/test');
-      expect(result).toEqual({ success: true });
+      const responseBody = await apiClient.get('/sell/inventory/v1/test');
+      expect(responseBody).toEqual({ success: true });
 
       apiErrorSpy.mockRestore();
     }, 10_000);
@@ -454,9 +454,9 @@ describe('EbayApiClient Unit Tests', () => {
         .get('/sell/inventory/v1/test')
         .reply(200, { ok: true });
 
-      const result = await proxyClient.get('/sell/inventory/v1/test');
+      const responseBody = await proxyClient.get('/sell/inventory/v1/test');
 
-      expect(result).toEqual({ ok: true });
+      expect(responseBody).toEqual({ ok: true });
       expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
       scope.done();
     });
@@ -467,8 +467,8 @@ describe('EbayApiClient Unit Tests', () => {
 
       nock('http://localhost:8099').get('/sell/account/v1/test').reply(200, { routed: true });
 
-      const result = await proxyClient.get('/sell/account/v1/test');
-      expect(result).toEqual({ routed: true });
+      const responseBody = await proxyClient.get('/sell/account/v1/test');
+      expect(responseBody).toEqual({ routed: true });
     });
 
     it('surfaces a 401 without attempting a token refresh', async () => {
@@ -514,9 +514,9 @@ describe('EbayApiClient Unit Tests', () => {
         .get(PATH)
         .reply(200, { ok: true });
 
-      const result = await apiClient.get(PATH, undefined, { tokenType: 'application' });
+      const responseBody = await apiClient.get(PATH, undefined, { tokenType: 'application' });
 
-      expect(result).toEqual({ ok: true });
+      expect(responseBody).toEqual({ ok: true });
       expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalled();
       expect(mockOAuthClient.getAccessToken).not.toHaveBeenCalled();
       scope.done();
@@ -535,9 +535,9 @@ describe('EbayApiClient Unit Tests', () => {
         .get(PATH)
         .reply(200, { ok: true });
 
-      const result = await apiClient.get(PATH, undefined, { tokenType: 'application' });
+      const responseBody = await apiClient.get(PATH, undefined, { tokenType: 'application' });
 
-      expect(result).toEqual({ ok: true });
+      expect(responseBody).toEqual({ ok: true });
       // Three acquisitions: the first attempt, the 401 handler's re-acquire,
       // and the retry attempt itself. All three must take the application path.
       expect(mockOAuthClient.getOrRefreshAppAccessToken).toHaveBeenCalledTimes(3);

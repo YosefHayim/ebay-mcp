@@ -34,11 +34,11 @@ describe('LogisticsApi shipping quotes', () => {
     const quote = { shippingQuoteId: 'QUOTE-1', rates: [{ rateId: 'RATE-1' }] };
     client.post.mockResolvedValue(quote);
 
-    const result = await Effect.runPromise(
+    const createdQuote = await Effect.runPromise(
       logistics.createShippingQuote({ shippingQuoteRequest, marketplaceId: MarketplaceId.EBAY_US }),
     );
 
-    expect(result).toBe(quote);
+    expect(createdQuote).toBe(quote);
     expect(client.post).toHaveBeenCalledWith(`${BASE}/shipping_quote`, shippingQuoteRequest, {
       headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US' },
     });
@@ -56,11 +56,11 @@ describe('LogisticsApi shipping quotes', () => {
     const quote = { shippingQuoteId: 'Q/1 %' };
     client.get.mockResolvedValue(quote);
 
-    const result = await Effect.runPromise(
+    const fetchedQuote = await Effect.runPromise(
       logistics.getShippingQuote({ shippingQuoteId: 'Q/1 %' }),
     );
 
-    expect(result).toBe(quote);
+    expect(fetchedQuote).toBe(quote);
     expect(client.get).toHaveBeenCalledWith(`${BASE}/shipping_quote/Q%2F1%20%25`);
   });
 });
@@ -70,11 +70,11 @@ describe('LogisticsApi shipments', () => {
     const shipment = { shipmentId: 'SHIP-1', shipmentTrackingNumber: '9400' };
     client.post.mockResolvedValue(shipment);
 
-    const result = await Effect.runPromise(
+    const purchasedShipment = await Effect.runPromise(
       logistics.createFromShippingQuote({ shipmentRequest, marketplaceId: MarketplaceId.EBAY_US }),
     );
 
-    expect(result).toBe(shipment);
+    expect(purchasedShipment).toBe(shipment);
     expect(client.post).toHaveBeenCalledWith(
       `${BASE}/shipment/create_from_shipping_quote`,
       shipmentRequest,

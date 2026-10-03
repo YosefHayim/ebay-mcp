@@ -58,21 +58,21 @@ const requireIntegerInRange = (
  * are legitimately fractional) closes the gap the MCP schema's `.min(0)`
  * already covers.
  *
- * @param value - Optional price bound already validated as a number >= 0.
+ * @param priceBound - Optional price bound already validated as a number >= 0.
  * @param parameter - Parameter name used in the tagged error.
  * @returns A tagged input error when the bound is not finite, else undefined.
  */
 const nonFinitePriceError = (
-  value: number | undefined,
+  priceBound: number | undefined,
   parameter: string,
 ): EndpointInputError | undefined => {
-  if (value === undefined || Number.isFinite(value)) {
+  if (priceBound === undefined || Number.isFinite(priceBound)) {
     return;
   }
 
   return new EndpointInputError({
     parameter,
-    message: `${parameter} must be a finite number; got ${value}`,
+    message: `${parameter} must be a finite number; got ${priceBound}`,
   });
 };
 

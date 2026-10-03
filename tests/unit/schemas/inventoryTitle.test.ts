@@ -1,8 +1,8 @@
 import { inventoryItemSchema } from '@/schemas/inventory-management/inventory.js';
 import { describe, expect, it } from 'vitest';
 
-const acceptsInventoryItem = (value: unknown): boolean =>
-  inventoryItemSchema.safeParse(value).success;
+const acceptsInventoryItem = (inventoryItem: unknown): boolean =>
+  inventoryItemSchema.safeParse(inventoryItem).success;
 
 describe('inventory item product title', () => {
   it('accepts the 80-character eBay boundary', () => {

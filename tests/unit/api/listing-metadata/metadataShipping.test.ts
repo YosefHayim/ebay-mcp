@@ -22,12 +22,14 @@ describe('MetadataApi shipping:marketplace methods', () => {
     ['getShippingLocations', 'get_shipping_locations'],
     ['getShippingServices', 'get_shipping_services'],
   ] as const)('%s GETs the marketplace path and returns eBay data unchanged', async (method, resource) => {
-    const response = { [resource]: [{ description: 'eBay value' }] };
-    client.get.mockResolvedValue(response);
+    const stubShippingMetadata = { [resource]: [{ description: 'eBay value' }] };
+    client.get.mockResolvedValue(stubShippingMetadata);
 
-    const result = await Effect.runPromise(api[method]({ marketplaceId: MarketplaceId.EBAY_US }));
+    const shippingMetadata = await Effect.runPromise(
+      api[method]({ marketplaceId: MarketplaceId.EBAY_US }),
+    );
 
-    expect(result).toBe(response);
+    expect(shippingMetadata).toBe(stubShippingMetadata);
     expect(client.get).toHaveBeenCalledWith(`${SHIPPING}/EBAY_US/${resource}`);
   });
 

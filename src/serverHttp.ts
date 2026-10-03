@@ -19,8 +19,8 @@ const CONFIG = createHttpTransportConfigFromEnv(process.env);
 function logEnvironmentValidation(): void {
   const validation = validateEnvironmentConfig();
 
-  validation.infos.forEach((info) => {
-    serverLogger.info(info);
+  validation.infos.forEach((notice) => {
+    serverLogger.info(notice);
   });
 
   if (validation.warnings.length > 0) {

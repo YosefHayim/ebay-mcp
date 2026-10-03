@@ -250,7 +250,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const items = await Effect.runPromise(inventoryApi.getInventoryItems({ limit: 25 }));
+   * const inventoryPage = await Effect.runPromise(inventoryApi.getInventoryItems({ limit: 25 }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/getInventoryItems
@@ -281,7 +281,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const item = await Effect.runPromise(inventoryApi.getInventoryItem({ sku: 'SKU-1' }));
+   * const inventoryItem = await Effect.runPromise(inventoryApi.getInventoryItem({ sku: 'SKU-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/getInventoryItem
@@ -328,7 +328,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
         'input',
       );
       const sku = yield* requireStringEffect(validatedInput.sku, 'sku');
-      const body = yield* requireObjectEffect<InventoryItem>(validatedInput.body, 'body');
+      const inventoryItem = yield* requireObjectEffect<InventoryItem>(validatedInput.body, 'body');
       const config =
         validatedInput.contentLanguage === undefined
           ? undefined
@@ -337,7 +337,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
       return yield* requestPutEffect<BaseResponse>(
         client,
         `${basePath}/inventory_item/${sku}`,
-        body,
+        inventoryItem,
         config,
       );
     });
@@ -380,7 +380,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(
+   * const inventoryItemResults = await Effect.runPromise(
    *   inventoryApi.bulkCreateOrReplaceInventoryItem({ body: { requests: [] } }),
    * );
    * ```
@@ -394,12 +394,17 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkInventoryItemInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkCreateOrReplaceInventoryItemRequest>(
-        validatedInput.body,
-        'body',
-      );
+      const bulkInventoryItemRequest =
+        yield* requireObjectEffect<BulkCreateOrReplaceInventoryItemRequest>(
+          validatedInput.body,
+          'body',
+        );
 
-      return yield* requestPostEffect<BulkCreateOrReplaceInventoryItemResponse>(client, path, body);
+      return yield* requestPostEffect<BulkCreateOrReplaceInventoryItemResponse>(
+        client,
+        path,
+        bulkInventoryItemRequest,
+      );
     });
   },
 
@@ -411,7 +416,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(
+   * const inventoryItems = await Effect.runPromise(
    *   inventoryApi.bulkGetInventoryItem({ body: { requests: [{ sku: 'SKU-1' }] } }),
    * );
    * ```
@@ -425,12 +430,16 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkGetInventoryItemInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkGetInventoryItemRequest>(
+      const bulkGetInventoryItemRequest = yield* requireObjectEffect<BulkGetInventoryItemRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<BulkGetInventoryItemResponse>(client, path, body);
+      return yield* requestPostEffect<BulkGetInventoryItemResponse>(
+        client,
+        path,
+        bulkGetInventoryItemRequest,
+      );
     });
   },
 
@@ -442,7 +451,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(
+   * const priceQuantityResults = await Effect.runPromise(
    *   inventoryApi.bulkUpdatePriceQuantity({ body: { requests: [] } }),
    * );
    * ```
@@ -459,12 +468,16 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<BulkUpdatePriceQuantityRequest>(
+      const bulkPriceQuantityRequest = yield* requireObjectEffect<BulkUpdatePriceQuantityRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<BulkUpdatePriceQuantityResponse>(client, path, body);
+      return yield* requestPostEffect<BulkUpdatePriceQuantityResponse>(
+        client,
+        path,
+        bulkPriceQuantityRequest,
+      );
     });
   },
 
@@ -525,12 +538,15 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
         'input',
       );
       const sku = yield* requireStringEffect(validatedInput.sku, 'sku');
-      const body = yield* requireObjectEffect<ProductCompatibility>(validatedInput.body, 'body');
+      const productCompatibility = yield* requireObjectEffect<ProductCompatibility>(
+        validatedInput.body,
+        'body',
+      );
 
       return yield* requestPutEffect<BaseResponse>(
         client,
         `${basePath}/inventory_item/${sku}/product_compatibility`,
-        body,
+        productCompatibility,
       );
     });
   },
@@ -630,12 +646,15 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
         validatedInput.inventoryItemGroupKey,
         'inventoryItemGroupKey',
       );
-      const body = yield* requireObjectEffect<InventoryItemGroup>(validatedInput.body, 'body');
+      const inventoryItemGroup = yield* requireObjectEffect<InventoryItemGroup>(
+        validatedInput.body,
+        'body',
+      );
 
       return yield* requestPutEffect<BaseResponse>(
         client,
         `${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
-        body,
+        inventoryItemGroup,
       );
     });
   },
@@ -682,7 +701,7 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(
+   * const migratedListings = await Effect.runPromise(
    *   inventoryApi.bulkMigrateListing({ body: { requests: [] } }),
    * );
    * ```
@@ -696,12 +715,16 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkMigrateListingInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkMigrateListingRequest>(
+      const bulkMigrateListingRequest = yield* requireObjectEffect<BulkMigrateListingRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<BulkMigrateListingResponse>(client, path, body);
+      return yield* requestPostEffect<BulkMigrateListingResponse>(
+        client,
+        path,
+        bulkMigrateListingRequest,
+      );
     });
   },
 
@@ -771,12 +794,15 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
       );
       const listingId = yield* requireStringEffect(validatedInput.listingId, 'listingId');
       const sku = yield* requireStringEffect(validatedInput.sku, 'sku');
-      const body = yield* requireObjectEffect<LocationMapping>(validatedInput.body, 'body');
+      const locationMapping = yield* requireObjectEffect<LocationMapping>(
+        validatedInput.body,
+        'body',
+      );
 
       return yield* requestPutEffect<CreateOrReplaceSkuLocationMappingResponse>(
         client,
         `${basePath}/listing/${listingId}/sku/${sku}/locations`,
-        body,
+        locationMapping,
       );
     });
   },

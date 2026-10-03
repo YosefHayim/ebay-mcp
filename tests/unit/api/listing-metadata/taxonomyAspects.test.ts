@@ -78,21 +78,27 @@ describe('TaxonomyApi fetchItemAspects', () => {
 
 describe('TaxonomyApi getExpiredCategories', () => {
   it('GETs the expired-category mappings for the tree', async () => {
-    const response = { expiredCategories: [{ fromCategoryId: '1', toCategoryId: '2' }] };
-    client.get.mockResolvedValue(response);
+    const stubExpiredCategories = {
+      expiredCategories: [{ fromCategoryId: '1', toCategoryId: '2' }],
+    };
+    client.get.mockResolvedValue(stubExpiredCategories);
 
-    const result = await Effect.runPromise(api.getExpiredCategories({ categoryTreeId: '0' }));
+    const expiredCategories = await Effect.runPromise(
+      api.getExpiredCategories({ categoryTreeId: '0' }),
+    );
 
-    expect(result).toBe(response);
+    expect(expiredCategories).toBe(stubExpiredCategories);
     expect(client.get).toHaveBeenCalledWith(`${TREE}/0/get_expired_categories`);
   });
 
   it('passes an empty HTTP 204 through as undefined', async () => {
     client.get.mockResolvedValue(undefined);
 
-    const result = await Effect.runPromise(api.getExpiredCategories({ categoryTreeId: '0' }));
+    const expiredCategories = await Effect.runPromise(
+      api.getExpiredCategories({ categoryTreeId: '0' }),
+    );
 
-    expect(result).toBeUndefined();
+    expect(expiredCategories).toBeUndefined();
   });
 
   it('wraps eBay failures in a tagged EbayApiError', async () => {

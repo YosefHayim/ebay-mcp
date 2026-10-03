@@ -7,7 +7,7 @@
  * containing `#`, whitespace, or quote characters in double quotes (escaping
  * embedded backslashes and double quotes) so dotenv restores it verbatim.
  *
- * @param value - Raw environment value to serialize.
+ * @param envValue - Raw environment value to serialize.
  * @returns A dotenv-safe value string.
  *
  * @example
@@ -15,11 +15,11 @@
  * const line = `EBAY_USER_REFRESH_TOKEN=${quoteEnvValue(token)}`;
  * ```
  */
-export const quoteEnvValue = (value: string): string => {
-  if (value === '' || !/[#\s"'`]/.test(value)) {
-    return value;
+export const quoteEnvValue = (envValue: string): string => {
+  if (envValue === '' || !/[#\s"'`]/.test(envValue)) {
+    return envValue;
   }
-  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  return `"${envValue.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 };
 
 /**
@@ -35,5 +35,5 @@ export const quoteEnvValue = (value: string): string => {
  */
 export const stringifyEnv = (env: Record<string, string>): string =>
   Object.entries(env)
-    .map(([key, value]) => `${key}=${quoteEnvValue(value)}`)
+    .map(([name, envValue]) => `${name}=${quoteEnvValue(envValue)}`)
     .join('\n');

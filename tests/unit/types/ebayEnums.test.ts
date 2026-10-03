@@ -398,8 +398,8 @@ describe('eBay Enums', () => {
     });
 
     it('reject invalid string values at runtime', () => {
-      const isValidMarketplace = (value: string): value is MarketplaceId =>
-        Object.values(MarketplaceId).includes(value as MarketplaceId);
+      const isValidMarketplace = (candidate: string): candidate is MarketplaceId =>
+        Object.values(MarketplaceId).includes(candidate as MarketplaceId);
 
       expect(isValidMarketplace('EBAY_US')).toBe(true);
       expect(isValidMarketplace('INVALID_MARKETPLACE')).toBe(false);
@@ -409,16 +409,16 @@ describe('eBay Enums', () => {
   describe('Enum Value Consistency', () => {
     it('have enum keys match enum values', () => {
       // For most enums, the key matches the value.
-      Object.entries(MarketplaceId).forEach(([key, value]) => {
-        expect(key).toBe(value);
+      Object.entries(MarketplaceId).forEach(([key, enumValue]) => {
+        expect(key).toBe(enumValue);
       });
 
-      Object.entries(Condition).forEach(([key, value]) => {
-        expect(key).toBe(value);
+      Object.entries(Condition).forEach(([key, enumValue]) => {
+        expect(key).toBe(enumValue);
       });
 
-      Object.entries(FormatType).forEach(([key, value]) => {
-        expect(key).toBe(value);
+      Object.entries(FormatType).forEach(([key, enumValue]) => {
+        expect(key).toBe(enumValue);
       });
     });
 

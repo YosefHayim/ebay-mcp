@@ -37,11 +37,11 @@ let runtime: EbayMcpRuntime;
 let originalEnv: NodeJS.ProcessEnv;
 
 const callTool = async (name: string, args: Record<string, unknown>) => {
-  const result = await client.callTool({ name, arguments: args });
-  const text = Array.isArray(result.content)
-    ? result.content.map((block) => (block.type === 'text' ? block.text : '')).join('')
+  const toolResult = await client.callTool({ name, arguments: args });
+  const text = Array.isArray(toolResult.content)
+    ? toolResult.content.map((block) => (block.type === 'text' ? block.text : '')).join('')
     : '';
-  return { isError: result.isError === true, text, payload: JSON.parse(text) as unknown };
+  return { isError: toolResult.isError === true, text, payload: JSON.parse(text) as unknown };
 };
 
 const mockImageUpload = (imageUrl: string) =>
@@ -129,12 +129,12 @@ describe('ebay_upload_images', () => {
     const first = mockImageUpload('https://i.ebayimg.com/front.jpg');
     const second = mockImageUpload('https://i.ebayimg.com/back.png');
 
-    const result = await callTool('ebay_upload_images', {
+    const uploadResult = await callTool('ebay_upload_images', {
       paths: [fixture.jpeg, 'media://nested/back.png'],
     });
 
-    expect(result.isError).toBe(false);
-    expect(result.payload).toEqual({
+    expect(uploadResult.isError).toBe(false);
+    expect(uploadResult.payload).toEqual({
       images: [
         {
           source: fixture.jpeg,
@@ -157,20 +157,20 @@ describe('ebay_upload_images', () => {
   it('refuses files outside the allowed directories without contacting eBay', async () => {
     const upload = mockImageUpload('https://i.ebayimg.com/never.jpg');
 
-    const result = await callTool('ebay_upload_images', { paths: [fixture.escapingLink] });
+    const rejectedUpload = await callTool('ebay_upload_images', { paths: [fixture.escapingLink] });
 
-    expect(result.isError).toBe(true);
-    expect(result.text).toContain('outside the allowed media directories');
+    expect(rejectedUpload.isError).toBe(true);
+    expect(rejectedUpload.text).toContain('outside the allowed media directories');
     expect(upload.isDone()).toBe(false);
   });
 
   it('is disabled until a media directory is configured', async () => {
     delete process.env.EBAY_MCP_MEDIA_ROOT;
 
-    const result = await callTool('ebay_upload_images', { paths: [fixture.jpeg] });
+    const disabledUpload = await callTool('ebay_upload_images', { paths: [fixture.jpeg] });
 
-    expect(result.isError).toBe(true);
-    expect(result.text).toContain('EBAY_MCP_MEDIA_DIRS');
+    expect(disabledUpload.isError).toBe(true);
+    expect(disabledUpload.text).toContain('EBAY_MCP_MEDIA_DIRS');
   });
 });
 
@@ -188,14 +188,14 @@ describe('ebay_upload_video and ebay_get_video', () => {
       .get(`${MEDIA_PATH}/video/VID-1`)
       .reply(200, { videoId: 'VID-1', status: 'PROCESSING' });
 
-    const result = await callTool('ebay_upload_video', {
+    const videoUpload = await callTool('ebay_upload_video', {
       path: 'media://clip.mp4',
       title: 'Console demo',
       waitForProcessingSeconds: 0,
     });
 
-    expect(result.isError).toBe(false);
-    expect(result.payload).toEqual({ videoId: 'VID-1', status: 'PROCESSING' });
+    expect(videoUpload.isError).toBe(false);
+    expect(videoUpload.payload).toEqual({ videoId: 'VID-1', status: 'PROCESSING' });
     expect(create.isDone()).toBe(true);
     expect(upload.isDone()).toBe(true);
     expect(status.isDone()).toBe(true);
@@ -208,10 +208,10 @@ describe('ebay_upload_video and ebay_get_video', () => {
       statusMessage: 'Unsupported codec',
     });
 
-    const result = await callTool('ebay_get_video', { videoId: 'VID-1' });
+    const videoStatus = await callTool('ebay_get_video', { videoId: 'VID-1' });
 
-    expect(result.isError).toBe(false);
-    expect(result.payload).toMatchObject({
+    expect(videoStatus.isError).toBe(false);
+    expect(videoStatus.payload).toMatchObject({
       status: 'PROCESSING_FAILED',
       statusMessage: 'Unsupported codec',
     });
@@ -220,7 +220,7 @@ describe('ebay_upload_video and ebay_get_video', () => {
 
 describe('ebay_attach_media_to_inventory_item', () => {
   const sku = 'AUCTION-20260830-MEGADRIVE-MDPP';
-  const item = {
+  const inventoryItem = {
     sku,
     locale: 'de_DE',
     condition: 'USED_GOOD',
@@ -233,11 +233,13 @@ describe('ebay_attach_media_to_inventory_item', () => {
   };
 
   it('uploads, re-reads the item, then rewrites only its media fields in its own locale', async () => {
-    const read = nock(API_HOST).get(`/sell/inventory/v1/inventory_item/${sku}`).reply(200, item);
+    const read = nock(API_HOST)
+      .get(`/sell/inventory/v1/inventory_item/${sku}`)
+      .reply(200, inventoryItem);
     const upload = mockImageUpload('https://i.ebayimg.com/front.jpg');
     // Edited while the upload ran: the write must start from this copy, not the first read.
     const editedMeanwhile = {
-      ...item,
+      ...inventoryItem,
       availability: { shipToLocationAvailability: { quantity: 3 } },
     };
     const reread = nock(API_HOST)
@@ -245,20 +247,20 @@ describe('ebay_attach_media_to_inventory_item', () => {
       .reply(200, editedMeanwhile);
     let putBody: unknown;
     const write = nock(API_HOST)
-      .put(`/sell/inventory/v1/inventory_item/${sku}`, (body) => {
-        putBody = body;
+      .put(`/sell/inventory/v1/inventory_item/${sku}`, (writtenItem) => {
+        putBody = writtenItem;
         return true;
       })
       .matchHeader('Content-Language', 'de-DE')
       .reply(204);
 
-    const result = await callTool('ebay_attach_media_to_inventory_item', {
+    const attachResult = await callTool('ebay_attach_media_to_inventory_item', {
       sku,
       imagePaths: [fixture.jpeg],
     });
 
-    expect(result.isError).toBe(false);
-    expect(result.payload).toMatchObject({
+    expect(attachResult.isError).toBe(false);
+    expect(attachResult.payload).toMatchObject({
       sku,
       updated: true,
       imageUrls: ['https://i.ebayimg.com/old.jpg', 'https://i.ebayimg.com/front.jpg'],
@@ -282,20 +284,20 @@ describe('ebay_attach_media_to_inventory_item', () => {
   });
 
   it('leaves the item untouched and reports per-file results when an upload fails', async () => {
-    nock(API_HOST).get(`/sell/inventory/v1/inventory_item/${sku}`).reply(200, item);
+    nock(API_HOST).get(`/sell/inventory/v1/inventory_item/${sku}`).reply(200, inventoryItem);
     mockImageUpload('https://i.ebayimg.com/front.jpg');
     nock(MEDIA_HOST)
       .post(`${MEDIA_PATH}/image/create_image_from_file`)
       .reply(400, { errors: [{ errorId: 190_001, message: 'Image too small' }] });
     const write = nock(API_HOST).put(`/sell/inventory/v1/inventory_item/${sku}`).reply(204);
 
-    const result = await callTool('ebay_attach_media_to_inventory_item', {
+    const failedAttach = await callTool('ebay_attach_media_to_inventory_item', {
       sku,
       imagePaths: [fixture.jpeg, 'media://nested/back.png'],
     });
 
-    expect(result.isError).toBe(true);
-    const { error } = result.payload as { error: string };
+    expect(failedAttach.isError).toBe(true);
+    const { error } = failedAttach.payload as { error: string };
     expect(error).toContain('1 of 2 uploads failed');
     expect(error).toContain('"status":"uploaded"');
     expect(error).toContain('"status":"failed"');
@@ -304,15 +306,17 @@ describe('ebay_attach_media_to_inventory_item', () => {
   });
 
   it('never touches eBay when a path is rejected locally', async () => {
-    const read = nock(API_HOST).get(`/sell/inventory/v1/inventory_item/${sku}`).reply(200, item);
+    const read = nock(API_HOST)
+      .get(`/sell/inventory/v1/inventory_item/${sku}`)
+      .reply(200, inventoryItem);
 
-    const result = await callTool('ebay_attach_media_to_inventory_item', {
+    const rejectedAttach = await callTool('ebay_attach_media_to_inventory_item', {
       sku,
       imagePaths: [fixture.jpeg, fixture.text],
     });
 
-    expect(result.isError).toBe(true);
-    expect(result.text).toContain('unsupported image extension');
+    expect(rejectedAttach.isError).toBe(true);
+    expect(rejectedAttach.text).toContain('unsupported image extension');
     expect(read.isDone()).toBe(false);
   });
 });
@@ -347,20 +351,20 @@ describe('document and image URL tools', () => {
 
   it('creates an image from its HTTPS URL without fetching the source locally', async () => {
     const location = `${MEDIA_HOST}${MEDIA_PATH}/image/I-1`;
-    const request = nock(MEDIA_HOST)
+    const createImageScope = nock(MEDIA_HOST)
       .post(`${MEDIA_PATH}/image/create_image_from_url`, {
         imageUrl: 'https://example.com/front.jpg',
       })
       .reply(201, { imageUrl: 'https://i.ebayimg.com/front.jpg' }, { Location: location });
-    const result = await callTool('ebay_create_image_from_url', {
+    const imageFromUrl = await callTool('ebay_create_image_from_url', {
       imageUrl: 'https://example.com/front.jpg',
     });
-    expect(result.payload).toEqual({
+    expect(imageFromUrl.payload).toEqual({
       imageId: 'I-1',
       location,
       image: { imageUrl: 'https://i.ebayimg.com/front.jpg' },
     });
-    expect(request.isDone()).toBe(true);
+    expect(createImageScope.isDone()).toBe(true);
   });
 
   it('stages, uploads and checks a listing document with separate calls', async () => {
@@ -372,8 +376,10 @@ describe('document and image URL tools', () => {
     const upload = nock(MEDIA_HOST, {
       reqheaders: { 'content-type': /multipart\/form-data; boundary=/ },
     })
-      .post(`${MEDIA_PATH}/document/D-1/upload`, (body) => {
-        const text = Buffer.isBuffer(body) ? body.toString() : String(body);
+      .post(`${MEDIA_PATH}/document/D-1/upload`, (multipartBody) => {
+        const text = Buffer.isBuffer(multipartBody)
+          ? multipartBody.toString()
+          : String(multipartBody);
         return (
           text.includes('name="file"') &&
           text.includes('%PDF-1.7') &&
@@ -393,18 +399,20 @@ describe('document and image URL tools', () => {
     expect((await callTool('ebay_get_document', { documentId: 'D-1' })).payload).toMatchObject({
       documentStatus: 'ACCEPTED',
     });
-    expect([create, upload, get].every((request) => request.isDone())).toBe(true);
+    expect([create, upload, get].every((scope) => scope.isDone())).toBe(true);
   });
 
   it('creates a listing document from a URL', async () => {
-    const body = { ...metadata, documentUrl: 'https://example.com/manual.pdf' };
-    const request = nock(MEDIA_HOST)
-      .post(`${MEDIA_PATH}/document/create_document_from_url`, body)
+    const documentFromUrlInput = { ...metadata, documentUrl: 'https://example.com/manual.pdf' };
+    const createDocumentScope = nock(MEDIA_HOST)
+      .post(`${MEDIA_PATH}/document/create_document_from_url`, documentFromUrlInput)
       .reply(201, { documentId: 'D-2', documentStatus: 'SUBMITTED' });
-    expect((await callTool('ebay_create_document_from_url', body)).payload).toMatchObject({
+    expect(
+      (await callTool('ebay_create_document_from_url', documentFromUrlInput)).payload,
+    ).toMatchObject({
       documentId: 'D-2',
     });
-    expect(request.isDone()).toBe(true);
+    expect(createDocumentScope.isDone()).toBe(true);
   });
 
   it('uploads post-order form fields, downloads an embedded PDF and removes the document', async () => {
@@ -414,8 +422,10 @@ describe('document and image URL tools', () => {
     const upload = nock(POST_ORDER_HOST, {
       reqheaders: { 'content-type': /multipart\/form-data; boundary=/ },
     })
-      .post(`${MEDIA_PATH}/post_order/document`, (body) => {
-        const text = Buffer.isBuffer(body) ? body.toString() : String(body);
+      .post(`${MEDIA_PATH}/post_order/document`, (multipartBody) => {
+        const text = Buffer.isBuffer(multipartBody)
+          ? multipartBody.toString()
+          : String(multipartBody);
         return (
           ['file', 'documentUsageType', 'entityType', 'entityId'].every((key) =>
             text.includes(`name="${key}"`),
@@ -441,14 +451,14 @@ describe('document and image URL tools', () => {
         })
       ).payload,
     ).toEqual({ documentId: 'P-1', location });
-    const result = CallToolResultSchema.parse(
+    const downloadResult = CallToolResultSchema.parse(
       await client.callTool({
         name: 'ebay_download_post_order_document',
         arguments: { documentId: 'P-1' },
       }),
     );
-    expect(result.isError).not.toBe(true);
-    const resource = result.content.find((item) => item.type === 'resource');
+    expect(downloadResult.isError).not.toBe(true);
+    const resource = downloadResult.content.find((block) => block.type === 'resource');
     expect(resource?.resource).toEqual({
       uri: 'ebay-media://post-order/document/P-1',
       mimeType: 'application/pdf',
@@ -459,28 +469,32 @@ describe('document and image URL tools', () => {
     expect(
       (await callTool('ebay_remove_post_order_document', { documentId: 'P-1' })).payload,
     ).toEqual({ status: 'success' });
-    expect([upload, download, remove].every((request) => request.isDone())).toBe(true);
+    expect([upload, download, remove].every((scope) => scope.isDone())).toBe(true);
   });
 
   it.each([
     401, 404, 429,
   ])('preserves eBay error details for a %i download failure', async (status) => {
     const errors = [{ errorId: 190_302, domain: 'API_MEDIA', message: 'Document unavailable' }];
-    const request = nock(POST_ORDER_HOST)
+    const downloadScope = nock(POST_ORDER_HOST)
       .get(`${MEDIA_PATH}/post_order/document/P-1`)
       .times(status === 401 ? 2 : 1)
       .reply(status, { errors }, { 'Retry-After': '5' });
-    const result = await callTool('ebay_download_post_order_document', { documentId: 'P-1' });
-    expect(result.isError).toBe(true);
-    expect(result.payload).toMatchObject({ status, details: errors });
-    expect(request.isDone()).toBe(true);
+    const failedDownload = await callTool('ebay_download_post_order_document', {
+      documentId: 'P-1',
+    });
+    expect(failedDownload.isError).toBe(true);
+    expect(failedDownload.payload).toMatchObject({ status, details: errors });
+    expect(downloadScope.isDone()).toBe(true);
   });
 
   it('surfaces a rejected published-document deletion', async () => {
     const errors = [{ errorId: 190_311, message: 'Published document cannot be removed' }];
     nock(POST_ORDER_HOST).delete(`${MEDIA_PATH}/post_order/document/P-1`).reply(400, { errors });
-    const result = await callTool('ebay_remove_post_order_document', { documentId: 'P-1' });
-    expect(result.isError).toBe(true);
-    expect(result.payload).toMatchObject({ status: 400, details: errors });
+    const rejectedRemoval = await callTool('ebay_remove_post_order_document', {
+      documentId: 'P-1',
+    });
+    expect(rejectedRemoval.isError).toBe(true);
+    expect(rejectedRemoval.payload).toMatchObject({ status: 400, details: errors });
   });
 });

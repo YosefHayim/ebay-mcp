@@ -66,8 +66,8 @@ export class DownloadTooLargeError extends Data.TaggedError('DownloadTooLargeErr
 }
 
 /** Size of a download: what was read, or the larger declared length when reading stopped early. */
-const downloadSize = (response: EbayResponse<Buffer>): number =>
-  Math.max(response.data.length, Number(response.headers['content-length']) || 0);
+const downloadSize = (fileResponse: EbayResponse<Buffer>): number =>
+  Math.max(fileResponse.data.length, Number(fileResponse.headers['content-length']) || 0);
 
 /**
  * Downloads a binary eBay resource as an Effect, keeping its content type and file name.
@@ -101,17 +101,18 @@ export const requestDownloadEffect = (
     catch: (cause) => new EbayApiError({ method: 'GET', path, cause }), // allow-duplicate
   }).pipe(
     Effect.filterOrFail(
-      (response) => downloadSize(response) <= MAX_INLINE_DOWNLOAD_BYTES,
-      (response) =>
+      (fileResponse) => downloadSize(fileResponse) <= MAX_INLINE_DOWNLOAD_BYTES,
+      (fileResponse) =>
         new DownloadTooLargeError({
           path,
-          bytes: downloadSize(response),
+          bytes: downloadSize(fileResponse),
           limit: MAX_INLINE_DOWNLOAD_BYTES,
         }),
     ),
-    Effect.map((response) => ({
-      bytes: response.data,
-      contentType: response.headers['content-type']?.split(';')[0]?.trim() || DEFAULT_CONTENT_TYPE,
-      fileName: fileNameFromDisposition(response.headers['content-disposition']),
+    Effect.map((fileResponse) => ({
+      bytes: fileResponse.data,
+      contentType:
+        fileResponse.headers['content-type']?.split(';')[0]?.trim() || DEFAULT_CONTENT_TYPE,
+      fileName: fileNameFromDisposition(fileResponse.headers['content-disposition']),
     })),
   );

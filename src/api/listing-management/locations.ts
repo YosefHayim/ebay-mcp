@@ -170,7 +170,7 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
         validatedInput.merchantLocationKey,
         'merchantLocationKey',
       );
-      const body = yield* requireObjectEffect<CreateInventoryLocationRequest>(
+      const inventoryLocation = yield* requireObjectEffect<CreateInventoryLocationRequest>(
         validatedInput.body,
         'body',
       );
@@ -178,7 +178,7 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
       return yield* requestPostEffect<CreateInventoryLocationResponse>(
         client,
         `${basePath}/location/${merchantLocationKey}`,
-        body,
+        inventoryLocation,
       );
     });
   },
@@ -345,7 +345,7 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
         validatedInput.merchantLocationKey,
         'merchantLocationKey',
       );
-      const body = yield* requireObjectEffect<UpdateInventoryLocationRequest>(
+      const inventoryLocationUpdate = yield* requireObjectEffect<UpdateInventoryLocationRequest>(
         validatedInput.body,
         'body',
       );
@@ -353,7 +353,7 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
       return yield* requestPostEffect<UpdateInventoryLocationResponse>(
         client,
         `${basePath}/location/${merchantLocationKey}/update_location_details`,
-        body,
+        inventoryLocationUpdate,
       );
     });
   },

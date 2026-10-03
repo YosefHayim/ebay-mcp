@@ -176,12 +176,12 @@ async function createAuthMiddleware(
   if (config.staticAuthToken) {
     const staticToken = config.staticAuthToken;
     serverLogger.info('Static bearer auth enabled via MCP_AUTH_TOKEN.');
-    return (req, res, next) => {
-      if (req.headers.authorization === `Bearer ${staticToken}`) {
+    return (request, response, next) => {
+      if (request.headers.authorization === `Bearer ${staticToken}`) {
         next();
         return;
       }
-      res.status(401).json({
+      response.status(401).json({
         error: 'unauthorized',
         error_description: 'Missing or invalid bearer token',
       });
@@ -224,18 +224,20 @@ async function createAuthMiddleware(
 }
 
 function createRequestLogger(): RequestHandler {
-  return (req, res, next) => {
+  return (request, response, next) => {
     const start = Date.now();
-    res.on('finish', () => {
+    response.on('finish', () => {
       const duration = Date.now() - start;
-      serverLogger.http(`${req.method} ${req.path} -> ${res.statusCode} (${duration}ms)`);
+      serverLogger.http(
+        `${request.method} ${request.path} -> ${response.statusCode} (${duration}ms)`,
+      );
     });
     next();
   };
 }
 
-function sendInvalidSession(res: Response): void {
-  res.status(400).json({
+function sendInvalidSession(response: Response): void {
+  response.status(400).json({
     error: 'invalid_session',
     error_description: 'Invalid or missing session ID',
   });
@@ -282,8 +284,8 @@ export const createHttpMcpApp = async (
     }),
   );
 
-  app.get('/health', (_req, res) => {
-    res.json({
+  app.get('/health', (_request, response) => {
+    response.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
       oauth_enabled: config.authEnabled,
@@ -293,14 +295,14 @@ export const createHttpMcpApp = async (
   const authMiddleware = await createAuthMiddleware(config, serverUrl);
   const transports = new Map<string, StreamableHTTPServerTransport>();
 
-  const mcpPostHandler = async (req: Request, res: Response): Promise<void> => {
-    const sessionHeader = req.headers['mcp-session-id'];
+  const mcpPostHandler = async (request: Request, response: Response): Promise<void> => {
+    const sessionHeader = request.headers['mcp-session-id'];
     const sessionId = typeof sessionHeader === 'string' ? sessionHeader : undefined;
     let transport: StreamableHTTPServerTransport;
 
     if (sessionId && transports.has(sessionId)) {
       transport = transports.get(sessionId)!;
-    } else if (!sessionId && isInitializeRequest(req.body)) {
+    } else if (!sessionId && isInitializeRequest(request.body)) {
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (initializedSessionId) => {
@@ -319,7 +321,7 @@ export const createHttpMcpApp = async (
       const server = await createMcpServer(serverUrl);
       await server.connect(transport);
     } else {
-      res.status(400).json({
+      response.status(400).json({
         jsonrpc: '2.0',
         error: {
           code: -32_000,
@@ -330,20 +332,20 @@ export const createHttpMcpApp = async (
       return;
     }
 
-    await transport.handleRequest(req, res, req.body);
+    await transport.handleRequest(request, response, request.body);
   };
 
-  const handleSessionRequest = async (req: Request, res: Response): Promise<void> => {
-    const sessionHeader = req.headers['mcp-session-id'];
+  const handleSessionRequest = async (request: Request, response: Response): Promise<void> => {
+    const sessionHeader = request.headers['mcp-session-id'];
     const sessionId = typeof sessionHeader === 'string' ? sessionHeader : undefined;
 
     if (!(sessionId && transports.has(sessionId))) {
-      sendInvalidSession(res);
+      sendInvalidSession(response);
       return;
     }
 
     const transport = transports.get(sessionId)!;
-    await transport.handleRequest(req, res);
+    await transport.handleRequest(request, response);
   };
 
   const mcpMiddleware = authMiddleware ? [authMiddleware, mcpPostHandler] : [mcpPostHandler];

@@ -90,7 +90,7 @@ export class LogisticsApi {
 
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<CreateShippingQuoteInput>(input, 'input');
-      const body = yield* requireObjectEffect<ShippingQuoteRequest>(
+      const shippingQuoteRequest = yield* requireObjectEffect<ShippingQuoteRequest>(
         endpointInput.shippingQuoteRequest,
         'shippingQuoteRequest',
       );
@@ -102,7 +102,7 @@ export class LogisticsApi {
       return yield* requestPostEffect<ShippingQuoteResponse>(
         client,
         path,
-        body,
+        shippingQuoteRequest,
         marketplaceConfig(marketplaceId),
       );
     });
@@ -172,12 +172,15 @@ export class LogisticsApi {
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<CreateShipmentFromQuoteRequest>(
+      const shipmentRequest = yield* requireObjectEffect<CreateShipmentFromQuoteRequest>(
         endpointInput.shipmentRequest,
         'shipmentRequest',
       );
-      yield* requireStringEffect(body.shippingQuoteId, 'shipmentRequest.shippingQuoteId');
-      yield* requireStringEffect(body.rateId, 'shipmentRequest.rateId');
+      yield* requireStringEffect(
+        shipmentRequest.shippingQuoteId,
+        'shipmentRequest.shippingQuoteId',
+      );
+      yield* requireStringEffect(shipmentRequest.rateId, 'shipmentRequest.rateId');
       const marketplaceId = yield* optionalStringEffect(
         endpointInput.marketplaceId,
         'marketplaceId',
@@ -186,7 +189,7 @@ export class LogisticsApi {
       return yield* requestPostEffect<ShipmentResponse>(
         client,
         path,
-        body,
+        shipmentRequest,
         marketplaceConfig(marketplaceId),
       );
     });

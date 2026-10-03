@@ -38,15 +38,17 @@ const auctionItem = {
   Country: 'US',
 };
 
-const tradingResponse = (callName: string, body: string): string =>
+const tradingResponse = (callName: string, responseFields: string): string =>
   `<?xml version="1.0" encoding="utf-8"?>
   <${callName}Response xmlns="urn:ebay:apis:eBLBaseComponents">
     <Ack>Success</Ack>
-    ${body}
+    ${responseFields}
   </${callName}Response>`;
 
-const textContent = (result: Awaited<ReturnType<Client['callTool']>>): string =>
-  (result.content as { type: string; text?: string }[]).map((block) => block.text ?? '').join('\n');
+const textContent = (toolResult: Awaited<ReturnType<Client['callTool']>>): string =>
+  (toolResult.content as { type: string; text?: string }[])
+    .map((block) => block.text ?? '')
+    .join('\n');
 
 let client: Client;
 let runtime: EbayMcpRuntime;
@@ -111,22 +113,22 @@ describe('trading format registered MCP validation', () => {
     const endpoint = nock(TRADING_HOST)
       .post(
         TRADING_PATH,
-        (body: string) =>
-          body.includes('<AddItemRequest') &&
-          body.includes('<ListingType>Chinese</ListingType>') &&
-          body.includes('<ListingDuration>Days_7</ListingDuration>') &&
-          body.includes('<ReservePrice>25</ReservePrice>'),
+        (requestXml: string) =>
+          requestXml.includes('<AddItemRequest') &&
+          requestXml.includes('<ListingType>Chinese</ListingType>') &&
+          requestXml.includes('<ListingDuration>Days_7</ListingDuration>') &&
+          requestXml.includes('<ReservePrice>25</ReservePrice>'),
       )
       .matchHeader('X-EBAY-API-CALL-NAME', 'AddItem')
       .reply(200, tradingResponse('AddItem', '<ItemID>110001</ItemID>'));
 
-    const result = await client.callTool({
+    const auctionCreate = await client.callTool({
       name: 'ebay_create_listing',
       arguments: { format: 'AUCTION', item: auctionItem },
     });
 
-    expect(result.isError).not.toBe(true);
-    expect(textContent(result)).toContain('110001');
+    expect(auctionCreate.isError).not.toBe(true);
+    expect(textContent(auctionCreate)).toContain('110001');
     expect(endpoint.isDone()).toBe(true);
   });
 
@@ -134,18 +136,18 @@ describe('trading format registered MCP validation', () => {
     const endpoint = nock(TRADING_HOST)
       .post(
         TRADING_PATH,
-        (body: string) =>
-          body.includes('<AddFixedPriceItemRequest') && !body.includes('<ListingType>'),
+        (requestXml: string) =>
+          requestXml.includes('<AddFixedPriceItemRequest') && !requestXml.includes('<ListingType>'),
       )
       .matchHeader('X-EBAY-API-CALL-NAME', 'AddFixedPriceItem')
       .reply(200, tradingResponse('AddFixedPriceItem', '<ItemID>110002</ItemID>'));
 
-    const result = await client.callTool({
+    const fixedPriceCreate = await client.callTool({
       name: 'ebay_create_listing',
       arguments: { item: { Title: 'Widget', StartPrice: 14.99, ListingDuration: 'GTC' } },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(fixedPriceCreate.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 
@@ -154,13 +156,13 @@ describe('trading format registered MCP validation', () => {
       .post(TRADING_PATH)
       .reply(200, tradingResponse('AddItem', '<ItemID>110003</ItemID>'));
 
-    const result = await client.callTool({
+    const mixedFormatCreate = await client.callTool({
       name: 'ebay_create_listing',
       arguments: { format: 'AUCTION', item: { ...auctionItem, ListingDuration: 'GTC' } },
     });
 
-    expect(result.isError).toBe(true);
-    expect(textContent(result)).toContain('item.ListingDuration');
+    expect(mixedFormatCreate.isError).toBe(true);
+    expect(textContent(mixedFormatCreate)).toContain('item.ListingDuration');
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -168,19 +170,19 @@ describe('trading format registered MCP validation', () => {
     const endpoint = nock(TRADING_HOST)
       .post(
         TRADING_PATH,
-        (body: string) =>
-          body.includes('<EndItemRequest') &&
-          body.includes('<EndingReason>SellToHighBidder</EndingReason>'),
+        (requestXml: string) =>
+          requestXml.includes('<EndItemRequest') &&
+          requestXml.includes('<EndingReason>SellToHighBidder</EndingReason>'),
       )
       .matchHeader('X-EBAY-API-CALL-NAME', 'EndItem')
       .reply(200, tradingResponse('EndItem', '<EndTime>2026-08-25T12:00:00.000Z</EndTime>'));
 
-    const result = await client.callTool({
+    const auctionEnd = await client.callTool({
       name: 'ebay_end_listing',
       arguments: { format: 'AUCTION', itemId: '110001', reason: 'SellToHighBidder' },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(auctionEnd.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 });

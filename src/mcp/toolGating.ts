@@ -262,8 +262,8 @@ export const createToolGatingController = (
 };
 
 /** Wraps controller output as a standard text tool result. */
-const toToolResult = (data: unknown): CallToolResult => ({
-  content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+const toToolResult = (controllerOutput: unknown): CallToolResult => ({
+  content: [{ type: 'text', text: JSON.stringify(controllerOutput, null, 2) }],
 });
 
 /**

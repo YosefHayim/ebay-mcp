@@ -87,7 +87,7 @@ export interface ScopeRequirement {
  *
  * @example
  * ```ts
- * const result = validateScopesDetailed(scopes, 'production');
+ * const scopeValidation = validateScopesDetailed(scopes, 'production');
  * ```
  */
 export const validateScopesDetailed = (
@@ -478,7 +478,7 @@ export const getReadonlyScope = (writeScope: string): string | null => {
   ];
 
   const scopeType = writeScope.split('/').pop();
-  if (scopeType && hasReadonly.some((s) => scopeType.includes(s))) {
+  if (scopeType && hasReadonly.some((readonlyMarker) => scopeType.includes(readonlyMarker))) {
     return `${writeScope}.readonly`;
   }
 

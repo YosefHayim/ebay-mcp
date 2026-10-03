@@ -113,9 +113,9 @@ describe('MediaApi', () => {
       data: undefined,
     });
 
-    const result = await Effect.runPromise(media.createVideo({ title: 'Demo', size: 4 }));
+    const createdVideo = await Effect.runPromise(media.createVideo({ title: 'Demo', size: 4 }));
 
-    expect(result).toEqual({ videoId: 'VID-1' });
+    expect(createdVideo).toEqual({ videoId: 'VID-1' });
     expect(client.postForResponse).toHaveBeenCalledWith(
       'https://apim.sandbox.ebay.com/commerce/media/v1_beta/video',
       { title: 'Demo', size: 4, description: undefined, classification: ['ITEM'] },
@@ -138,9 +138,9 @@ describe('MediaApi', () => {
 
     await Effect.runPromise(media.uploadVideo({ videoId: 'VID-1', bytes }));
 
-    const [url, body, config] = client.post.mock.calls[0];
+    const [url, videoBytes, config] = client.post.mock.calls[0];
     expect(url).toBe('https://apim.sandbox.ebay.com/commerce/media/v1_beta/video/VID-1/upload');
-    expect(body).toBe(bytes);
+    expect(videoBytes).toBe(bytes);
     expect(config.headers).toEqual({
       'Content-Type': 'application/octet-stream',
       'Content-Length': '4',

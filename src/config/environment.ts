@@ -180,7 +180,7 @@ export const getRequestedScopes = (
  * @returns Requested scopes plus warnings for environment-only or unknown scopes.
  * @example
  * ```ts
- * const result = validateScopes(scopes, 'sandbox');
+ * const scopeValidation = validateScopes(scopes, 'sandbox');
  * ```
  */
 export const validateScopes = (

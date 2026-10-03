@@ -70,8 +70,8 @@ afterEach(async () => {
 });
 
 it('advertises fulfillment policy create and update through connected MCP', async () => {
-  const result = await client.listTools();
-  const tools = new Map(result.tools.map((tool) => [tool.name, tool]));
+  const toolList = await client.listTools();
+  const tools = new Map(toolList.tools.map((tool) => [tool.name, tool]));
 
   expect(tools.get('ebay_create_fulfillment_policy')?.inputSchema.required).toEqual(['policy']);
   expect(tools.get('ebay_update_fulfillment_policy')?.inputSchema.required).toEqual([
@@ -85,13 +85,13 @@ it('calls the create endpoint with the validated policy body', async () => {
     .post('/sell/account/v1/fulfillment_policy/', policy)
     .reply(201, { fulfillmentPolicyId: 'FP123' });
 
-  const result = await client.callTool({
+  const createResult = await client.callTool({
     name: 'ebay_create_fulfillment_policy',
     arguments: { policy },
   });
 
   expect(endpoint.isDone()).toBe(true);
-  expect(result.content).toEqual([
+  expect(createResult.content).toEqual([
     {
       type: 'text',
       text: JSON.stringify({ fulfillmentPolicyId: 'FP123' }, null, 2),
@@ -104,13 +104,13 @@ it('calls the update endpoint with the ID in the path and policy in the body', a
     .put('/sell/account/v1/fulfillment_policy/FP123', policy)
     .reply(200, { fulfillmentPolicyId: 'FP123' });
 
-  const result = await client.callTool({
+  const updateResult = await client.callTool({
     name: 'ebay_update_fulfillment_policy',
     arguments: { fulfillmentPolicyId: 'FP123', policy },
   });
 
   expect(endpoint.isDone()).toBe(true);
-  expect(result.content).toEqual([
+  expect(updateResult.content).toEqual([
     {
       type: 'text',
       text: JSON.stringify({ fulfillmentPolicyId: 'FP123' }, null, 2),

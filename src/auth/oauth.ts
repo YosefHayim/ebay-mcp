@@ -597,7 +597,7 @@ export class EbayOAuthClient {
    * ```
    */
   getTokenInfo(): OAuthTokenInfo {
-    const info: OAuthTokenInfo = {
+    const tokenInfo: OAuthTokenInfo = {
       hasUserToken: this.userTokens !== null && !this.isUserAccessTokenExpired(this.userTokens),
       hasAppAccessToken: this.appAccessToken !== null && Date.now() < this.appAccessTokenExpiry,
     };
@@ -610,7 +610,7 @@ export class EbayOAuthClient {
       const missingScopes = environmentScopes.filter((scope) => !tokenScopeSet.has(scope));
 
       return {
-        ...info,
+        ...tokenInfo,
         scopeInfo: {
           tokenScopes,
           environmentScopes,
@@ -619,7 +619,7 @@ export class EbayOAuthClient {
       };
     }
 
-    return info;
+    return tokenInfo;
   }
 
   /**

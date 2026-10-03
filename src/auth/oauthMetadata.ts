@@ -65,7 +65,7 @@ export const createMetadataRouter = (config: MetadataConfig): Router => {
 
   // RFC 9728: Protected Resource Metadata endpoint
   // Path: /.well-known/oauth-protected-resource
-  router.get('/.well-known/oauth-protected-resource', (_req, res) => {
+  router.get('/.well-known/oauth-protected-resource', (_request, response) => {
     const authServers =
       typeof config.authServerMetadata === 'string'
         ? [config.authServerMetadata]
@@ -81,11 +81,11 @@ export const createMetadataRouter = (config: MetadataConfig): Router => {
       metadata.resource_documentation = config.resourceDocumentation;
     }
 
-    res.json(metadata);
+    response.json(metadata);
   });
 
   // Optional: Server info endpoint for debugging
-  router.get('/.well-known/mcp-server-info', (_req, res) => {
+  router.get('/.well-known/mcp-server-info', (_request, response) => {
     const serverInfo: Record<string, unknown> = {
       name: config.resourceName || 'MCP Resource Server',
       version: '1.0.0',
@@ -108,7 +108,7 @@ export const createMetadataRouter = (config: MetadataConfig): Router => {
       };
     }
 
-    res.json(serverInfo);
+    response.json(serverInfo);
   });
 
   return router;

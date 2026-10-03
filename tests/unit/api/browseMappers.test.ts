@@ -138,15 +138,15 @@ describe('mapSearchActiveItemsResponse (realistic payload)', () => {
   // id fields we deliberately drop, and a thumbnail array we ignore.
 
   it('maps eBay-shaped payloads and ignores unmapped containers', () => {
-    const result = mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, {
+    const searchPage = mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, {
       query: 'drone',
       offset: 0,
       limit: 2,
     });
 
-    expect(result.total).toBe(12_345);
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toEqual({
+    expect(searchPage.total).toBe(12_345);
+    expect(searchPage.items).toHaveLength(1);
+    expect(searchPage.items[0]).toEqual({
       itemId: 'v1|254188828753|0',
       title: 'Drone Quadcopter 4K Camera',
       price: { currency: 'USD', value: '129.99' },
@@ -162,23 +162,23 @@ describe('mapSearchActiveItemsResponse (realistic payload)', () => {
   });
 
   it('prefers the pagination eBay returned over the requested window', () => {
-    const result = mapSearchActiveItemsResponse(
+    const searchPage = mapSearchActiveItemsResponse(
       { ...EBAY_SEARCH_PAYLOAD, offset: 40, limit: 10 },
       { query: 'drone', offset: 9999, limit: 200 },
     );
 
-    expect(result.offset).toBe(40);
-    expect(result.limit).toBe(10);
+    expect(searchPage.offset).toBe(40);
+    expect(searchPage.limit).toBe(10);
   });
 
   it('falls back to the requested window when the payload omits it', () => {
-    const result = mapSearchActiveItemsResponse(
+    const searchPage = mapSearchActiveItemsResponse(
       { itemSummaries: [] },
       { query: 'drone', offset: 5, limit: 25 },
     );
 
-    expect(result.offset).toBe(5);
-    expect(result.limit).toBe(25);
+    expect(searchPage.offset).toBe(5);
+    expect(searchPage.limit).toBe(25);
   });
 });
 
@@ -212,24 +212,24 @@ describe('mapSearchActiveItemsResponse (hasNext)', () => {
 
   it('does not infer the end of results from a short page', () => {
     // One item against a limit of 2 — a short page that still has a next link.
-    const result = mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, context);
+    const searchPage = mapSearchActiveItemsResponse(EBAY_SEARCH_PAYLOAD, context);
 
-    expect(result.items).toHaveLength(1);
-    expect(result.limit).toBe(2);
-    expect(result.hasNext).toBe(true);
+    expect(searchPage.items).toHaveLength(1);
+    expect(searchPage.limit).toBe(2);
+    expect(searchPage.hasNext).toBe(true);
   });
 
   it('does not infer the end of results from a zero total', () => {
-    const result = mapSearchActiveItemsResponse({ ...EBAY_SEARCH_PAYLOAD, total: 0 }, context);
+    const searchPage = mapSearchActiveItemsResponse({ ...EBAY_SEARCH_PAYLOAD, total: 0 }, context);
 
-    expect(result.total).toBe(0);
-    expect(result.hasNext).toBe(true);
+    expect(searchPage.total).toBe(0);
+    expect(searchPage.hasNext).toBe(true);
   });
 });
 
 describe('mapSearchActiveItemsResponse', () => {
   it('maps items and total', () => {
-    const result = mapSearchActiveItemsResponse(
+    const searchPage = mapSearchActiveItemsResponse(
       {
         total: 1234,
         itemSummaries: [{ itemId: 'v1|1|0', title: 'One' }, { title: 'dropped - no id' }],
@@ -237,11 +237,11 @@ describe('mapSearchActiveItemsResponse', () => {
       { query: 'widget', offset: 0, limit: 20 },
     );
 
-    expect(result.total).toBe(1234);
-    expect(result.items).toEqual([{ itemId: 'v1|1|0', title: 'One' }]);
-    expect(result.query).toBe('widget');
-    expect(result.offset).toBe(0);
-    expect(result.limit).toBe(20);
+    expect(searchPage.total).toBe(1234);
+    expect(searchPage.items).toEqual([{ itemId: 'v1|1|0', title: 'One' }]);
+    expect(searchPage.query).toBe('widget');
+    expect(searchPage.offset).toBe(0);
+    expect(searchPage.limit).toBe(20);
   });
 
   it('returns empty items for unexpected payloads', () => {

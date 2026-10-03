@@ -118,8 +118,8 @@ export class AccountV2Api {
     const { client, basePath } = this;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetRateTableInput>(input, 'input');
-      const rateTableId = yield* requireStringEffect(request.rateTableId, 'rateTableId');
+      const validInput = yield* requireObjectEffect<GetRateTableInput>(input, 'input');
+      const rateTableId = yield* requireStringEffect(validInput.rateTableId, 'rateTableId');
 
       return yield* requestGetEffect<RateTableDetailsResponse>(
         client,
@@ -152,15 +152,15 @@ export class AccountV2Api {
     const { client, basePath } = this;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UpdateShippingCostInput>(input, 'input');
-      const rateTableId = yield* requireStringEffect(request.rateTableId, 'rateTableId');
-      const body = yield* requireObjectEffect<RateTableUpdate>(
-        request.rateTableUpdate,
+      const validInput = yield* requireObjectEffect<UpdateShippingCostInput>(input, 'input');
+      const rateTableId = yield* requireStringEffect(validInput.rateTableId, 'rateTableId');
+      const rateTableUpdate = yield* requireObjectEffect<RateTableUpdate>(
+        validInput.rateTableUpdate,
         'rateTableUpdate',
       );
       const path = `${basePath}/rate_table/${encodeURIComponent(rateTableId)}/update_shipping_cost`;
 
-      return yield* requestPostEffect<void>(client, path, body);
+      return yield* requestPostEffect<void>(client, path, rateTableUpdate);
     });
   };
 
@@ -213,13 +213,13 @@ export class AccountV2Api {
     const path = `${this.basePath}/payout_settings/update_percentage`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UpdatePayoutPercentageInput>(input, 'input');
-      const body = yield* requireObjectEffect<UpdatePayoutPercentageRequest>(
-        request.payoutSplit,
+      const validInput = yield* requireObjectEffect<UpdatePayoutPercentageInput>(input, 'input');
+      const payoutSplit = yield* requireObjectEffect<UpdatePayoutPercentageRequest>(
+        validInput.payoutSplit,
         'payoutSplit',
       );
 
-      return yield* requestPostEffect<void>(client, path, body);
+      return yield* requestPostEffect<void>(client, path, payoutSplit);
     });
   };
 
@@ -329,8 +329,8 @@ export class AccountV2Api {
     const path = `${this.basePath}/combined_shipping_rules`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetCombinedShippingRulesInput>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
+      const validInput = yield* requireObjectEffect<GetCombinedShippingRulesInput>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
 
       return yield* requestGetEffect<CombinedShippingRulesResponse>(
         client,
@@ -475,9 +475,9 @@ export class AccountV2Api {
     const path = `${this.basePath}/user_preferences`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetUserPreferencesInput>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
-      const fieldgroups = yield* optionalStringEffect(request.fieldgroups, 'fieldgroups');
+      const validInput = yield* requireObjectEffect<GetUserPreferencesInput>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
+      const fieldgroups = yield* optionalStringEffect(validInput.fieldgroups, 'fieldgroups');
       const params = buildEndpointParams({
         fieldgroups: { wireName: 'fieldgroups', value: fieldgroups },
       });
@@ -523,14 +523,19 @@ export class AccountV2Api {
     const path = `${this.basePath}/user_preferences`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<SetUserPreferencesInput>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
-      const body = yield* requireObjectEffect<SetUserPreferencesRequest>(
-        request.preferences,
+      const validInput = yield* requireObjectEffect<SetUserPreferencesInput>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
+      const preferences = yield* requireObjectEffect<SetUserPreferencesRequest>(
+        validInput.preferences,
         'preferences',
       );
 
-      return yield* requestPatchEffect<void>(client, path, body, marketplaceHeader(marketplaceId));
+      return yield* requestPatchEffect<void>(
+        client,
+        path,
+        preferences,
+        marketplaceHeader(marketplaceId),
+      );
     });
   };
 
@@ -547,11 +552,11 @@ export class AccountV2Api {
     const path = `${this.basePath}/combined_shipping_rules/${operation}`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<Record<string, unknown>>(input, 'input');
-      const marketplaceId = yield* requireStringEffect(request.marketplaceId, 'marketplaceId');
-      const body = yield* requireObjectEffect<Body>(request[bodyField], bodyField);
+      const validInput = yield* requireObjectEffect<Record<string, unknown>>(input, 'input');
+      const marketplaceId = yield* requireStringEffect(validInput.marketplaceId, 'marketplaceId');
+      const rules = yield* requireObjectEffect<Body>(validInput[bodyField], bodyField);
 
-      return yield* requestPostEffect<void>(client, path, body, marketplaceHeader(marketplaceId));
+      return yield* requestPostEffect<void>(client, path, rules, marketplaceHeader(marketplaceId));
     });
   };
 }

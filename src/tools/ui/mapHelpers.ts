@@ -104,7 +104,7 @@ export const statusTone = (status: string | undefined): CardBadge['tone'] => {
  * strings) to a finite number. Missing or invalid values return `null` so chart
  * mappers can omit the point instead of inventing a zero.
  *
- * @param value - Analytics value leaf from an eBay report response.
+ * @param leaf - Analytics value leaf from an eBay report response.
  * @returns A finite number for chart points, or null for non-numeric input.
  *
  * @example
@@ -112,12 +112,12 @@ export const statusTone = (status: string | undefined): CardBadge['tone'] => {
  * toNumber('42');
  * ```
  */
-export const toNumber = (value: unknown): number | null => {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : null;
+export const toNumber = (leaf: unknown): number | null => {
+  if (typeof leaf === 'number') {
+    return Number.isFinite(leaf) ? leaf : null;
   }
-  if (typeof value === 'string') {
-    const parsed = Number(value);
+  if (typeof leaf === 'string') {
+    const parsed = Number(leaf);
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
@@ -127,7 +127,7 @@ export const toNumber = (value: unknown): number | null => {
  * Coerces an untyped JSON leaf to a chart-axis label string, returning `''` for
  * values that have no sensible textual form (objects, `null`, `undefined`).
  *
- * @param value - Analytics dimension leaf from an eBay report response.
+ * @param leaf - Analytics dimension leaf from an eBay report response.
  * @returns A primitive label string, or an empty string when no label is available.
  *
  * @example
@@ -135,12 +135,12 @@ export const toNumber = (value: unknown): number | null => {
  * toLabel(7);
  * ```
  */
-export const toLabel = (value: unknown): string => {
-  if (typeof value === 'string') {
-    return value;
+export const toLabel = (leaf: unknown): string => {
+  if (typeof leaf === 'string') {
+    return leaf;
   }
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
+  if (typeof leaf === 'number' || typeof leaf === 'boolean') {
+    return String(leaf);
   }
   return '';
 };

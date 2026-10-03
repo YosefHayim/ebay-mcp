@@ -62,7 +62,7 @@ describe('attachMediaToInventoryItem', () => {
   });
 
   it('appends uploaded media in order and preserves the rest of the item', async () => {
-    const result = await Effect.runPromise(
+    const attachment = await Effect.runPromise(
       attach({
         sku: 'SKU-1',
         images: [mediaFile('/m/a.jpg', 'image'), mediaFile('/m/b.jpg', 'image')],
@@ -70,13 +70,13 @@ describe('attachMediaToInventoryItem', () => {
       }),
     );
 
-    expect(result.updated).toBe(true);
-    expect(result.imageUrls).toEqual([
+    expect(attachment.updated).toBe(true);
+    expect(attachment.imageUrls).toEqual([
       'https://i.ebayimg.com/old.jpg',
       'https://i.ebayimg.com/a.jpg',
       'https://i.ebayimg.com/b.jpg',
     ]);
-    expect(result.videoIds).toEqual(['VID-1']);
+    expect(attachment.videoIds).toEqual(['VID-1']);
     expect(items.createOrReplaceInventoryItem).toHaveBeenCalledWith({
       sku: 'SKU-1',
       contentLanguage: 'en-US',
@@ -89,7 +89,7 @@ describe('attachMediaToInventoryItem', () => {
         product: {
           title: 'Mega Drive',
           aspects: { Brand: ['Sega'] },
-          imageUrls: result.imageUrls,
+          imageUrls: attachment.imageUrls,
           videoIds: ['VID-1'],
         },
       },
@@ -97,7 +97,7 @@ describe('attachMediaToInventoryItem', () => {
   });
 
   it('replaces existing media when asked', async () => {
-    const result = await Effect.runPromise(
+    const attachment = await Effect.runPromise(
       attach({
         sku: 'SKU-1',
         images: [mediaFile('/m/a.jpg', 'image')],
@@ -106,7 +106,7 @@ describe('attachMediaToInventoryItem', () => {
       }),
     );
 
-    expect(result.imageUrls).toEqual(['https://i.ebayimg.com/a.jpg']);
+    expect(attachment.imageUrls).toEqual(['https://i.ebayimg.com/a.jpg']);
   });
 
   it('replaces only the media family the caller supplied', async () => {
@@ -163,12 +163,12 @@ describe('attachMediaToInventoryItem', () => {
       .mockReturnValueOnce(Effect.succeed(existingItem))
       .mockReturnValueOnce(Effect.succeed(edited));
 
-    const result = await Effect.runPromise(
+    const attachment = await Effect.runPromise(
       attach({ sku: 'SKU-1', images: [mediaFile('/m/a.jpg', 'image')], videos: [] }),
     );
 
     expect(items.getInventoryItem).toHaveBeenCalledTimes(2);
-    expect(result.imageUrls).toEqual([
+    expect(attachment.imageUrls).toEqual([
       'https://i.ebayimg.com/old.jpg',
       'https://i.ebayimg.com/meanwhile.jpg',
       'https://i.ebayimg.com/a.jpg',
@@ -177,7 +177,10 @@ describe('attachMediaToInventoryItem', () => {
       expect.objectContaining({
         body: expect.objectContaining({
           availability: { shipToLocationAvailability: { quantity: 7 } },
-          product: expect.objectContaining({ title: 'Mega Drive II', imageUrls: result.imageUrls }),
+          product: expect.objectContaining({
+            title: 'Mega Drive II',
+            imageUrls: attachment.imageUrls,
+          }),
         }),
       }),
     );
@@ -231,7 +234,7 @@ describe('attachMediaToInventoryItem', () => {
   it('attaches the successful uploads when allowPartial is set', async () => {
     media.createImageFromFile.mockImplementationOnce(() => Effect.fail(new Error('EPS down')));
 
-    const result = await Effect.runPromise(
+    const attachment = await Effect.runPromise(
       attach({
         sku: 'SKU-1',
         images: [mediaFile('/m/a.jpg', 'image'), mediaFile('/m/b.jpg', 'image')],
@@ -240,12 +243,12 @@ describe('attachMediaToInventoryItem', () => {
       }),
     );
 
-    expect(result.updated).toBe(true);
-    expect(result.imageUrls).toEqual([
+    expect(attachment.updated).toBe(true);
+    expect(attachment.imageUrls).toEqual([
       'https://i.ebayimg.com/old.jpg',
       'https://i.ebayimg.com/b.jpg',
     ]);
-    expect(result.images[0].status).toBe('failed');
+    expect(attachment.images[0].status).toBe('failed');
   });
 
   it('treats a blocked video as a failure and a processing one as attachable', async () => {

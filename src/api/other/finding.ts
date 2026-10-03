@@ -144,28 +144,28 @@ export const buildFindCompletedItemsParams = (input: {
 };
 
 /** Read the first string from a Finding JSON array-or-string field. */
-const firstString = (value: unknown): string | undefined => {
-  if (typeof value === 'string' && value.length > 0) {
-    return value;
+const firstString = (rawField: unknown): string | undefined => {
+  if (typeof rawField === 'string' && rawField.length > 0) {
+    return rawField;
   }
-  if (Array.isArray(value) && typeof value[0] === 'string' && value[0].length > 0) {
-    return value[0];
+  if (Array.isArray(rawField) && typeof rawField[0] === 'string' && rawField[0].length > 0) {
+    return rawField[0];
   }
 };
 
 /** Read the first object from a Finding JSON array-or-object field. */
-const firstRecord = (value: unknown): Record<string, unknown> | undefined => {
-  if (isRecord(value)) {
-    return value;
+const firstRecord = (rawField: unknown): Record<string, unknown> | undefined => {
+  if (isRecord(rawField)) {
+    return rawField;
   }
-  if (Array.isArray(value) && isRecord(value[0])) {
-    return value[0];
+  if (Array.isArray(rawField) && isRecord(rawField[0])) {
+    return rawField[0];
   }
 };
 
 /** Parse a Finding API money field (`@currencyId` + `__value__`). */
-const parseMoney = (value: unknown): CompletedItemMoney | undefined => {
-  const money = firstRecord(value);
+const parseMoney = (rawMoney: unknown): CompletedItemMoney | undefined => {
+  const money = firstRecord(rawMoney);
   if (!money) {
     return;
   }
@@ -240,7 +240,7 @@ export const mapFindingItem = (raw: unknown): CompletedItem | undefined => {
  *
  * @example
  * ```ts
- * const result = mapFindCompletedItemsResponse(rawJson, 'iphone 14');
+ * const soldListings = mapFindCompletedItemsResponse(rawJson, 'iphone 14');
  * ```
  */
 export const mapFindCompletedItemsResponse = (

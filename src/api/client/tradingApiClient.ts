@@ -163,10 +163,10 @@ const readTradingPayload = (
   responseTag: string,
   { callName, path }: TradingFailureContext,
 ): Effect.Effect<Record<string, unknown>, EbayApiError> => {
-  const resultValue = parsed[responseTag] === undefined ? parsed : parsed[responseTag];
+  const responsePayload = parsed[responseTag] === undefined ? parsed : parsed[responseTag];
 
-  if (isRecord(resultValue)) {
-    return Effect.succeed(resultValue);
+  if (isRecord(responsePayload)) {
+    return Effect.succeed(responsePayload);
   }
 
   return Effect.fail(
@@ -195,16 +195,16 @@ const extractTradingErrorMessage = (errors: unknown): string => {
 };
 
 const validateTradingAck = (
-  result: Record<string, unknown>,
+  tradingPayload: Record<string, unknown>,
   { callName, path }: TradingFailureContext,
 ): Effect.Effect<Record<string, unknown>, EbayApiError> => {
-  if (result.Ack === 'Warning') {
+  if (tradingPayload.Ack === 'Warning') {
     apiLogger.warn(`Trading API ${callName} returned warnings`, {
-      errors: result.Errors,
+      errors: tradingPayload.Errors,
     });
   }
 
-  if (result.Ack === 'Failure' || result.Ack === 'PartialFailure') {
+  if (tradingPayload.Ack === 'Failure' || tradingPayload.Ack === 'PartialFailure') {
     return Effect.fail(
       new EbayApiError({
         method: 'POST',
@@ -212,14 +212,14 @@ const validateTradingAck = (
         cause: new TradingApiFailure({
           callName,
           path,
-          message: extractTradingErrorMessage(result.Errors),
-          cause: result.Errors,
+          message: extractTradingErrorMessage(tradingPayload.Errors),
+          cause: tradingPayload.Errors,
         }),
       }),
     );
   }
 
-  return Effect.succeed(result);
+  return Effect.succeed(tradingPayload);
 };
 
 /**
@@ -286,7 +286,7 @@ export class TradingApiClient {
    *
    * @example
    * ```ts
-   * const result = await Effect.runPromise(
+   * const tradingReply = await Effect.runPromise(
    *   tradingClient.execute('GetItem', { ItemID: '12345' }),
    * );
    * ```
@@ -311,7 +311,7 @@ export class TradingApiClient {
         callName,
         path,
       });
-      const response = yield* postTradingXml({
+      const xmlResponse = yield* postTradingXml({
         path,
         headers: authorizedHeaders,
         xmlBody,
@@ -319,13 +319,13 @@ export class TradingApiClient {
       });
       const parsed = yield* parseTradingXml({
         parser: tradingClient.parser,
-        responseText: response.data,
+        responseText: xmlResponse.data,
         callName,
         path,
       });
-      const result = yield* readTradingPayload(parsed, responseTag, { callName, path });
+      const tradingPayload = yield* readTradingPayload(parsed, responseTag, { callName, path });
 
-      return yield* validateTradingAck(result, { callName, path });
+      return yield* validateTradingAck(tradingPayload, { callName, path });
     });
   };
 }

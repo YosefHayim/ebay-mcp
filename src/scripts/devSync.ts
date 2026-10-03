@@ -171,12 +171,12 @@ async function downloadSpecs(): Promise<number> {
         Effect.tryPromise({
           try: async () => {
             mkdirSync(folderPath, { recursive: true });
-            const response = await httpRequest<Buffer>({
+            const specResponse = await httpRequest<Buffer>({
               url,
               responseType: 'arraybuffer',
               timeoutMs: 20_000,
             });
-            writeFileSync(filePath, response.data);
+            writeFileSync(filePath, specResponse.data);
           },
           catch: (error) => error,
         }).pipe(Effect.ensuring(Effect.sync(stopSpinner))),
@@ -562,7 +562,9 @@ function analyzeEndpoints(): { total: number; implemented: number; missing: Endp
   const implementedApiMethods = getImplementedApiMethods();
 
   // Normalize all tool names
-  const normalizedTools = new Set(Array.from(implementedTools).map((t) => normalizeForMatching(t)));
+  const normalizedTools = new Set(
+    Array.from(implementedTools).map((toolName) => normalizeForMatching(toolName)),
+  );
 
   // Combine tools and API methods for matching
   const allImplemented = new Set([...normalizedTools, ...implementedApiMethods]);
@@ -750,9 +752,9 @@ void Effect.runPromise(
       catch: (error) => error,
     }),
   ),
-).then((result) => {
-  if (Either.isLeft(result)) {
-    console.error(ui.error('\n  Sync failed:'), getErrorMessage(result.left));
+).then((syncOutcome) => {
+  if (Either.isLeft(syncOutcome)) {
+    console.error(ui.error('\n  Sync failed:'), getErrorMessage(syncOutcome.left));
     process.exitCode = 1;
   }
 });

@@ -34,7 +34,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
   const labels = view.series[0]?.points.map((point) => point.x) ?? [];
   const allValues = view.series.flatMap((series) => series.points.map((point) => point.y));
   const maxY = Math.max(1, ...allValues);
-  const yFor = (value: number): number => BASELINE - (value / maxY) * PLOT_H;
+  const yFor = (y: number): number => BASELINE - (y / maxY) * PLOT_H;
   const stride = labelStride(labels.length);
 
   // Line points are spread edge-to-edge; bar groups each get an equal slot.

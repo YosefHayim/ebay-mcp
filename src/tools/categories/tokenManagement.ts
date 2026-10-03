@@ -38,15 +38,15 @@ const tokenToolError = (
 
 /** Convert an optional token expiry value into a timestamp inside the token tool Effect. */
 const optionalTokenExpiryTimestamp = (
-  value: string | number | undefined,
+  expiry: string | number | undefined,
   operation: TokenManagementToolOperation,
   message: string,
 ): Effect.Effect<number | undefined, TokenManagementToolError> => {
-  if (value === undefined) {
+  if (expiry === undefined) {
     return Effect.succeed(undefined);
   }
 
-  return convertToTimestamp(value).pipe(
+  return convertToTimestamp(expiry).pipe(
     Effect.mapError((error) => tokenToolError(operation, message, error)),
   );
 };
@@ -196,7 +196,7 @@ export const tokenManagementEntries: ToolEntry[] = [
             args.state,
           );
 
-          const result: Record<string, unknown> = {
+          const authorizationDetails: Record<string, unknown> = {
             authorizationUrl: authUrl,
             redirectUri,
             instructions:
@@ -206,10 +206,10 @@ export const tokenManagementEntries: ToolEntry[] = [
           };
 
           if (scopeValidation.warnings.length > 0) {
-            result.warnings = scopeValidation.warnings;
+            authorizationDetails.warnings = scopeValidation.warnings;
           }
 
-          return result;
+          return authorizationDetails;
         }),
       ),
   }),

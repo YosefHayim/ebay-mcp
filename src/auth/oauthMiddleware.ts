@@ -41,7 +41,7 @@ export interface BearerAuthMiddlewareConfig {
  * Create Bearer token authentication middleware
  *
  * @param config - Token verifier and RFC 6750 challenge settings.
- * @returns Express middleware that verifies bearer tokens and attaches `req.auth`.
+ * @returns Express middleware that verifies bearer tokens and attaches `request.auth`.
  *
  * @example
  * ```ts
@@ -51,12 +51,16 @@ export interface BearerAuthMiddlewareConfig {
 export const createBearerAuthMiddleware = (config: BearerAuthMiddlewareConfig) => {
   const realm = config.realm || 'mcp';
 
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    request: AuthenticatedRequest,
+    response: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
+    const authHeader = request.headers.authorization;
 
     if (!authHeader) {
-      sendUnauthorized(res, realm, config.resourceMetadataUrl, {
+      sendUnauthorized(response, realm, config.resourceMetadataUrl, {
         error: 'invalid_token',
         error_description: 'No authorization header provided',
       });
@@ -66,7 +70,7 @@ export const createBearerAuthMiddleware = (config: BearerAuthMiddlewareConfig) =
     // Check Bearer scheme
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      sendUnauthorized(res, realm, config.resourceMetadataUrl, {
+      sendUnauthorized(response, realm, config.resourceMetadataUrl, {
         error: 'invalid_token',
         error_description: 'Invalid authorization header format. Expected: Bearer <token>',
       });
@@ -79,14 +83,14 @@ export const createBearerAuthMiddleware = (config: BearerAuthMiddlewareConfig) =
     if (Either.isLeft(verified)) {
       const errorMessage = getErrorMessage(verified.left, 'Token verification failed');
 
-      sendUnauthorized(res, realm, config.resourceMetadataUrl, {
+      sendUnauthorized(response, realm, config.resourceMetadataUrl, {
         error: 'invalid_token',
         error_description: errorMessage,
       });
       return;
     }
 
-    req.auth = verified.right;
+    request.auth = verified.right;
     next();
   };
 };
@@ -95,7 +99,7 @@ export const createBearerAuthMiddleware = (config: BearerAuthMiddlewareConfig) =
  * Send 401 Unauthorized response with RFC 6750 compliant WWW-Authenticate header
  */
 const sendUnauthorized = (
-  res: Response,
+  response: Response,
   realm: string,
   resourceMetadataUrl: string,
   challenge: {
@@ -119,8 +123,8 @@ const sendUnauthorized = (
     authenticateValue += `, scope="${challenge.scope}"`;
   }
 
-  res.setHeader('WWW-Authenticate', authenticateValue);
-  res.status(401).json({
+  response.setHeader('WWW-Authenticate', authenticateValue);
+  response.status(401).json({
     error: challenge.error || 'unauthorized',
     error_description: challenge.error_description || 'Authorization required',
   });
@@ -139,23 +143,23 @@ const sendUnauthorized = (
  */
 export const requireScopes =
   (requiredScopes: string[]) =>
-  (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    if (!req.auth) {
-      res.status(401).json({
+  (request: AuthenticatedRequest, response: Response, next: NextFunction): void => {
+    if (!request.auth) {
+      response.status(401).json({
         error: 'unauthorized',
         error_description: 'No authentication information found',
       });
       return;
     }
 
-    const hasRequiredScopes = requiredScopes.every((scope) => req.auth!.scopes.includes(scope));
+    const hasRequiredScopes = requiredScopes.every((scope) => request.auth!.scopes.includes(scope));
 
     if (!hasRequiredScopes) {
-      res.status(403).json({
+      response.status(403).json({
         error: 'insufficient_scope',
         error_description: `Missing required scopes: ${requiredScopes.join(', ')}`,
         required_scopes: requiredScopes,
-        provided_scopes: req.auth.scopes,
+        provided_scopes: request.auth.scopes,
       });
       return;
     }

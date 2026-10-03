@@ -105,12 +105,12 @@ describe('TokenVerifier', () => {
       const expectedBasic = `Basic ${Buffer.from('mcp-server:secret').toString('base64')}`;
       nock(ORIGIN).get('/.well-known/openid-configuration').reply(200, mockMetadata);
       nock(ORIGIN)
-        .post(INTROSPECT_PATH, (body) => {
+        .post(INTROSPECT_PATH, (introspectionBody) => {
           // nock parses urlencoded bodies into objects; credentials must not appear here
           const params =
-            typeof body === 'string'
-              ? Object.fromEntries(new URLSearchParams(body))
-              : (body as Record<string, string>);
+            typeof introspectionBody === 'string'
+              ? Object.fromEntries(new URLSearchParams(introspectionBody))
+              : (introspectionBody as Record<string, string>);
           expect(params.token).toBe('test-token');
           expect(params.client_id).toBeUndefined();
           expect(params.client_secret).toBeUndefined();
@@ -137,9 +137,9 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-token');
+      const verifiedToken = await verifyToken(verifier, 'test-token');
 
-      expect(result).toMatchObject({
+      expect(verifiedToken).toMatchObject({
         token: 'test-token',
         clientId: 'test-client',
         scopes: ['mcp:tools', 'mcp:admin'],
@@ -156,13 +156,16 @@ describe('TokenVerifier', () => {
       let capturedBody: string | undefined;
 
       nock(ORIGIN)
-        .post(INTROSPECT_PATH, (body) => {
-          capturedBody = typeof body === 'string' ? body : new URLSearchParams(body).toString();
+        .post(INTROSPECT_PATH, (introspectionBody) => {
+          capturedBody =
+            typeof introspectionBody === 'string'
+              ? introspectionBody
+              : new URLSearchParams(introspectionBody).toString();
           return true;
         })
-        .matchHeader('Authorization', (value) => {
-          capturedAuth = value;
-          return value === expectedBasic;
+        .matchHeader('Authorization', (authorizationHeader) => {
+          capturedAuth = authorizationHeader;
+          return authorizationHeader === expectedBasic;
         })
         .reply(200, {
           active: true,
@@ -191,7 +194,7 @@ describe('TokenVerifier', () => {
     it('omits Authorization when client credentials are incomplete', async () => {
       nock(ORIGIN)
         .post(INTROSPECT_PATH)
-        .matchHeader('Authorization', (value) => value === undefined)
+        .matchHeader('Authorization', (authorizationHeader) => authorizationHeader === undefined)
         .reply(200, {
           active: true,
           client_id: 'test-client',
@@ -208,8 +211,8 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-token');
-      expect(result.token).toBe('test-token');
+      const verifiedToken = await verifyToken(verifier, 'test-token');
+      expect(verifiedToken.token).toBe('test-token');
     });
 
     it('reject inactive tokens', async () => {
@@ -339,9 +342,9 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-jwt-token');
+      const verifiedToken = await verifyToken(verifier, 'test-jwt-token');
 
-      expect(result).toMatchObject({
+      expect(verifiedToken).toMatchObject({
         token: 'test-jwt-token',
         clientId: 'test-client',
         scopes: ['mcp:tools', 'mcp:admin'],
@@ -377,9 +380,9 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-jwt-token');
+      const verifiedToken = await verifyToken(verifier, 'test-jwt-token');
 
-      expect(result.scopes).toEqual(['mcp:tools', 'mcp:admin']);
+      expect(verifiedToken.scopes).toEqual(['mcp:tools', 'mcp:admin']);
     });
 
     it('reject JWT with missing scopes', async () => {
@@ -478,9 +481,9 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-jwt-token');
+      const verifiedToken = await verifyToken(verifier, 'test-jwt-token');
 
-      expect(result.clientId).toBe('authorized-party-client');
+      expect(verifiedToken.clientId).toBe('authorized-party-client');
     });
   });
 
@@ -497,9 +500,9 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-token');
+      const verifiedToken = await verifyToken(verifier, 'test-token');
 
-      expect(result).toBeDefined();
+      expect(verifiedToken).toBeDefined();
     });
 
     it('validate audience array', async () => {
@@ -518,9 +521,9 @@ describe('TokenVerifier', () => {
       });
 
       await initializeVerifier(verifier);
-      const result = await verifyToken(verifier, 'test-token');
+      const verifiedToken = await verifyToken(verifier, 'test-token');
 
-      expect(result).toBeDefined();
+      expect(verifiedToken).toBeDefined();
     });
   });
 

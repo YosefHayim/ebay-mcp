@@ -49,14 +49,14 @@ it('sends XML request headers required by Trading API', async () => {
       </GetMyeBaySellingResponse>`,
     );
 
-  const result = await Effect.runPromise(client.execute('GetMyeBaySelling', {}));
-  expect(result.Ack).toBe('Success');
+  const sellingResponse = await Effect.runPromise(client.execute('GetMyeBaySelling', {}));
+  expect(sellingResponse.Ack).toBe('Success');
   scope.done();
 });
 
 it('builds XML request body from params', async () => {
   const scope = nock('https://api.ebay.com')
-    .post('/ws/api.dll', (body: string) => body.includes('<ItemID>12345</ItemID>'))
+    .post('/ws/api.dll', (requestXml: string) => requestXml.includes('<ItemID>12345</ItemID>'))
     .reply(
       200,
       `<?xml version="1.0" encoding="utf-8"?>
@@ -66,8 +66,8 @@ it('builds XML request body from params', async () => {
       </GetItemResponse>`,
     );
 
-  const result = await Effect.runPromise(client.execute('GetItem', { ItemID: '12345' }));
-  expect(result.Ack).toBe('Success');
+  const itemResponse = await Effect.runPromise(client.execute('GetItem', { ItemID: '12345' }));
+  expect(itemResponse.Ack).toBe('Success');
   scope.done();
 });
 
@@ -136,9 +136,9 @@ describe('proxy auth mode', () => {
         <GetItemResponse xmlns="urn:ebay:apis:eBLBaseComponents"><Ack>Success</Ack></GetItemResponse>`,
       );
 
-    const result = await Effect.runPromise(proxyClient.execute('GetItem', { ItemID: '1' }));
+    const itemResponse = await Effect.runPromise(proxyClient.execute('GetItem', { ItemID: '1' }));
 
-    expect(result.Ack).toBe('Success');
+    expect(itemResponse.Ack).toBe('Success');
     expect(proxyRest.getOAuthClient).not.toHaveBeenCalled();
     scope.done();
   });

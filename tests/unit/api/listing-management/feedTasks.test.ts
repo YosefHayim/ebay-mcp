@@ -31,13 +31,13 @@ describe('Feed task resource', () => {
     const page = { tasks: [{ taskId: 'T-1', status: 'QUEUED' }], total: 1 };
     client.get.mockResolvedValue(page);
 
-    const result = await Effect.runPromise(
+    const taskPage = await Effect.runPromise(
       feed.getTasks({ feedType: 'LMS_ORDER_ACK', lookBackDays: 7, limit: 50, offset: 0 }),
     );
     await Effect.runPromise(feed.getTasks({ scheduleId: 'S-1', dateRange: 'A..B' }));
     await Effect.runPromise(feed.getTasks());
 
-    expect(result).toBe(page);
+    expect(taskPage).toBe(page);
     expect(client.get.mock.calls).toEqual([
       [`${BASE}/task`, { feed_type: 'LMS_ORDER_ACK', look_back_days: 7, limit: 50, offset: 0 }],
       [`${BASE}/task`, { schedule_id: 'S-1', date_range: 'A..B' }],

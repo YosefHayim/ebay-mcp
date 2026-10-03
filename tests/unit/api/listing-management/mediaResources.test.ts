@@ -69,39 +69,43 @@ describe('Media resource contracts', () => {
   });
 
   it('creates listing documents with exact metadata and returns eBay data', async () => {
-    const response = { documentId: 'D', documentStatus: 'PENDING_UPLOAD', ...metadata };
-    client.post.mockResolvedValue(response);
-    expect(await Effect.runPromise(media.createDocument(metadata))).toBe(response);
+    const listingDocument = { documentId: 'D', documentStatus: 'PENDING_UPLOAD', ...metadata };
+    client.post.mockResolvedValue(listingDocument);
+    expect(await Effect.runPromise(media.createDocument(metadata))).toBe(listingDocument);
     expect(client.post).toHaveBeenCalledWith(`${APIM}${BASE}/document`, metadata, {
       absolute: true,
     });
-    const body = { ...metadata, documentUrl: 'https://example.com/manual.pdf' };
-    expect(await Effect.runPromise(media.createDocumentFromUrl(body))).toBe(response);
+    const documentFromUrlRequest = { ...metadata, documentUrl: 'https://example.com/manual.pdf' };
+    expect(await Effect.runPromise(media.createDocumentFromUrl(documentFromUrlRequest))).toBe(
+      listingDocument,
+    );
     expect(client.post).toHaveBeenLastCalledWith(
       `${APIM}${BASE}/document/create_document_from_url`,
-      body,
+      documentFromUrlRequest,
       { absolute: true },
     );
   });
 
   it('encodes listing document IDs and preserves metadata', async () => {
-    const response = {
+    const listingDocument = {
       documentId: 'A/B %',
       documentStatus: 'ACCEPTED',
       documentMetadata: { fileSize: '123' },
     };
-    client.get.mockResolvedValue(response);
-    expect(await Effect.runPromise(media.getDocument({ documentId: 'A/B %' }))).toBe(response);
+    client.get.mockResolvedValue(listingDocument);
+    expect(await Effect.runPromise(media.getDocument({ documentId: 'A/B %' }))).toBe(
+      listingDocument,
+    );
     expect(client.get).toHaveBeenCalledWith(`${APIM}${BASE}/document/A%2FB%20%25`, undefined, {
       absolute: true,
     });
   });
 
   it('uploads listing documents using the file multipart field', async () => {
-    const response = { documentId: 'A/B', documentStatus: 'SUBMITTED' };
-    client.post.mockResolvedValue(response);
+    const uploadedDocument = { documentId: 'A/B', documentStatus: 'SUBMITTED' };
+    client.post.mockResolvedValue(uploadedDocument);
     expect(await Effect.runPromise(media.uploadDocument({ documentId: 'A/B', file }))).toBe(
-      response,
+      uploadedDocument,
     );
     const [url, form, config] = client.post.mock.calls[0];
     expect(url).toBe(`${APIM}${BASE}/document/A%2FB/upload`);
@@ -123,7 +127,8 @@ describe('Media resource contracts', () => {
     const [url, form, config] = client.postForResponse.mock.calls[0];
     expect(url).toBe(`${APIZ}${BASE}/post_order/document`);
     expect([...form.keys()]).toEqual(['file', 'documentUsageType', 'entityType', 'entityId']);
-    for (const [key, value] of Object.entries(postOrder)) expect(form.get(key)).toBe(value);
+    for (const [fieldName, fieldValue] of Object.entries(postOrder))
+      expect(form.get(fieldName)).toBe(fieldValue);
     expect(config.headers).toBeUndefined();
     expect(config.timeoutMs).toBe(600_000);
   });

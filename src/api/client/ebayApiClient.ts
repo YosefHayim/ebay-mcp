@@ -64,11 +64,11 @@ export interface EbayResponse<T> {
 }
 
 /** Bodies that must never be echoed into debug logs. */
-const isBinaryBody = (data: unknown): boolean =>
-  data instanceof FormData ||
-  data instanceof Blob ||
-  data instanceof Uint8Array ||
-  data instanceof ArrayBuffer;
+const isBinaryBody = (requestBody: unknown): boolean =>
+  requestBody instanceof FormData ||
+  requestBody instanceof Blob ||
+  requestBody instanceof Uint8Array ||
+  requestBody instanceof ArrayBuffer;
 
 const CONTENT_TYPE_HEADER = 'content-type';
 
@@ -217,9 +217,9 @@ export class EbayApiClient {
    * Pull the most descriptive eBay error string from a response body when present.
    * eBay REST errors arrive as `{ errors: [{ message, longMessage }] }`.
    */
-  private ebayErrorDetail(data: unknown): string | undefined {
-    if (isRecord(data) && Array.isArray(data.errors)) {
-      const [firstError] = data.errors;
+  private ebayErrorDetail(errorBody: unknown): string | undefined {
+    if (isRecord(errorBody) && Array.isArray(errorBody.errors)) {
+      const [firstError] = errorBody.errors;
       if (isRecord(firstError)) {
         const detail = firstError.longMessage ?? firstError.message;
         if (typeof detail === 'string') {
@@ -233,10 +233,10 @@ export class EbayApiClient {
    * Serialize the full error response body so structured fields (errorId, parameters)
    * survive into the thrown message for diagnostics.
    */
-  private ebayErrorBody(data: unknown): string {
-    if (data == null) return '';
+  private ebayErrorBody(errorBody: unknown): string {
+    if (errorBody == null) return '';
     try {
-      return ` | response: ${JSON.stringify(data)}`;
+      return ` | response: ${JSON.stringify(errorBody)}`;
     } catch {
       return '';
     }
@@ -265,8 +265,8 @@ export class EbayApiClient {
     // rejects with a FiberFailure whose generic message hides eBay response data.
     const exit = await Effect.runPromiseExit(this.requestEffect<T>(method, endpoint, options));
     if (Exit.isSuccess(exit)) {
-      const { data, status, headers } = exit.value;
-      return { data, status, headers };
+      const { data: responseBody, status, headers } = exit.value;
+      return { data: responseBody, status, headers };
     }
     throw Cause.squash(exit.cause);
   }
@@ -375,16 +375,16 @@ export class EbayApiClient {
         responseType: options.responseType,
         maxBytes: options.maxBytes,
       }).pipe(
-        Effect.map((response) => {
+        Effect.map((httpResponse) => {
           logResponse(
-            response.status,
-            response.statusText,
-            response.data,
-            response.headers['x-ebay-c-ratelimit-remaining'],
-            response.headers['x-ebay-c-ratelimit-limit'],
+            httpResponse.status,
+            httpResponse.statusText,
+            httpResponse.data,
+            httpResponse.headers['x-ebay-c-ratelimit-remaining'],
+            httpResponse.headers['x-ebay-c-ratelimit-limit'],
           );
 
-          return response;
+          return httpResponse;
         }),
         Effect.catchAll((error) =>
           this.handleRequestFailure<T>(error, { method, url, options, state }),
@@ -577,10 +577,10 @@ export class EbayApiClient {
    */
   async post<T = unknown>(
     endpoint: string,
-    data?: unknown,
+    requestBody?: unknown,
     config?: EbayRequestConfig,
   ): Promise<T> {
-    return (await this.postForResponse<T>(endpoint, data, config)).data;
+    return (await this.postForResponse<T>(endpoint, requestBody, config)).data;
   }
 
   /**
@@ -589,11 +589,11 @@ export class EbayApiClient {
    */
   async postForResponse<T = unknown>(
     endpoint: string,
-    data?: unknown,
+    requestBody?: unknown,
     config?: EbayRequestConfig,
   ): Promise<EbayResponse<T>> {
     return await this.requestResponse<T>('POST', endpoint, {
-      data,
+      data: requestBody,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
@@ -607,8 +607,12 @@ export class EbayApiClient {
   /**
    * Make a PUT request to eBay API
    */
-  async put<T = unknown>(endpoint: string, data?: unknown, config?: EbayRequestConfig): Promise<T> {
-    return (await this.putForResponse<T>(endpoint, data, config)).data;
+  async put<T = unknown>(
+    endpoint: string,
+    requestBody?: unknown,
+    config?: EbayRequestConfig,
+  ): Promise<T> {
+    return (await this.putForResponse<T>(endpoint, requestBody, config)).data;
   }
 
   /**
@@ -617,11 +621,11 @@ export class EbayApiClient {
    */
   async putForResponse<T = unknown>(
     endpoint: string,
-    data?: unknown,
+    requestBody?: unknown,
     config?: EbayRequestConfig,
   ): Promise<EbayResponse<T>> {
     return await this.requestResponse<T>('PUT', endpoint, {
-      data,
+      data: requestBody,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
@@ -637,11 +641,11 @@ export class EbayApiClient {
    */
   async patch<T = unknown>(
     endpoint: string,
-    data?: unknown,
+    requestBody?: unknown,
     config?: EbayRequestConfig,
   ): Promise<T> {
     return await this.request<T>('PATCH', endpoint, {
-      data,
+      data: requestBody,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,
@@ -662,15 +666,15 @@ export class EbayApiClient {
   /**
    * Make a DELETE request and keep the status and headers of the successful
    * response — for asynchronous deletes that return a task `Location` header.
-   * `data` is the optional body a few eBay DELETE calls document.
+   * `requestBody` is the optional body a few eBay DELETE calls document.
    */
   async deleteForResponse<T = unknown>(
     endpoint: string,
     config?: EbayRequestConfig,
-    data?: unknown,
+    requestBody?: unknown,
   ): Promise<EbayResponse<T>> {
     return await this.requestResponse<T>('DELETE', endpoint, {
-      data,
+      data: requestBody,
       params: config?.params,
       headers: config?.headers,
       responseType: config?.responseType,

@@ -50,8 +50,8 @@ describe('EbayApiClient media transport', () => {
     let contentType = '';
     let rawBody = '';
     const scope = nock('https://apim.sandbox.ebay.com')
-      .post('/commerce/media/v1_beta/image/create_image_from_file', (body) => {
-        rawBody = typeof body === 'string' ? body : JSON.stringify(body);
+      .post('/commerce/media/v1_beta/image/create_image_from_file', (multipartBody) => {
+        rawBody = typeof multipartBody === 'string' ? multipartBody : JSON.stringify(multipartBody);
         return true;
       })
       .reply(function reply() {
@@ -65,7 +65,7 @@ describe('EbayApiClient media transport', () => {
 
     const form = new FormData();
     form.append('image', new Blob([new Uint8Array([1, 2, 3])], { type: 'image/jpeg' }), 'x.jpg');
-    const response = await client.postForResponse<{ imageUrl: string }>(
+    const imageResponse = await client.postForResponse<{ imageUrl: string }>(
       'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/create_image_from_file',
       form,
       { absolute: true },
@@ -75,11 +75,11 @@ describe('EbayApiClient media transport', () => {
     expect(contentType).toMatch(/^multipart\/form-data; boundary=/);
     expect(rawBody).toContain('filename="x.jpg"');
     expect(rawBody).toContain('Content-Type: image/jpeg');
-    expect(response.status).toBe(201);
-    expect(response.headers.location).toBe(
+    expect(imageResponse.status).toBe(201);
+    expect(imageResponse.headers.location).toBe(
       'https://apim.sandbox.ebay.com/commerce/media/v1_beta/image/IMG-1',
     );
-    expect(response.data).toEqual({ imageUrl: 'https://i.ebayimg.com/x.jpg' });
+    expect(imageResponse.data).toEqual({ imageUrl: 'https://i.ebayimg.com/x.jpg' });
   });
 
   it('drops the JSON content type for FormData whatever its spelling', async () => {
@@ -134,7 +134,7 @@ describe('EbayApiClient media transport', () => {
         return [200, ''];
       });
 
-    const result = await client.post(
+    const uploadResponseBody = await client.post(
       'https://apim.sandbox.ebay.com/commerce/media/v1_beta/video/VID-1/upload',
       new Uint8Array([1, 2]),
       { absolute: true, headers: { 'Content-Type': 'application/octet-stream' } },
@@ -142,7 +142,7 @@ describe('EbayApiClient media transport', () => {
 
     expect(scope.isDone()).toBe(true);
     expect(contentType).toBe('application/octet-stream');
-    expect(result).toBeUndefined();
+    expect(uploadResponseBody).toBeUndefined();
   });
 
   it('sends put and delete to absolute URLs instead of the API base URL', async () => {

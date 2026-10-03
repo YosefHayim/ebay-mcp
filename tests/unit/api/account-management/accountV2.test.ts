@@ -53,10 +53,10 @@ describe('rate table', () => {
 
 describe('payout settings', () => {
   it('gets payout settings and returns the eBay DTO unchanged', async () => {
-    const response = { payoutInstruments: [{ instrumentId: 'I1', payoutPercentage: '100' }] };
-    client.get.mockResolvedValue(response);
+    const payoutSettings = { payoutInstruments: [{ instrumentId: 'I1', payoutPercentage: '100' }] };
+    client.get.mockResolvedValue(payoutSettings);
 
-    expect(await Effect.runPromise(api.getPayoutSettings())).toBe(response);
+    expect(await Effect.runPromise(api.getPayoutSettings())).toBe(payoutSettings);
     expect(client.get).toHaveBeenCalledWith(`${BASE}/payout_settings`);
   });
 
@@ -155,11 +155,11 @@ describe('combined shipping rule writes', () => {
 
 describe('combined shipping rule reads and failures', () => {
   it('gets combined shipping rules with only the marketplace header', async () => {
-    const response = { combinedDuration: 'DAYS_7', promotionalShippingRule: { itemCount: 3 } };
-    client.get.mockResolvedValue(response);
+    const shippingRules = { combinedDuration: 'DAYS_7', promotionalShippingRule: { itemCount: 3 } };
+    client.get.mockResolvedValue(shippingRules);
 
     expect(await Effect.runPromise(api.getCombinedShippingRules({ marketplaceId: US }))).toBe(
-      response,
+      shippingRules,
     );
     expect(client.get).toHaveBeenCalledWith(`${BASE}/combined_shipping_rules`, undefined, usHeader);
   });
@@ -200,8 +200,8 @@ describe('combined shipping rule reads and failures', () => {
 
 describe('user preferences', () => {
   it('gets preferences with fieldgroups as a query param and the marketplace header', async () => {
-    const response = { outOfStockControlPreference: true };
-    client.get.mockResolvedValue(response);
+    const userPreferences = { outOfStockControlPreference: true };
+    client.get.mockResolvedValue(userPreferences);
 
     expect(
       await Effect.runPromise(
@@ -210,7 +210,7 @@ describe('user preferences', () => {
           fieldgroups: 'COMBINED_PAYMENT,SELLER_PROFILE',
         }),
       ),
-    ).toBe(response);
+    ).toBe(userPreferences);
     expect(client.get).toHaveBeenCalledWith(
       `${BASE}/user_preferences`,
       { fieldgroups: 'COMBINED_PAYMENT,SELLER_PROFILE' },

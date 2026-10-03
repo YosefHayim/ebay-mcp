@@ -38,10 +38,10 @@ describe('createInventoryOffersMethods getOffers', () => {
   });
 
   it('sends the required SKU with compatible optional query parameters', async () => {
-    const response = { offers: [] };
-    vi.mocked(client.get).mockResolvedValue(response);
+    const stubOffersPage = { offers: [] };
+    vi.mocked(client.get).mockResolvedValue(stubOffersPage);
 
-    const result = await Effect.runPromise(
+    const offersPage = await Effect.runPromise(
       getOffers({
         sku: 'SKU-1',
         format: 'FIXED_PRICE',
@@ -58,7 +58,7 @@ describe('createInventoryOffersMethods getOffers', () => {
       offset: '5',
       sku: 'SKU-1',
     });
-    expect(result).toBe(response);
+    expect(offersPage).toBe(stubOffersPage);
   });
 
   it('rejects omitted and empty SKUs before calling eBay', async () => {
@@ -77,17 +77,17 @@ describe('getOffersBySkus', () => {
     }));
     const api = createInventoryOffersMethods(clientWithGet(get));
 
-    const result = await Effect.runPromise(
+    const offersBySku = await Effect.runPromise(
       api.getOffersBySkus({ skus: ['SKU-2', 'SKU-1', 'SKU-2'] }),
     );
 
-    expect(result).toMatchObject({
+    expect(offersBySku).toMatchObject({
       requestedSkuCount: 3,
       uniqueSkuCount: 2,
       successCount: 2,
       failureCount: 0,
     });
-    expect(result.results.map(({ sku }) => sku)).toEqual(['SKU-2', 'SKU-1']);
+    expect(offersBySku.results.map(({ sku }) => sku)).toEqual(['SKU-2', 'SKU-1']);
     expect(get).toHaveBeenCalledTimes(2);
   });
 
@@ -100,11 +100,11 @@ describe('getOffersBySkus', () => {
     });
     const api = createInventoryOffersMethods(clientWithGet(get));
 
-    const result = await Effect.runPromise(api.getOffersBySkus({ skus: ['GOOD', 'BAD'] }));
+    const offersBySku = await Effect.runPromise(api.getOffersBySkus({ skus: ['GOOD', 'BAD'] }));
 
-    expect(result.successCount).toBe(1);
-    expect(result.failureCount).toBe(1);
-    expect(result.results[1]).toMatchObject({
+    expect(offersBySku.successCount).toBe(1);
+    expect(offersBySku.failureCount).toBe(1);
+    expect(offersBySku.results[1]).toMatchObject({
       sku: 'BAD',
       status: 'failure',
       error: { type: 'EbayApiError' },
@@ -143,11 +143,11 @@ describe('getOffersBySkus', () => {
     });
     const api = createInventoryOffersMethods(clientWithGet(get));
 
-    const result = await Effect.runPromise(
+    const offersBySku = await Effect.runPromise(
       api.getOffersBySkus({ skus: Array.from({ length: 8 }, (_, index) => `SKU-${index}`) }),
     );
 
-    expect(result.successCount).toBe(8);
+    expect(offersBySku.successCount).toBe(8);
     expect(maximumActive).toBe(BATCH_GET_OFFERS_CONCURRENCY);
   });
 });

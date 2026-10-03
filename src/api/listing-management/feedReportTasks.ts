@@ -82,8 +82,8 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
   const createOrderTask = (input: CreateOrderTaskInput) =>
     decodeEndpointInputEffect(createOrderTaskInputSchema, input).pipe(
       Effect.flatMap(({ task }) => {
-        const body: CreateOrderTaskRequest = task;
-        return postFeedTask(client, '/order_task', body);
+        const orderTaskRequest: CreateOrderTaskRequest = task;
+        return postFeedTask(client, '/order_task', orderTaskRequest);
       }),
     );
 
@@ -130,8 +130,8 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
   const createInventoryTask = (input: CreateInventoryTaskInput) =>
     decodeEndpointInputEffect(createInventoryTaskInputSchema, input).pipe(
       Effect.flatMap(({ task }) => {
-        const body: CreateInventoryTaskRequest = task;
-        return postFeedTask(client, '/inventory_task', body);
+        const inventoryTaskRequest: CreateInventoryTaskRequest = task;
+        return postFeedTask(client, '/inventory_task', inventoryTaskRequest);
       }),
     );
 
@@ -179,9 +179,9 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
   const createCustomerServiceMetricTask = (input: CreateServiceMetricTaskInput) =>
     decodeEndpointInputEffect(createCustomerServiceMetricTaskInputSchema, input).pipe(
       Effect.flatMap(({ task, acceptLanguage }) => {
-        const body: CreateServiceMetricsTaskRequest = task;
+        const metricTaskRequest: CreateServiceMetricsTaskRequest = task;
         const headers = acceptLanguage ? { 'Accept-Language': acceptLanguage } : undefined;
-        return postFeedTask(client, '/customer_service_metric_task', body, headers);
+        return postFeedTask(client, '/customer_service_metric_task', metricTaskRequest, headers);
       }),
     );
 

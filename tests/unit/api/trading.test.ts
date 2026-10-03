@@ -34,9 +34,9 @@ it('returns raw active listings payload from GetMyeBaySelling', async () => {
   };
   mockClient.execute.mockReturnValue(Effect.succeed(activeListingsResponse));
 
-  const result = await Effect.runPromise(api.getActiveListings());
+  const activeListings = await Effect.runPromise(api.getActiveListings());
 
-  expect(result).toBe(activeListingsResponse);
+  expect(activeListings).toBe(activeListingsResponse);
 });
 
 it('returns empty active listings payload unchanged', async () => {
@@ -49,9 +49,9 @@ it('returns empty active listings payload unchanged', async () => {
   };
   mockClient.execute.mockReturnValue(Effect.succeed(emptyListingsResponse));
 
-  const result = await Effect.runPromise(api.getActiveListings());
+  const activeListings = await Effect.runPromise(api.getActiveListings());
 
-  expect(result).toBe(emptyListingsResponse);
+  expect(activeListings).toBe(emptyListingsResponse);
 });
 
 it('passes active listing pagination params to execute', async () => {
@@ -83,13 +83,13 @@ it('gets one listing by item ID', async () => {
     }),
   );
 
-  const result = await Effect.runPromise(api.getListing({ itemId: '12345' }));
+  const listing = await Effect.runPromise(api.getListing({ itemId: '12345' }));
 
   expect(mockClient.execute).toHaveBeenCalledWith('GetItem', {
     ItemID: '12345',
     DetailLevel: 'ReturnAll',
   });
-  expect(result.ItemID).toBe('12345');
+  expect(listing.ItemID).toBe('12345');
 });
 
 it('fails getListing when itemId is missing', async () => {
@@ -102,26 +102,26 @@ it('fails getListing when itemId is missing', async () => {
 it('creates a fixed-price listing', async () => {
   mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '99999' }));
 
-  const item = { Title: 'New Item', SKU: 'NEW', StartPrice: 9.99 };
-  const result = await Effect.runPromise(api.createListing({ item }));
+  const fixedPriceItem = { Title: 'New Item', SKU: 'NEW', StartPrice: 9.99 };
+  const createdListing = await Effect.runPromise(api.createListing({ item: fixedPriceItem }));
 
   expect(mockClient.execute).toHaveBeenCalledWith('AddFixedPriceItem', {
-    Item: item,
+    Item: fixedPriceItem,
   });
-  expect(result.ItemID).toBe('99999');
+  expect(createdListing.ItemID).toBe('99999');
 });
 
 it('revises a fixed-price listing', async () => {
   mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '12345' }));
 
-  const result = await Effect.runPromise(
+  const revisedListing = await Effect.runPromise(
     api.reviseListing({ itemId: '12345', fields: { Quantity: 10 } }),
   );
 
   expect(mockClient.execute).toHaveBeenCalledWith('ReviseFixedPriceItem', {
     Item: { ItemID: '12345', Quantity: 10 },
   });
-  expect(result.ItemID).toBe('12345');
+  expect(revisedListing.ItemID).toBe('12345');
 });
 
 it('fails reviseListing when itemId is missing', async () => {
@@ -163,12 +163,12 @@ it('fails endListing when itemId is missing', async () => {
 it('relists an ended listing', async () => {
   mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '12345' }));
 
-  const result = await Effect.runPromise(api.relistItem({ itemId: '12345' }));
+  const relistedListing = await Effect.runPromise(api.relistItem({ itemId: '12345' }));
 
   expect(mockClient.execute).toHaveBeenCalledWith('RelistFixedPriceItem', {
     Item: { ItemID: '12345' },
   });
-  expect(result.ItemID).toBe('12345');
+  expect(relistedListing.ItemID).toBe('12345');
 });
 
 it('passes relist modifications', async () => {
@@ -193,18 +193,20 @@ it('fails relistItem when itemId is missing', async () => {
 it('creates an auction through AddItem with the Chinese listing type', async () => {
   mockClient.execute.mockReturnValue(Effect.succeed({ Ack: 'Success', ItemID: '77777' }));
 
-  const item = {
+  const auctionItem = {
     Title: 'Rare coin',
     StartPrice: 9.99,
     ListingDuration: 'Days_7',
     ReservePrice: 25,
   };
-  const result = await Effect.runPromise(api.createListing({ format: 'AUCTION', item }));
+  const createdAuction = await Effect.runPromise(
+    api.createListing({ format: 'AUCTION', item: auctionItem }),
+  );
 
   expect(mockClient.execute).toHaveBeenCalledWith('AddItem', {
-    Item: { ...item, ListingType: 'Chinese' },
+    Item: { ...auctionItem, ListingType: 'Chinese' },
   });
-  expect(result.ItemID).toBe('77777');
+  expect(createdAuction.ItemID).toBe('77777');
 });
 
 it('rejects an auction that mixes fixed-price rules before calling eBay', async () => {

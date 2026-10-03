@@ -32,17 +32,17 @@ const inputError = (parameter: string, message: string): EndpointInputError =>
  * Reads a Trading amount, which callers may pass as a bare number, a numeric
  * string, or an attributed XML node such as `{ '#text': 9.99, '@_currencyID': 'USD' }`.
  */
-const parseTradingAmount = (value: unknown): number | undefined => {
-  const raw = isRecord(value) ? value['#text'] : value;
-  if (raw === undefined || raw === null || raw === '') {
+const parseTradingAmount = (rawAmount: unknown): number | undefined => {
+  const amount = isRecord(rawAmount) ? rawAmount['#text'] : rawAmount;
+  if (amount === undefined || amount === null || amount === '') {
     return;
   }
-  const parsed = Number(raw);
+  const parsed = Number(amount);
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-const isBestOfferEnabled = (item: TradingItemFields): boolean => {
-  const details = item.BestOfferDetails;
+const isBestOfferEnabled = (tradingItem: TradingItemFields): boolean => {
+  const details = tradingItem.BestOfferDetails;
   if (!isRecord(details)) {
     return false;
   }
@@ -50,28 +50,31 @@ const isBestOfferEnabled = (item: TradingItemFields): boolean => {
 };
 
 const auctionViolation = (
-  item: TradingItemFields,
+  tradingItem: TradingItemFields,
   parameter: string,
 ): EndpointInputError | undefined => {
-  if (item.ListingType !== undefined && item.ListingType !== TRADING_AUCTION_LISTING_TYPE) {
+  if (
+    tradingItem.ListingType !== undefined &&
+    tradingItem.ListingType !== TRADING_AUCTION_LISTING_TYPE
+  ) {
     return inputError(
       `${parameter}.ListingType`,
-      `AUCTION listings use ListingType ${TRADING_AUCTION_LISTING_TYPE}; omit it or pass format FIXED_PRICE for ${String(item.ListingType)}`,
+      `AUCTION listings use ListingType ${TRADING_AUCTION_LISTING_TYPE}; omit it or pass format FIXED_PRICE for ${String(tradingItem.ListingType)}`,
     );
   }
-  if (item.ListingDuration === TRADING_GTC_DURATION) {
+  if (tradingItem.ListingDuration === TRADING_GTC_DURATION) {
     return inputError(
       `${parameter}.ListingDuration`,
       'AUCTION listings need a day-count ListingDuration such as Days_7; GTC is only valid for FIXED_PRICE listings',
     );
   }
-  if (item.Quantity !== undefined && Number(item.Quantity) !== 1) {
+  if (tradingItem.Quantity !== undefined && Number(tradingItem.Quantity) !== 1) {
     return inputError(
       `${parameter}.Quantity`,
       'AUCTION listings sell a single unit; omit Quantity or set it to 1',
     );
   }
-  if (isBestOfferEnabled(item) && item.BuyItNowPrice !== undefined) {
+  if (isBestOfferEnabled(tradingItem) && tradingItem.BuyItNowPrice !== undefined) {
     return inputError(
       `${parameter}.BestOfferDetails.BestOfferEnabled`,
       'an AUCTION listing can carry Best Offer or a BuyItNowPrice, not both',
@@ -81,16 +84,16 @@ const auctionViolation = (
 
 /** Fields eBay requires when an auction is created with AddItem. */
 const auctionCreateViolation = (
-  item: TradingItemFields,
+  tradingItem: TradingItemFields,
   parameter: string,
 ): EndpointInputError | undefined => {
-  if (item.ListingDuration === undefined) {
+  if (tradingItem.ListingDuration === undefined) {
     return inputError(
       `${parameter}.ListingDuration`,
       'ListingDuration is required for AUCTION listings (a day count such as Days_7)',
     );
   }
-  if (parseTradingAmount(item.StartPrice) === undefined) {
+  if (parseTradingAmount(tradingItem.StartPrice) === undefined) {
     return inputError(
       `${parameter}.StartPrice`,
       'StartPrice (the opening bid) is required for AUCTION listings',
@@ -99,25 +102,28 @@ const auctionCreateViolation = (
 };
 
 const fixedPriceViolation = (
-  item: TradingItemFields,
+  tradingItem: TradingItemFields,
   parameter: string,
 ): EndpointInputError | undefined => {
-  if (item.ListingType === TRADING_AUCTION_LISTING_TYPE) {
+  if (tradingItem.ListingType === TRADING_AUCTION_LISTING_TYPE) {
     return inputError(
       `${parameter}.ListingType`,
       `ListingType ${TRADING_AUCTION_LISTING_TYPE} is an auction; pass format AUCTION instead`,
     );
   }
-  if (item.ListingDuration !== undefined && item.ListingDuration !== TRADING_GTC_DURATION) {
+  if (
+    tradingItem.ListingDuration !== undefined &&
+    tradingItem.ListingDuration !== TRADING_GTC_DURATION
+  ) {
     return inputError(
       `${parameter}.ListingDuration`,
       `FIXED_PRICE listings must use ListingDuration ${TRADING_GTC_DURATION} (the only duration eBay accepts for fixed-price listings); day counts such as Days_7 are for AUCTION listings`,
     );
   }
-  if (item.ReservePrice !== undefined) {
+  if (tradingItem.ReservePrice !== undefined) {
     return inputError(`${parameter}.ReservePrice`, 'ReservePrice only applies to AUCTION listings');
   }
-  if (item.BuyItNowPrice !== undefined) {
+  if (tradingItem.BuyItNowPrice !== undefined) {
     return inputError(
       `${parameter}.BuyItNowPrice`,
       'BuyItNowPrice only applies to AUCTION listings; FIXED_PRICE listings use StartPrice',
@@ -126,21 +132,21 @@ const fixedPriceViolation = (
 };
 
 const auctionPriceViolation = (
-  item: TradingItemFields,
+  tradingItem: TradingItemFields,
   parameter: string,
 ): EndpointInputError | undefined => {
-  const start = parseTradingAmount(item.StartPrice);
+  const start = parseTradingAmount(tradingItem.StartPrice);
   if (start === undefined) {
     return;
   }
-  const reserve = parseTradingAmount(item.ReservePrice);
+  const reserve = parseTradingAmount(tradingItem.ReservePrice);
   if (reserve !== undefined && reserve <= start) {
     return inputError(
       `${parameter}.ReservePrice`,
       'ReservePrice must be higher than StartPrice (the opening bid)',
     );
   }
-  const buyItNow = parseTradingAmount(item.BuyItNowPrice);
+  const buyItNow = parseTradingAmount(tradingItem.BuyItNowPrice);
   if (buyItNow !== undefined && !meetsBuyItNowMargin(start, buyItNow)) {
     return inputError(
       `${parameter}.BuyItNowPrice`,
@@ -185,18 +191,18 @@ export interface TradingListingFormatCheck {
  * ```
  */
 export const findTradingListingFormatViolation = ({
-  item,
+  item: tradingItem,
   format,
   parameter,
   isCreate,
 }: TradingListingFormatCheck): EndpointInputError | undefined => {
   if (format === FormatType.FIXED_PRICE) {
-    return fixedPriceViolation(item, parameter);
+    return fixedPriceViolation(tradingItem, parameter);
   }
   return (
-    auctionViolation(item, parameter) ??
-    (isCreate ? auctionCreateViolation(item, parameter) : undefined) ??
-    auctionPriceViolation(item, parameter)
+    auctionViolation(tradingItem, parameter) ??
+    (isCreate ? auctionCreateViolation(tradingItem, parameter) : undefined) ??
+    auctionPriceViolation(tradingItem, parameter)
   );
 };
 
@@ -208,7 +214,12 @@ export const findTradingListingFormatViolation = ({
  *
  * @example
  * ```ts
- * yield* validateTradingListingFormatEffect({ item, format, parameter: 'item', isCreate: true });
+ * yield* validateTradingListingFormatEffect({
+ *   item: tradingItem,
+ *   format,
+ *   parameter: 'item',
+ *   isCreate: true,
+ * });
  * ```
  */
 export const validateTradingListingFormatEffect = (

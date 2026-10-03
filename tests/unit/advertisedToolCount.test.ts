@@ -48,8 +48,8 @@ const readDoc = (name: string): string => readFileSync(`${repoRoot}${name}`, 'ut
 const staleCountsIn = (text: string): number[] => {
   const found = [...text.matchAll(DIGITS_PATTERN)]
     .map((match) => Number(match[0]))
-    .filter((value) => value >= COUNT_BAND.min && value <= COUNT_BAND.max)
-    .filter((value) => value !== advertisedToolCount && !NON_COUNT_NUMBERS.has(value));
+    .filter((count) => count >= COUNT_BAND.min && count <= COUNT_BAND.max)
+    .filter((count) => count !== advertisedToolCount && !NON_COUNT_NUMBERS.has(count));
 
   return [...new Set(found)];
 };

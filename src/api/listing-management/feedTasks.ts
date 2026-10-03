@@ -97,7 +97,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
         createFeedTaskInputSchema,
         input,
       );
-      const body: CreateTaskRequest = task;
+      const taskRequest: CreateTaskRequest = task;
       const headers: Record<string, string> = {};
       if (marketplaceId) {
         headers['X-EBAY-C-MARKETPLACE-ID'] = marketplaceId;
@@ -105,7 +105,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
       if (acceptLanguage) {
         headers['Accept-Language'] = acceptLanguage;
       }
-      return yield* postFeedTask(client, '/task', body, headers);
+      return yield* postFeedTask(client, '/task', taskRequest, headers);
     });
 
   /**

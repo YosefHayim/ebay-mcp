@@ -375,10 +375,10 @@ describe('EbayOAuthClient', () => {
         scope: 'https://api.ebay.com/oauth/api_scope/sell.inventory',
       });
 
-      const result = await exchangeCodeForToken(oauthClient, code);
+      const tokenResponse = await exchangeCodeForToken(oauthClient, code);
 
-      expect(result.access_token).toBe(accessToken);
-      expect(result.refresh_token).toBe(refreshToken);
+      expect(tokenResponse.access_token).toBe(accessToken);
+      expect(tokenResponse.refresh_token).toBe(refreshToken);
       expect(oauthClient.hasUserTokens()).toBe(true);
     });
 
@@ -422,16 +422,16 @@ describe('EbayOAuthClient', () => {
   describe('getTokenInfo', () => {
     it('return token status information when tokens are set', async () => {
       await setUserTokens(oauthClient, 'access_token', 'refresh_token');
-      const info = oauthClient.getTokenInfo();
+      const tokenInfo = oauthClient.getTokenInfo();
 
-      expect(info.hasUserToken).toBe(true);
+      expect(tokenInfo.hasUserToken).toBe(true);
     });
 
     it('return info when no tokens are available', () => {
-      const info = oauthClient.getTokenInfo();
+      const tokenInfo = oauthClient.getTokenInfo();
 
-      expect(info.hasUserToken).toBe(false);
-      expect(info.hasAppAccessToken).toBe(false);
+      expect(tokenInfo.hasUserToken).toBe(false);
+      expect(tokenInfo.hasAppAccessToken).toBe(false);
     });
   });
 

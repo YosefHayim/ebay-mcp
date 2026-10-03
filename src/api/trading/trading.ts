@@ -41,12 +41,12 @@ type EndListingInput = z.infer<typeof endListingSchema>;
 /** Input accepted by relistItem. */
 type RelistItemInput = z.infer<typeof relistItemSchema>;
 
-const asRecordArray = (value: unknown): Record<string, unknown>[] => {
-  if (!Array.isArray(value)) {
+const asRecordArray = (rawField: unknown): Record<string, unknown>[] => {
+  if (!Array.isArray(rawField)) {
     return [];
   }
 
-  return value.filter(isRecord);
+  return rawField.filter(isRecord);
 };
 
 /**
@@ -74,7 +74,7 @@ export class TradingApi {
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(
+   * const tradingRecord = await Effect.runPromise(
    *   tradingApi.getActiveListings({ page: 2, entriesPerPage: 25 }),
    * );
    * ```
@@ -87,10 +87,10 @@ export class TradingApi {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetActiveListingsInput>(input, 'input');
-      const inputPage = yield* optionalPositiveNumberEffect(request.page, 'page');
+      const validatedInput = yield* requireObjectEffect<GetActiveListingsInput>(input, 'input');
+      const inputPage = yield* optionalPositiveNumberEffect(validatedInput.page, 'page');
       const inputEntriesPerPage = yield* optionalPositiveNumberEffect(
-        request.entriesPerPage,
+        validatedInput.entriesPerPage,
         'entriesPerPage',
       );
       const page = inputPage === undefined ? 1 : inputPage;
@@ -127,15 +127,15 @@ export class TradingApi {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetListingInput>(input, 'input');
-      const itemId = yield* requireStringEffect(request.itemId, 'itemId');
-      const result = yield* tradingClient.execute('GetItem', {
+      const validatedInput = yield* requireObjectEffect<GetListingInput>(input, 'input');
+      const itemId = yield* requireStringEffect(validatedInput.itemId, 'itemId');
+      const getItemResponse = yield* tradingClient.execute('GetItem', {
         ItemID: itemId,
         DetailLevel: 'ReturnAll',
       });
-      const items = asRecordArray(result.Item);
+      const items = asRecordArray(getItemResponse.Item);
 
-      return items.length > 0 ? items[0] : result;
+      return items.length > 0 ? items[0] : getItemResponse;
     });
   };
 
@@ -170,21 +170,24 @@ export class TradingApi {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<CreateListingInput>(input, 'input');
-      const format = resolveTradingFormat(request.format);
-      const item = yield* requireObjectEffect<TradingItemFields>(request.item, 'item');
+      const validatedInput = yield* requireObjectEffect<CreateListingInput>(input, 'input');
+      const format = resolveTradingFormat(validatedInput.format);
+      const tradingItem = yield* requireObjectEffect<TradingItemFields>(
+        validatedInput.item,
+        'item',
+      );
       yield* validateTradingListingFormatEffect({
-        item,
+        item: tradingItem,
         format,
         parameter: 'item',
         isCreate: true,
       });
-      const payload =
+      const listingItem =
         format === FormatType.AUCTION
-          ? { ...item, ListingType: TRADING_AUCTION_LISTING_TYPE }
-          : item;
+          ? { ...tradingItem, ListingType: TRADING_AUCTION_LISTING_TYPE }
+          : tradingItem;
 
-      return yield* tradingClient.execute(tradingCallName('create', format), { Item: payload });
+      return yield* tradingClient.execute(tradingCallName('create', format), { Item: listingItem });
     });
   };
 
@@ -213,10 +216,10 @@ export class TradingApi {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<ReviseListingInput>(input, 'input');
-      const format = resolveTradingFormat(request.format);
-      const itemId = yield* requireStringEffect(request.itemId, 'itemId');
-      const fields = yield* requireObjectEffect<TradingItemFields>(request.fields, 'fields');
+      const validatedInput = yield* requireObjectEffect<ReviseListingInput>(input, 'input');
+      const format = resolveTradingFormat(validatedInput.format);
+      const itemId = yield* requireStringEffect(validatedInput.itemId, 'itemId');
+      const fields = yield* requireObjectEffect<TradingItemFields>(validatedInput.fields, 'fields');
       yield* validateTradingListingFormatEffect({
         item: fields,
         format,
@@ -255,10 +258,10 @@ export class TradingApi {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<EndListingInput>(input, 'input');
-      const format = resolveTradingFormat(request.format);
-      const itemId = yield* requireStringEffect(request.itemId, 'itemId');
-      const inputReason = yield* optionalStringEffect(request.reason, 'reason');
+      const validatedInput = yield* requireObjectEffect<EndListingInput>(input, 'input');
+      const format = resolveTradingFormat(validatedInput.format);
+      const itemId = yield* requireStringEffect(validatedInput.itemId, 'itemId');
+      const inputReason = yield* optionalStringEffect(validatedInput.reason, 'reason');
       yield* validateTradingEndingReasonEffect(inputReason, format, 'reason');
       const reason = inputReason === undefined ? 'NotAvailable' : inputReason;
 
@@ -294,14 +297,14 @@ export class TradingApi {
     const tradingClient = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<RelistItemInput>(input, 'input');
-      const format = resolveTradingFormat(request.format);
-      const itemId = yield* requireStringEffect(request.itemId, 'itemId');
+      const validatedInput = yield* requireObjectEffect<RelistItemInput>(input, 'input');
+      const format = resolveTradingFormat(validatedInput.format);
+      const itemId = yield* requireStringEffect(validatedInput.itemId, 'itemId');
       let modifications: TradingItemFields = {};
 
-      if (request.modifications !== undefined) {
+      if (validatedInput.modifications !== undefined) {
         modifications = yield* requireObjectEffect<TradingItemFields>(
-          request.modifications,
+          validatedInput.modifications,
           'modifications',
         );
       }

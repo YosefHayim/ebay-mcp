@@ -329,7 +329,7 @@ describe('Tools Layer', () => {
 
     it('include all tool categories', () => {
       const tools = getToolDefinitions();
-      const toolNames = tools.map((t) => t.name);
+      const toolNames = tools.map((tool) => tool.name);
 
       // Check for tools from each category
       expect(toolNames).toContain('ebay_get_oauth_url'); // tokenManagementTools
@@ -366,11 +366,11 @@ describe('Tools Layer', () => {
       };
       vi.mocked(mockApi.inventory.getInventoryItems).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'search', { query: '', limit: 10 });
+      const searchResult = await executeTool(mockApi, 'search', { query: '', limit: 10 });
 
       expect(mockApi.inventory.getInventoryItems).toHaveBeenCalledWith({ limit: 10, offset: 0 });
-      expect(result).toHaveProperty('content');
-      expect(Array.isArray((result as TextContentToolResult).content)).toBe(true);
+      expect(searchResult).toHaveProperty('content');
+      expect(Array.isArray((searchResult as TextContentToolResult).content)).toBe(true);
     });
 
     it('execute fetch tool', async () => {
@@ -384,23 +384,23 @@ describe('Tools Layer', () => {
       };
       vi.mocked(mockApi.inventory.getInventoryItem).mockReturnValue(Effect.succeed(mockItem));
 
-      const result = await executeTool(mockApi, 'fetch', { id: 'TEST-SKU' });
+      const fetchResult = await executeTool(mockApi, 'fetch', { id: 'TEST-SKU' });
 
       expect(mockApi.inventory.getInventoryItem).toHaveBeenCalledWith({ sku: 'TEST-SKU' });
-      expect(result).toHaveProperty('content');
+      expect(fetchResult).toHaveProperty('content');
     });
   });
 
   describe('executeTool - OAuth Tools', () => {
     it('generate OAuth URL', async () => {
-      const result = await executeTool(mockApi, 'ebay_get_oauth_url', {
+      const oauthUrlResult = await executeTool(mockApi, 'ebay_get_oauth_url', {
         redirectUri: 'https://test.com/callback',
       });
 
-      expect(result).toHaveProperty('authorizationUrl');
-      expect(result).toHaveProperty('redirectUri');
-      expect(result).toHaveProperty('instructions');
-      expect((result as OAuthUrlToolResult).redirectUri).toBe('https://test.com/callback');
+      expect(oauthUrlResult).toHaveProperty('authorizationUrl');
+      expect(oauthUrlResult).toHaveProperty('redirectUri');
+      expect(oauthUrlResult).toHaveProperty('instructions');
+      expect((oauthUrlResult as OAuthUrlToolResult).redirectUri).toBe('https://test.com/callback');
     });
 
     it('throw error when client ID missing', async () => {
@@ -428,14 +428,14 @@ describe('Tools Layer', () => {
         refreshTokenExpired: false,
       });
 
-      const result = await executeTool(mockApi, 'ebay_set_user_tokens', {
+      const setTokensResult = await executeTool(mockApi, 'ebay_set_user_tokens', {
         accessToken: 'test-access-token',
         refreshToken: 'test-refresh-token',
       });
 
       expect(mockApi.setUserTokens).toHaveBeenCalledWith('test-access-token', 'test-refresh-token');
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('message');
+      expect(setTokensResult).toHaveProperty('success', true);
+      expect(setTokensResult).toHaveProperty('message');
     });
 
     it('throw error when tokens missing', async () => {
@@ -444,12 +444,12 @@ describe('Tools Layer', () => {
     });
 
     it('get token status', async () => {
-      const result = await executeTool(mockApi, 'ebay_get_token_status', {});
+      const tokenStatus = await executeTool(mockApi, 'ebay_get_token_status', {});
 
-      expect(result).toHaveProperty('hasUserToken');
-      expect(result).toHaveProperty('hasAppAccessToken');
-      expect(result).toHaveProperty('authenticated');
-      expect(result).toHaveProperty('currentTokenType');
+      expect(tokenStatus).toHaveProperty('hasUserToken');
+      expect(tokenStatus).toHaveProperty('hasAppAccessToken');
+      expect(tokenStatus).toHaveProperty('authenticated');
+      expect(tokenStatus).toHaveProperty('currentTokenType');
     });
 
     it('clear tokens', async () => {
@@ -458,10 +458,10 @@ describe('Tools Layer', () => {
         mockClearTokens,
       );
 
-      const result = await executeTool(mockApi, 'ebay_clear_tokens', {});
+      const clearTokensResult = await executeTool(mockApi, 'ebay_clear_tokens', {});
 
       expect(mockClearTokens).toHaveBeenCalled();
-      expect(result).toHaveProperty('success', true);
+      expect(clearTokensResult).toHaveProperty('success', true);
     });
 
     it('display credentials and token information', async () => {
@@ -494,38 +494,40 @@ describe('Tools Layer', () => {
         refreshTokenExpired: false,
       });
 
-      const result = await executeTool(mockApi, 'ebay_display_credentials', {});
+      const credentialsOutput = await executeTool(mockApi, 'ebay_display_credentials', {});
 
       // Verify result structure
-      expect(result).toHaveProperty('credentials');
-      expect(result).toHaveProperty('tokens');
-      expect(result).toHaveProperty('status');
-      expect(result).toHaveProperty('scopes');
+      expect(credentialsOutput).toHaveProperty('credentials');
+      expect(credentialsOutput).toHaveProperty('tokens');
+      expect(credentialsOutput).toHaveProperty('status');
+      expect(credentialsOutput).toHaveProperty('scopes');
 
-      const resultObj = result as CredentialDisplayResult;
+      const credentialDisplay = credentialsOutput as CredentialDisplayResult;
 
       // Check credentials are masked
-      expect(resultObj.credentials.clientId).toContain('...');
-      expect(resultObj.credentials.clientSecret).toBe('****** (set)');
-      expect(resultObj.credentials.environment).toBe('sandbox');
-      expect(resultObj.credentials.redirectUri).toBe('https://test.com/callback');
+      expect(credentialDisplay.credentials.clientId).toContain('...');
+      expect(credentialDisplay.credentials.clientSecret).toBe('****** (set)');
+      expect(credentialDisplay.credentials.environment).toBe('sandbox');
+      expect(credentialDisplay.credentials.redirectUri).toBe('https://test.com/callback');
 
       // Check tokens are masked
-      expect(resultObj.tokens.refreshToken).toContain('...');
-      expect(resultObj.tokens.accessToken).toContain('...');
-      expect(resultObj.tokens.appToken).toContain('...');
+      expect(credentialDisplay.tokens.refreshToken).toContain('...');
+      expect(credentialDisplay.tokens.accessToken).toContain('...');
+      expect(credentialDisplay.tokens.appToken).toContain('...');
 
       // Check expiry information exists
-      expect(resultObj.tokens.accessTokenExpiry).toHaveProperty('timestamp');
-      expect(resultObj.tokens.accessTokenExpiry).toHaveProperty('date');
-      expect(resultObj.tokens.accessTokenExpiry).toHaveProperty('expired');
+      expect(credentialDisplay.tokens.accessTokenExpiry).toHaveProperty('timestamp');
+      expect(credentialDisplay.tokens.accessTokenExpiry).toHaveProperty('date');
+      expect(credentialDisplay.tokens.accessTokenExpiry).toHaveProperty('expired');
 
       // Check status
-      expect(resultObj.status.hasUserToken).toBe(true);
-      expect(resultObj.status.hasAppAccessToken).toBe(true);
+      expect(credentialDisplay.status.hasUserToken).toBe(true);
+      expect(credentialDisplay.status.hasAppAccessToken).toBe(true);
 
       // Check scopes
-      expect(resultObj.scopes).toEqual(['https://api.ebay.com/oauth/api_scope/sell.inventory']);
+      expect(credentialDisplay.scopes).toEqual([
+        'https://api.ebay.com/oauth/api_scope/sell.inventory',
+      ]);
     });
 
     it('display credentials when tokens are not set', async () => {
@@ -543,15 +545,15 @@ describe('Tools Layer', () => {
         refreshTokenExpired: true,
       });
 
-      const result = await executeTool(mockApi, 'ebay_display_credentials', {});
+      const credentialsOutput = await executeTool(mockApi, 'ebay_display_credentials', {});
 
-      const resultObj = result as CredentialDisplayResult;
+      const credentialDisplay = credentialsOutput as CredentialDisplayResult;
 
       // Check that missing tokens are indicated
-      expect(resultObj.tokens.refreshToken).toBe('Not set (in .env)');
-      expect(resultObj.tokens.accessToken).toBe('Not available');
-      expect(resultObj.tokens.appToken).toBe('Not cached');
-      expect(resultObj.status.currentTokenType).toBe('none');
+      expect(credentialDisplay.tokens.refreshToken).toBe('Not set (in .env)');
+      expect(credentialDisplay.tokens.accessToken).toBe('Not available');
+      expect(credentialDisplay.tokens.appToken).toBe('Not cached');
+      expect(credentialDisplay.status.currentTokenType).toBe('none');
     });
 
     it('refresh access token successfully', async () => {
@@ -577,27 +579,27 @@ describe('Tools Layer', () => {
         refreshTokenExpired: false,
       });
 
-      const result = await executeTool(mockApi, 'ebay_refresh_access_token', {});
+      const refreshOutput = await executeTool(mockApi, 'ebay_refresh_access_token', {});
 
       // Verify refresh was called
       expect(mockRefreshToken).toHaveBeenCalled();
 
       // Verify result structure
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('message', 'Access token refreshed successfully');
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('accessTokenExpiry');
-      expect(result).toHaveProperty('tokenInfo');
+      expect(refreshOutput).toHaveProperty('success', true);
+      expect(refreshOutput).toHaveProperty('message', 'Access token refreshed successfully');
+      expect(refreshOutput).toHaveProperty('accessToken');
+      expect(refreshOutput).toHaveProperty('accessTokenExpiry');
+      expect(refreshOutput).toHaveProperty('tokenInfo');
 
-      const resultObj = result as RefreshAccessTokenResult;
+      const refreshResult = refreshOutput as RefreshAccessTokenResult;
 
       // Check token is masked
-      expect(resultObj.accessToken).toContain('...');
+      expect(refreshResult.accessToken).toContain('...');
 
       // Check expiry info
-      expect(resultObj.accessTokenExpiry).toHaveProperty('timestamp');
-      expect(resultObj.accessTokenExpiry).toHaveProperty('date');
-      expect(resultObj.accessTokenExpiry).toHaveProperty('expiresInSeconds');
+      expect(refreshResult.accessTokenExpiry).toHaveProperty('timestamp');
+      expect(refreshResult.accessTokenExpiry).toHaveProperty('date');
+      expect(refreshResult.accessTokenExpiry).toHaveProperty('expiresInSeconds');
     });
 
     it('throw error when refreshing without user tokens', async () => {
@@ -636,18 +638,18 @@ describe('Tools Layer', () => {
       const mockAuthClient = mockApi.getAuthClient().getOAuthClient();
       vi.mocked(mockAuthClient).exchangeCodeForToken = mockExchangeCode;
 
-      const result = await executeTool(mockApi, 'ebay_exchange_authorization_code', {
+      const exchangeOutput = await executeTool(mockApi, 'ebay_exchange_authorization_code', {
         code: 'v^1.1#i^1#p^3#r^1#f^0#I^3#t^H4sIAAAAAA',
       });
 
       expect(mockExchangeCode).toHaveBeenCalledWith('v^1.1#i^1#p^3#r^1#f^0#I^3#t^H4sIAAAAAA');
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('message');
-      expect(result).toHaveProperty('tokenData');
-      expect(result).toHaveProperty('note');
+      expect(exchangeOutput).toHaveProperty('success', true);
+      expect(exchangeOutput).toHaveProperty('message');
+      expect(exchangeOutput).toHaveProperty('tokenData');
+      expect(exchangeOutput).toHaveProperty('note');
 
-      const resultObj = result as Record<string, unknown>;
-      const tokenData = resultObj.tokenData as Record<string, unknown>;
+      const exchangeResult = exchangeOutput as Record<string, unknown>;
+      const tokenData = exchangeResult.tokenData as Record<string, unknown>;
       expect(tokenData.accessToken).toContain('...');
       expect(tokenData.refreshToken).toContain('...');
       expect(tokenData.expiresIn).toBe(7200);
@@ -722,14 +724,14 @@ describe('Tools Layer', () => {
       const mockResponse = { policies: [] };
       vi.mocked(mockApi.account.getCustomPolicies).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'ebay_get_custom_policies', {
+      const customPolicies = await executeTool(mockApi, 'ebay_get_custom_policies', {
         policyTypes: 'RETURN_POLICY',
       });
 
       expect(mockApi.account.getCustomPolicies).toHaveBeenCalledWith({
         policyTypes: 'RETURN_POLICY',
       });
-      expect(result).toBe(mockResponse);
+      expect(customPolicies).toBe(mockResponse);
     });
 
     it('get fulfillment policies', async () => {
@@ -741,10 +743,14 @@ describe('Tools Layer', () => {
         Effect.succeed(mockResponse),
       );
 
-      const result = await executeTool(mockApi, 'ebay_get_fulfillment_policies', input);
+      const fulfillmentPolicies = await executeTool(
+        mockApi,
+        'ebay_get_fulfillment_policies',
+        input,
+      );
 
       expect(mockApi.account.getFulfillmentPolicies).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(fulfillmentPolicies).toBe(mockResponse);
     });
 
     it('create fulfillment policy', async () => {
@@ -757,10 +763,10 @@ describe('Tools Layer', () => {
         Effect.succeed(mockResponse),
       );
 
-      const result = await executeTool(mockApi, 'ebay_create_fulfillment_policy', input);
+      const createdPolicy = await executeTool(mockApi, 'ebay_create_fulfillment_policy', input);
 
       expect(mockApi.account.createFulfillmentPolicy).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(createdPolicy).toBe(mockResponse);
     });
 
     it('delete fulfillment policy', async () => {
@@ -784,10 +790,10 @@ describe('Tools Layer', () => {
       };
       vi.mocked(mockApi.inventory.getInventoryItems).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'ebay_get_inventory_items', input);
+      const inventoryItems = await executeTool(mockApi, 'ebay_get_inventory_items', input);
 
       expect(mockApi.inventory.getInventoryItems).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(inventoryItems).toBe(mockResponse);
     });
 
     it('get inventory item', async () => {
@@ -797,10 +803,10 @@ describe('Tools Layer', () => {
       };
       vi.mocked(mockApi.inventory.getInventoryItem).mockReturnValue(Effect.succeed(mockItem));
 
-      const result = await executeTool(mockApi, 'ebay_get_inventory_item', input);
+      const inventoryItem = await executeTool(mockApi, 'ebay_get_inventory_item', input);
 
       expect(mockApi.inventory.getInventoryItem).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockItem);
+      expect(inventoryItem).toBe(mockItem);
     });
 
     it('create inventory item', async () => {
@@ -824,10 +830,10 @@ describe('Tools Layer', () => {
       };
       vi.mocked(mockApi.inventory.publishOffer).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'ebay_publish_offer', input);
+      const publishedOffer = await executeTool(mockApi, 'ebay_publish_offer', input);
 
       expect(mockApi.inventory.publishOffer).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(publishedOffer).toBe(mockResponse);
     });
   });
 
@@ -841,10 +847,10 @@ describe('Tools Layer', () => {
         limit: 10,
         offset: 0,
       };
-      const result = await executeTool(mockApi, 'ebay_get_orders', input);
+      const orders = await executeTool(mockApi, 'ebay_get_orders', input);
 
       expect(mockApi.fulfillment.getOrders).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(orders).toBe(mockResponse);
     });
 
     it('get order', async () => {
@@ -854,19 +860,19 @@ describe('Tools Layer', () => {
       const input = {
         orderId: 'ORDER123',
       };
-      const result = await executeTool(mockApi, 'ebay_get_order', input);
+      const order = await executeTool(mockApi, 'ebay_get_order', input);
 
       expect(mockApi.fulfillment.getOrder).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockOrder);
+      expect(order).toBe(mockOrder);
     });
 
     it('create shipping fulfillment', async () => {
-      const body = { lineItems: [] };
+      const shippingFulfillment = { lineItems: [] };
       vi.mocked(mockApi.fulfillment.createShippingFulfillment).mockReturnValue(Effect.succeed({}));
 
       const input = {
         orderId: 'ORDER123',
-        body,
+        body: shippingFulfillment,
       };
       await executeTool(mockApi, 'ebay_create_shipping_fulfillment', input);
 
@@ -874,12 +880,12 @@ describe('Tools Layer', () => {
     });
 
     it('issue refund', async () => {
-      const body = { reasonForRefund: 'BUYER_CANCEL' };
+      const refundRequest = { reasonForRefund: 'BUYER_CANCEL' };
       vi.mocked(mockApi.fulfillment.issueRefund).mockReturnValue(Effect.succeed({}));
 
       const input = {
         orderId: 'ORDER123',
-        body,
+        body: refundRequest,
       };
       await executeTool(mockApi, 'ebay_issue_refund', input);
 
@@ -893,10 +899,10 @@ describe('Tools Layer', () => {
         Effect.succeed(mockResponse),
       );
 
-      const result = await executeTool(mockApi, 'ebay_get_payment_dispute_summaries', input);
+      const summaries = await executeTool(mockApi, 'ebay_get_payment_dispute_summaries', input);
 
       expect(mockApi.dispute.getPaymentDisputeSummaries).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(summaries).toBe(mockResponse);
     });
   });
 
@@ -909,10 +915,10 @@ describe('Tools Layer', () => {
         limit: 10,
       };
 
-      const result = await executeTool(mockApi, 'ebay_get_campaigns', input);
+      const campaigns = await executeTool(mockApi, 'ebay_get_campaigns', input);
 
       expect(mockApi.marketing.getCampaigns).toHaveBeenCalledWith(input);
-      expect(result).toBe(mockResponse);
+      expect(campaigns).toBe(mockResponse);
     });
 
     it('pause campaign', async () => {
@@ -945,7 +951,7 @@ describe('Tools Layer', () => {
       const mockResponse = { reports: [] };
       vi.mocked(mockApi.analytics.getTrafficReport).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'ebay_get_traffic_report', {
+      const trafficReport = await executeTool(mockApi, 'ebay_get_traffic_report', {
         dimension: 'LISTING',
         filter: 'listingIds:{123}',
         metric: 'CLICK_THROUGH_RATE',
@@ -958,7 +964,7 @@ describe('Tools Layer', () => {
         metric: 'CLICK_THROUGH_RATE',
         sort: '-date',
       });
-      expect(result).toBe(mockResponse);
+      expect(trafficReport).toBe(mockResponse);
     });
 
     it('get seller standards profile', async () => {
@@ -967,7 +973,7 @@ describe('Tools Layer', () => {
         Effect.succeed(mockResponse),
       );
 
-      const result = await executeTool(mockApi, 'ebay_get_seller_standards_profile', {
+      const standardsProfile = await executeTool(mockApi, 'ebay_get_seller_standards_profile', {
         program: 'CUSTOMER_SERVICE',
         cycle: 'CURRENT',
       });
@@ -976,7 +982,7 @@ describe('Tools Layer', () => {
         program: 'CUSTOMER_SERVICE',
         cycle: 'CURRENT',
       });
-      expect(result).toBe(mockResponse);
+      expect(standardsProfile).toBe(mockResponse);
     });
   });
 
@@ -987,14 +993,14 @@ describe('Tools Layer', () => {
         Effect.succeed(mockResponse),
       );
 
-      const result = await executeTool(mockApi, 'ebay_get_default_category_tree_id', {
+      const defaultCategoryTree = await executeTool(mockApi, 'ebay_get_default_category_tree_id', {
         marketplaceId: 'EBAY_US',
       });
 
       expect(mockApi.taxonomy.getDefaultCategoryTreeId).toHaveBeenCalledWith({
         marketplaceId: 'EBAY_US',
       });
-      expect(result).toBe(mockResponse);
+      expect(defaultCategoryTree).toBe(mockResponse);
     });
 
     it('get category suggestions', async () => {
@@ -1003,7 +1009,7 @@ describe('Tools Layer', () => {
         Effect.succeed(mockResponse),
       );
 
-      const result = await executeTool(mockApi, 'ebay_get_category_suggestions', {
+      const categorySuggestions = await executeTool(mockApi, 'ebay_get_category_suggestions', {
         categoryTreeId: '0',
         query: 'iPhone',
       });
@@ -1012,7 +1018,7 @@ describe('Tools Layer', () => {
         categoryTreeId: '0',
         query: 'iPhone',
       });
-      expect(result).toBe(mockResponse);
+      expect(categorySuggestions).toBe(mockResponse);
     });
   });
 
@@ -1021,17 +1027,17 @@ describe('Tools Layer', () => {
       const mockResponse = { userId: 'USER123' };
       vi.mocked(mockApi.identity.getUser).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'ebay_get_user', {});
+      const user = await executeTool(mockApi, 'ebay_get_user', {});
 
       expect(mockApi.identity.getUser).toHaveBeenCalledWith({});
-      expect(result).toBe(mockResponse);
+      expect(user).toBe(mockResponse);
     });
 
     it('translate text', async () => {
       const mockResponse = { translations: [] };
       vi.mocked(mockApi.translation.translate).mockReturnValue(Effect.succeed(mockResponse));
 
-      const result = await executeTool(mockApi, 'ebay_translate', {
+      const translation = await executeTool(mockApi, 'ebay_translate', {
         from: 'en',
         to: 'es',
         translationContext: 'ITEM_TITLE',
@@ -1044,7 +1050,7 @@ describe('Tools Layer', () => {
         translationContext: 'ITEM_TITLE',
         text: ['Hello'],
       });
-      expect(result).toBe(mockResponse);
+      expect(translation).toBe(mockResponse);
     });
   });
 

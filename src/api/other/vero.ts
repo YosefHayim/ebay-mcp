@@ -98,12 +98,12 @@ export class VeroApi {
 
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<CreateVeroReportInput>(input, 'input');
-      const body = yield* requireObjectEffect<CreateVeroReportRequest>(
+      const veroReport = yield* requireObjectEffect<CreateVeroReportRequest>(
         endpointInput.reportData,
         'reportData',
       );
 
-      return yield* requestPostEffect<CreateVeroReportResponse>(client, path, body);
+      return yield* requestPostEffect<CreateVeroReportResponse>(client, path, veroReport);
     });
   };
 

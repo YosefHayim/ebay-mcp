@@ -146,13 +146,13 @@ describe('buildUiToolResult', () => {
       }),
     };
 
-    const result = buildUiToolResult(ui, { orderId: '1' });
+    const uiToolResult = buildUiToolResult(ui, { orderId: '1' });
 
-    expect(result.content).toEqual([
+    expect(uiToolResult.content).toEqual([
       { type: 'text', text: 'Order 1: 1 field. Rendered as an interactive detail card.' },
     ]);
-    expect(result.structuredContent).toMatchObject({ archetype: 'card', title: 'Order 1' });
-    expect(result._meta).toEqual({ ui: { resourceUri: 'ui://ebay/card.html' } });
+    expect(uiToolResult.structuredContent).toMatchObject({ archetype: 'card', title: 'Order 1' });
+    expect(uiToolResult._meta).toEqual({ ui: { resourceUri: 'ui://ebay/card.html' } });
   });
 });
 

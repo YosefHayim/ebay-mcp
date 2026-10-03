@@ -91,9 +91,12 @@ describe('ebay_get_offers_by_skus registered MCP contract', () => {
       .query(true)
       .reply(200, { offers: [] });
 
-    const result = await client.callTool({ name: 'ebay_get_offers_by_skus', arguments: args });
+    const rejectedBatch = await client.callTool({
+      name: 'ebay_get_offers_by_skus',
+      arguments: args,
+    });
 
-    expect(result.isError).toBe(true);
+    expect(rejectedBatch.isError).toBe(true);
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -105,15 +108,18 @@ describe('ebay_get_offers_by_skus registered MCP contract', () => {
         .reply(200, { total: 1, offers: [{ offerId: `offer-${sku}`, sku }] });
     }
 
-    const result = await client.callTool({
+    const batchResult = await client.callTool({
       name: 'ebay_get_offers_by_skus',
       arguments: { skus: ['SKU-1', 'SKU-2'] },
     });
-    const text = result.content.find((item) => item.type === 'text');
-    const payload = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<string, unknown>;
+    const text = batchResult.content.find((block) => block.type === 'text');
+    const batchReport = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<
+      string,
+      unknown
+    >;
 
-    expect(result.isError).not.toBe(true);
-    expect(payload).toMatchObject({ successCount: 2, failureCount: 0 });
+    expect(batchResult.isError).not.toBe(true);
+    expect(batchReport).toMatchObject({ successCount: 2, failureCount: 0 });
     expect(nock.isDone()).toBe(true);
   });
 
@@ -129,17 +135,20 @@ describe('ebay_get_offers_by_skus registered MCP contract', () => {
       .once()
       .reply(404, { errors: [{ message: 'offer not found' }] });
 
-    const result = await client.callTool({
+    const batchResult = await client.callTool({
       name: 'ebay_get_offers_by_skus',
       arguments: { skus: ['SKU-1', 'SKU-2', 'SKU-1'] },
     });
-    const text = result.content.find((item) => item.type === 'text');
-    const payload = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<string, unknown>;
+    const text = batchResult.content.find((block) => block.type === 'text');
+    const batchReport = JSON.parse(text?.type === 'text' ? text.text : '{}') as Record<
+      string,
+      unknown
+    >;
 
-    expect(result.isError).not.toBe(true);
+    expect(batchResult.isError).not.toBe(true);
     expect(first.isDone()).toBe(true);
     expect(second.isDone()).toBe(true);
-    expect(payload).toMatchObject({
+    expect(batchReport).toMatchObject({
       requestedSkuCount: 3,
       uniqueSkuCount: 2,
       successCount: 1,

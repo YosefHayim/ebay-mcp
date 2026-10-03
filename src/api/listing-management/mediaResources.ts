@@ -62,17 +62,20 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const createImageFromUrl = (input: CreateImageFromUrlInput) =>
     Effect.gen(function* () {
-      const body = yield* decodeEndpointInputEffect(createImageFromUrlInputSchema, input);
+      const imageSource = yield* decodeEndpointInputEffect(createImageFromUrlInputSchema, input);
       const path = '/image/create_image_from_url';
-      const response = yield* Effect.tryPromise({
+      const imageResponse = yield* Effect.tryPromise({
         try: () =>
-          client.postForResponse<components['schemas']['ImageResponse']>(url(path), body, {
+          client.postForResponse<components['schemas']['ImageResponse']>(url(path), imageSource, {
             absolute: true,
           }),
         catch: failure('POST', path),
       });
-      const resource = yield* locatedResourceId(response.headers.location, `${BASE_PATH}/image`);
-      return { imageId: resource.id, location: resource.location, image: response.data };
+      const resource = yield* locatedResourceId(
+        imageResponse.headers.location,
+        `${BASE_PATH}/image`,
+      );
+      return { imageId: resource.id, location: resource.location, image: imageResponse.data };
     });
 
   /**
@@ -84,9 +87,12 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const createDocument = (input: CreateDocumentInput) =>
     Effect.gen(function* () {
-      const body = yield* decodeEndpointInputEffect(createDocumentInputSchema, input);
+      const documentRequest = yield* decodeEndpointInputEffect(createDocumentInputSchema, input);
       return yield* Effect.tryPromise({
-        try: () => client.post<CreateDocumentResponse>(url('/document'), body, { absolute: true }),
+        try: () =>
+          client.post<CreateDocumentResponse>(url('/document'), documentRequest, {
+            absolute: true,
+          }),
         catch: failure('POST', '/document'),
       });
     });
@@ -100,10 +106,14 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
    */
   const createDocumentFromUrl = (input: CreateDocumentFromUrlInput) =>
     Effect.gen(function* () {
-      const body = yield* decodeEndpointInputEffect(createDocumentFromUrlInputSchema, input);
+      const documentRequest = yield* decodeEndpointInputEffect(
+        createDocumentFromUrlInputSchema,
+        input,
+      );
       const path = '/document/create_document_from_url';
       return yield* Effect.tryPromise({
-        try: () => client.post<CreateDocumentResponse>(url(path), body, { absolute: true }),
+        try: () =>
+          client.post<CreateDocumentResponse>(url(path), documentRequest, { absolute: true }),
         catch: failure('POST', path),
       });
     });
@@ -157,11 +167,11 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
     Effect.gen(function* () {
       const metadata = yield* decodeEndpointInputEffect(postOrderDocumentMetadataSchema, input);
       const form = uploadForm(input.file);
-      for (const [key, value] of Object.entries(metadata)) {
-        form.append(key, value);
+      for (const [fieldName, fieldValue] of Object.entries(metadata)) {
+        form.append(fieldName, fieldValue);
       }
       const path = '/post_order/document';
-      const response = yield* Effect.tryPromise({
+      const uploadResponse = yield* Effect.tryPromise({
         try: () =>
           client.postForResponse<unknown>(url(path, true), form, {
             absolute: true,
@@ -169,7 +179,10 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
           }),
         catch: failure('POST', path),
       });
-      const resource = yield* locatedResourceId(response.headers.location, `${BASE_PATH}${path}`);
+      const resource = yield* locatedResourceId(
+        uploadResponse.headers.location,
+        `${BASE_PATH}${path}`,
+      );
       return { documentId: resource.id, location: resource.location };
     });
 

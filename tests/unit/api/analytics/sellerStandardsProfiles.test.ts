@@ -24,9 +24,9 @@ it('findSellerStandardsProfiles gets all seller standards profiles', async () =>
   };
   vi.mocked(harness.client.get).mockResolvedValue(mockResponse);
 
-  const result = await Effect.runPromise(harness.api.findSellerStandardsProfiles({}));
+  const profiles = await Effect.runPromise(harness.api.findSellerStandardsProfiles({}));
 
-  expect(result).toEqual(mockResponse);
+  expect(profiles).toEqual(mockResponse);
   expect(harness.client.get).toHaveBeenCalledWith('/sell/analytics/v1/seller_standards_profile');
 });
 
@@ -46,14 +46,14 @@ it('getSellerStandardsProfile gets a specific seller standards profile', async (
   };
   vi.mocked(harness.client.get).mockResolvedValue(mockResponse);
 
-  const result = await Effect.runPromise(
+  const profile = await Effect.runPromise(
     harness.api.getSellerStandardsProfile({
       program: 'CUSTOMER_SERVICE',
       cycle: 'CURRENT',
     }),
   );
 
-  expect(result).toEqual(mockResponse);
+  expect(profile).toEqual(mockResponse);
   expect(harness.client.get).toHaveBeenCalledWith(
     '/sell/analytics/v1/seller_standards_profile/CUSTOMER_SERVICE/CURRENT',
   );

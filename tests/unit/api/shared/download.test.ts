@@ -121,13 +121,13 @@ describe('requestDownloadEffect', () => {
 
 describe('formatFileResult', () => {
   it('embeds the bytes as a base64 resource with a summary line', () => {
-    const result = formatFileResult(
+    const toolResult = formatFileResult(
       { bytes: Buffer.from('hello'), contentType: 'text/csv', fileName: 'orders.csv' },
       'ebay-feed://task/T1/result',
       'Feed task T1 result file',
     );
 
-    expect(result.content).toEqual([
+    expect(toolResult.content).toEqual([
       { type: 'text', text: 'Feed task T1 result file orders.csv (text/csv, 5 bytes)' },
       {
         type: 'resource',

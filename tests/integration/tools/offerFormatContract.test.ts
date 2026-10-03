@@ -23,7 +23,7 @@ vi.mock('../../../src/auth/oauth.js', () => ({
   }),
 }));
 
-const usd = (value: string) => ({ currency: 'USD', value });
+const usd = (amount: string) => ({ currency: 'USD', value: amount });
 
 const auctionOffer = {
   sku: 'AUCTION-1',
@@ -112,14 +112,14 @@ describe('offer format advertised MCP schema', () => {
     const definition = (await client.listTools()).tools.find(
       (tool) => tool.name === 'ebay_update_offer',
     );
-    const body = definition?.inputSchema.properties?.body as {
+    const offerSchema = definition?.inputSchema.properties?.body as {
       properties?: Record<string, unknown>;
     };
 
-    expect(body.properties).toHaveProperty('listingDuration');
-    expect(body.properties).toHaveProperty('pricingSummary');
-    expect(body.properties).not.toHaveProperty('sku');
-    expect(body.properties).not.toHaveProperty('format');
+    expect(offerSchema.properties).toHaveProperty('listingDuration');
+    expect(offerSchema.properties).toHaveProperty('pricingSummary');
+    expect(offerSchema.properties).not.toHaveProperty('sku');
+    expect(offerSchema.properties).not.toHaveProperty('format');
   });
 });
 
@@ -129,12 +129,12 @@ describe('offer format registered MCP validation', () => {
       .post('/sell/inventory/v1/offer', auctionOffer)
       .reply(201, { offerId: 'OFFER-AUCTION' });
 
-    const result = await client.callTool({
+    const auctionCreate = await client.callTool({
       name: 'ebay_create_offer',
       arguments: { body: auctionOffer },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(auctionCreate.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 
@@ -143,13 +143,13 @@ describe('offer format registered MCP validation', () => {
       .post('/sell/inventory/v1/offer')
       .reply(201, { offerId: 'OFFER-AUCTION' });
 
-    const result = await client.callTool({
+    const gtcAuctionCreate = await client.callTool({
       name: 'ebay_create_offer',
       arguments: { body: { ...auctionOffer, listingDuration: 'GTC' } },
     });
 
-    expect(result.isError).toBe(true);
-    expect(JSON.stringify(result.content)).toContain('listingDuration');
+    expect(gtcAuctionCreate.isError).toBe(true);
+    expect(JSON.stringify(gtcAuctionCreate.content)).toContain('listingDuration');
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -158,12 +158,12 @@ describe('offer format registered MCP validation', () => {
       .post('/sell/inventory/v1/offer')
       .reply(201, { offerId: 'OFFER-AUCTION' });
 
-    const result = await client.callTool({
+    const multiQuantityAuction = await client.callTool({
       name: 'ebay_create_offer',
       arguments: { body: { ...auctionOffer, availableQuantity: 2 } },
     });
 
-    expect(result.isError).toBe(true);
+    expect(multiQuantityAuction.isError).toBe(true);
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -172,12 +172,12 @@ describe('offer format registered MCP validation', () => {
       .post('/sell/inventory/v1/offer')
       .reply(201, { offerId: 'OFFER-AUCTION' });
 
-    const result = await client.callTool({
+    const unknownDurationCreate = await client.callTool({
       name: 'ebay_create_offer',
       arguments: { body: { ...auctionOffer, listingDuration: 'DAYS_2' } },
     });
 
-    expect(result.isError).toBe(true);
+    expect(unknownDurationCreate.isError).toBe(true);
     expect(endpoint.isDone()).toBe(false);
   });
 
@@ -192,12 +192,12 @@ describe('offer format registered MCP validation', () => {
       .post('/sell/inventory/v1/offer', fixedPriceOffer)
       .reply(201, { offerId: 'OFFER-FIXED' });
 
-    const result = await client.callTool({
+    const fixedPriceCreate = await client.callTool({
       name: 'ebay_create_offer',
       arguments: { body: fixedPriceOffer },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(fixedPriceCreate.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
   });
 
@@ -206,7 +206,7 @@ describe('offer format registered MCP validation', () => {
       .post('/sell/inventory/v1/bulk_create_offer')
       .reply(200, { responses: [] });
 
-    const result = await client.callTool({
+    const invalidBulkCreate = await client.callTool({
       name: 'ebay_bulk_create_offer',
       arguments: {
         body: {
@@ -220,8 +220,8 @@ describe('offer format registered MCP validation', () => {
       },
     });
 
-    expect(result.isError).toBe(true);
-    expect(JSON.stringify(result.content)).toContain('body.requests[0]');
+    expect(invalidBulkCreate.isError).toBe(true);
+    expect(JSON.stringify(invalidBulkCreate.content)).toContain('body.requests[0]');
     expect(endpoint.isDone()).toBe(false);
   });
 });

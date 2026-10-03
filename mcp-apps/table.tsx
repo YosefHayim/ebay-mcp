@@ -80,11 +80,11 @@ function Table({ view, app }: { view: TableViewModel; app: App | null }): ReactN
 }
 
 /** Renders a pre-formatted cell value, showing an em dash for empty cells. */
-function formatCell(value: string | number | null): ReactNode {
-  if (value === null || value === '') {
+function formatCell(cell: string | number | null): ReactNode {
+  if (cell === null || cell === '') {
     return '—';
   }
-  return value;
+  return cell;
 }
 
 /** Top-level table app: handshake state plus the rendered table. */

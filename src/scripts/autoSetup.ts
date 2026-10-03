@@ -447,7 +447,7 @@ function main(): void {
   // Step 2: Detect MCP clients
   print('\nStep 2/4: Detecting installed MCP clients...');
   const clients = detectMCPClients();
-  const detectedClients = clients.filter((c) => c.detected);
+  const detectedClients = clients.filter((client) => client.detected);
 
   if (detectedClients.length === 0) {
     printWarning('No MCP clients detected on this system');
@@ -485,7 +485,7 @@ function main(): void {
   // Final summary
   printHeader('Setup Complete! 🎉');
 
-  const generatedCount = detectedClients.filter((c) => c.configGenerated).length;
+  const generatedCount = detectedClients.filter((client) => client.configGenerated).length;
 
   if (generatedCount > 0) {
     printSuccess(`Successfully configured ${generatedCount} MCP client(s)`);
@@ -494,7 +494,7 @@ function main(): void {
     print('  2. Verify connection in MCP client settings/logs');
     print('  3. Test with: "List my eBay inventory items"');
 
-    if (validation.warnings.some((w) => w.includes('EBAY_REDIRECT_URI'))) {
+    if (validation.warnings.some((warning) => warning.includes('EBAY_REDIRECT_URI'))) {
       print('\n💡 Pro Tip:', 'yellow');
       print('  Add EBAY_REDIRECT_URI to .env for user OAuth (10k-50k req/day rate limits)');
     }

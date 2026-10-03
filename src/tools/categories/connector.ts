@@ -57,28 +57,31 @@ export const connectorEntries: ToolEntry[] = [
           let offset = 0;
 
           while (matches.length < limit) {
-            const response = yield* api.inventory.getInventoryItems({ limit: pageSize, offset });
-            const pageItems = response.inventoryItems ?? [];
+            const inventoryPage = yield* api.inventory.getInventoryItems({
+              limit: pageSize,
+              offset,
+            });
+            const pageItems = inventoryPage.inventoryItems ?? [];
             if (pageItems.length === 0) {
               break;
             }
 
             // Only items with valid SKUs can be passed to getInventoryItem later.
             const itemsWithSku = pageItems.filter(
-              (item): item is typeof item & { sku: string } =>
-                typeof item.sku === 'string' && item.sku.trim() !== '',
+              (inventoryItem): inventoryItem is typeof inventoryItem & { sku: string } =>
+                typeof inventoryItem.sku === 'string' && inventoryItem.sku.trim() !== '',
             );
 
             const filtered = query
-              ? itemsWithSku.filter((item) =>
-                  (item.product?.title ?? '').toLowerCase().includes(query),
+              ? itemsWithSku.filter((inventoryItem) =>
+                  (inventoryItem.product?.title ?? '').toLowerCase().includes(query),
                 )
               : itemsWithSku;
 
             matches.push(...filtered);
             offset += pageSize;
 
-            const total = (response as { total?: number }).total;
+            const total = (inventoryPage as { total?: number }).total;
             if (typeof total === 'number' && offset >= total) {
               break;
             }
@@ -88,9 +91,9 @@ export const connectorEntries: ToolEntry[] = [
             }
           }
 
-          const results = matches.slice(0, limit).map((item) => ({
-            id: item.sku,
-            title: item.product?.title ?? '',
+          const results = matches.slice(0, limit).map((match) => ({
+            id: match.sku,
+            title: match.product?.title ?? '',
             url: 'https://www.ebay.com/', // Placeholder: eBay does not expose a canonical item URL here.
           }));
 
@@ -130,17 +133,17 @@ export const connectorEntries: ToolEntry[] = [
       Effect.runPromise(
         Effect.gen(function* () {
           const sku = args.id;
-          const item = yield* api.inventory.getInventoryItem({ sku });
+          const inventoryItem = yield* api.inventory.getInventoryItem({ sku });
 
-          const result = {
+          const connectorDocument = {
             id: sku,
-            title: item.product?.title ?? '',
-            text: item.product?.description ?? '',
+            title: inventoryItem.product?.title ?? '',
+            text: inventoryItem.product?.description ?? '',
             url: 'https://www.ebay.com/', // Placeholder: eBay does not expose a canonical item URL here.
             metadata: {
               source: 'ebay_inventory',
-              aspects: item.product?.aspects,
-              condition: item.condition,
+              aspects: inventoryItem.product?.aspects,
+              condition: inventoryItem.condition,
             },
           };
 
@@ -148,7 +151,7 @@ export const connectorEntries: ToolEntry[] = [
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result),
+                text: JSON.stringify(connectorDocument),
               },
             ],
           };

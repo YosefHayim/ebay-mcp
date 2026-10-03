@@ -72,8 +72,8 @@ export const generateAuthUrl = (
  * HTML-significant characters neutralizes the markup while keeping the message
  * legible.
  */
-const escapeHtml = (value: string): string =>
-  value
+const escapeHtml = (text: string): string =>
+  text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -159,22 +159,22 @@ export const startCallbackServer = async (
   return await new Promise((onServerReady, onServerError) => {
     let timer: NodeJS.Timeout | undefined;
     let settled = false;
-    let settle: (result: OAuthCallbackResult) => void;
+    let settle: (outcome: OAuthCallbackResult) => void;
 
     const codePromise = new Promise<OAuthCallbackResult>((resolveCode) => {
-      settle = (result) => {
+      settle = (outcome) => {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
-        resolveCode(result);
+        resolveCode(outcome);
       };
     });
 
-    const server = createServer((req, res) => {
-      const url = new URL(req.url ?? '/', `http://localhost:${port}`);
+    const server = createServer((request, response) => {
+      const url = new URL(request.url ?? '/', `http://localhost:${port}`);
       if (url.pathname !== callbackPath) {
-        res.writeHead(404);
-        res.end('Not Found');
+        response.writeHead(404);
+        response.end('Not Found');
         return;
       }
 
@@ -184,8 +184,8 @@ export const startCallbackServer = async (
       const errorDescription = url.searchParams.get('error_description') ?? undefined;
 
       if (expectedState && state !== expectedState) {
-        res.writeHead(400, { 'Content-Type': 'text/html' });
-        res.end(
+        response.writeHead(400, { 'Content-Type': 'text/html' });
+        response.end(
           renderCallbackPage(false, 'State mismatch — the request may have been tampered with.'),
         );
         settle({
@@ -195,25 +195,25 @@ export const startCallbackServer = async (
         return;
       }
       if (code) {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(renderCallbackPage(true));
+        response.writeHead(200, { 'Content-Type': 'text/html' });
+        response.end(renderCallbackPage(true));
         settle({ code, state });
         return;
       }
       if (error) {
-        res.writeHead(400, { 'Content-Type': 'text/html' });
-        res.end(renderCallbackPage(false, errorDescription ?? error));
+        response.writeHead(400, { 'Content-Type': 'text/html' });
+        response.end(renderCallbackPage(false, errorDescription ?? error));
         settle({ error, errorDescription });
         return;
       }
 
-      res.writeHead(400);
-      res.end('Missing authorization code');
+      response.writeHead(400);
+      response.end('Missing authorization code');
     });
 
-    server.on('error', (err) => {
+    server.on('error', (serverError) => {
       clearTimeout(timer);
-      onServerError(err);
+      onServerError(serverError);
     });
 
     server.listen(port, () => {
@@ -283,21 +283,21 @@ export const interactiveOAuthFlow = async (
   writeCliLine(chalk.gray('(This window will update automatically after you authorize)\n'));
 
   // Wait for callback
-  const result = await codePromise;
+  const callback = await codePromise;
 
   // Close server
   server.close();
 
-  if (result.error) {
+  if (callback.error) {
     writeCliLine(
-      chalk.red(`\n✗ Authorization failed: ${result.errorDescription || result.error}\n`),
+      chalk.red(`\n✗ Authorization failed: ${callback.errorDescription || callback.error}\n`),
     );
     return null;
   }
 
-  if (result.code) {
+  if (callback.code) {
     writeCliLine(chalk.green('\n✓ Authorization successful!\n'));
-    return result.code;
+    return callback.code;
   }
 
   writeCliLine(chalk.yellow('\n⚠️  No authorization code received.\n'));

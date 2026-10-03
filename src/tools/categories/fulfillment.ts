@@ -129,8 +129,8 @@ export const fulfillmentEntries: ToolEntry[] = [
             limit: args.maxResults ?? DEFAULT_ORDER_SCAN_LIMIT,
           })
           .pipe(
-            Effect.map((result) => {
-              const orders = result.orders ?? [];
+            Effect.map((orderPage) => {
+              const orders = orderPage.orders ?? [];
               const matches = filterOrdersWithCancellationRequests(orders);
               return {
                 totalScanned: orders.length,
@@ -155,8 +155,8 @@ export const fulfillmentEntries: ToolEntry[] = [
             limit: args.maxResults ?? DEFAULT_ORDER_SCAN_LIMIT,
           })
           .pipe(
-            Effect.map((result) => {
-              const orders = result.orders ?? [];
+            Effect.map((orderPage) => {
+              const orders = orderPage.orders ?? [];
               const matches = filterRefundedOrders(orders);
               return {
                 totalScanned: orders.length,

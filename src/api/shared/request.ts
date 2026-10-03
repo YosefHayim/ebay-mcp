@@ -245,7 +245,7 @@ export const optionalNonNegativeNumberEffect = (
  *
  * @example
  * ```ts
- * const request = yield* requireObjectEffect<CreateOffersRequest>(body, 'offerData');
+ * const createOffersRequest = yield* requireObjectEffect<CreateOffersRequest>(offerData, 'offerData');
  * ```
  */
 export const requireObjectEffect = <T extends object>(
@@ -275,7 +275,7 @@ export const requireObjectEffect = <T extends object>(
  *
  * @example
  * ```ts
- * const response = await Effect.runPromise(requestGetEffect(client, path, params));
+ * const policies = await Effect.runPromise(requestGetEffect(client, path, params));
  * ```
  */
 export const requestGetEffect = <T = unknown>(
@@ -300,28 +300,28 @@ export const requestGetEffect = <T = unknown>(
  *
  * @param client - eBay REST client that owns auth and transport details.
  * @param path - eBay REST path to request.
- * @param body - Optional JSON body to send.
+ * @param requestBody - Optional JSON body to send.
  * @param config - Optional per-request headers or params, used for endpoint-specific headers.
  * @returns An Effect that succeeds with the generated eBay response DTO.
  *
  * @example
  * ```ts
- * const response = await Effect.runPromise(requestPostEffect(client, path, body));
+ * const createdPolicy = await Effect.runPromise(requestPostEffect(client, path, requestBody));
  * ```
  */
 export const requestPostEffect = <T = unknown>(
   client: EbayApiClient,
   path: string,
-  body?: unknown,
+  requestBody?: unknown,
   config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
   Effect.tryPromise({
     try: () => {
       if (config !== undefined) {
-        return client.post<T>(path, body, config);
+        return client.post<T>(path, requestBody, config);
       }
 
-      return body === undefined ? client.post<T>(path) : client.post<T>(path, body);
+      return requestBody === undefined ? client.post<T>(path) : client.post<T>(path, requestBody);
     },
     catch: (cause) => new EbayApiError({ method: 'POST', path, cause }),
   });
@@ -331,23 +331,25 @@ export const requestPostEffect = <T = unknown>(
  *
  * @param client - eBay REST client that owns auth and transport details.
  * @param path - eBay REST path to request.
- * @param body - Optional JSON body to send.
+ * @param requestBody - Optional JSON body to send.
  * @returns An Effect that succeeds with the generated eBay response DTO.
  *
  * @example
  * ```ts
- * const response = await Effect.runPromise(requestPutEffect(client, path, body));
+ * const updatedPolicy = await Effect.runPromise(requestPutEffect(client, path, requestBody));
  * ```
  */
 export const requestPutEffect = <T = unknown>(
   client: EbayApiClient,
   path: string,
-  body?: unknown,
+  requestBody?: unknown,
   config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
   Effect.tryPromise({
     try: () =>
-      config === undefined ? client.put<T>(path, body) : client.put<T>(path, body, config),
+      config === undefined
+        ? client.put<T>(path, requestBody)
+        : client.put<T>(path, requestBody, config),
     catch: (cause) => new EbayApiError({ method: 'PUT', path, cause }),
   });
 
@@ -356,24 +358,26 @@ export const requestPutEffect = <T = unknown>(
  *
  * @param client - eBay REST client that owns auth and transport details.
  * @param path - eBay REST path to request.
- * @param body - Optional JSON body to send.
+ * @param requestBody - Optional JSON body to send.
  * @param config - Optional per-request headers or params, used for endpoint-specific headers.
  * @returns An Effect that succeeds with the generated eBay response DTO.
  *
  * @example
  * ```ts
- * await Effect.runPromise(requestPatchEffect(client, path, body, { headers }));
+ * await Effect.runPromise(requestPatchEffect(client, path, requestBody, { headers }));
  * ```
  */
 export const requestPatchEffect = <T = unknown>(
   client: EbayApiClient,
   path: string,
-  body?: unknown,
+  requestBody?: unknown,
   config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
   Effect.tryPromise({
     try: () =>
-      config === undefined ? client.patch<T>(path, body) : client.patch<T>(path, body, config),
+      config === undefined
+        ? client.patch<T>(path, requestBody)
+        : client.patch<T>(path, requestBody, config),
     catch: (cause) => new EbayApiError({ method: 'PATCH', path, cause }),
   });
 

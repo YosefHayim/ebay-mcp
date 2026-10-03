@@ -53,40 +53,40 @@ describe('ToolGatingController', () => {
   describe('list', () => {
     it('returns the family overview with no arguments', () => {
       const controller = createToolGatingController(buildHandles());
-      const result = controller.list({}) as {
+      const familyOverview = controller.list({}) as {
         families: { key: string; count: number }[];
       };
-      expect(result.families).toHaveLength(toolCategories.length);
-      const inventoryRow = result.families.find((row) => row.key === 'inventory');
+      expect(familyOverview.families).toHaveLength(toolCategories.length);
+      const inventoryRow = familyOverview.families.find((row) => row.key === 'inventory');
       expect(inventoryRow?.count).toBe(inventory.entries.length);
     });
 
     it('lists the tools of a family', () => {
       const controller = createToolGatingController(buildHandles());
-      const result = controller.list({ family: 'inventory' }) as {
+      const familyListing = controller.list({ family: 'inventory' }) as {
         tools: { name: string; family: string }[];
         total: number;
       };
-      expect(result.total).toBe(inventory.entries.length);
-      expect(result.tools.every((tool) => tool.family === 'inventory')).toBe(true);
+      expect(familyListing.total).toBe(inventory.entries.length);
+      expect(familyListing.tools.every((tool) => tool.family === 'inventory')).toBe(true);
     });
 
     it('rejects an unknown family with the valid list', () => {
       const controller = createToolGatingController(buildHandles());
-      const result = controller.list({ family: 'nope' }) as {
+      const unknownFamilyListing = controller.list({ family: 'nope' }) as {
         error: string;
         validFamilies: readonly string[];
       };
-      expect(result.error).toContain('nope');
-      expect(result.validFamilies).toContain('inventory');
+      expect(unknownFamilyListing.error).toContain('nope');
+      expect(unknownFamilyListing.validFamilies).toContain('inventory');
     });
 
     it('keyword-searches across all tools by name', () => {
       const controller = createToolGatingController(buildHandles());
-      const result = controller.list({ query: sampleTool.toLowerCase() }) as {
+      const searchListing = controller.list({ query: sampleTool.toLowerCase() }) as {
         tools: { name: string }[];
       };
-      expect(result.tools.some((tool) => tool.name === sampleTool)).toBe(true);
+      expect(searchListing.tools.some((tool) => tool.name === sampleTool)).toBe(true);
     });
 
     it('paginates with an opaque cursor', () => {
@@ -113,27 +113,27 @@ describe('ToolGatingController', () => {
     it('enables a known tool and reports the active count', () => {
       const handles = buildHandles();
       const controller = createToolGatingController(handles);
-      const result = controller.enable([sampleTool]);
-      expect(result.enabled).toEqual([sampleTool]);
-      expect(result.unknown).toEqual([]);
-      expect(result.activeCount).toBe(1);
+      const enableReport = controller.enable([sampleTool]);
+      expect(enableReport.enabled).toEqual([sampleTool]);
+      expect(enableReport.unknown).toEqual([]);
+      expect(enableReport.activeCount).toBe(1);
       expect(handles.get(sampleTool)?.enabled).toBe(true);
     });
 
     it('soft-fails unknown names instead of throwing', () => {
       const controller = createToolGatingController(buildHandles());
-      const result = controller.enable([sampleTool, 'made-up-tool']);
-      expect(result.enabled).toEqual([sampleTool]);
-      expect(result.unknown).toEqual(['made-up-tool']);
+      const enableReport = controller.enable([sampleTool, 'made-up-tool']);
+      expect(enableReport.enabled).toEqual([sampleTool]);
+      expect(enableReport.unknown).toEqual(['made-up-tool']);
     });
 
     it('disables a previously enabled tool', () => {
       const handles = buildHandles();
       const controller = createToolGatingController(handles);
       controller.enable([sampleTool]);
-      const result = controller.disable([sampleTool]);
-      expect(result.disabled).toEqual([sampleTool]);
-      expect(result.activeCount).toBe(0);
+      const disableReport = controller.disable([sampleTool]);
+      expect(disableReport.disabled).toEqual([sampleTool]);
+      expect(disableReport.activeCount).toBe(0);
       expect(handles.get(sampleTool)?.enabled).toBe(false);
     });
   });
@@ -157,8 +157,8 @@ describe('registerMetaTools', () => {
 
     const enableCall = registerTool.mock.calls.find((call) => call[0] === 'enable_ebay_tools')!;
     const handler = enableCall[2] as (args: { names: string[] }) => { content: { text: string }[] };
-    const result = handler({ names: [sampleTool] });
+    const enableToolResult = handler({ names: [sampleTool] });
     expect(handles.get(sampleTool)?.enabled).toBe(true);
-    expect(result.content[0].text).toContain(sampleTool);
+    expect(enableToolResult.content[0].text).toContain(sampleTool);
   });
 });

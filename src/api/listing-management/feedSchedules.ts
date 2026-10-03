@@ -76,8 +76,8 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
   const createSchedule = (input: CreateFeedScheduleInput) =>
     decodeEndpointInputEffect(createFeedScheduleInputSchema, input).pipe(
       Effect.flatMap(({ schedule }) => {
-        const body: CreateUserScheduleRequest = schedule;
-        return postFeedResource(client, '/schedule', body);
+        const createScheduleRequest: CreateUserScheduleRequest = schedule;
+        return postFeedResource(client, '/schedule', createScheduleRequest);
       }),
       Effect.map(({ id, location }) => ({ scheduleId: id, location })),
     );
@@ -114,8 +114,12 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
           }),
       ),
       Effect.flatMap(({ scheduleId, schedule }) => {
-        const body: UpdateUserScheduleRequest = schedule;
-        return requestPutEffect<void>(client, feedResourcePath('/schedule', scheduleId), body);
+        const updateScheduleRequest: UpdateUserScheduleRequest = schedule;
+        return requestPutEffect<void>(
+          client,
+          feedResourcePath('/schedule', scheduleId),
+          updateScheduleRequest,
+        );
       }),
     );
 

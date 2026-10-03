@@ -39,11 +39,11 @@ let client: Client;
 let runtime: EbayMcpRuntime;
 
 const callTool = async (name: string, args: Record<string, unknown>) => {
-  const result = await client.callTool({ name, arguments: args });
-  const text = Array.isArray(result.content)
-    ? result.content.map((block) => (block.type === 'text' ? block.text : '')).join('')
+  const toolResult = await client.callTool({ name, arguments: args });
+  const text = Array.isArray(toolResult.content)
+    ? toolResult.content.map((block) => (block.type === 'text' ? block.text : '')).join('')
     : '';
-  return { isError: result.isError === true, payload: JSON.parse(text) as unknown };
+  return { isError: toolResult.isError === true, payload: JSON.parse(text) as unknown };
 };
 
 beforeEach(async () => {
@@ -123,37 +123,37 @@ describe('Finances collection and summary tool calls', () => {
     ['ebay_get_order_earnings', '/order_earnings', { orderEarnings: [{ orderId: '12-1' }] }],
     ['ebay_get_payouts', '/payout', { payouts: [{ payoutId: 'P1' }], total: 1 }],
     ['ebay_get_transactions', '/transaction', { transactions: [{ transactionId: 'T1' }] }],
-  ])('%s pages a collection on the apiz host', async (name, path, response) => {
-    const request = nock(APIZ_HOST)
+  ])('%s pages a collection on the apiz host', async (name, path, collection) => {
+    const collectionScope = nock(APIZ_HOST)
       .get(`${BASE}${path}`)
       .query({ filter: 'transactionDate:[2024-10-23T00:00:01.000Z..]', limit: '25', offset: '50' })
       .matchHeader(MARKETPLACE_HEADER, 'EBAY_US')
-      .reply(200, response);
+      .reply(200, collection);
 
-    const result = await callTool(name, {
+    const collectionResult = await callTool(name, {
       filter: 'transactionDate:[2024-10-23T00:00:01.000Z..]',
       limit: 25,
       offset: 50,
     });
 
-    expect(request.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: response });
+    expect(collectionScope.isDone()).toBe(true);
+    expect(collectionResult).toEqual({ isError: false, payload: collection });
   });
 
   it.each([
     ['ebay_get_order_earnings_summary', '/order_earnings_summary', { totalOrders: 3 }],
     ['ebay_get_payout_summary', '/payout_summary', { payoutCount: 2 }],
     ['ebay_get_transaction_summary', '/transaction_summary', { creditCount: 4 }],
-  ])('%s sends the filter to the apiz summary endpoint', async (name, path, response) => {
-    const request = nock(APIZ_HOST)
+  ])('%s sends the filter to the apiz summary endpoint', async (name, path, summary) => {
+    const summaryScope = nock(APIZ_HOST)
       .get(`${BASE}${path}`)
       .query({ filter: 'transactionStatus:{PAYOUT}' })
-      .reply(200, response);
+      .reply(200, summary);
 
-    const result = await callTool(name, { filter: 'transactionStatus:{PAYOUT}' });
+    const summaryResult = await callTool(name, { filter: 'transactionStatus:{PAYOUT}' });
 
-    expect(request.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: response });
+    expect(summaryScope.isDone()).toBe(true);
+    expect(summaryResult).toEqual({ isError: false, payload: summary });
   });
 });
 
@@ -163,54 +163,56 @@ describe('Finances resource, header and empty-body tool calls', () => {
     ['ebay_get_payout', { payoutId: 'P 1' }, '/payout/P%201'],
     ['ebay_get_transfer', { transferId: 'TR-1' }, '/transfer/TR-1'],
   ])('%s fetches one resource by its encoded ID', async (name, args, path) => {
-    const response = { id: path };
-    const request = nock(APIZ_HOST).get(`${BASE}${path}`).reply(200, response);
+    const resource = { id: path };
+    const resourceScope = nock(APIZ_HOST).get(`${BASE}${path}`).reply(200, resource);
 
-    const result = await callTool(name, args);
+    const resourceResult = await callTool(name, args);
 
-    expect(request.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: response });
+    expect(resourceScope.isDone()).toBe(true);
+    expect(resourceResult).toEqual({ isError: false, payload: resource });
   });
 
   it('overrides the configured marketplace header per call', async () => {
     const funds = { availableFunds: { value: '10.00', currency: 'EUR' } };
-    const request = nock(APIZ_HOST)
+    const fundsScope = nock(APIZ_HOST)
       .get(`${BASE}/seller_funds_summary`)
       .matchHeader(MARKETPLACE_HEADER, 'EBAY_DE')
       .reply(200, funds);
 
-    const result = await callTool('ebay_get_seller_funds_summary', { marketplaceId: 'EBAY_DE' });
+    const fundsResult = await callTool('ebay_get_seller_funds_summary', {
+      marketplaceId: 'EBAY_DE',
+    });
 
-    expect(request.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: funds });
+    expect(fundsScope.isDone()).toBe(true);
+    expect(fundsResult).toEqual({ isError: false, payload: funds });
   });
 
   it('reports success without data when eBay answers 204 No Content', async () => {
-    const request = nock(APIZ_HOST).get(`${BASE}/seller_funds_summary`).reply(204);
+    const fundsScope = nock(APIZ_HOST).get(`${BASE}/seller_funds_summary`).reply(204);
 
-    const result = await callTool('ebay_get_seller_funds_summary', {});
+    const emptyFundsResult = await callTool('ebay_get_seller_funds_summary', {});
 
-    expect(request.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: { status: 'success' } });
+    expect(fundsScope.isDone()).toBe(true);
+    expect(emptyFundsResult).toEqual({ isError: false, payload: { status: 'success' } });
   });
 
   it('calls billing activity on the api host with its query and Accept-Language', async () => {
-    const response = { billingActivities: [{ billingTransactionId: 'B1' }], total: 1 };
-    const request = nock(API_HOST)
+    const billingPage = { billingActivities: [{ billingTransactionId: 'B1' }], total: 1 };
+    const billingScope = nock(API_HOST)
       .get(`${BASE}/billing_activity`)
       .query({ filter: 'orderId:{12-34}', limit: '10', sort: 'transactionDate' })
       .matchHeader('Accept-Language', 'de-DE')
-      .reply(200, response);
+      .reply(200, billingPage);
 
-    const result = await callTool('ebay_get_billing_activities', {
+    const billingResult = await callTool('ebay_get_billing_activities', {
       filter: 'orderId:{12-34}',
       limit: 10,
       sort: 'transactionDate',
       acceptLanguage: 'de-DE',
     });
 
-    expect(request.isDone()).toBe(true);
-    expect(result).toEqual({ isError: false, payload: response });
+    expect(billingScope.isDone()).toBe(true);
+    expect(billingResult).toEqual({ isError: false, payload: billingPage });
   });
 });
 
@@ -222,23 +224,23 @@ describe('Finances tool failures', () => {
         errors: [{ errorId: 135_002, message: 'The payout ID was not found.' }],
       });
 
-    const result = await callTool('ebay_get_payout', { payoutId: 'MISSING' });
+    const missingPayout = await callTool('ebay_get_payout', { payoutId: 'MISSING' });
 
-    expect(result.isError).toBe(true);
-    expect(result.payload).toMatchObject({ status: 404 });
-    expect(JSON.stringify(result.payload)).toContain('The payout ID was not found.');
+    expect(missingPayout.isError).toBe(true);
+    expect(missingPayout.payload).toMatchObject({ status: 404 });
+    expect(JSON.stringify(missingPayout.payload)).toContain('The payout ID was not found.');
   });
 
   it('rejects invalid input without calling eBay', async () => {
-    const request = nock(APIZ_HOST).get(`${BASE}/transaction`).query(true).reply(200, {});
+    const transactionsScope = nock(APIZ_HOST).get(`${BASE}/transaction`).query(true).reply(200, {});
 
-    const result = await client.callTool({
+    const invalidTransactions = await client.callTool({
       name: 'ebay_get_transactions',
       arguments: { limit: 0 },
     });
 
-    expect(result.isError).toBe(true);
-    expect(JSON.stringify(result.content)).toContain('limit');
-    expect(request.isDone()).toBe(false);
+    expect(invalidTransactions.isError).toBe(true);
+    expect(JSON.stringify(invalidTransactions.content)).toContain('limit');
+    expect(transactionsScope.isDone()).toBe(false);
   });
 });

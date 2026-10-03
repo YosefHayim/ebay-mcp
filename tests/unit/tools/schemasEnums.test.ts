@@ -68,8 +68,8 @@ describe('schema enum validation', () => {
       ];
 
       units.forEach((unit) => {
-        const data = { unit, value: 10 };
-        expect(() => timeDurationSchema.parse(data)).not.toThrow();
+        const duration = { unit, value: 10 };
+        expect(() => timeDurationSchema.parse(duration)).not.toThrow();
       });
     });
 
@@ -101,8 +101,8 @@ describe('schema enum validation', () => {
       ];
 
       types.forEach((regionType) => {
-        const data = { regionName: 'Test Region', regionType };
-        expect(() => regionSchema.parse(data)).not.toThrow();
+        const region = { regionName: 'Test Region', regionType };
+        expect(() => regionSchema.parse(region)).not.toThrow();
       });
     });
   });
@@ -118,12 +118,12 @@ describe('schema enum validation', () => {
     });
 
     it('accept CALCULATED cost type', () => {
-      const data = {
+      const calculatedShippingOption = {
         costType: ShippingCostType.CALCULATED,
         optionType: ShippingOptionType.INTERNATIONAL,
         shippingServices: [],
       };
-      expect(() => shippingOptionSchema.parse(data)).not.toThrow();
+      expect(() => shippingOptionSchema.parse(calculatedShippingOption)).not.toThrow();
     });
   });
 
@@ -138,12 +138,12 @@ describe('schema enum validation', () => {
     });
 
     it('accept FIXED_AMOUNT deposit type', () => {
-      const data = {
+      const fixedDeposit = {
         depositType: DepositType.FIXED_AMOUNT,
         depositAmount: { currency: 'USD', value: '100' },
         dueIn: { unit: TimeDurationUnit.DAY, value: 7 },
       };
-      expect(() => depositSchema.parse(data)).not.toThrow();
+      expect(() => depositSchema.parse(fixedDeposit)).not.toThrow();
     });
   });
 
@@ -161,12 +161,12 @@ describe('schema enum validation', () => {
     });
 
     it('accept MERCHANDISE_CREDIT refund method', () => {
-      const data = {
+      const creditReturnPolicy = {
         name: 'Test Policy',
         marketplaceId: 'EBAY_US',
         refundMethod: RefundMethod.MERCHANDISE_CREDIT,
       };
-      expect(() => returnPolicySchema.parse(data)).not.toThrow();
+      expect(() => returnPolicySchema.parse(creditReturnPolicy)).not.toThrow();
     });
   });
 
@@ -203,7 +203,7 @@ describe('schema enum validation', () => {
       ];
 
       conditions.forEach((condition) => {
-        const data = {
+        const inventoryItem = {
           availability: {
             shipToLocationAvailability: { quantity: 10 },
           },
@@ -213,12 +213,12 @@ describe('schema enum validation', () => {
             description: 'Test Description',
           },
         };
-        expect(() => inventoryItemSchema.parse(data)).not.toThrow();
+        expect(() => inventoryItemSchema.parse(inventoryItem)).not.toThrow();
       });
     });
 
     it('accept valid LengthUnit and WeightUnit', () => {
-      const data = {
+      const measuredInventoryItem = {
         availability: {
           shipToLocationAvailability: { quantity: 10 },
         },
@@ -240,7 +240,7 @@ describe('schema enum validation', () => {
           },
         },
       };
-      expect(() => inventoryItemSchema.parse(data)).not.toThrow();
+      expect(() => inventoryItemSchema.parse(measuredInventoryItem)).not.toThrow();
     });
   });
 
@@ -261,11 +261,11 @@ describe('schema enum validation', () => {
       ];
 
       visibilities.forEach((pricingVisibility) => {
-        const data = {
+        const pricing = {
           price: { currency: 'USD', value: '99.99' },
           pricingVisibility,
         };
-        expect(() => pricingSchema.parse(data)).not.toThrow();
+        expect(() => pricingSchema.parse(pricing)).not.toThrow();
       });
     });
   });
@@ -291,7 +291,7 @@ describe('schema enum validation', () => {
     });
 
     it('accept AUCTION format type', () => {
-      const data = {
+      const auctionOffer = {
         sku: 'TEST-SKU-001',
         marketplaceId: 'EBAY_US',
         format: FormatType.AUCTION,
@@ -306,7 +306,7 @@ describe('schema enum validation', () => {
           price: { currency: 'USD', value: '0.99' },
         },
       };
-      expect(() => offerSchema.parse(data)).not.toThrow();
+      expect(() => offerSchema.parse(auctionOffer)).not.toThrow();
     });
   });
 
@@ -330,7 +330,7 @@ describe('schema enum validation', () => {
     });
 
     it('accept STORE location type', () => {
-      const data = {
+      const storeLocation = {
         name: 'Retail Store',
         merchantLocationStatus: MerchantLocationStatus.ENABLED,
         locationTypes: [LocationType.STORE],
@@ -344,11 +344,11 @@ describe('schema enum validation', () => {
           },
         },
       };
-      expect(() => locationSchema.parse(data)).not.toThrow();
+      expect(() => locationSchema.parse(storeLocation)).not.toThrow();
     });
 
     it('accept valid DayOfWeek in operating hours', () => {
-      const data = {
+      const locationWithHours = {
         name: 'Store with Hours',
         merchantLocationStatus: MerchantLocationStatus.ENABLED,
         locationTypes: [LocationType.STORE],
@@ -372,7 +372,7 @@ describe('schema enum validation', () => {
           },
         ],
       };
-      expect(() => locationSchema.parse(data)).not.toThrow();
+      expect(() => locationSchema.parse(locationWithHours)).not.toThrow();
     });
   });
 
@@ -398,8 +398,8 @@ describe('schema enum validation', () => {
       ];
 
       reasons.forEach((reasonForRefund) => {
-        const data = { reasonForRefund };
-        expect(() => refundDataSchema.parse(data)).not.toThrow();
+        const refund = { reasonForRefund };
+        expect(() => refundDataSchema.parse(refund)).not.toThrow();
       });
     });
   });
@@ -414,11 +414,11 @@ describe('schema enum validation', () => {
     });
 
     it('accept COST_PER_CLICK funding model', () => {
-      const data = {
+      const cpcFundingStrategy = {
         fundingModel: FundingModel.COST_PER_CLICK,
         bidPercentage: '0.50',
       };
-      expect(() => fundingStrategySchema.parse(data)).not.toThrow();
+      expect(() => fundingStrategySchema.parse(cpcFundingStrategy)).not.toThrow();
     });
   });
 
@@ -435,14 +435,14 @@ describe('schema enum validation', () => {
     });
 
     it('accept ORDER reference type', () => {
-      const data = {
+      const orderMessage = {
         messageText: 'Order inquiry',
         reference: {
           referenceId: 'order-789',
           referenceType: MessageReferenceType.ORDER,
         },
       };
-      expect(() => messageDataSchema.parse(data)).not.toThrow();
+      expect(() => messageDataSchema.parse(orderMessage)).not.toThrow();
     });
   });
 
@@ -460,11 +460,11 @@ describe('schema enum validation', () => {
       const ratings = [FeedbackRating.POSITIVE, FeedbackRating.NEUTRAL, FeedbackRating.NEGATIVE];
 
       ratings.forEach((rating) => {
-        const data = {
+        const feedback = {
           orderLineItemId: 'order-123-item-1',
           rating,
         };
-        expect(() => feedbackDataSchema.parse(data)).not.toThrow();
+        expect(() => feedbackDataSchema.parse(feedback)).not.toThrow();
       });
     });
   });
@@ -480,12 +480,12 @@ describe('schema enum validation', () => {
     });
 
     it('accept IMAGE reported item type', () => {
-      const data = {
+      const imageInfringement = {
         itemId: '987654321',
         reportedItemType: ReportedItemType.IMAGE,
         reportingReason: 'Unauthorized image use',
       };
-      expect(() => infringementDataSchema.parse(data)).not.toThrow();
+      expect(() => infringementDataSchema.parse(imageInfringement)).not.toThrow();
     });
   });
 
@@ -504,7 +504,7 @@ describe('schema enum validation', () => {
     });
 
     it('accept AUCTION format in listing fees', () => {
-      const data = {
+      const auctionFeesRequest = {
         offers: [
           {
             offerId: 'offer-456',
@@ -513,7 +513,7 @@ describe('schema enum validation', () => {
           },
         ],
       };
-      expect(() => listingFeesRequestSchema.parse(data)).not.toThrow();
+      expect(() => listingFeesRequestSchema.parse(auctionFeesRequest)).not.toThrow();
     });
   });
 

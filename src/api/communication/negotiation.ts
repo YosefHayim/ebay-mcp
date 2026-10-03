@@ -71,8 +71,12 @@ export class NegotiationApi {
     const path = `${this.basePath}/find_eligible_items`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<FindEligibleItemsInput>(input, 'input');
-      const { marketplaceId: inputMarketplaceId, limit: inputLimit, offset: inputOffset } = request;
+      const validatedInput = yield* requireObjectEffect<FindEligibleItemsInput>(input, 'input');
+      const {
+        marketplaceId: inputMarketplaceId,
+        limit: inputLimit,
+        offset: inputOffset,
+      } = validatedInput;
       const marketplaceId = yield* optionalStringEffect(inputMarketplaceId, 'marketplaceId');
       const limit = yield* optionalPositiveNumberEffect(inputLimit, 'limit');
       const offset = yield* optionalNonNegativeNumberEffect(inputOffset, 'offset');
@@ -114,9 +118,15 @@ export class NegotiationApi {
     const path = `${this.basePath}/send_offer_to_interested_buyers`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<SendOfferToInterestedBuyersInput>(input, 'input');
-      const { marketplaceId, ...offerData } = request;
-      const body = yield* requireObjectEffect<CreateOffersRequest>(offerData, 'offerData');
+      const validatedInput = yield* requireObjectEffect<SendOfferToInterestedBuyersInput>(
+        input,
+        'input',
+      );
+      const { marketplaceId, ...offerData } = validatedInput;
+      const createOffersRequest = yield* requireObjectEffect<CreateOffersRequest>(
+        offerData,
+        'offerData',
+      );
       const validatedMarketplaceId = yield* optionalStringEffect(marketplaceId, 'marketplaceId');
       const config: EbayRequestConfig | undefined =
         validatedMarketplaceId === undefined
@@ -126,7 +136,7 @@ export class NegotiationApi {
       return yield* requestPostEffect<SendOfferToInterestedBuyersResponse>(
         apiClient,
         path,
-        body,
+        createOffersRequest,
         config,
       );
     });

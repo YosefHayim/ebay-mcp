@@ -197,7 +197,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.cloneCampaign({ campaignId: 'campaign-1', request: { ... } }));
+   * const clonedCampaign = await Effect.runPromise(marketingApi.cloneCampaign({ campaignId: 'campaign-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/cloneCampaign
@@ -217,7 +217,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getCampaigns());
+   * const campaigns = await Effect.runPromise(marketingApi.getCampaigns());
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaigns
@@ -251,7 +251,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.createCampaign({ request: { ... } }));
+   * const createdCampaign = await Effect.runPromise(marketingApi.createCampaign({ request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/createCampaign
@@ -271,7 +271,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getCampaign({ campaignId: 'campaign-1' }));
+   * const campaign = await Effect.runPromise(marketingApi.getCampaign({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaign
@@ -289,7 +289,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.deleteCampaign({ campaignId: 'campaign-1' }));
+   * await Effect.runPromise(marketingApi.deleteCampaign({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/deleteCampaign
@@ -309,7 +309,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.endCampaign({ campaignId: 'campaign-1' }));
+   * await Effect.runPromise(marketingApi.endCampaign({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/endCampaign
@@ -327,7 +327,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.findCampaignByAdReference());
+   * const campaigns = await Effect.runPromise(marketingApi.findCampaignByAdReference());
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/findCampaignByAdReference
@@ -358,7 +358,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getCampaignByName({ campaignName: 'campaignName-1' }));
+   * const campaign = await Effect.runPromise(marketingApi.getCampaignByName({ campaignName: 'campaignName-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaignByName
@@ -381,7 +381,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.launchCampaign({ campaignId: 'campaign-1' }));
+   * await Effect.runPromise(marketingApi.launchCampaign({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/launchCampaign
@@ -401,7 +401,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.pauseCampaign({ campaignId: 'campaign-1' }));
+   * await Effect.runPromise(marketingApi.pauseCampaign({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/pauseCampaign
@@ -421,7 +421,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.resumeCampaign({ campaignId: 'campaign-1' }));
+   * await Effect.runPromise(marketingApi.resumeCampaign({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/resumeCampaign
@@ -441,7 +441,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.setupQuickCampaign({ request: { ... } }));
+   * const quickCampaign = await Effect.runPromise(marketingApi.setupQuickCampaign({ request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/setupQuickCampaign
@@ -461,7 +461,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.suggestBudget({ marketplaceId: 'EBAY_US' }));
+   * const suggestedBudget = await Effect.runPromise(marketingApi.suggestBudget({ marketplaceId: 'EBAY_US' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestBudget
@@ -482,7 +482,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.suggestItems({ campaignId: 'campaign-1' }));
+   * const suggestedItems = await Effect.runPromise(marketingApi.suggestItems({ campaignId: 'campaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestItems
@@ -505,7 +505,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.suggestMaxCpc({ request: { ... } }));
+   * const suggestedMaxCpc = await Effect.runPromise(marketingApi.suggestMaxCpc({ request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestMaxCpc
@@ -525,7 +525,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateAdRateStrategy({ campaignId: 'campaign-1', request: { ... } }));
+   * await Effect.runPromise(marketingApi.updateAdRateStrategy({ campaignId: 'campaign-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateAdRateStrategy
@@ -545,7 +545,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateBiddingStrategy({ campaignId: 'campaign-1', request: { ... } }));
+   * await Effect.runPromise(marketingApi.updateBiddingStrategy({ campaignId: 'campaign-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateBiddingStrategy
@@ -565,7 +565,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateCampaignBudget({ campaignId: 'campaign-1', request: { ... } }));
+   * const updatedCampaignBudget = await Effect.runPromise(marketingApi.updateCampaignBudget({ campaignId: 'campaign-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateCampaignBudget
@@ -585,7 +585,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateCampaignIdentification({ campaignId: 'campaign-1', request: { ... } }));
+   * await Effect.runPromise(marketingApi.updateCampaignIdentification({ campaignId: 'campaign-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateCampaignIdentification
