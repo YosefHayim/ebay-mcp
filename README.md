@@ -499,7 +499,7 @@ On hosts that support [MCP Apps](https://modelcontextprotocol.io), common read t
 | **Chart** | `ebay_get_traffic_report`, `ebay_get_customer_service_metric` |
 | **Stat** | `ebay_get_rate_limits`, `ebay_get_user_rate_limits` |
 
-The views build into self-contained HTML with `npm run build` (or `npm run build:ui`); they ship in the published package and load with no network access of their own.
+The views build into self-contained HTML with `pnpm build` (or `pnpm build:mcp-apps`); they ship in the published package and load with no network access of their own.
 
 </details>
 
@@ -564,7 +564,7 @@ Yes. It works with Claude Desktop and Claude Code out of the box, with Cursor an
 <details>
 <summary><strong>Why don't I see the interactive tables and charts?</strong></summary>
 
-Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that announce the capability (e.g. Claude); other clients get the same data as plain JSON. Also confirm you have not set `EBAY_MCP_UI=off` and that the views are built (`npm run build` runs `build:ui`).
+Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that announce the capability (e.g. Claude); other clients get the same data as plain JSON. Also confirm you have not set `EBAY_MCP_UI=off` and that the views are built (`pnpm build` runs `build:mcp-apps`).
 
 </details>
 
