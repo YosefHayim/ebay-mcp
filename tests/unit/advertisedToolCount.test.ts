@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { getToolDefinitions } from '@/tools/index.js';
@@ -6,10 +6,9 @@ import { getToolDefinitions } from '@/tools/index.js';
 /**
  * Advertised-tool-count guard.
  *
- * The tool count is quoted as a bare literal in the English README (shields badge
- * plus seven prose mentions), all eight locale READMEs, llms.txt, AGENTS.md,
- * CONTEXT.md, PROJECT.md, and the package.json description. Nothing derived any of
- * them from the registry, so the advertised figure silently drifted to 322 while
+ * The tool count is quoted as a bare literal in the README (shields badge plus
+ * several prose mentions), llms.txt, and the package.json description. Nothing
+ * derived any of them from the registry, so the advertised figure silently drifted to 322 while
  * `getToolDefinitions()` returned 298 — a number users, npm, and AI clients read as
  * fact.
  *
@@ -26,28 +25,22 @@ const advertisedToolCount = getToolDefinitions().length;
  */
 const NON_COUNT_NUMBERS = new Set([
   360, // unique endpoints reported by `pnpm sync --report` (devSyncReport.json is generated, not committed)
-  300, // Biome per-file line-count warning threshold, cited in AGENTS.md
 ]);
 
 /**
- * Range searched for stale counts. Wide enough to catch a drifting tool count in any
- * language, narrow enough to exclude HTTP status codes, percentages, and port numbers.
+ * Range searched for stale counts. Wide enough to catch a drifting tool count,
+ * narrow enough to exclude HTTP status codes, percentages, and port numbers.
  */
 const COUNT_BAND = { min: 250, max: 400 };
 
-/** Matches `README.md` and every `README.<locale>.md` sibling. */
-const README_PATTERN = /^README(\.[\w-]+)?\.md$/;
-
-/** Captures the tool count rendered into each README's shields.io badge. */
+/** Captures the tool count rendered into the README's shields.io badge. */
 const BADGE_COUNT_PATTERN = /img\.shields\.io\/badge\/tools-(\d+)-/;
 
-/** Every run of digits, so the sweep is language-independent across locale READMEs. */
+/** Every run of digits in a document. */
 const DIGITS_PATTERN = /\d+/g;
 
-const localeReadmes = readdirSync(repoRoot).filter((name) => README_PATTERN.test(name));
-
 /** Prose docs swept in full; package.json is handled separately to skip dependency versions. */
-const proseDocs = [...localeReadmes, 'llms.txt', 'AGENTS.md', 'CONTEXT.md', 'PROJECT.md'];
+const proseDocs = ['README.md', 'llms.txt'];
 
 const readDoc = (name: string): string => readFileSync(`${repoRoot}${name}`, 'utf8');
 
@@ -62,19 +55,12 @@ const staleCountsIn = (text: string): number[] => {
 };
 
 describe('advertised tool count', () => {
-  it('sweeps every localized README so the guard cannot pass vacuously', () => {
-    expect(localeReadmes).toContain('README.md');
-    expect(localeReadmes).toContain('README.zh-CN.md');
-    expect(localeReadmes).toContain('README.pt-BR.md');
-    expect(localeReadmes.length).toBe(9);
-  });
-
   it.each(proseDocs)('%s quotes no tool count other than the live registry', (name) => {
     expect(staleCountsIn(readDoc(name))).toEqual([]);
   });
 
-  it.each(localeReadmes)('%s shields badge shows the live tool count', (name) => {
-    const badge = readDoc(name).match(BADGE_COUNT_PATTERN);
+  it('README shields badge shows the live tool count', () => {
+    const badge = readDoc('README.md').match(BADGE_COUNT_PATTERN);
 
     expect(badge?.[1]).toBe(String(advertisedToolCount));
   });

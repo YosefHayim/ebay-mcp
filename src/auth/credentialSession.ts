@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
-import stringify from 'dotenv-stringify';
 import { closeSync, existsSync, fsyncSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { CREDENTIAL_ENV_PATH } from '@/config/credentialFile.js';
+import { stringifyEnv } from '@/utils/envFile.js';
 import type { EbayConfig, EbayUserToken, StoredTokenData } from '@/types/ebay.js';
 import { Data, Effect } from 'effect';
 
@@ -114,7 +114,7 @@ export class DotEnvCredentialStore implements CredentialStore {
           const existingEnv = existsSync(envPath)
             ? dotenv.parse(readFileSync(envPath, 'utf-8'))
             : {};
-          const safeEnvContent = stringify({ ...existingEnv, ...sanitizedUpdates });
+          const safeEnvContent = stringifyEnv({ ...existingEnv, ...sanitizedUpdates });
 
           writeFileSync(envPath, safeEnvContent, 'utf-8');
 

@@ -37,32 +37,6 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
 };
 
 /**
- * Quote a value for safe inclusion in a `.env` line.
- *
- * eBay OAuth tokens look like `v^1.1#i^1#...`; dotenv treats an unquoted `#` as
- * the start of an inline comment, so an unquoted token is truncated to `v^1.1`
- * on the next read — silently breaking authentication. Wrap any value
- * containing `#`, whitespace, or quote characters in double quotes (escaping
- * embedded backslashes and double quotes) so dotenv restores it verbatim. This
- * mirrors the quoting `dotenv-stringify` already applies in the runtime
- * credential store, keeping both `.env` writers consistent.
- *
- * @param value - Raw environment value to serialize.
- * @returns A dotenv-safe value string.
- *
- * @example
- * ```ts
- * const line = `EBAY_USER_REFRESH_TOKEN=${quoteEnvValue(token)}`;
- * ```
- */
-export const quoteEnvValue = (value: string): string => {
-  if (value === '' || !/[#\s"'`]/.test(value)) {
-    return value;
-  }
-  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
-};
-
-/**
  * Parse environment with safe sandbox default.
  *
  * @param value - Optional environment value from config or user input.

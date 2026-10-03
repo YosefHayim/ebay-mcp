@@ -482,7 +482,7 @@ export const tokenManagementEntries: ToolEntry[] = [
       'COMMON ERRORS:\n' +
       '- "invalid or was issued to another client": Code expired, get fresh code\n' +
       '- "Insufficient permissions": Re-run OAuth flow with additional scopes in ebay_get_oauth_url\n\n' +
-      'For complete OAuth guide with scopes, troubleshooting, and examples, see: docs/auth/OAUTH_QUICK_REFERENCE.md',
+      'For scopes and rate limits, see the "Authentication & rate limits" section of the ebay-mcp README.',
     inputSchema: exchangeAuthorizationCodeInputSchema.shape,
     outputSchema: {
       type: 'object',

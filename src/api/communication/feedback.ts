@@ -75,7 +75,7 @@ type RespondToFeedbackResponse = Record<string, never>;
 
 /**
  * Feedback API - Manage buyer and seller feedback
- * Based on: docs/sell-apps/communication/commerce_feedback_v1_beta_oas3.json
+ * Based on: commerce_feedback_v1_beta_oas3.json
  */
 export class FeedbackApi {
   private readonly basePath = '/commerce/feedback/v1';

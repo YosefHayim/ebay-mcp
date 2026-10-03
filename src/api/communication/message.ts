@@ -66,7 +66,7 @@ type UpdateConversationRequest = components['schemas']['UpdateConversationReques
 
 /**
  * Message API - Buyer-seller messaging
- * Based on: docs/sell-apps/communication/commerce_message_v1_oas3.json
+ * Based on: commerce_message_v1_oas3.json
  */
 export class MessageApi {
   private readonly basePath = '/commerce/message/v1';

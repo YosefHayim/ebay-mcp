@@ -169,7 +169,7 @@ body:
     id: contribution
     attributes:
       label: Would you like to contribute a fix?
-      description: We welcome pull requests! See CONTRIBUTING.md for guidelines.
+      description: We welcome pull requests! See the Contributing section in README.md.
       options:
         - label: "Yes, I'd like to submit a PR for this issue"
           required: false

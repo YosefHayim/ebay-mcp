@@ -59,7 +59,7 @@ export type GetCustomerServiceMetricResponse =
 
 /**
  * Analytics API - Sales and traffic analytics
- * Based on: docs/sell-apps/analytics-and-report/sell_analytics_v1_oas3.json
+ * Based on: sell_analytics_v1_oas3.json
  */
 export class AnalyticsApi {
   private readonly basePath = '/sell/analytics/v1';

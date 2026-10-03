@@ -2,7 +2,7 @@ name: CI
 
 # Local gate composing the single-purpose reusable workflows
 # (biome / typecheck / test / build / report-failure) via `./` refs — each is
-# `on: workflow_call`. See docs/adr/current/0004-ci-workflow-architecture.md.
+# `on: workflow_call`.
 #
 # - `CI Gate` is the single aggregated status check: require it in branch
 #   protection so a red leg blocks merges (one required check, not five).

@@ -1,16 +1,16 @@
 /**
- * Builds the three interactive MCP Apps views into self-contained HTML files
- * under `build/ui/`.
+ * Builds the interactive MCP Apps views in `mcp-apps/` into self-contained HTML
+ * files under `build/ui/`.
  *
  * Why a script rather than a single `vite.config.ts`: `vite-plugin-singlefile`
  * inlines all dynamic imports, which Rollup only permits with a single input.
- * The three archetypes are therefore built one at a time (each its own
+ * The archetypes are therefore built one at a time (each its own
  * single-page build) into a shared output directory — the first pass clears it,
  * the rest append. The result is exactly what `src/mcp/uiBridge.ts` expects:
- * `build/ui/{table,card,chart}.html`, each with its JS and CSS inlined so the
+ * `build/ui/{table,card,chart,stat}.html`, each with its JS and CSS inlined so the
  * server can serve it verbatim as a `ui://` resource with no sibling requests.
  *
- * Run via `npm run build:ui` (also chained into `npm run build`).
+ * Run via `pnpm build:mcp-apps` (also chained into `pnpm build`).
  */
 
 import { dirname, resolve } from 'node:path';
@@ -23,13 +23,13 @@ import { serverLogger } from '@/utils/logger.js';
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptsDir, '../..');
-const uiDir = resolve(repoRoot, 'ui');
+const mcpAppsDir = resolve(repoRoot, 'mcp-apps');
 const outDir = resolve(repoRoot, 'build', 'ui');
 
 /** Vite config for a single archetype's single-page, fully-inlined build. */
 function configFor(archetype: ViewArchetype, clean: boolean): InlineConfig {
   return {
-    root: uiDir,
+    root: mcpAppsDir,
     configFile: false,
     logLevel: 'warn',
     plugins: [viteSingleFile()],
@@ -42,7 +42,7 @@ function configFor(archetype: ViewArchetype, clean: boolean): InlineConfig {
     build: {
       outDir,
       emptyOutDir: clean,
-      rollupOptions: { input: resolve(uiDir, uiArchetypes[archetype].htmlFile) },
+      rollupOptions: { input: resolve(mcpAppsDir, uiArchetypes[archetype].htmlFile) },
     },
   };
 }

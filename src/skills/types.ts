@@ -14,7 +14,7 @@
  * Which audience a generated skill serves.
  *
  * - `using` — teaches a developer's AI how to drive the eBay MCP tools.
- * - `contributing` — teaches an AI working on this repo (mirrors AGENTS.md).
+ * - `contributing` — teaches an AI working on this repo.
  */
 export type SkillLayer = 'using' | 'contributing';
 

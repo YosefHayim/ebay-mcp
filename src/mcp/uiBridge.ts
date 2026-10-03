@@ -25,7 +25,7 @@ import { serverLogger } from '@/utils/logger.js';
  * stays a thin registration loop:
  *
  *  - it registers the archetype HTML files as `ui://` resources (skipping any that
- *    are not built, so a dev run without `build:ui` degrades to text, not a crash);
+ *    are not built, so a dev run without `build:mcp-apps` degrades to text, not a crash);
  *  - it gates UI strictly: views are only advertised to clients that announce the
  *    MCP Apps capability, and never when `EBAY_MCP_UI=off`; and
  *  - it projects a UI-eligible tool's result into its view model for emission.

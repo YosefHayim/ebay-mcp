@@ -17,7 +17,7 @@ body:
       options:
         - label: I have searched existing issues for similar documentation requests
           required: true
-        - label: I have checked all relevant documentation files (README.md, AGENTS.md, CODE-STYLE.md, etc.)
+        - label: I have checked README.md and llms.txt
           required: true
 
   - type: dropdown
@@ -44,16 +44,7 @@ body:
       multiple: true
       options:
         - README.md
-        - AGENTS.md
-        - CLAUDE.md
-        - CODE-STYLE.md
-        - PROJECT.md / CONTEXT.md / LANGUAGE.md
-        - OAUTH-SETUP.md
-        - CONTRIBUTING.md
-        - SECURITY.md
-        - CHANGELOG.md
-        - ENUMS_ANALYSIS.md
-        - docs/ directory
+        - llms.txt
         - Code comments / JSDoc
         - API tool descriptions
         - Other
@@ -160,7 +151,7 @@ body:
     id: contribution
     attributes:
       label: Would you like to contribute the fix?
-      description: We welcome documentation PRs! See CONTRIBUTING.md for guidelines.
+      description: We welcome documentation PRs! See the Contributing section in README.md.
       options:
         - label: "Yes, I'd like to submit a PR for this documentation change"
           required: false

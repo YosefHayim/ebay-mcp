@@ -128,7 +128,7 @@ export type GetNotificationTopicsResponse = components['schemas']['TopicSearchRe
 
 /**
  * Notification API - Event notifications and subscriptions
- * Based on: docs/sell-apps/communication/commerce_notification_v1_oas3.json
+ * Based on: commerce_notification_v1_oas3.json
  */
 export class NotificationApi {
   private readonly basePath = '/commerce/notification/v1';

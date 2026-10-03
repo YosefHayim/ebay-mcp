@@ -9,7 +9,7 @@
  * return type, so a renamed eBay field breaks compilation at the wiring point.
  *
  * Every input type is the exact generated OpenAPI schema the matching handler
- * returns; every output is the archetype view model the React app in `ui/`
+ * returns; every output is the archetype view model the React app in `mcp-apps/`
  * renders. Formatting lives in `./mapHelpers.js` so these stay declarative.
  */
 

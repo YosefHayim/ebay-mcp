@@ -2,7 +2,7 @@ import { z } from '@/utils/effectSchema.js';
 
 /**
  * Effect-backed schemas for Negotiation API input validation.
- * OpenAPI spec: docs/sell-apps/communication/sell_negotiation_v1_oas3.json
+ * OpenAPI spec: sell_negotiation_v1_oas3.json
  */
 
 /** Optional positive page size accepted by Negotiation list endpoints. */

@@ -1,9 +1,8 @@
 name: Typecheck
 
-# Single-purpose, reusable (workflow_call): tsc --noEmit over src and the ui/
-# React sources. Type results are deterministic across OS/Node, so this runs
-# single-leg (ubuntu, one Node) — no matrix. See
-# docs/adr/current/0004-ci-workflow-architecture.md.
+# Single-purpose, reusable (workflow_call): tsc --noEmit over src and the
+# mcp-apps/ React sources. Type results are deterministic across OS/Node, so this
+# runs single-leg (ubuntu, one Node) — no matrix.
 
 on:
   workflow_call:
@@ -35,5 +34,5 @@ jobs:
       - name: Type check (src)
         run: pnpm typecheck
 
-      - name: Type check (ui)
-        run: pnpm typecheck:ui
+      - name: Type check (mcp-apps)
+        run: pnpm typecheck:mcp-apps

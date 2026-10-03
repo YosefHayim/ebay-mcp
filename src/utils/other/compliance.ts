@@ -3,7 +3,7 @@ import { z } from '@/utils/effectSchema.js';
 /**
  * Effect-backed schemas for Compliance API input validation
  * Based on: src/api/other/compliance.ts
- * OpenAPI spec: docs/sell-apps/other-apis/sell_compliance_v1_oas3.json
+ * OpenAPI spec: sell_compliance_v1_oas3.json
  * Types from: src/types/sell_compliance_v1_oas3.ts
  */
 

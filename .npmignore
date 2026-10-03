@@ -5,14 +5,8 @@ src/
 tests/
 scripts/
 
-# Docs (keep only auth scope files)
-docs/
-!docs/auth/production_scopes.json
-!docs/auth/sandbox_scopes.json
-
 # CI/repo metadata
 .github/
-.changeset/
 .git/
 .gitignore
 .gitattributes
@@ -51,8 +45,6 @@ eslint.config.js
 .eslintrc.json
 .prettierignore
 .prettierrc
-.editorconfig
-.npmrc
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
@@ -81,10 +73,6 @@ tmp/
 temp/
 
 # Repo-only docs
-CHANGELOG.md
-CONTRIBUTING.md
-CODE_OF_CONDUCT.md
-SECURITY.md
 BUG_REPORT.md
 DOCKER_MCP_REGISTRY_GUIDE.md
 CLAUDE.md

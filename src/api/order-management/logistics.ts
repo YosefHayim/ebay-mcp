@@ -57,7 +57,7 @@ export type ShipmentResponse = components['schemas']['Shipment'];
 
 /**
  * Logistics API - shipping quotes, shipments, and shipping labels (limited release; needs the
- * `sell.logistics` scope). Based on: docs/sell-apps/order-management/sell_logistics_v1_oas3.json
+ * `sell.logistics` scope). Based on: sell_logistics_v1_oas3.json
  */
 export class LogisticsApi {
   private readonly basePath = '/sell/logistics/v1_beta';

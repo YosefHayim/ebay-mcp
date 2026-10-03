@@ -3,7 +3,7 @@ import { idSchema } from '@/utils/schemaHelpers.js';
 
 /**
  * Effect-backed schemas for Notification API input validation.
- * OpenAPI spec: docs/sell-apps/communication/commerce_notification_v1_oas3.json
+ * OpenAPI spec: commerce_notification_v1_oas3.json
  */
 
 /** Optional positive page size accepted by Notification list endpoints. */

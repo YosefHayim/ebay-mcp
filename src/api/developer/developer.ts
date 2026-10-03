@@ -44,9 +44,9 @@ type GetSigningKeyInput = InferEffectSchema<typeof getSigningKeyInputSchema>;
 /**
  * Developer API - Rate limits, client registration, and signing keys
  * Based on:
- * - docs/sell-apps/application-settings/developer_analytics_v1_beta_oas3.json
- * - docs/sell-apps/application-settings/developer_client_registration_v1_oas3.json
- * - docs/sell-apps/application-settings/developer_key_management_v1_oas3.json
+ * - developer_analytics_v1_beta_oas3.json
+ * - developer_client_registration_v1_oas3.json
+ * - developer_key_management_v1_oas3.json
  */
 export class DeveloperApi {
   private readonly analyticsBasePath = '/developer/analytics/v1_beta';

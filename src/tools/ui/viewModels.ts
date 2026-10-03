@@ -6,12 +6,12 @@
  *
  *  - the **server** (`src/mcp/runtime.ts` + each tool's `ui.map`) produces a
  *    `ViewModel` and ships it as the tool result's `structuredContent`, and
- *  - the **React apps** in `ui/` consume that same `structuredContent` to render.
+ *  - the **React apps** in `mcp-apps/` consume that same `structuredContent` to render.
  *
  * Because both sides import these types, a field rename is a compile error on
  * both ends rather than a silent runtime mismatch — the same anti-drift property
  * `defineTool` gives the rest of the registry. Keep this module dependency-free
- * (no Node, no React, no eBay types) so the `ui/` Vite build can import it
+ * (no Node, no React, no eBay types) so the `mcp-apps/` Vite build can import it
  * without dragging the server graph in.
  *
  * Each archetype carries an `archetype` discriminant so a consumer that receives
@@ -156,7 +156,7 @@ export interface StatViewModel {
 /**
  * The data a tool ships as `structuredContent` for the host to render. A
  * discriminated union over {@link ViewArchetype}; each member is consumed by the
- * matching React app in `ui/`.
+ * matching React app in `mcp-apps/`.
  */
 export type ViewModel = TableViewModel | CardViewModel | ChartViewModel | StatViewModel;
 

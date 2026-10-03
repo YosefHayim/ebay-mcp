@@ -3,7 +3,7 @@ import { z } from '@/utils/effectSchema.js';
 /**
  * Effect-backed schemas for VERO API input validation
  * Based on: src/api/other/vero.ts
- * OpenAPI spec: docs/sell-apps/other-apis/commerce_vero_v1_oas3.json
+ * OpenAPI spec: commerce_vero_v1_oas3.json
  * Types from: src/types/commerce_vero_v1_oas3.ts
  *
  * Note: The VERO API is only available for members of the Verified Rights Owner (VeRO) Program
