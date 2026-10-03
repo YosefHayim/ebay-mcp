@@ -2,8 +2,6 @@
  * eBay API MCP Server with HTTP Transport and OAuth 2.1 Authorization.
  */
 
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
 import { validateEnvironmentConfig } from '@/config/environment.js';
 import {
   createHttpMcpApp,
@@ -14,6 +12,7 @@ import { getErrorMessage } from '@/utils/errors.js';
 import { serverLogger } from '@/utils/logger.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
+import { isEntryModule } from '@/utils/entryModule.js';
 
 const CONFIG = createHttpTransportConfigFromEnv(process.env);
 
@@ -112,8 +111,6 @@ async function main(): Promise<void> {
   }
 }
 
-const entryPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
-const modulePath = resolve(fileURLToPath(import.meta.url));
-if (entryPath && modulePath === entryPath) {
+if (isEntryModule(import.meta.url)) {
   await main();
 }

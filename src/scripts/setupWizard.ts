@@ -72,36 +72,35 @@ interface RunWizardOptions {
  */
 export const defineWizard = <T extends WizardConfig>(config: T): T => config;
 
-const openUrl = (url: string): Promise<void> =>
-  new Promise((resolve) => {
-    const currentPlatform = platform();
-    let command = '';
-    let args: string[] = [];
+const openUrl = async (url: string): Promise<void> => {
+  const currentPlatform = platform();
+  let command = '';
+  let args: string[] = [];
 
-    switch (currentPlatform) {
-      case 'darwin':
-        command = 'open';
-        args = [url];
-        break;
-      case 'win32':
-        command = 'cmd';
-        args = ['/c', 'start', '', url];
-        break;
-      default:
-        command = 'xdg-open';
-        args = [url];
-        break;
-    }
+  switch (currentPlatform) {
+    case 'darwin':
+      command = 'open';
+      args = [url];
+      break;
+    case 'win32':
+      command = 'cmd';
+      args = ['/c', 'start', '', url];
+      break;
+    default:
+      command = 'xdg-open';
+      args = [url];
+      break;
+  }
 
-    const child = spawn(command, args, {
-      stdio: 'ignore',
-      detached: true,
-    });
-
-    child.on('error', () => resolve());
-    child.unref();
-    resolve();
+  const child = spawn(command, args, {
+    stdio: 'ignore',
+    detached: true,
   });
+
+  // A missing opener (e.g. no xdg-open) emits 'error'; swallow it so the wizard keeps running.
+  child.on('error', () => undefined);
+  child.unref();
+};
 
 const getSelectDefaultIndex = (
   options: { value: string; label: string }[],

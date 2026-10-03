@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
 import prompts from 'prompts';
 import {
   ALL_PROVIDERS,
@@ -28,6 +26,7 @@ import {
 import { getErrorMessage } from '@/utils/errors.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
+import { isEntryModule } from '@/utils/entryModule.js';
 
 /** Parsed command-line options for the skills installer. */
 interface SkillsFlags {
@@ -317,9 +316,7 @@ export const runSkillsWizard = async (options: RunSkillsWizardOptions = {}): Pro
   printInfo(`${written} file(s) written. Restart your AI tool so it picks up the new skills.`);
 };
 
-const entryPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
-const modulePath = resolve(fileURLToPath(import.meta.url));
-if (entryPath && modulePath === entryPath) {
+if (isEntryModule(import.meta.url)) {
   void Effect.runPromise(
     Effect.either(
       Effect.tryPromise({

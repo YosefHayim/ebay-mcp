@@ -7,6 +7,7 @@ import {
 import type { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
 import { Effect } from 'effect';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 type GetOffersFailure = EbayApiError | EndpointInputError;
@@ -136,7 +137,7 @@ describe('getOffersBySkus', () => {
     const get = vi.fn(async () => {
       active += 1;
       maximumActive = Math.max(maximumActive, active);
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await sleep(5);
       active -= 1;
       return { offers: [] };
     });

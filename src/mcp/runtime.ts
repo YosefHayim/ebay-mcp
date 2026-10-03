@@ -103,7 +103,7 @@ function registerTool(
 
       return await Effect.runPromise(
         Effect.tryPromise({
-          try: () => Promise.resolve(handler(api, args)),
+          try: async () => handler(api, args),
           catch: (error) => error,
         }).pipe(
           Effect.map((result) => {

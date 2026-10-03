@@ -156,7 +156,7 @@ export const startCallbackServer = async (
   const callbackPath = options.path ?? '/oauth/callback';
   const { expectedState } = options;
 
-  return await new Promise((resolve, reject) => {
+  return await new Promise((onServerReady, onServerError) => {
     let timer: NodeJS.Timeout | undefined;
     let settled = false;
     let settle: (result: OAuthCallbackResult) => void;
@@ -213,7 +213,7 @@ export const startCallbackServer = async (
 
     server.on('error', (err) => {
       clearTimeout(timer);
-      reject(err);
+      onServerError(err);
     });
 
     server.listen(port, () => {
@@ -227,7 +227,7 @@ export const startCallbackServer = async (
       );
       // Don't let the timeout alone keep the process alive; the listening server does.
       timer.unref();
-      resolve({ server, codePromise });
+      onServerReady({ server, codePromise });
     });
   });
 };

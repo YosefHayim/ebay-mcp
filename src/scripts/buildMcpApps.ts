@@ -13,7 +13,7 @@
  * Run via `pnpm build:mcp-apps` (also chained into `pnpm build`).
  */
 
-import { dirname, resolve } from 'node:path';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build, type InlineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
@@ -21,10 +21,10 @@ import { uiArchetypes } from '@/tools/ui/archetypes.js';
 import type { ViewArchetype } from '@/tools/ui/viewModels.js';
 import { serverLogger } from '@/utils/logger.js';
 
-const scriptsDir = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(scriptsDir, '../..');
-const mcpAppsDir = resolve(repoRoot, 'mcp-apps');
-const outDir = resolve(repoRoot, 'build', 'ui');
+const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptsDir, '../..');
+const mcpAppsDir = path.resolve(repoRoot, 'mcp-apps');
+const outDir = path.resolve(repoRoot, 'build', 'ui');
 
 /** Vite config for a single archetype's single-page, fully-inlined build. */
 function configFor(archetype: ViewArchetype, clean: boolean): InlineConfig {
@@ -36,13 +36,13 @@ function configFor(archetype: ViewArchetype, clean: boolean): InlineConfig {
     esbuild: { jsx: 'automatic', jsxImportSource: 'react' },
     resolve: {
       alias: {
-        '@': resolve(repoRoot, 'src'),
+        '@': path.resolve(repoRoot, 'src'),
       },
     },
     build: {
       outDir,
       emptyOutDir: clean,
-      rollupOptions: { input: resolve(mcpAppsDir, uiArchetypes[archetype].htmlFile) },
+      rollupOptions: { input: path.resolve(mcpAppsDir, uiArchetypes[archetype].htmlFile) },
     },
   };
 }

@@ -1,3 +1,4 @@
+import { once } from 'node:events';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { httpRequest, isHttpError } from '@/utils/http.js';
@@ -45,9 +46,8 @@ beforeAll(async () => {
     response.end('{"ok":true}');
   });
 
-  await new Promise<void>((resolve) => {
-    server.listen(0, '127.0.0.1', resolve);
-  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
   baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
 
@@ -55,9 +55,8 @@ afterAll(async () => {
   for (const socket of openSockets) {
     socket.end();
   }
-  await new Promise<void>((resolve) => {
-    server.close(() => resolve());
-  });
+  server.close();
+  await once(server, 'close');
 });
 
 describe('httpRequest timeouts', () => {

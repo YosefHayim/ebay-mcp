@@ -194,7 +194,7 @@ export const executeTool = async (
       }
 
       return yield* Effect.tryPromise({
-        try: () => Promise.resolve(handler(api, args)),
+        try: async () => handler(api, args),
         catch: (error) => error,
       });
     }),

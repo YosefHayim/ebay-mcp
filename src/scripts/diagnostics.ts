@@ -9,7 +9,7 @@
 
 import chalk from 'chalk';
 import { writeFileSync } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { runSecurityChecks, displaySecurityResults } from '@/scripts/securityChecker.js';
 import { validateSetup, displayRecommendations } from '@/scripts/setupValidator.js';
@@ -23,6 +23,7 @@ import { getUpdateInfo, getVersion } from '@/utils/version.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
+import { isEntryModule } from '@/utils/entryModule.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -397,9 +398,7 @@ export const runDiagnostics = async (exportReport = false): Promise<void> => {
 
 // Direct script entry (`node build/scripts/diagnostics.js` / `npm run diagnose`).
 // Guarded so importing from the bin does not auto-run diagnostics.
-const entryPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
-const modulePath = resolve(fileURLToPath(import.meta.url));
-if (entryPath && modulePath === entryPath) {
+if (isEntryModule(import.meta.url)) {
   const cliArgs = process.argv.slice(2);
   const exportReport = cliArgs.includes('--export') || cliArgs.includes('-e');
 

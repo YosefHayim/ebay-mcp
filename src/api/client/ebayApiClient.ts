@@ -135,15 +135,6 @@ const tokenFailureRemediation = (tokenType: EbayTokenType | undefined): string =
     ? 'This endpoint requires an application access token minted from client credentials, which a user token cannot supply. Check EBAY_CLIENT_ID and EBAY_CLIENT_SECRET.'
     : 'Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.';
 
-/** Sleep for a retry backoff delay without exposing timers to callers. */
-const sleep = (delayMs: number): Effect.Effect<void> =>
-  Effect.promise(
-    () =>
-      new Promise<void>((resolve) => {
-        setTimeout(resolve, delayMs);
-      }),
-  );
-
 /**
  * Base client for making eBay API requests.
  *
@@ -508,7 +499,7 @@ export class EbayApiClient {
         delayMs,
       });
 
-      return sleep(delayMs).pipe(
+      return Effect.sleep(delayMs).pipe(
         Effect.flatMap(() =>
           this.sendWithRetry<T>(method, url, options, {
             ...state,

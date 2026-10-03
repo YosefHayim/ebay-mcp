@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { dirname, join, resolve } from 'path';
+import { dirname, join } from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { homedir, platform } from 'os';
 import { randomUUID } from 'crypto';
@@ -25,6 +25,7 @@ import { validateSetup, displayRecommendations } from '@/scripts/setupValidator.
 import { getErrorMessage } from '@/utils/errors.js';
 import type { EbayTokenCore } from '@/types/ebay.js';
 import process from 'node:process';
+import { isEntryModule } from '@/utils/entryModule.js';
 
 config({ quiet: true });
 
@@ -1295,9 +1296,7 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-const entryPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
-const modulePath = resolve(fileURLToPath(import.meta.url));
-if (entryPath && modulePath === entryPath) {
+if (isEntryModule(import.meta.url)) {
   void Effect.runPromise(
     Effect.either(
       Effect.tryPromise({
