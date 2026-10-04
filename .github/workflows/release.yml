@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
+      actions: write
 
     steps:
       - name: Checkout
@@ -83,18 +83,25 @@ jobs:
             echo "type=patch" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Bump version in package.json
+      # The version lives in the tag, not in a commit: main is protected (CI Gate is
+      # required), so this job cannot push a version-bump commit to it.
+      - name: Determine release version
         if: steps.skip_check.outputs.skip != 'true'
         id: version
+        env:
+          BUMP_TYPE: ${{ steps.bump.outputs.type }}
         run: |
+          LATEST_TAG=$(git tag --list 'v*.*.*' --sort=-v:refname | head -n 1)
+          LATEST=${LATEST_TAG#v}
           CURRENT=$(node -p "require('./package.json').version")
-          CURRENT_TAG="v${CURRENT}"
+          NEWEST=$(printf '%s\n' "$LATEST" "$CURRENT" | sort -V | tail -n 1)
 
-          if git rev-parse "${CURRENT_TAG}" >/dev/null 2>&1; then
-            echo "v${CURRENT} already tagged - bumping ${{ steps.bump.outputs.type }}"
-            npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
+          if [ "$CURRENT" = "$NEWEST" ] && ! git rev-parse -q --verify "refs/tags/v${CURRENT}" >/dev/null; then
+            echo "package.json v${CURRENT} is newer than every tag - using it as-is"
           else
-            echo "v${CURRENT} not tagged yet - using as-is"
+            echo "Latest tag is v${LATEST} - bumping ${BUMP_TYPE}"
+            npm version "$LATEST" --no-git-tag-version --allow-same-version
+            npm version "$BUMP_TYPE" --no-git-tag-version
           fi
 
           VERSION=$(node -p "require('./package.json').version")
@@ -148,21 +155,14 @@ jobs:
             echo "RELEASE_EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Commit version bump and create tag
+      - name: Create and push tag
         if: steps.skip_check.outputs.skip != 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          TITLE: ${{ steps.desc.outputs.title }}
         run: |
-          if ! git diff --quiet package.json 2>/dev/null || ! git diff --quiet pnpm-lock.yaml 2>/dev/null; then
-            git add package.json pnpm-lock.yaml 2>/dev/null || git add package.json
-            git commit -m "chore(release): ${{ steps.version.outputs.tag }}"
-          fi
-
-          git tag -a "${{ steps.version.outputs.tag }}" \
-            -m "Release ${{ steps.version.outputs.tag }} - ${{ steps.desc.outputs.title }}"
-          git push origin main --follow-tags
-
-      # npm publish is handled by .github/workflows/publish.yml (triggered via
-      # workflow_run after this Release completes). The workflow filename split
-      # is required for OIDC trusted-publisher matching on the ebay-mcp package.
+          git tag -a "$TAG" -m "Release ${TAG} - ${TITLE}"
+          git push origin "refs/tags/${TAG}"
 
       - name: Create GitHub Release
         if: steps.skip_check.outputs.skip != 'true'
@@ -171,3 +171,12 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }} - ${{ steps.desc.outputs.title }}
           body: ${{ steps.notes.outputs.body }}
+
+      # npm trusted publishing is bound to publish.yml, so the publish runs there.
+      # A tag pushed with GITHUB_TOKEN fires no push event; workflow_dispatch is allowed.
+      - name: Start npm publish
+        if: steps.skip_check.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: gh workflow run publish.yml --ref "$TAG"
