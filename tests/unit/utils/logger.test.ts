@@ -31,6 +31,16 @@ describe('HTTP logging', () => {
       data: expect.stringMatching(/\.\.\. \[truncated\]$/),
     });
   });
+
+  it('redacts secret fields before truncating a large body to text', () => {
+    const http = vi.spyOn(apiLogger, 'http').mockImplementation(() => {});
+
+    logResponse(200, 'OK', { access_token: 'tok-123', text: 'x'.repeat(2000) });
+
+    const logged = String(http.mock.calls[0]?.[1]?.data);
+    expect(logged).toContain('"access_token":"[REDACTED]"');
+    expect(logged).not.toContain('tok-123');
+  });
 });
 
 describe('component logger', () => {
@@ -40,7 +50,7 @@ describe('component logger', () => {
 
     const credentials = 'client:s3cret';
 
-    createLogger('Test').info(`Auth Server: https://${credentials}@auth.example.test/realms/mcp`, {
+    createLogger('Test').error(`Auth Server: https://${credentials}@auth.example.test/realms/mcp`, {
       clientSecret: 'hunter2',
       scopes: ['mcp:tools'],
     });

@@ -290,9 +290,10 @@ const truncateData = (content: unknown, maxLength = 1000): unknown => {
   if (content instanceof Uint8Array) {
     return `[binary ${content.byteLength} bytes]`;
   }
-  const serialized = JSON.stringify(content);
+  const redacted = redactSecretFields(content);
+  const serialized = JSON.stringify(redacted);
   if (serialized.length <= maxLength) {
-    return content;
+    return redacted;
   }
   return `${serialized.substring(0, maxLength)}... [truncated]`;
 };

@@ -91,7 +91,7 @@ jobs:
         env:
           BUMP_TYPE: ${{ steps.bump.outputs.type }}
         run: |
-          LATEST_TAG=$(git tag --list 'v*.*.*' --sort=-v:refname | head -n 1)
+          LATEST_TAG=$(git for-each-ref --count=1 --sort=-v:refname --format='%(refname:short)' 'refs/tags/v*.*.*')
           LATEST=${LATEST_TAG#v}
           CURRENT=$(node -p "require('./package.json').version")
           NEWEST=$(printf '%s\n' "$LATEST" "$CURRENT" | sort -V | tail -n 1)

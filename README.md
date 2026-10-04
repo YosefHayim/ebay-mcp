@@ -402,7 +402,7 @@ EBAY_READ_ONLY=false                # when true, only register read-only tools (
 # MCP_HOST=0.0.0.0                  # default is 0.0.0.0 when PORT is set
 # MCP_PORT=3000                     # preferred over platform PORT
 # MCP_AUTH_TOKEN=secret             # static Bearer for HTTP MCP (skips OAuth verifier)
-# MCP_CORS_ORIGINS=https://app.example.com  # browser origins allowed cross-origin (comma-separated); default: localhost only
+# MCP_CORS_ORIGINS=https://app.example.com  # browser origins allowed cross-origin (comma-separated); default: loopback origins only
 ```
 
 ### Tool exposure (`EBAY_MCP_TOOLS`)
