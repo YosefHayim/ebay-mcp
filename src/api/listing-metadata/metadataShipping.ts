@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   decodeEndpointInputEffect,
   type EbayApiError,
@@ -7,13 +7,13 @@ import {
 } from '@/api/shared/request.js';
 import { shippingMetadataInputSchema } from '@/schemas/metadata/shipping.js';
 import type { components } from '@/types/sell-apps/listing-metadata/sellMetadataV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 const SHIPPING_MARKETPLACE_PATH = '/sell/metadata/v1/shipping/marketplace';
 
 /** Marketplace and optional Accept-Language accepted by every Metadata shipping method. */
-export type ShippingMetadataInput = InferEffectSchema<typeof shippingMetadataInputSchema>;
+export type ShippingMetadataInput = z.infer<typeof shippingMetadataInputSchema>;
 
 /**
  * Response returned by getExcludeShippingLocations.

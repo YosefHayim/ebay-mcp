@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import { MarketplaceId } from '@/types/ebayEnums.js';
 import { shippingMetadataInputSchema } from '@/schemas/metadata/shipping.js';
 import { defineTool } from '@/tools/defineTool.js';

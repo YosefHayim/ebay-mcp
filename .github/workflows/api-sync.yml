@@ -1,12 +1,7 @@
 name: eBay API Sync
 
-# Merged from the former `api-status-sync.yml` (doc refresh @ 08:00) and
-# `weekly-api-sync.yml` (issue @ 09:00): one schedule, two independent jobs.
-# See docs/adr/current/0004-ci-workflow-architecture.md.
-#
-#   - update-status-doc: regenerate docs/API_STATUS.md and commit any drift.
-#   - sync-check:        run `pnpm sync` and open an issue listing eBay
-#                        endpoints not yet exposed as tools.
+# Runs `pnpm sync` on a schedule and opens an issue listing eBay endpoints
+# not yet exposed as tools.
 
 on:
   schedule:
@@ -18,50 +13,6 @@ permissions:
   contents: read
 
 jobs:
-  update-status-doc:
-    name: Refresh API status doc
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate API status doc
-        run: pnpm exec tsx src/scripts/updateApiStatusDoc.ts
-
-      - name: Check for changes
-        id: changes
-        run: |
-          git add docs/API_STATUS.md
-          if git diff --cached --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            git reset HEAD docs/API_STATUS.md
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Commit and push
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/API_STATUS.md
-          git commit -m "docs: update API status snapshot [skip ci]"
-          git push
-
   sync-check:
     name: Check for un-exposed endpoints
     runs-on: ubuntu-latest

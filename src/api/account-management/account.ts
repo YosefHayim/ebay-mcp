@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -44,52 +44,44 @@ import type {
 } from '@/schemas/account-management/account.js';
 import type { components } from '@/types/sell-apps/account-management/sellAccountV1Oas3.js';
 import type { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
 const ACCOUNT_BASE_PATH = '/sell/account/v1';
 
 type EmptyAccountInput = Record<string, never>;
-type GetCustomPoliciesInput = InferEffectSchema<typeof getCustomPoliciesInputSchema>;
-type GetCustomPolicyInput = InferEffectSchema<typeof getCustomPolicyInputSchema>;
-type CreateCustomPolicyInput = InferEffectSchema<typeof createCustomPolicyInputSchema>;
-type UpdateCustomPolicyInput = InferEffectSchema<typeof updateCustomPolicyInputSchema>;
-type GetFulfillmentPoliciesInput = InferEffectSchema<typeof getFulfillmentPoliciesInputSchema>;
-type GetFulfillmentPolicyInput = InferEffectSchema<typeof getFulfillmentPolicyInputSchema>;
-type GetFulfillmentPolicyByNameInput = InferEffectSchema<
-  typeof getFulfillmentPolicyByNameInputSchema
->;
-type CreateFulfillmentPolicyInput = InferEffectSchema<typeof createFulfillmentPolicyInputSchema>;
-type UpdateFulfillmentPolicyInput = InferEffectSchema<typeof updateFulfillmentPolicyInputSchema>;
-type DeleteFulfillmentPolicyInput = InferEffectSchema<typeof deleteFulfillmentPolicyInputSchema>;
-type GetPaymentPoliciesInput = InferEffectSchema<typeof getPaymentPoliciesInputSchema>;
-type GetPaymentPolicyInput = InferEffectSchema<typeof getPaymentPolicyInputSchema>;
-type GetPaymentPolicyByNameInput = InferEffectSchema<typeof getPaymentPolicyByNameInputSchema>;
-type CreatePaymentPolicyInput = InferEffectSchema<typeof createPaymentPolicyInputSchema>;
-type UpdatePaymentPolicyInput = InferEffectSchema<typeof updatePaymentPolicyInputSchema>;
-type DeletePaymentPolicyInput = InferEffectSchema<typeof deletePaymentPolicyInputSchema>;
-type GetReturnPoliciesInput = InferEffectSchema<typeof getReturnPoliciesInputSchema>;
-type GetReturnPolicyInput = InferEffectSchema<typeof getReturnPolicyInputSchema>;
-type GetReturnPolicyByNameInput = InferEffectSchema<typeof getReturnPolicyByNameInputSchema>;
-type CreateReturnPolicyInput = InferEffectSchema<typeof createReturnPolicyInputSchema>;
-type UpdateReturnPolicyInput = InferEffectSchema<typeof updateReturnPolicyInputSchema>;
-type DeleteReturnPolicyInput = InferEffectSchema<typeof deleteReturnPolicyInputSchema>;
-type GetPaymentsProgramInput = InferEffectSchema<typeof getPaymentsProgramInputSchema>;
-type GetPaymentsProgramOnboardingInput = InferEffectSchema<
-  typeof getPaymentsProgramOnboardingInputSchema
->;
-type CreateOrReplaceSalesTaxInput = InferEffectSchema<typeof createOrReplaceSalesTaxInputSchema>;
-type BulkCreateOrReplaceSalesTaxInput = InferEffectSchema<
-  typeof bulkCreateOrReplaceSalesTaxInputSchema
->;
-type GetSalesTaxInput = InferEffectSchema<typeof getSalesTaxInputSchema>;
-type DeleteSalesTaxInput = InferEffectSchema<typeof deleteSalesTaxInputSchema>;
-type GetSalesTaxesInput = InferEffectSchema<typeof getSalesTaxesInputSchema>;
-type GetSubscriptionInput = InferEffectSchema<typeof getSubscriptionInputSchema>;
-type OptInToProgramInput = InferEffectSchema<typeof optInToProgramInputSchema>;
-type OptOutOfProgramInput = InferEffectSchema<typeof optOutOfProgramInputSchema>;
-type GetAdvertisingEligibilityInput = InferEffectSchema<
-  typeof getAdvertisingEligibilityInputSchema
->;
+type GetCustomPoliciesInput = z.infer<typeof getCustomPoliciesInputSchema>;
+type GetCustomPolicyInput = z.infer<typeof getCustomPolicyInputSchema>;
+type CreateCustomPolicyInput = z.infer<typeof createCustomPolicyInputSchema>;
+type UpdateCustomPolicyInput = z.infer<typeof updateCustomPolicyInputSchema>;
+type GetFulfillmentPoliciesInput = z.infer<typeof getFulfillmentPoliciesInputSchema>;
+type GetFulfillmentPolicyInput = z.infer<typeof getFulfillmentPolicyInputSchema>;
+type GetFulfillmentPolicyByNameInput = z.infer<typeof getFulfillmentPolicyByNameInputSchema>;
+type CreateFulfillmentPolicyInput = z.infer<typeof createFulfillmentPolicyInputSchema>;
+type UpdateFulfillmentPolicyInput = z.infer<typeof updateFulfillmentPolicyInputSchema>;
+type DeleteFulfillmentPolicyInput = z.infer<typeof deleteFulfillmentPolicyInputSchema>;
+type GetPaymentPoliciesInput = z.infer<typeof getPaymentPoliciesInputSchema>;
+type GetPaymentPolicyInput = z.infer<typeof getPaymentPolicyInputSchema>;
+type GetPaymentPolicyByNameInput = z.infer<typeof getPaymentPolicyByNameInputSchema>;
+type CreatePaymentPolicyInput = z.infer<typeof createPaymentPolicyInputSchema>;
+type UpdatePaymentPolicyInput = z.infer<typeof updatePaymentPolicyInputSchema>;
+type DeletePaymentPolicyInput = z.infer<typeof deletePaymentPolicyInputSchema>;
+type GetReturnPoliciesInput = z.infer<typeof getReturnPoliciesInputSchema>;
+type GetReturnPolicyInput = z.infer<typeof getReturnPolicyInputSchema>;
+type GetReturnPolicyByNameInput = z.infer<typeof getReturnPolicyByNameInputSchema>;
+type CreateReturnPolicyInput = z.infer<typeof createReturnPolicyInputSchema>;
+type UpdateReturnPolicyInput = z.infer<typeof updateReturnPolicyInputSchema>;
+type DeleteReturnPolicyInput = z.infer<typeof deleteReturnPolicyInputSchema>;
+type GetPaymentsProgramInput = z.infer<typeof getPaymentsProgramInputSchema>;
+type GetPaymentsProgramOnboardingInput = z.infer<typeof getPaymentsProgramOnboardingInputSchema>;
+type CreateOrReplaceSalesTaxInput = z.infer<typeof createOrReplaceSalesTaxInputSchema>;
+type BulkCreateOrReplaceSalesTaxInput = z.infer<typeof bulkCreateOrReplaceSalesTaxInputSchema>;
+type GetSalesTaxInput = z.infer<typeof getSalesTaxInputSchema>;
+type DeleteSalesTaxInput = z.infer<typeof deleteSalesTaxInputSchema>;
+type GetSalesTaxesInput = z.infer<typeof getSalesTaxesInputSchema>;
+type GetSubscriptionInput = z.infer<typeof getSubscriptionInputSchema>;
+type OptInToProgramInput = z.infer<typeof optInToProgramInputSchema>;
+type OptOutOfProgramInput = z.infer<typeof optOutOfProgramInputSchema>;
+type GetAdvertisingEligibilityInput = z.infer<typeof getAdvertisingEligibilityInputSchema>;
 
 type CustomPolicy = components['schemas']['CustomPolicy'];
 type SetFulfillmentPolicyResponse = components['schemas']['SetFulfillmentPolicyResponse'];

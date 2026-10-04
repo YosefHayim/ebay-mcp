@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   decodeEndpointInputEffect,
   EndpointInputError,
@@ -14,7 +14,7 @@ import {
   updateFeedScheduleInputSchema,
 } from '@/schemas/inventory-management/feed.js';
 import type { components } from '@/types/sell-apps/listing-management/sellFeedV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 import {
   downloadFeedFile,
@@ -24,11 +24,11 @@ import {
   postFeedResource,
 } from './feedRequest.js';
 
-type FeedTypePageInput = InferEffectSchema<typeof feedTypePageInputSchema>;
-type FeedScheduleIdInput = InferEffectSchema<typeof feedScheduleIdInputSchema>;
-type FeedScheduleTemplateIdInput = InferEffectSchema<typeof feedScheduleTemplateIdInputSchema>;
-type CreateFeedScheduleInput = InferEffectSchema<typeof createFeedScheduleInputSchema>;
-type UpdateFeedScheduleInput = InferEffectSchema<typeof updateFeedScheduleInputSchema>;
+type FeedTypePageInput = z.infer<typeof feedTypePageInputSchema>;
+type FeedScheduleIdInput = z.infer<typeof feedScheduleIdInputSchema>;
+type FeedScheduleTemplateIdInput = z.infer<typeof feedScheduleTemplateIdInputSchema>;
+type CreateFeedScheduleInput = z.infer<typeof createFeedScheduleInputSchema>;
+type UpdateFeedScheduleInput = z.infer<typeof updateFeedScheduleInputSchema>;
 type CreateUserScheduleRequest = components['schemas']['CreateUserScheduleRequest'];
 type UpdateUserScheduleRequest = components['schemas']['UpdateUserScheduleRequest'];
 
@@ -76,8 +76,8 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
   const createSchedule = (input: CreateFeedScheduleInput) =>
     decodeEndpointInputEffect(createFeedScheduleInputSchema, input).pipe(
       Effect.flatMap(({ schedule }) => {
-        const body: CreateUserScheduleRequest = schedule;
-        return postFeedResource(client, '/schedule', body);
+        const createScheduleRequest: CreateUserScheduleRequest = schedule;
+        return postFeedResource(client, '/schedule', createScheduleRequest);
       }),
       Effect.map(({ id, location }) => ({ scheduleId: id, location })),
     );
@@ -114,8 +114,12 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
           }),
       ),
       Effect.flatMap(({ scheduleId, schedule }) => {
-        const body: UpdateUserScheduleRequest = schedule;
-        return requestPutEffect<void>(client, feedResourcePath('/schedule', scheduleId), body);
+        const updateScheduleRequest: UpdateUserScheduleRequest = schedule;
+        return requestPutEffect<void>(
+          client,
+          feedResourcePath('/schedule', scheduleId),
+          updateScheduleRequest,
+        );
       }),
     );
 

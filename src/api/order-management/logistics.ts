@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   type DownloadedFile,
   type DownloadTooLargeError,
@@ -20,17 +20,17 @@ import type {
   shippingQuoteIdInputSchema,
 } from '@/schemas/fulfillment/logistics.js';
 import type { components } from '@/types/sell-apps/order-management/sellLogisticsV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 /** Generated request body for createShippingQuote. */
 type ShippingQuoteRequest = components['schemas']['ShippingQuoteRequest'];
 /** Generated request body for createFromShippingQuote. */
 type CreateShipmentFromQuoteRequest = components['schemas']['CreateShipmentFromQuoteRequest'];
-type CreateShippingQuoteInput = InferEffectSchema<typeof createShippingQuoteInputSchema>;
-type CreateFromShippingQuoteInput = InferEffectSchema<typeof createFromShippingQuoteInputSchema>;
-type ShippingQuoteIdInput = InferEffectSchema<typeof shippingQuoteIdInputSchema>;
-type ShipmentIdInput = InferEffectSchema<typeof shipmentIdInputSchema>;
+type CreateShippingQuoteInput = z.infer<typeof createShippingQuoteInputSchema>;
+type CreateFromShippingQuoteInput = z.infer<typeof createFromShippingQuoteInputSchema>;
+type ShippingQuoteIdInput = z.infer<typeof shippingQuoteIdInputSchema>;
+type ShipmentIdInput = z.infer<typeof shipmentIdInputSchema>;
 
 /**
  * Builds the per-call marketplace header; without an override the client's configured
@@ -57,7 +57,7 @@ export type ShipmentResponse = components['schemas']['Shipment'];
 
 /**
  * Logistics API - shipping quotes, shipments, and shipping labels (limited release; needs the
- * `sell.logistics` scope). Based on: docs/sell-apps/order-management/sell_logistics_v1_oas3.json
+ * `sell.logistics` scope). Based on: sell_logistics_v1_oas3.json
  */
 export class LogisticsApi {
   private readonly basePath = '/sell/logistics/v1_beta';
@@ -90,7 +90,7 @@ export class LogisticsApi {
 
     return Effect.gen(function* () {
       const endpointInput = yield* requireObjectEffect<CreateShippingQuoteInput>(input, 'input');
-      const body = yield* requireObjectEffect<ShippingQuoteRequest>(
+      const shippingQuoteRequest = yield* requireObjectEffect<ShippingQuoteRequest>(
         endpointInput.shippingQuoteRequest,
         'shippingQuoteRequest',
       );
@@ -102,7 +102,7 @@ export class LogisticsApi {
       return yield* requestPostEffect<ShippingQuoteResponse>(
         client,
         path,
-        body,
+        shippingQuoteRequest,
         marketplaceConfig(marketplaceId),
       );
     });
@@ -172,12 +172,15 @@ export class LogisticsApi {
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<CreateShipmentFromQuoteRequest>(
+      const shipmentRequest = yield* requireObjectEffect<CreateShipmentFromQuoteRequest>(
         endpointInput.shipmentRequest,
         'shipmentRequest',
       );
-      yield* requireStringEffect(body.shippingQuoteId, 'shipmentRequest.shippingQuoteId');
-      yield* requireStringEffect(body.rateId, 'shipmentRequest.rateId');
+      yield* requireStringEffect(
+        shipmentRequest.shippingQuoteId,
+        'shipmentRequest.shippingQuoteId',
+      );
+      yield* requireStringEffect(shipmentRequest.rateId, 'shipmentRequest.rateId');
       const marketplaceId = yield* optionalStringEffect(
         endpointInput.marketplaceId,
         'marketplaceId',
@@ -186,7 +189,7 @@ export class LogisticsApi {
       return yield* requestPostEffect<ShipmentResponse>(
         client,
         path,
-        body,
+        shipmentRequest,
         marketplaceConfig(marketplaceId),
       );
     });

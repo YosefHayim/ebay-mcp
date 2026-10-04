@@ -1,5 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 
 /** Input accepted by the public eBay API status feed tool. */
 export const getApiStatusInputSchema = z.object({
@@ -123,30 +122,4 @@ export const signingKeySchema = z.object({
 /** Response returned by Developer Key Management API getSigningKeys. */
 export const querySigningKeysResponseSchema = z.object({
   signingKeys: z.array(signingKeySchema).optional(),
-});
-
-/**
- * Converts Developer API Effect-backed schemas to JSON Schema format for MCP tools.
- *
- * @returns Developer API JSON schemas keyed by endpoint or shared model name.
- *
- * @example
- * ```ts
- * const schemas = getDeveloperJsonSchemas();
- * ```
- */
-export const getDeveloperJsonSchemas = () => ({
-  getApiStatusInput: zodToJsonSchema(getApiStatusInputSchema, 'getApiStatusInput'),
-  getRateLimitsInput: zodToJsonSchema(getRateLimitsInputSchema, 'getRateLimitsInput'),
-  getRateLimitsOutput: zodToJsonSchema(rateLimitsResponseSchema, 'getRateLimitsOutput'),
-  getUserRateLimitsInput: zodToJsonSchema(getUserRateLimitsInputSchema, 'getUserRateLimitsInput'),
-  getUserRateLimitsOutput: zodToJsonSchema(rateLimitsResponseSchema, 'getUserRateLimitsOutput'),
-  registerClientInput: zodToJsonSchema(registerClientInputSchema, 'registerClientInput'),
-  registerClientOutput: zodToJsonSchema(clientDetailsSchema, 'registerClientOutput'),
-  getSigningKeysInput: zodToJsonSchema(getSigningKeysInputSchema, 'getSigningKeysInput'),
-  getSigningKeysOutput: zodToJsonSchema(querySigningKeysResponseSchema, 'getSigningKeysOutput'),
-  createSigningKeyInput: zodToJsonSchema(createSigningKeyInputSchema, 'createSigningKeyInput'),
-  createSigningKeyOutput: zodToJsonSchema(signingKeySchema, 'createSigningKeyOutput'),
-  getSigningKeyInput: zodToJsonSchema(getSigningKeyInputSchema, 'getSigningKeyInput'),
-  getSigningKeyOutput: zodToJsonSchema(signingKeySchema, 'getSigningKeyOutput'),
 });

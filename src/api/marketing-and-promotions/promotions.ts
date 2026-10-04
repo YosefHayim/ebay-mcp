@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   type EbayApiError,
   buildEndpointParams,
@@ -33,41 +33,37 @@ import type {
   getEmailReportInputSchema,
 } from '@/schemas/marketing/marketing.js';
 import type { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { MARKETING_BASE_PATH, type MarketingOperationResponse } from './shared.js';
 
-type CreateItemPriceMarkdownPromotionInput = InferEffectSchema<
+type CreateItemPriceMarkdownPromotionInput = z.infer<
   typeof createItemPriceMarkdownPromotionInputSchema
 >;
-type GetItemPriceMarkdownPromotionInput = InferEffectSchema<
-  typeof getItemPriceMarkdownPromotionInputSchema
->;
-type UpdateItemPriceMarkdownPromotionInput = InferEffectSchema<
+type GetItemPriceMarkdownPromotionInput = z.infer<typeof getItemPriceMarkdownPromotionInputSchema>;
+type UpdateItemPriceMarkdownPromotionInput = z.infer<
   typeof updateItemPriceMarkdownPromotionInputSchema
 >;
-type DeleteItemPriceMarkdownPromotionInput = InferEffectSchema<
+type DeleteItemPriceMarkdownPromotionInput = z.infer<
   typeof deleteItemPriceMarkdownPromotionInputSchema
 >;
-type CreateItemPromotionInput = InferEffectSchema<typeof createItemPromotionInputSchema>;
-type GetItemPromotionInput = InferEffectSchema<typeof getItemPromotionInputSchema>;
-type UpdateItemPromotionInput = InferEffectSchema<typeof updateItemPromotionInputSchema>;
-type DeleteItemPromotionInput = InferEffectSchema<typeof deleteItemPromotionInputSchema>;
-type GetListingSetInput = InferEffectSchema<typeof getListingSetInputSchema>;
-type GetPromotionsInput = InferEffectSchema<typeof getPromotionsInputSchema>;
-type PausePromotionInput = InferEffectSchema<typeof pausePromotionInputSchema>;
-type ResumePromotionInput = InferEffectSchema<typeof resumePromotionInputSchema>;
-type GetPromotionReportsInput = InferEffectSchema<typeof getPromotionReportsInputSchema>;
-type GetPromotionSummaryReportInput = InferEffectSchema<
-  typeof getPromotionSummaryReportInputSchema
->;
-type GetEmailCampaignsInput = InferEffectSchema<typeof getEmailCampaignsInputSchema>;
-type CreateEmailCampaignInput = InferEffectSchema<typeof createEmailCampaignInputSchema>;
-type GetEmailCampaignInput = InferEffectSchema<typeof getEmailCampaignInputSchema>;
-type UpdateEmailCampaignInput = InferEffectSchema<typeof updateEmailCampaignInputSchema>;
-type DeleteEmailCampaignInput = InferEffectSchema<typeof deleteEmailCampaignInputSchema>;
-type GetAudiencesInput = InferEffectSchema<typeof getAudiencesInputSchema>;
-type GetEmailPreviewInput = InferEffectSchema<typeof getEmailPreviewInputSchema>;
-type GetEmailReportInput = InferEffectSchema<typeof getEmailReportInputSchema>;
+type CreateItemPromotionInput = z.infer<typeof createItemPromotionInputSchema>;
+type GetItemPromotionInput = z.infer<typeof getItemPromotionInputSchema>;
+type UpdateItemPromotionInput = z.infer<typeof updateItemPromotionInputSchema>;
+type DeleteItemPromotionInput = z.infer<typeof deleteItemPromotionInputSchema>;
+type GetListingSetInput = z.infer<typeof getListingSetInputSchema>;
+type GetPromotionsInput = z.infer<typeof getPromotionsInputSchema>;
+type PausePromotionInput = z.infer<typeof pausePromotionInputSchema>;
+type ResumePromotionInput = z.infer<typeof resumePromotionInputSchema>;
+type GetPromotionReportsInput = z.infer<typeof getPromotionReportsInputSchema>;
+type GetPromotionSummaryReportInput = z.infer<typeof getPromotionSummaryReportInputSchema>;
+type GetEmailCampaignsInput = z.infer<typeof getEmailCampaignsInputSchema>;
+type CreateEmailCampaignInput = z.infer<typeof createEmailCampaignInputSchema>;
+type GetEmailCampaignInput = z.infer<typeof getEmailCampaignInputSchema>;
+type UpdateEmailCampaignInput = z.infer<typeof updateEmailCampaignInputSchema>;
+type DeleteEmailCampaignInput = z.infer<typeof deleteEmailCampaignInputSchema>;
+type GetAudiencesInput = z.infer<typeof getAudiencesInputSchema>;
+type GetEmailPreviewInput = z.infer<typeof getEmailPreviewInputSchema>;
+type GetEmailReportInput = z.infer<typeof getEmailReportInputSchema>;
 
 /**
  * Response returned by eBay Marketing API createItemPriceMarkdownPromotion.
@@ -238,7 +234,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.createItemPriceMarkdownPromotion({ request: { ... } }));
+   * const createdItemPriceMarkdownPromotion = await Effect.runPromise(marketingApi.createItemPriceMarkdownPromotion({ request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/createItemPriceMarkdownPromotion
@@ -258,7 +254,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getItemPriceMarkdownPromotion({ promotionId: 'promotion-1' }));
+   * const itemPriceMarkdownPromotion = await Effect.runPromise(marketingApi.getItemPriceMarkdownPromotion({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/getItemPriceMarkdownPromotion
@@ -278,7 +274,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateItemPriceMarkdownPromotion({ promotionId: 'promotion-1', request: { ... } }));
+   * const updatedItemPriceMarkdownPromotion = await Effect.runPromise(marketingApi.updateItemPriceMarkdownPromotion({ promotionId: 'promotion-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/updateItemPriceMarkdownPromotion
@@ -298,7 +294,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.deleteItemPriceMarkdownPromotion({ promotionId: 'promotion-1' }));
+   * await Effect.runPromise(marketingApi.deleteItemPriceMarkdownPromotion({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/deleteItemPriceMarkdownPromotion
@@ -318,7 +314,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.createItemPromotion({ request: { ... } }));
+   * const createdItemPromotion = await Effect.runPromise(marketingApi.createItemPromotion({ request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/createItemPromotion
@@ -338,7 +334,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getItemPromotion({ promotionId: 'promotion-1' }));
+   * const itemPromotion = await Effect.runPromise(marketingApi.getItemPromotion({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/getItemPromotion
@@ -358,7 +354,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateItemPromotion({ promotionId: 'promotion-1', request: { ... } }));
+   * const updatedItemPromotion = await Effect.runPromise(marketingApi.updateItemPromotion({ promotionId: 'promotion-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/updateItemPromotion
@@ -378,7 +374,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.deleteItemPromotion({ promotionId: 'promotion-1' }));
+   * await Effect.runPromise(marketingApi.deleteItemPromotion({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/deleteItemPromotion
@@ -398,7 +394,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getListingSet({ promotionId: 'promotion-1' }));
+   * const listingSet = await Effect.runPromise(marketingApi.getListingSet({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/getListingSet
@@ -425,7 +421,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getPromotions({ marketplaceId: 'marketplace-1' }));
+   * const promotions = await Effect.runPromise(marketingApi.getPromotions({ marketplaceId: 'marketplace-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/getPromotions
@@ -454,7 +450,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.pausePromotion({ promotionId: 'promotion-1' }));
+   * await Effect.runPromise(marketingApi.pausePromotion({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/pausePromotion
@@ -474,7 +470,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.resumePromotion({ promotionId: 'promotion-1' }));
+   * await Effect.runPromise(marketingApi.resumePromotion({ promotionId: 'promotion-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/resumePromotion
@@ -494,7 +490,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getPromotionReports({ marketplaceId: 'marketplace-1' }));
+   * const promotionReports = await Effect.runPromise(marketingApi.getPromotionReports({ marketplaceId: 'marketplace-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion_report/methods/getPromotionReports
@@ -522,7 +518,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getPromotionSummaryReport({ marketplaceId: 'marketplace-1' }));
+   * const promotionSummaryReport = await Effect.runPromise(marketingApi.getPromotionSummaryReport({ marketplaceId: 'marketplace-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion_summary_report/methods/getPromotionSummaryReport
@@ -545,7 +541,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getEmailCampaigns());
+   * const emailCampaigns = await Effect.runPromise(marketingApi.getEmailCampaigns());
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailCampaigns
@@ -571,7 +567,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.createEmailCampaign({ marketplaceId: 'EBAY_US', request: { ... } }));
+   * const createdEmailCampaign = await Effect.runPromise(marketingApi.createEmailCampaign({ marketplaceId: 'EBAY_US', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/createEmailCampaign
@@ -592,7 +588,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getEmailCampaign({ emailCampaignId: 'emailCampaign-1' }));
+   * const emailCampaign = await Effect.runPromise(marketingApi.getEmailCampaign({ emailCampaignId: 'emailCampaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailCampaign
@@ -612,7 +608,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.updateEmailCampaign({ emailCampaignId: 'emailCampaign-1', request: { ... } }));
+   * const updatedEmailCampaign = await Effect.runPromise(marketingApi.updateEmailCampaign({ emailCampaignId: 'emailCampaign-1', request: { ... } }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/updateEmailCampaign
@@ -632,7 +628,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.deleteEmailCampaign({ emailCampaignId: 'emailCampaign-1' }));
+   * await Effect.runPromise(marketingApi.deleteEmailCampaign({ emailCampaignId: 'emailCampaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/deleteEmailCampaign
@@ -652,7 +648,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getAudiences({ emailCampaignType: 'emailCampaignType-1' }));
+   * const audiences = await Effect.runPromise(marketingApi.getAudiences({ emailCampaignType: 'emailCampaignType-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getAudiences
@@ -675,7 +671,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getEmailPreview({ emailCampaignId: 'emailCampaign-1' }));
+   * const emailPreview = await Effect.runPromise(marketingApi.getEmailPreview({ emailCampaignId: 'emailCampaign-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailPreview
@@ -695,7 +691,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(marketingApi.getEmailReport({ endDate: 'endDate-1', startDate: 'startDate-1' }));
+   * const emailReport = await Effect.runPromise(marketingApi.getEmailReport({ endDate: 'endDate-1', startDate: 'startDate-1' }));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailReport

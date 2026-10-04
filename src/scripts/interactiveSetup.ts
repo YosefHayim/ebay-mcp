@@ -48,7 +48,7 @@ import {
 import { detectLLMClients, configureLLMClient } from '@/utils/llmClientDetector.js';
 import { validateSetup, displayRecommendations } from '@/scripts/setupValidator.js';
 import { loadExistingConfig, readEnvironment } from './setupShared.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { EbayOAuthClient } from '@/auth/oauth.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import type { EbayConfig } from '@/types/ebay.js';
@@ -81,11 +81,11 @@ interface CLIArgs {
   environment?: 'sandbox' | 'production';
 }
 
-function readOptionalEnvironment(value?: string): 'sandbox' | 'production' | undefined {
-  if (!value) {
+function readOptionalEnvironment(rawEnvironment?: string): 'sandbox' | 'production' | undefined {
+  if (!rawEnvironment) {
     return;
   }
-  return readEnvironment(value);
+  return readEnvironment(rawEnvironment);
 }
 
 function parseInteractiveArgs(): CLIArgs {
@@ -163,8 +163,8 @@ function displayLogo() {
   console.log(CREATOR_CREDIT);
 }
 
-function validateRequired(value: string): boolean | string {
-  return value.trim().length > 0 || 'This field is required';
+function validateRequired(input: string): boolean | string {
+  return input.trim().length > 0 || 'This field is required';
 }
 
 function generateEnvFile(config: Record<string, string>, environment: string): void {
@@ -262,27 +262,27 @@ async function acquireRefreshToken(
     getRecommendedScopes(config.environment),
   );
 
-  const response = await prompts({
+  const pastedToken = await prompts({
     type: 'text',
     name: 'refreshToken',
     message: 'Paste your refresh token here:',
-    validate: (value: string) => {
-      if (!value || value.trim() === '') {
+    validate: (input: string) => {
+      if (!input || input.trim() === '') {
         return 'Refresh token is required';
       }
-      const cleanValue = value.trim().replace(/^["']|["']$/g, '');
-      if (!cleanValue.startsWith('v^1.1#')) {
+      const cleanToken = input.trim().replace(/^["']|["']$/g, '');
+      if (!cleanToken.startsWith('v^1.1#')) {
         return 'Token should start with "v^1.1#"';
       }
       return true;
     },
   });
 
-  if (!response.refreshToken) {
+  if (!pastedToken.refreshToken) {
     return null;
   }
 
-  return response.refreshToken.trim().replace(/^["']|["']$/g, '');
+  return pastedToken.refreshToken.trim().replace(/^["']|["']$/g, '');
 }
 
 async function validateAndGenerateTokens(config: Record<string, string>): Promise<boolean> {
@@ -390,7 +390,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
   console.log(chalk.bold.cyan('└─────────────────────────────────────────────────────────────┘\n'));
 
   const clients = detectLLMClients();
-  const detectedClients = clients.filter((c) => c.detected);
+  const detectedClients = clients.filter((client) => client.detected);
 
   if (detectedClients.length === 0) {
     console.log(chalk.yellow('⚠️  No compatible LLM clients detected on your system.\n'));
@@ -478,7 +478,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
       chalk.gray(' to confirm\n'),
   );
 
-  const response = await prompts({
+  const clientSelection = await prompts({
     type: 'multiselect',
     name: 'selectedClients',
     message: 'Select clients to configure:',
@@ -496,7 +496,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
     instructions: false,
   });
 
-  if (!response.selectedClients || response.selectedClients.length === 0) {
+  if (!clientSelection.selectedClients || clientSelection.selectedClients.length === 0) {
     console.log(chalk.gray('\n⏭️  Skipping LLM client configuration.\n'));
     return;
   }
@@ -506,8 +506,8 @@ async function detectAndConfigureLLMClients(): Promise<void> {
   console.log(chalk.bold.cyan('│  ⚙️  Configuring Selected Clients                           │'));
   console.log(chalk.bold.cyan('└─────────────────────────────────────────────────────────────┘\n'));
 
-  for (const clientName of response.selectedClients) {
-    const client = detectedClients.find((c) => c.name === clientName);
+  for (const clientName of clientSelection.selectedClients) {
+    const client = detectedClients.find((detected) => detected.name === clientName);
     if (!client) continue;
 
     console.log(chalk.cyan(`Configuring ${client.displayName}...`));
@@ -817,12 +817,12 @@ async function runInteractiveSetup(args: CLIArgs) {
       name: 'token',
       message: 'Paste your refresh token:',
       initial: refreshToken,
-      validate: (value: string) => {
-        if (!value || value.trim() === '') {
+      validate: (input: string) => {
+        if (!input || input.trim() === '') {
           return 'Refresh token is required';
         }
-        const cleanValue = value.trim().replace(/^["']|["']$/g, '');
-        if (!cleanValue.startsWith('v^1.1#')) {
+        const cleanToken = input.trim().replace(/^["']|["']$/g, '');
+        if (!cleanToken.startsWith('v^1.1#')) {
           return 'Token should start with "v^1.1#"';
         }
         return true;
@@ -956,9 +956,9 @@ void Effect.runPromise(
       catch: (error) => error,
     }),
   ),
-).then((result) => {
-  if (Either.isLeft(result)) {
-    console.error(chalk.red('\n❌ Setup failed:'), getErrorMessage(result.left));
+).then((setupOutcome) => {
+  if (Either.isLeft(setupOutcome)) {
+    console.error(chalk.red('\n❌ Setup failed:'), getErrorMessage(setupOutcome.left));
     process.exitCode = 1;
   }
 });

@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -482,12 +482,16 @@ export class EDeliveryApi {
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<CreateAddressPreferenceRequest>(
+      const addressPreference = yield* requireObjectEffect<CreateAddressPreferenceRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<CreateAddressPreferenceResponse>(client, path, body);
+      return yield* requestPostEffect<CreateAddressPreferenceResponse>(
+        client,
+        path,
+        addressPreference,
+      );
     });
   };
 
@@ -540,12 +544,16 @@ export class EDeliveryApi {
         input,
         'input',
       );
-      const body = yield* requireObjectEffect<CreateConsignPreferenceRequest>(
+      const consignPreference = yield* requireObjectEffect<CreateConsignPreferenceRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<CreateConsignPreferenceResponse>(client, path, body);
+      return yield* requestPostEffect<CreateConsignPreferenceResponse>(
+        client,
+        path,
+        consignPreference,
+      );
     });
   };
 
@@ -702,9 +710,12 @@ export class EDeliveryApi {
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<CreateBundleInput>(input, 'input');
-      const body = yield* requireObjectEffect<CreateBundleRequest>(validatedInput.body, 'body');
+      const bundleRequest = yield* requireObjectEffect<CreateBundleRequest>(
+        validatedInput.body,
+        'body',
+      );
 
-      return yield* requestPostEffect<CreateBundleResponse>(client, path, body);
+      return yield* requestPostEffect<CreateBundleResponse>(client, path, bundleRequest);
     });
   };
 
@@ -818,9 +829,12 @@ export class EDeliveryApi {
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<CreatePackageInput>(input, 'input');
-      const body = yield* requireObjectEffect<CreatePackageRequest>(validatedInput.body, 'body');
+      const packageRequest = yield* requireObjectEffect<CreatePackageRequest>(
+        validatedInput.body,
+        'body',
+      );
 
-      return yield* requestPostEffect<CreatePackageResponse>(client, path, body);
+      return yield* requestPostEffect<CreatePackageResponse>(client, path, packageRequest);
     });
   };
 
@@ -1022,7 +1036,7 @@ export class EDeliveryApi {
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(
+   * const cancelledPackages = await Effect.runPromise(
    *   edeliveryApi.bulkCancelPackages({ body: { requests: { packageIds: 'PKG123' } } }),
    * );
    * ```
@@ -1037,12 +1051,16 @@ export class EDeliveryApi {
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkCancelPackagesInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkCancelPackagesRequest>(
+      const cancelPackagesRequest = yield* requireObjectEffect<BulkCancelPackagesRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<BulkCancelPackagesResponse>(client, path, body);
+      return yield* requestPostEffect<BulkCancelPackagesResponse>(
+        client,
+        path,
+        cancelPackagesRequest,
+      );
     });
   };
 
@@ -1054,7 +1072,7 @@ export class EDeliveryApi {
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(
+   * const confirmedPackages = await Effect.runPromise(
    *   edeliveryApi.bulkConfirmPackages({ body: { requests: { packageIds: 'PKG123' } } }),
    * );
    * ```
@@ -1069,12 +1087,16 @@ export class EDeliveryApi {
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkConfirmPackagesInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkConfirmPackagesRequest>(
+      const confirmPackagesRequest = yield* requireObjectEffect<BulkConfirmPackagesRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<BulkConfirmPackagesResponse>(client, path, body);
+      return yield* requestPostEffect<BulkConfirmPackagesResponse>(
+        client,
+        path,
+        confirmPackagesRequest,
+      );
     });
   };
 
@@ -1086,7 +1108,7 @@ export class EDeliveryApi {
    *
    * @example
    * ```ts
-   * const response = await Effect.runPromise(
+   * const deletedPackages = await Effect.runPromise(
    *   edeliveryApi.bulkDeletePackages({ body: { requests: { packageIds: 'PKG123' } } }),
    * );
    * ```
@@ -1101,12 +1123,16 @@ export class EDeliveryApi {
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<BulkDeletePackagesInput>(input, 'input');
-      const body = yield* requireObjectEffect<BulkDeletePackagesRequest>(
+      const deletePackagesRequest = yield* requireObjectEffect<BulkDeletePackagesRequest>(
         validatedInput.body,
         'body',
       );
 
-      return yield* requestPostEffect<BulkDeletePackagesResponse>(client, path, body);
+      return yield* requestPostEffect<BulkDeletePackagesResponse>(
+        client,
+        path,
+        deletePackagesRequest,
+      );
     });
   };
 
@@ -1245,9 +1271,12 @@ export class EDeliveryApi {
 
     return Effect.gen(function* () {
       const validatedInput = yield* requireObjectEffect<CreateComplaintInput>(input, 'input');
-      const body = yield* requireObjectEffect<CreateComplaintRequest>(validatedInput.body, 'body');
+      const complaintRequest = yield* requireObjectEffect<CreateComplaintRequest>(
+        validatedInput.body,
+        'body',
+      );
 
-      return yield* requestPostEffect<CreateComplaintResponse>(client, path, body);
+      return yield* requestPostEffect<CreateComplaintResponse>(client, path, complaintRequest);
     });
   };
 }

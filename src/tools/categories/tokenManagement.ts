@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import { buildCredentialDisplay, maskToken } from '@/auth/credentialSession.js';
 import { getOAuthAuthorizationUrl, validateScopes } from '@/config/environment.js';
 import { defineTool } from '@/tools/defineTool.js';
@@ -38,15 +38,15 @@ const tokenToolError = (
 
 /** Convert an optional token expiry value into a timestamp inside the token tool Effect. */
 const optionalTokenExpiryTimestamp = (
-  value: string | number | undefined,
+  expiry: string | number | undefined,
   operation: TokenManagementToolOperation,
   message: string,
 ): Effect.Effect<number | undefined, TokenManagementToolError> => {
-  if (value === undefined) {
+  if (expiry === undefined) {
     return Effect.succeed(undefined);
   }
 
-  return convertToTimestamp(value).pipe(
+  return convertToTimestamp(expiry).pipe(
     Effect.mapError((error) => tokenToolError(operation, message, error)),
   );
 };
@@ -196,7 +196,7 @@ export const tokenManagementEntries: ToolEntry[] = [
             args.state,
           );
 
-          const result: Record<string, unknown> = {
+          const authorizationDetails: Record<string, unknown> = {
             authorizationUrl: authUrl,
             redirectUri,
             instructions:
@@ -206,10 +206,10 @@ export const tokenManagementEntries: ToolEntry[] = [
           };
 
           if (scopeValidation.warnings.length > 0) {
-            result.warnings = scopeValidation.warnings;
+            authorizationDetails.warnings = scopeValidation.warnings;
           }
 
-          return result;
+          return authorizationDetails;
         }),
       ),
   }),
@@ -482,7 +482,7 @@ export const tokenManagementEntries: ToolEntry[] = [
       'COMMON ERRORS:\n' +
       '- "invalid or was issued to another client": Code expired, get fresh code\n' +
       '- "Insufficient permissions": Re-run OAuth flow with additional scopes in ebay_get_oauth_url\n\n' +
-      'For complete OAuth guide with scopes, troubleshooting, and examples, see: docs/auth/OAUTH_QUICK_REFERENCE.md',
+      'For scopes and rate limits, see the "Authentication & rate limits" section of the ebay-mcp README.',
     inputSchema: exchangeAuthorizationCodeInputSchema.shape,
     outputSchema: {
       type: 'object',

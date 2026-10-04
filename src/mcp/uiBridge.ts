@@ -25,7 +25,7 @@ import { serverLogger } from '@/utils/logger.js';
  * stays a thin registration loop:
  *
  *  - it registers the archetype HTML files as `ui://` resources (skipping any that
- *    are not built, so a dev run without `build:ui` degrades to text, not a crash);
+ *    are not built, so a dev run without `build:mcp-apps` degrades to text, not a crash);
  *  - it gates UI strictly: views are only advertised to clients that announce the
  *    MCP Apps capability, and never when `EBAY_MCP_UI=off`; and
  *  - it projects a UI-eligible tool's result into its view model for emission.
@@ -127,7 +127,7 @@ const asStructuredContent = (view: ViewModel): Record<string, unknown> =>
  * `_meta.ui.resourceUri` that tells the host which app to render.
  *
  * @param ui - Resolved UI binding attached to the executed tool entry.
- * @param result - Raw tool handler result to project into a view model.
+ * @param handlerOutput - Raw tool handler result to project into a view model.
  * @returns SDK call result carrying text, structured content, and UI metadata.
  *
  * @example
@@ -135,8 +135,8 @@ const asStructuredContent = (view: ViewModel): Record<string, unknown> =>
  * const toolResult = buildUiToolResult(entry.ui, handlerResult);
  * ```
  */
-export const buildUiToolResult = (ui: ResolvedToolUi, result: unknown): CallToolResult => {
-  const view = ui.map(result);
+export const buildUiToolResult = (ui: ResolvedToolUi, handlerOutput: unknown): CallToolResult => {
+  const view = ui.map(handlerOutput);
   return {
     content: [{ type: 'text', text: summarizeView(view) }],
     structuredContent: asStructuredContent(view),

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { createMediaFixture, type MediaFixture } from '@tests/helpers/mediaFixtures.js';
@@ -47,13 +47,15 @@ let client: Client;
 let runtime: EbayMcpRuntime;
 
 const callTool = async (name: string, args: Record<string, unknown>) => {
-  const result = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
-  const text = result.content.map((block) => (block.type === 'text' ? block.text : '')).join('');
-  return { isError: result.isError === true, text, content: result.content };
+  const toolResult = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
+  const text = toolResult.content
+    .map((block) => (block.type === 'text' ? block.text : ''))
+    .join('');
+  return { isError: toolResult.isError === true, text, content: toolResult.content };
 };
 const payloadOf = async (name: string, args: Record<string, unknown>) => {
-  const result = await callTool(name, args);
-  return { isError: result.isError, payload: JSON.parse(result.text) as unknown };
+  const toolResult = await callTool(name, args);
+  return { isError: toolResult.isError, payload: JSON.parse(toolResult.text) as unknown };
 };
 
 beforeAll(async () => {
@@ -274,15 +276,15 @@ describe('feed read tools', () => {
     args,
     resource,
     query,
-    response,
+    response: feedDocument,
   }) => {
-    const request = nock(HOST)
+    const readScope = nock(HOST)
       .get(`${FEED}${resource}`)
       .query(query ?? {})
-      .reply(200, response);
+      .reply(200, feedDocument);
 
-    expect(await payloadOf(tool, args)).toEqual({ isError: false, payload: response });
-    expect(request.isDone()).toBe(true);
+    expect(await payloadOf(tool, args)).toEqual({ isError: false, payload: feedDocument });
+    expect(readScope.isDone()).toBe(true);
   });
 
   it.each(downloads)('$tool embeds the downloaded file', async ({
@@ -293,7 +295,7 @@ describe('feed read tools', () => {
     mimeType,
     bytes,
   }) => {
-    const request = nock(HOST)
+    const downloadScope = nock(HOST)
       .get(`${FEED}${resource}`)
       .matchHeader('accept', 'application/octet-stream')
       .reply(200, bytes, {
@@ -301,15 +303,15 @@ describe('feed read tools', () => {
         'Content-Disposition': 'attachment; filename="feed.bin"',
       });
 
-    const result = await callTool(tool, args);
+    const downloadResult = await callTool(tool, args);
 
-    expect(result.isError).toBe(false);
-    expect(result.text).toContain(`feed.bin (${mimeType}, ${bytes.length} bytes)`);
-    expect(result.content.find((block) => block.type === 'resource')).toEqual({
+    expect(downloadResult.isError).toBe(false);
+    expect(downloadResult.text).toContain(`feed.bin (${mimeType}, ${bytes.length} bytes)`);
+    expect(downloadResult.content.find((block) => block.type === 'resource')).toEqual({
       type: 'resource',
       resource: { uri, mimeType, blob: bytes.toString('base64') },
     });
-    expect(request.isDone()).toBe(true);
+    expect(downloadScope.isDone()).toBe(true);
   });
 });
 
@@ -321,7 +323,7 @@ describe('feed create tools', () => {
     headers,
   }) => {
     const location = `https://api.ebay.com${FEED}${collection}/TASK-9`;
-    const request = nock(HOST, { reqheaders: headers ?? {} })
+    const createScope = nock(HOST, { reqheaders: headers ?? {} })
       .post(`${FEED}${collection}`, args.task)
       .reply(202, '', { Location: location });
 
@@ -329,7 +331,7 @@ describe('feed create tools', () => {
       isError: false,
       payload: { taskId: 'TASK-9', location },
     });
-    expect(request.isDone()).toBe(true);
+    expect(createScope.isDone()).toBe(true);
   });
 
   it('creates, updates and deletes a schedule', async () => {
@@ -352,7 +354,7 @@ describe('feed create tools', () => {
       isError: false,
       payload: { status: 'success' },
     });
-    expect([create, put, remove].every((request) => request.isDone())).toBe(true);
+    expect([create, put, remove].every((scope) => scope.isDone())).toBe(true);
   });
 });
 
@@ -362,18 +364,20 @@ describe('feed file uploads', () => {
     await writeFile(path.join(fixture.root, 'add-items.xml'), xml);
     let multipart = '';
     const upload = nock(HOST, { reqheaders: { 'content-type': MULTIPART_CONTENT_TYPE } })
-      .post(`${FEED}/task/T-1/upload_file`, (body) => {
-        multipart = Buffer.isBuffer(body) ? body.toString() : String(body);
+      .post(`${FEED}/task/T-1/upload_file`, (multipartBody) => {
+        multipart = Buffer.isBuffer(multipartBody)
+          ? multipartBody.toString()
+          : String(multipartBody);
         return true;
       })
       .reply(200, {});
 
-    const result = await payloadOf('ebay_upload_feed_task_file', {
+    const uploadResult = await payloadOf('ebay_upload_feed_task_file', {
       taskId: 'T-1',
       path: 'media://add-items.xml',
     });
 
-    expect(result).toEqual({ isError: false, payload: {} });
+    expect(uploadResult).toEqual({ isError: false, payload: {} });
     expect(upload.isDone()).toBe(true);
     for (const field of [
       'name="fileName"',
@@ -392,13 +396,13 @@ describe('feed file uploads', () => {
     await writeFile(outsideFile, '<BulkDataExchangeRequests/>');
     const upload = nock(HOST).post(`${FEED}/task/T-1/upload_file`).reply(200, {});
 
-    const result = await callTool('ebay_upload_feed_task_file', {
+    const rejectedUpload = await callTool('ebay_upload_feed_task_file', {
       taskId: 'T-1',
       path: outsideFile,
     });
 
-    expect(result.isError).toBe(true);
-    expect(result.text).toContain('outside the allowed media directories');
+    expect(rejectedUpload.isError).toBe(true);
+    expect(rejectedUpload.text).toContain('outside the allowed media directories');
     expect(upload.isDone()).toBe(false);
   });
 });
@@ -408,9 +412,9 @@ describe('feed errors', () => {
     const errors = [{ errorId: 160_022, domain: 'API_FEED', message: 'The task ID is invalid.' }];
     nock(HOST).get(`${FEED}/order_task/BAD`).reply(400, { errors });
 
-    const result = await payloadOf('ebay_get_order_task', { taskId: 'BAD' });
+    const invalidTask = await payloadOf('ebay_get_order_task', { taskId: 'BAD' });
 
-    expect(result.isError).toBe(true);
-    expect(result.payload).toMatchObject({ status: 400, details: errors });
+    expect(invalidTask.isError).toBe(true);
+    expect(invalidTask.payload).toMatchObject({ status: 400, details: errors });
   });
 });

@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { AnalyticsApi } from '@/api/analytics-and-report/analytics.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 /** Analytics API test harness with the API instance and mocked eBay client. */
 export interface AnalyticsApiHarness {

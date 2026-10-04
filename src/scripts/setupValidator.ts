@@ -305,7 +305,7 @@ export const validateSetup = async (projectRoot: string): Promise<ValidationSumm
   }
 
   // Calculate summary
-  const passed = results.filter((r) => r.passed).length;
+  const passed = results.filter((check) => check.passed).length;
   const failed = results.length - passed;
 
   // Print summary
@@ -332,15 +332,15 @@ export const validateSetup = async (projectRoot: string): Promise<ValidationSumm
 /**
  * Prints a single validation result.
  */
-const printResult = (result: ValidationResult): void => {
-  const icon = result.passed ? chalk.green('✓') : chalk.red('✗');
-  const status = result.passed ? chalk.green('PASS') : chalk.red('FAIL');
+const printResult = (validation: ValidationResult): void => {
+  const icon = validation.passed ? chalk.green('✓') : chalk.red('✗');
+  const status = validation.passed ? chalk.green('PASS') : chalk.red('FAIL');
 
-  writeCliLine(`${icon} ${chalk.bold(result.test)}: ${status}`);
-  writeCliLine(`  ${chalk.gray(result.message)}`);
+  writeCliLine(`${icon} ${chalk.bold(validation.test)}: ${status}`);
+  writeCliLine(`  ${chalk.gray(validation.message)}`);
 
-  if (result.error) {
-    writeCliLine(`  ${chalk.yellow('→')} ${chalk.yellow(result.error)}`);
+  if (validation.error) {
+    writeCliLine(`  ${chalk.yellow('→')} ${chalk.yellow(validation.error)}`);
   }
 
   writeCliLine('');
@@ -358,7 +358,7 @@ const printResult = (result: ValidationResult): void => {
  */
 export const displayRecommendations = (summary: ValidationSummary): void => {
   const hasUserTokens = summary.results.some(
-    (r) => r.test === 'User Tokens' && r.passed && !r.error,
+    (validation) => validation.test === 'User Tokens' && validation.passed && !validation.error,
   );
 
   writeCliLine(chalk.bold.cyan('💡 Recommendations:\n'));

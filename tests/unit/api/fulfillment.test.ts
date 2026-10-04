@@ -10,7 +10,7 @@ import {
   type ShippingFulfillmentDetails,
   type ShippingFulfillmentPagedCollection,
 } from '@/api/order-management/fulfillment.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('FulfillmentApi', () => {
   let fulfillmentApi: FulfillmentApi;
@@ -45,10 +45,10 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(fulfillmentApi.getOrders());
+      const orderPage = await Effect.runPromise(fulfillmentApi.getOrders());
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/fulfillment/v1/order');
-      expect(result).toEqual(mockResponse);
+      expect(orderPage).toEqual(mockResponse);
     });
 
     it('maps order filters to eBay query names', async () => {
@@ -106,10 +106,10 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.get).mockResolvedValue(mockOrder);
 
-      const result = await Effect.runPromise(fulfillmentApi.getOrder({ orderId: '12345-67890' }));
+      const order = await Effect.runPromise(fulfillmentApi.getOrder({ orderId: '12345-67890' }));
 
       expect(mockClient.get).toHaveBeenCalledWith('/sell/fulfillment/v1/order/12345-67890');
-      expect(result).toEqual(mockOrder);
+      expect(order).toEqual(mockOrder);
     });
 
     it('passes fieldGroups when requested', async () => {
@@ -134,7 +134,7 @@ describe('FulfillmentApi', () => {
 
   describe('createShippingFulfillment', () => {
     it('creates a shipping fulfillment for an order', async () => {
-      const body: ShippingFulfillmentDetails = {
+      const fulfillmentDetails: ShippingFulfillmentDetails = {
         lineItems: [
           {
             lineItemId: '1',
@@ -147,15 +147,18 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.post).mockResolvedValue({});
 
-      const result = await Effect.runPromise(
-        fulfillmentApi.createShippingFulfillment({ orderId: '12345-67890', body }),
+      const createdFulfillment = await Effect.runPromise(
+        fulfillmentApi.createShippingFulfillment({
+          orderId: '12345-67890',
+          body: fulfillmentDetails,
+        }),
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/shipping_fulfillment',
-        body,
+        fulfillmentDetails,
       );
-      expect(result).toEqual({});
+      expect(createdFulfillment).toEqual({});
     });
 
     it('fails with a tagged input error when body is missing', async () => {
@@ -189,14 +192,14 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.get).mockResolvedValue(mockResponse);
 
-      const result = await Effect.runPromise(
+      const fulfillments = await Effect.runPromise(
         fulfillmentApi.getShippingFulfillments({ orderId: '12345-67890' }),
       );
 
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/shipping_fulfillment',
       );
-      expect(result).toEqual(mockResponse);
+      expect(fulfillments).toEqual(mockResponse);
     });
   });
 
@@ -217,7 +220,7 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.get).mockResolvedValue(mockFulfillment);
 
-      const result = await Effect.runPromise(
+      const fulfillment = await Effect.runPromise(
         fulfillmentApi.getShippingFulfillment({
           orderId: '12345-67890',
           fulfillmentId: 'FUL-001',
@@ -227,13 +230,13 @@ describe('FulfillmentApi', () => {
       expect(mockClient.get).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/shipping_fulfillment/FUL-001',
       );
-      expect(result).toEqual(mockFulfillment);
+      expect(fulfillment).toEqual(mockFulfillment);
     });
   });
 
   describe('issueRefund', () => {
     it('issues a full refund', async () => {
-      const body: IssueRefundRequest = {
+      const refundRequest: IssueRefundRequest = {
         reasonForRefund: 'BUYER_CANCEL',
         orderLevelRefundAmount: {
           value: '99.99',
@@ -252,19 +255,19 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.post).mockResolvedValue(mockRefund);
 
-      const result = await Effect.runPromise(
-        fulfillmentApi.issueRefund({ orderId: '12345-67890', body }),
+      const refund = await Effect.runPromise(
+        fulfillmentApi.issueRefund({ orderId: '12345-67890', body: refundRequest }),
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/issue_refund',
-        body,
+        refundRequest,
       );
-      expect(result).toEqual(mockRefund);
+      expect(refund).toEqual(mockRefund);
     });
 
     it('issues a partial refund with line items', async () => {
-      const body: IssueRefundRequest = {
+      const refundRequest: IssueRefundRequest = {
         reasonForRefund: 'ITEM_DAMAGED',
         refundItems: [
           {
@@ -288,15 +291,15 @@ describe('FulfillmentApi', () => {
 
       vi.mocked(mockClient.post).mockResolvedValue(mockRefund);
 
-      const result = await Effect.runPromise(
-        fulfillmentApi.issueRefund({ orderId: '12345-67890', body }),
+      const refund = await Effect.runPromise(
+        fulfillmentApi.issueRefund({ orderId: '12345-67890', body: refundRequest }),
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/issue_refund',
-        body,
+        refundRequest,
       );
-      expect(result).toEqual(mockRefund);
+      expect(refund).toEqual(mockRefund);
     });
   });
 });

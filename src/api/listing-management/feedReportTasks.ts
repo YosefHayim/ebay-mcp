@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { decodeEndpointInputEffect, requestGetEffect } from '@/api/shared/request.js';
 import {
   createCustomerServiceMetricTaskInputSchema,
@@ -10,7 +10,7 @@ import {
   getOrderTasksInputSchema,
 } from '@/schemas/inventory-management/feed.js';
 import type { components } from '@/types/sell-apps/listing-management/sellFeedV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 import {
   exclusiveFeedFilters,
@@ -20,17 +20,13 @@ import {
   postFeedTask,
 } from './feedRequest.js';
 
-type FeedTaskIdInput = InferEffectSchema<typeof feedTaskIdInputSchema>;
-type GetOrderTasksInput = InferEffectSchema<typeof getOrderTasksInputSchema>;
-type CreateOrderTaskInput = InferEffectSchema<typeof createOrderTaskInputSchema>;
-type GetInventoryTasksInput = InferEffectSchema<typeof getInventoryTasksInputSchema>;
-type CreateInventoryTaskInput = InferEffectSchema<typeof createInventoryTaskInputSchema>;
-type GetServiceMetricTasksInput = InferEffectSchema<
-  typeof getCustomerServiceMetricTasksInputSchema
->;
-type CreateServiceMetricTaskInput = InferEffectSchema<
-  typeof createCustomerServiceMetricTaskInputSchema
->;
+type FeedTaskIdInput = z.infer<typeof feedTaskIdInputSchema>;
+type GetOrderTasksInput = z.infer<typeof getOrderTasksInputSchema>;
+type CreateOrderTaskInput = z.infer<typeof createOrderTaskInputSchema>;
+type GetInventoryTasksInput = z.infer<typeof getInventoryTasksInputSchema>;
+type CreateInventoryTaskInput = z.infer<typeof createInventoryTaskInputSchema>;
+type GetServiceMetricTasksInput = z.infer<typeof getCustomerServiceMetricTasksInputSchema>;
+type CreateServiceMetricTaskInput = z.infer<typeof createCustomerServiceMetricTaskInputSchema>;
 type CreateOrderTaskRequest = components['schemas']['CreateOrderTaskRequest'];
 type CreateInventoryTaskRequest = components['schemas']['CreateInventoryTaskRequest'];
 type CreateServiceMetricsTaskRequest = components['schemas']['CreateServiceMetricsTaskRequest'];
@@ -86,8 +82,8 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
   const createOrderTask = (input: CreateOrderTaskInput) =>
     decodeEndpointInputEffect(createOrderTaskInputSchema, input).pipe(
       Effect.flatMap(({ task }) => {
-        const body: CreateOrderTaskRequest = task;
-        return postFeedTask(client, '/order_task', body);
+        const orderTaskRequest: CreateOrderTaskRequest = task;
+        return postFeedTask(client, '/order_task', orderTaskRequest);
       }),
     );
 
@@ -134,8 +130,8 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
   const createInventoryTask = (input: CreateInventoryTaskInput) =>
     decodeEndpointInputEffect(createInventoryTaskInputSchema, input).pipe(
       Effect.flatMap(({ task }) => {
-        const body: CreateInventoryTaskRequest = task;
-        return postFeedTask(client, '/inventory_task', body);
+        const inventoryTaskRequest: CreateInventoryTaskRequest = task;
+        return postFeedTask(client, '/inventory_task', inventoryTaskRequest);
       }),
     );
 
@@ -183,9 +179,9 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
   const createCustomerServiceMetricTask = (input: CreateServiceMetricTaskInput) =>
     decodeEndpointInputEffect(createCustomerServiceMetricTaskInputSchema, input).pipe(
       Effect.flatMap(({ task, acceptLanguage }) => {
-        const body: CreateServiceMetricsTaskRequest = task;
+        const metricTaskRequest: CreateServiceMetricsTaskRequest = task;
         const headers = acceptLanguage ? { 'Accept-Language': acceptLanguage } : undefined;
-        return postFeedTask(client, '/customer_service_metric_task', body, headers);
+        return postFeedTask(client, '/customer_service_metric_task', metricTaskRequest, headers);
       }),
     );
 

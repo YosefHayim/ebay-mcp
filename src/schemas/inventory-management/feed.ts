@@ -1,4 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 const nonempty = z.string().min(1).regex(/\S/, 'Must contain a non-whitespace character');
 const taskId = nonempty.describe('Feed task ID, from the Location of a create call or a task list');

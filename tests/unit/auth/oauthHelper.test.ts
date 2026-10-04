@@ -73,15 +73,15 @@ describe('startCallbackServer', () => {
   it('HTML-escapes a malicious error_description in the response page (no reflected XSS)', async () => {
     const { server } = await startCallbackServer(0);
     track(server);
-    const payload = '<script>alert(1)</script>';
+    const maliciousDescription = '<script>alert(1)</script>';
     const response = await fetch(
-      `http://localhost:${portOf(server)}/oauth/callback?error=access_denied&error_description=${encodeURIComponent(payload)}`,
+      `http://localhost:${portOf(server)}/oauth/callback?error=access_denied&error_description=${encodeURIComponent(maliciousDescription)}`,
     );
-    const body = await response.text();
+    const callbackPage = await response.text();
 
     expect(response.status).toBe(400);
-    expect(body).not.toContain(payload);
-    expect(body).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(callbackPage).not.toContain(maliciousDescription);
+    expect(callbackPage).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
   });
 
   it('rejects a state mismatch as a CSRF defense', async () => {

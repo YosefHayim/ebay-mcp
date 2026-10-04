@@ -184,7 +184,7 @@ export const setupLogger = createLogger('Setup');
  * @param method - HTTP method being sent.
  * @param url - Request URL.
  * @param params - Optional query parameters.
- * @param body - Optional request body.
+ * @param requestBody - Optional request body.
  * @returns Nothing; writes to configured logger transports.
  *
  * @example
@@ -196,11 +196,11 @@ export const logRequest = (
   method: string,
   url: string,
   params?: Record<string, unknown>,
-  body?: unknown,
+  requestBody?: unknown,
 ): void => {
   apiLogger.http(`Request: ${method.toUpperCase()} ${url}`, {
     params: params && Object.keys(params).length > 0 ? params : undefined,
-    body: body ? truncateData(body) : undefined,
+    body: requestBody ? truncateData(requestBody) : undefined,
   });
 };
 
@@ -209,20 +209,20 @@ export const logRequest = (
  *
  * @param status - HTTP response status code.
  * @param statusText - HTTP response status text.
- * @param data - Optional response payload.
+ * @param responseBody - Optional response payload.
  * @param rateLimitRemaining - Optional remaining request quota.
  * @param rateLimitTotal - Optional total request quota.
  * @returns Nothing; writes to configured logger transports.
  *
  * @example
  * ```ts
- * logResponse(200, 'OK', data);
+ * logResponse(200, 'OK', responseBody);
  * ```
  */
 export const logResponse = (
   status: number,
   statusText: string,
-  data?: unknown,
+  responseBody?: unknown,
   rateLimitRemaining?: string,
   rateLimitTotal?: string,
 ): void => {
@@ -232,8 +232,8 @@ export const logResponse = (
     meta.rateLimit = `${rateLimitRemaining}/${rateLimitTotal}`;
   }
 
-  if (data) {
-    meta.data = truncateData(data);
+  if (responseBody) {
+    meta.data = truncateData(responseBody);
   }
 
   apiLogger.http(`Response: ${status} ${statusText}`, meta);
@@ -270,17 +270,17 @@ export const logErrorResponse = (
 /**
  * Truncate large data objects for logging
  */
-const truncateData = (data: unknown, maxLength = 1000): unknown => {
+const truncateData = (content: unknown, maxLength = 1000): unknown => {
   // File bodies are logged by size only: serializing a 25 MiB Buffer would build a ~100 MB
   // string and copy the file's opening bytes into the logs.
-  if (data instanceof Uint8Array) {
-    return `[binary ${data.byteLength} bytes]`;
+  if (content instanceof Uint8Array) {
+    return `[binary ${content.byteLength} bytes]`;
   }
-  const str = JSON.stringify(data);
-  if (str.length <= maxLength) {
-    return data;
+  const serialized = JSON.stringify(content);
+  if (serialized.length <= maxLength) {
+    return content;
   }
-  return `${str.substring(0, maxLength)}... [truncated]`;
+  return `${serialized.substring(0, maxLength)}... [truncated]`;
 };
 
 /**

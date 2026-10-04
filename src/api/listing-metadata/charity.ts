@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   decodeEndpointInputEffect,
@@ -8,7 +8,7 @@ import {
 } from '@/api/shared/request.js';
 import { getCharityOrgInputSchema, getCharityOrgsInputSchema } from '@/schemas/taxonomy/charity.js';
 import type { components } from '@/types/sell-apps/listing-metadata/commerceCharityV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 const BASE_PATH = '/commerce/charity/v1';
@@ -23,10 +23,10 @@ const charityRequestConfig = (marketplaceId: string): EbayRequestConfig => ({
 });
 
 /** Charity organization ID and marketplace accepted by getCharityOrg. */
-export type GetCharityOrgInput = InferEffectSchema<typeof getCharityOrgInputSchema>;
+export type GetCharityOrgInput = z.infer<typeof getCharityOrgInputSchema>;
 
 /** Marketplace, search criteria (q or registrationIds), and paging accepted by getCharityOrgs. */
-export type GetCharityOrgsInput = InferEffectSchema<typeof getCharityOrgsInputSchema>;
+export type GetCharityOrgsInput = z.infer<typeof getCharityOrgsInputSchema>;
 
 /**
  * Response returned by getCharityOrg.

@@ -1,7 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { Effect } from 'effect';
@@ -92,10 +92,10 @@ let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
 /** Calls a tool and parses the JSON document carried by its single text block. */
 const callJsonTool = async (name: string, args: Record<string, unknown>) => {
-  const result = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
-  const [block] = result.content;
+  const toolResult = CallToolResultSchema.parse(await client.callTool({ name, arguments: args }));
+  const [block] = toolResult.content;
   return {
-    isError: result.isError === true,
+    isError: toolResult.isError === true,
     payload: block?.type === 'text' ? (JSON.parse(block.text) as unknown) : undefined,
   };
 };
@@ -152,71 +152,73 @@ describe('logistics tool registration', () => {
 
 describe('shipping quote tools', () => {
   it('creates a quote with the request body and the requested marketplace header', async () => {
-    const request = nock(API_HOST)
+    const createQuoteScope = nock(API_HOST)
       .post(`${BASE}/shipping_quote`, shippingQuoteRequest)
       .matchHeader('x-ebay-c-marketplace-id', 'EBAY_MOTORS_US')
       .reply(201, quote);
 
-    const result = await callJsonTool('ebay_create_shipping_quote', {
+    const createdQuote = await callJsonTool('ebay_create_shipping_quote', {
       shippingQuoteRequest,
       marketplaceId: 'EBAY_MOTORS_US',
     });
 
-    expect(result).toEqual({ isError: false, payload: quote });
-    expect(request.isDone()).toBe(true);
+    expect(createdQuote).toEqual({ isError: false, payload: quote });
+    expect(createQuoteScope.isDone()).toBe(true);
   });
 
   it('gets a quote by ID', async () => {
-    const request = nock(API_HOST).get(`${BASE}/shipping_quote/QUOTE-1`).reply(200, quote);
+    const quoteScope = nock(API_HOST).get(`${BASE}/shipping_quote/QUOTE-1`).reply(200, quote);
 
-    const result = await callJsonTool('ebay_get_shipping_quote', { shippingQuoteId: 'QUOTE-1' });
+    const quoteResult = await callJsonTool('ebay_get_shipping_quote', {
+      shippingQuoteId: 'QUOTE-1',
+    });
 
-    expect(result).toEqual({ isError: false, payload: quote });
-    expect(request.isDone()).toBe(true);
+    expect(quoteResult).toEqual({ isError: false, payload: quote });
+    expect(quoteScope.isDone()).toBe(true);
   });
 
   it('rejects an invalid quote request before calling eBay', async () => {
-    const request = nock(API_HOST).post(`${BASE}/shipping_quote`).reply(201, quote);
+    const createQuoteScope = nock(API_HOST).post(`${BASE}/shipping_quote`).reply(201, quote);
     const orders = Array.from({ length: 11 }, (_, index) => ({ orderId: `ORDER-${index}` }));
 
-    const result = CallToolResultSchema.parse(
+    const invalidQuote = CallToolResultSchema.parse(
       await client.callTool({
         name: 'ebay_create_shipping_quote',
         arguments: { shippingQuoteRequest: { ...shippingQuoteRequest, orders } },
       }),
     );
 
-    expect(result.isError).toBe(true);
-    expect(result.content[0]).toMatchObject({
+    expect(invalidQuote.isError).toBe(true);
+    expect(invalidQuote.content[0]).toMatchObject({
       type: 'text',
       text: expect.stringContaining('Array must contain at most 10 element(s)'),
     });
-    expect(request.isDone()).toBe(false);
+    expect(createQuoteScope.isDone()).toBe(false);
   });
 });
 
 describe('shipment purchase tools', () => {
   it('purchases a shipment with the configured marketplace header', async () => {
-    const request = nock(API_HOST)
+    const purchaseScope = nock(API_HOST)
       .post(`${BASE}/shipment/create_from_shipping_quote`, shipmentRequest)
       .matchHeader('x-ebay-c-marketplace-id', 'EBAY_US')
       .reply(201, shipment);
 
-    const result = await callJsonTool('ebay_create_shipment_from_shipping_quote', {
+    const purchasedShipment = await callJsonTool('ebay_create_shipment_from_shipping_quote', {
       shipmentRequest,
     });
 
-    expect(result).toEqual({ isError: false, payload: shipment });
-    expect(request.isDone()).toBe(true);
+    expect(purchasedShipment).toEqual({ isError: false, payload: shipment });
+    expect(purchaseScope.isDone()).toBe(true);
   });
 
   it('gets a shipment by ID', async () => {
-    const request = nock(API_HOST).get(`${BASE}/shipment/SHIP-1`).reply(200, shipment);
+    const shipmentScope = nock(API_HOST).get(`${BASE}/shipment/SHIP-1`).reply(200, shipment);
 
-    const result = await callJsonTool('ebay_get_shipment', { shipmentId: 'SHIP-1' });
+    const shipmentResult = await callJsonTool('ebay_get_shipment', { shipmentId: 'SHIP-1' });
 
-    expect(result).toEqual({ isError: false, payload: shipment });
-    expect(request.isDone()).toBe(true);
+    expect(shipmentResult).toEqual({ isError: false, payload: shipment });
+    expect(shipmentScope.isDone()).toBe(true);
   });
 
   it('surfaces a rejected purchase with the eBay error detail', async () => {
@@ -225,12 +227,12 @@ describe('shipment purchase tools', () => {
     ];
     nock(API_HOST).post(`${BASE}/shipment/create_from_shipping_quote`).reply(400, { errors });
 
-    const result = await callJsonTool('ebay_create_shipment_from_shipping_quote', {
+    const rejectedPurchase = await callJsonTool('ebay_create_shipment_from_shipping_quote', {
       shipmentRequest,
     });
 
-    expect(result.isError).toBe(true);
-    expect(result.payload).toMatchObject({ status: 400, details: errors });
+    expect(rejectedPurchase.isError).toBe(true);
+    expect(rejectedPurchase.payload).toMatchObject({ status: 400, details: errors });
   });
 });
 
@@ -240,19 +242,19 @@ describe('shipment cancel and label tools', () => {
       ...shipment,
       cancellation: { cancellationStatus: 'CANCELED_BY_SELLER' },
     };
-    const request = nock(API_HOST)
-      .post(`${BASE}/shipment/SHIP-1/cancel`, (body) => body === '')
+    const cancelScope = nock(API_HOST)
+      .post(`${BASE}/shipment/SHIP-1/cancel`, (cancelBody) => cancelBody === '')
       .reply(200, canceled);
 
-    const result = await callJsonTool('ebay_cancel_shipment', { shipmentId: 'SHIP-1' });
+    const cancelResult = await callJsonTool('ebay_cancel_shipment', { shipmentId: 'SHIP-1' });
 
-    expect(result).toEqual({ isError: false, payload: canceled });
-    expect(request.isDone()).toBe(true);
+    expect(cancelResult).toEqual({ isError: false, payload: canceled });
+    expect(cancelScope.isDone()).toBe(true);
   });
 
   it('returns the shipping label as an embedded PDF resource', async () => {
     const pdf = Buffer.from('%PDF-1.7\nlabel\n%%EOF');
-    const request = nock(API_HOST)
+    const labelScope = nock(API_HOST)
       .get(`${BASE}/shipment/SHIP-1/download_label_file`)
       .matchHeader('accept', 'application/pdf')
       .reply(200, pdf, {
@@ -260,15 +262,15 @@ describe('shipment cancel and label tools', () => {
         'Content-Disposition': 'inline; filename="SHIP-1.pdf"',
       });
 
-    const result = CallToolResultSchema.parse(
+    const labelResult = CallToolResultSchema.parse(
       await client.callTool({
         name: 'ebay_download_shipping_label_file',
         arguments: { shipmentId: 'SHIP-1' },
       }),
     );
 
-    expect(result.isError).not.toBe(true);
-    expect(result.content).toEqual([
+    expect(labelResult.isError).not.toBe(true);
+    expect(labelResult.content).toEqual([
       {
         type: 'text',
         text: `Shipping label for shipment SHIP-1 SHIP-1.pdf (application/pdf, ${pdf.length} bytes)`,
@@ -282,6 +284,6 @@ describe('shipment cancel and label tools', () => {
         },
       },
     ]);
-    expect(request.isDone()).toBe(true);
+    expect(labelScope.isDone()).toBe(true);
   });
 });

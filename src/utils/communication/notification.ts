@@ -1,9 +1,9 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import { idSchema } from '@/utils/schemaHelpers.js';
 
 /**
- * Effect-backed schemas for Notification API input validation.
- * OpenAPI spec: docs/sell-apps/communication/commerce_notification_v1_oas3.json
+ * Zod schemas for Notification API input validation.
+ * OpenAPI spec: commerce_notification_v1_oas3.json
  */
 
 /** Optional positive page size accepted by Notification list endpoints. */

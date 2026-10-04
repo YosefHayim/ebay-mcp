@@ -9,8 +9,8 @@
     "ebay-mcp": "build/index.js"
   },
   "scripts": {
-    "build": "tsc && tsc-alias && npm run build:ui",
-    "build:ui": "tsx src/scripts/buildUi.ts",
+    "build": "tsc && tsc-alias && pnpm run build:mcp-apps",
+    "build:mcp-apps": "tsx src/scripts/buildMcpApps.ts",
     "start": "node build/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
@@ -21,15 +21,15 @@
     "sync": "tsx src/scripts/devSync.ts",
     "diagnose": "node build/scripts/diagnostics.js",
     "typecheck": "tsc --noEmit",
-    "typecheck:ui": "tsc -p ui/tsconfig.json --noEmit",
-    "check": "tsc --noEmit && tsc -p ui/tsconfig.json --noEmit && biome check \"{src,ui}/**/*.{ts,tsx,js,json,md,css,html}\"",
+    "typecheck:mcp-apps": "tsc -p mcp-apps/tsconfig.json --noEmit",
+    "check": "tsc --noEmit && tsc -p mcp-apps/tsconfig.json --noEmit && biome check \"{src,mcp-apps}/**/*.{ts,tsx,js,json,md,css,html}\"",
     "check:ci": "biome ci .",
-    "verify": "npm run check:ci && npm run typecheck && npm run typecheck:ui && npm run test && npm run build",
-    "fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true \"{src,ui}/**/*.{ts,tsx,js,json,md,css,html}\"",
+    "verify": "pnpm run check:ci && pnpm run typecheck && pnpm run typecheck:mcp-apps && pnpm run test && pnpm run build",
+    "fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true \"{src,mcp-apps}/**/*.{ts,tsx,js,json,md,css,html}\"",
     "lint": "biome check .",
     "lint:fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true .",
     "format": "biome format --write .",
-    "prepare": "npm run build && husky"
+    "prepare": "pnpm run build && husky"
   },
   "keywords": [
     "mcp",
@@ -65,9 +65,7 @@
     "build/index.d.ts",
     "build/serverHttp.d.ts",
     "public/icons/*.png",
-    "README.md",
-    "docs/auth/production_scopes.json",
-    "docs/auth/sandbox_scopes.json"
+    "README.md"
   ],
   "repository": {
     "type": "git",
@@ -83,7 +81,6 @@
     "chalk": "^5.6.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "dotenv-stringify": "^3.0.1",
     "effect": "^3.21.4",
     "express": "^5.2.1",
     "fast-xml-builder": "1.2.0",

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import nock from 'nock';
 import { executeTool } from '@/tools/index.js';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { mockEbayApiEndpoint, mockEbayApiError, cleanupMocks } from '@tests/helpers/mockHttp.js';
 import process from 'node:process';
@@ -95,13 +95,13 @@ describe('Inventory Tools Integration Tests', () => {
         mockResponse,
       );
 
-      const result = await executeTool(api, 'ebay_get_inventory_items', {
+      const inventoryPage = await executeTool(api, 'ebay_get_inventory_items', {
         limit: 25,
         offset: 0,
       });
 
-      expect(result).toEqual(mockResponse);
-      expect(result.inventoryItems).toHaveLength(2);
+      expect(inventoryPage).toEqual(mockResponse);
+      expect(inventoryPage.inventoryItems).toHaveLength(2);
     });
 
     it('handle pagination', async () => {
@@ -119,13 +119,13 @@ describe('Inventory Tools Integration Tests', () => {
         mockResponse,
       );
 
-      const result = await executeTool(api, 'ebay_get_inventory_items', {
+      const inventoryPage = await executeTool(api, 'ebay_get_inventory_items', {
         limit: 10,
         offset: 20,
       });
 
-      expect(result.limit).toBe(10);
-      expect(result.offset).toBe(20);
+      expect(inventoryPage.limit).toBe(10);
+      expect(inventoryPage.offset).toBe(20);
     });
   });
 
@@ -157,12 +157,12 @@ describe('Inventory Tools Integration Tests', () => {
         mockItem,
       );
 
-      const result = await executeTool(api, 'ebay_get_inventory_item', {
+      const fetchedItem = await executeTool(api, 'ebay_get_inventory_item', {
         sku: 'TEST-SKU-001',
       });
 
-      expect(result.sku).toBe('TEST-SKU-001');
-      expect(result.product.title).toBe('Test Product');
+      expect(fetchedItem.sku).toBe('TEST-SKU-001');
+      expect(fetchedItem.product.title).toBe('Test Product');
     });
 
     it('throw error for non-existent SKU', async () => {
@@ -260,12 +260,12 @@ describe('Inventory Tools Integration Tests', () => {
 
       mockEbayApiEndpoint('/sell/inventory/v1/offer?sku=TEST-001', 'get', 'sandbox', mockResponse);
 
-      const result = await executeTool(api, 'ebay_get_offers', {
+      const offerPage = await executeTool(api, 'ebay_get_offers', {
         sku: 'TEST-001',
       });
 
-      expect(result.offers).toHaveLength(1);
-      expect(result.offers[0].sku).toBe('TEST-001');
+      expect(offerPage.offers).toHaveLength(1);
+      expect(offerPage.offers[0].sku).toBe('TEST-001');
     });
 
     it('filter by marketplace', async () => {
@@ -281,12 +281,12 @@ describe('Inventory Tools Integration Tests', () => {
         mockResponse,
       );
 
-      const result = await executeTool(api, 'ebay_get_offers', {
+      const offerPage = await executeTool(api, 'ebay_get_offers', {
         marketplaceId: 'EBAY_US',
         sku: 'TEST-001',
       });
 
-      expect(result.offers[0].marketplaceId).toBe('EBAY_US');
+      expect(offerPage.offers[0].marketplaceId).toBe('EBAY_US');
     });
   });
 
@@ -311,11 +311,11 @@ describe('Inventory Tools Integration Tests', () => {
 
       mockEbayApiEndpoint('/sell/inventory/v1/offer', 'post', 'sandbox', mockResponse, 201);
 
-      const result = await executeTool(api, 'ebay_create_offer', {
+      const createdOffer = await executeTool(api, 'ebay_create_offer', {
         body: offerData,
       });
 
-      expect(result.offerId).toBe('9876543210');
+      expect(createdOffer.offerId).toBe('9876543210');
     });
   });
 
@@ -335,12 +335,12 @@ describe('Inventory Tools Integration Tests', () => {
         mockResponse,
       );
 
-      const result = await executeTool(api, 'ebay_publish_offer', {
+      const publishedListing = await executeTool(api, 'ebay_publish_offer', {
         offerId: '1234567890',
       });
 
-      expect(result.listingId).toBe('110123456789');
-      expect(result.statusCode).toBe(200);
+      expect(publishedListing.listingId).toBe('110123456789');
+      expect(publishedListing.statusCode).toBe(200);
     });
 
     it('handle publish errors', async () => {
@@ -382,10 +382,10 @@ describe('Inventory Tools Integration Tests', () => {
 
       mockEbayApiEndpoint('/sell/inventory/v1/location', 'get', 'sandbox', mockResponse);
 
-      const result = await executeTool(api, 'ebay_get_inventory_locations', {});
+      const locationPage = await executeTool(api, 'ebay_get_inventory_locations', {});
 
-      expect(result.locations).toHaveLength(1);
-      expect(result.locations[0].name).toBe('Main Warehouse');
+      expect(locationPage.locations).toHaveLength(1);
+      expect(locationPage.locations[0].name).toBe('Main Warehouse');
     });
   });
 

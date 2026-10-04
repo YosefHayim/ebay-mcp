@@ -1,16 +1,11 @@
 import { offerSchema, updateOfferBodySchema } from '@/schemas/inventory-management/inventory.js';
-import { decodeEffectSchema } from '@/utils/effectSchema.js';
-import { Effect, Either } from 'effect';
 import { describe, expect, it } from 'vitest';
 
-const decodeOffer = (value: unknown) =>
-  Effect.runSync(Effect.either(decodeEffectSchema(offerSchema, value)));
-
-const usd = (value: string) => ({ currency: 'USD', value });
+const usd = (amount: string) => ({ currency: 'USD', value: amount });
 
 describe('offer schema listing formats', () => {
   it('accepts auction pricing and a day-count duration', () => {
-    const result = decodeOffer({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'AUCTION-1',
       marketplaceId: 'EBAY_US',
       format: 'AUCTION',
@@ -18,38 +13,40 @@ describe('offer schema listing formats', () => {
       pricingSummary: { auctionStartPrice: usd('9.99'), auctionReservePrice: usd('25.00') },
     });
 
-    expect(Either.isRight(result)).toBe(true);
+    expect(parsedOffer.success).toBe(true);
   });
 
   it('no longer requires pricingSummary.price', () => {
-    const result = decodeOffer({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'AUCTION-1',
       marketplaceId: 'EBAY_US',
       format: 'AUCTION',
       pricingSummary: { auctionStartPrice: usd('9.99') },
     });
 
-    expect(Either.isRight(result)).toBe(true);
+    expect(parsedOffer.success).toBe(true);
   });
 
   it('rejects listing durations eBay does not define', () => {
-    const result = decodeOffer({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'SKU-1',
       marketplaceId: 'EBAY_US',
       format: 'AUCTION',
       listingDuration: 'DAYS_2',
     });
 
-    expect(Either.isLeft(result)).toBe(true);
+    expect(parsedOffer.success).toBe(false);
   });
 
   it('still requires the offer keys', () => {
-    expect(Either.isLeft(decodeOffer({ marketplaceId: 'EBAY_US', format: 'AUCTION' }))).toBe(true);
-    expect(Either.isLeft(decodeOffer({ sku: 'SKU-1', marketplaceId: 'EBAY_US' }))).toBe(true);
+    expect(offerSchema.safeParse({ marketplaceId: 'EBAY_US', format: 'AUCTION' }).success).toBe(
+      false,
+    );
+    expect(offerSchema.safeParse({ sku: 'SKU-1', marketplaceId: 'EBAY_US' }).success).toBe(false);
   });
 
   it('passes generated fields it does not model through to the request', () => {
-    const result = decodeOffer({
+    const parsedOffer = offerSchema.safeParse({
       sku: 'SKU-1',
       marketplaceId: 'EBAY_US',
       format: 'FIXED_PRICE',
@@ -58,9 +55,9 @@ describe('offer schema listing formats', () => {
       pricingSummary: { originallySoldForRetailPriceOn: 'ON_EBAY' },
     });
 
-    expect(Either.isRight(result)).toBe(true);
-    if (Either.isRight(result)) {
-      expect(result.right).toMatchObject({
+    expect(parsedOffer.success).toBe(true);
+    if (parsedOffer.success) {
+      expect(parsedOffer.data).toMatchObject({
         regulatory: { energyEfficiencyLabel: { imageDescription: 'A+' } },
         listingPolicies: { shippingCostOverrides: [{ priority: 1 }] },
         pricingSummary: { originallySoldForRetailPriceOn: 'ON_EBAY' },
@@ -71,15 +68,11 @@ describe('offer schema listing formats', () => {
 
 describe('update offer body schema', () => {
   it('accepts auction fields without the offer keys', () => {
-    const result = Effect.runSync(
-      Effect.either(
-        decodeEffectSchema(updateOfferBodySchema, {
-          listingDuration: 'DAYS_3',
-          pricingSummary: { auctionStartPrice: usd('1.00') },
-        }),
-      ),
-    );
+    const parsedUpdate = updateOfferBodySchema.safeParse({
+      listingDuration: 'DAYS_3',
+      pricingSummary: { auctionStartPrice: usd('1.00') },
+    });
 
-    expect(Either.isRight(result)).toBe(true);
+    expect(parsedUpdate.success).toBe(true);
   });
 });

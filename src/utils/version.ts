@@ -163,7 +163,7 @@ export const getCachedUpdateNotice = (): string | undefined => {
  *
  * @example
  * ```ts
- * const info = await getUpdateInfo();
+ * const updateInfo = await getUpdateInfo();
  * ```
  */
 export const getUpdateInfo = async (): Promise<

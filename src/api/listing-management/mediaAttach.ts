@@ -96,13 +96,13 @@ interface ProductMedia {
 const dedupe = (values: readonly string[]): string[] => [...new Set(values)];
 
 /** Keeps only the fields createOrReplaceInventoryItem accepts (drops sku/group metadata). */
-const toInventoryItemBody = (item: InventoryItemWithSku): InventoryItem => ({
-  availability: item.availability,
-  condition: item.condition,
-  conditionDescription: item.conditionDescription,
-  conditionDescriptors: item.conditionDescriptors,
-  packageWeightAndSize: item.packageWeightAndSize,
-  product: item.product,
+const toInventoryItemBody = (inventoryItem: InventoryItemWithSku): InventoryItem => ({
+  availability: inventoryItem.availability,
+  condition: inventoryItem.condition,
+  conditionDescription: inventoryItem.conditionDescription,
+  conditionDescriptors: inventoryItem.conditionDescriptors,
+  packageWeightAndSize: inventoryItem.packageWeightAndSize,
+  product: inventoryItem.product,
 });
 
 /** `Content-Language` value for an inventory item locale such as `en_US`. */
@@ -183,10 +183,10 @@ const failedOutcome = (
   error: getErrorMessage(cause),
 });
 
-const attachFailure = (summary: string, result: AttachMediaResult): MediaAttachError =>
+const attachFailure = (summary: string, attachResult: AttachMediaResult): MediaAttachError =>
   new MediaAttachError({
-    message: `${summary}. Results: ${JSON.stringify({ images: result.images, videos: result.videos })}`,
-    result,
+    message: `${summary}. Results: ${JSON.stringify({ images: attachResult.images, videos: attachResult.videos })}`,
+    result: attachResult,
   });
 
 /** Uploads every file, turning each failure into a `failed` outcome instead of aborting. */
@@ -256,7 +256,7 @@ export const createMediaAttachMethods = (
       const { images, videos } = yield* uploadAll(media, input);
       const failed = [...images, ...videos].filter((outcome) => outcome.status === 'failed');
       const uploaded = uploadedMedia(images, videos);
-      const result: AttachMediaResult = {
+      const attachResult: AttachMediaResult = {
         sku: input.sku,
         updated: false,
         images,
@@ -268,7 +268,7 @@ export const createMediaAttachMethods = (
         return yield* Effect.fail(
           attachFailure(
             `${failed.length} of ${total} uploads failed; inventory item ${input.sku} was not updated (pass allowPartial: true to attach the successful ones)`,
-            result,
+            attachResult,
           ),
         );
       }
@@ -276,7 +276,7 @@ export const createMediaAttachMethods = (
         return yield* Effect.fail(
           attachFailure(
             `no media was uploaded successfully; inventory item ${input.sku} was not updated`,
-            result,
+            attachResult,
           ),
         );
       }
@@ -292,6 +292,6 @@ export const createMediaAttachMethods = (
         body: { ...toInventoryItemBody(latest), product: { ...product, ...merged } },
       });
 
-      return { ...result, ...merged, updated: true };
+      return { ...attachResult, ...merged, updated: true };
     }),
 });

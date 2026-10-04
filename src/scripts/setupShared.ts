@@ -27,9 +27,9 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
 
   const parsed = dotenv.parse(readFileSync(envPath, 'utf-8'));
   const envConfig: Record<string, string> = {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (value && !value.includes('_here')) {
-      envConfig[key] = value;
+  for (const [key, envValue] of Object.entries(parsed)) {
+    if (envValue && !envValue.includes('_here')) {
+      envConfig[key] = envValue;
     }
   }
 
@@ -37,35 +37,9 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
 };
 
 /**
- * Quote a value for safe inclusion in a `.env` line.
- *
- * eBay OAuth tokens look like `v^1.1#i^1#...`; dotenv treats an unquoted `#` as
- * the start of an inline comment, so an unquoted token is truncated to `v^1.1`
- * on the next read — silently breaking authentication. Wrap any value
- * containing `#`, whitespace, or quote characters in double quotes (escaping
- * embedded backslashes and double quotes) so dotenv restores it verbatim. This
- * mirrors the quoting `dotenv-stringify` already applies in the runtime
- * credential store, keeping both `.env` writers consistent.
- *
- * @param value - Raw environment value to serialize.
- * @returns A dotenv-safe value string.
- *
- * @example
- * ```ts
- * const line = `EBAY_USER_REFRESH_TOKEN=${quoteEnvValue(token)}`;
- * ```
- */
-export const quoteEnvValue = (value: string): string => {
-  if (value === '' || !/[#\s"'`]/.test(value)) {
-    return value;
-  }
-  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
-};
-
-/**
  * Parse environment with safe sandbox default.
  *
- * @param value - Optional environment value from config or user input.
+ * @param environmentName - Optional environment value from config or user input.
  * @returns `production` only for an exact production value; otherwise `sandbox`.
  *
  * @example
@@ -73,5 +47,5 @@ export const quoteEnvValue = (value: string): string => {
  * const environment = readEnvironment(config.EBAY_ENVIRONMENT);
  * ```
  */
-export const readEnvironment = (value?: string): 'sandbox' | 'production' =>
-  value === 'production' ? 'production' : 'sandbox';
+export const readEnvironment = (environmentName?: string): 'sandbox' | 'production' =>
+  environmentName === 'production' ? 'production' : 'sandbox';

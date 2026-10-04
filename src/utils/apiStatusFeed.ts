@@ -47,10 +47,10 @@ const stripHtml = (html: string): string =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const normalizeString = (value: unknown): string => {
-  if (value == null) return '';
-  if (typeof value === 'string') return value.trim();
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+const normalizeString = (field: unknown): string => {
+  if (field == null) return '';
+  if (typeof field === 'string') return field.trim();
+  if (typeof field === 'number' || typeof field === 'boolean') return String(field).trim();
   return '';
 };
 
@@ -141,12 +141,12 @@ export const getApiStatusFeed = (
 
             if (statusFilter) {
               items = items.filter(
-                (item) => item.status.toLowerCase() === statusFilter.toLowerCase(),
+                (entry) => entry.status.toLowerCase() === statusFilter.toLowerCase(),
               );
             }
             if (apiFilter?.trim()) {
               const needle = apiFilter.trim().toLowerCase();
-              items = items.filter((item) => item.api.toLowerCase().includes(needle));
+              items = items.filter((entry) => entry.api.toLowerCase().includes(needle));
             }
 
             items = items.slice(0, Math.min(limit, 50));
@@ -160,11 +160,11 @@ export const getApiStatusFeed = (
   ).pipe(
     Effect.map((parsedFeed) => {
       if (Either.isLeft(parsedFeed)) {
-        const err = parsedFeed.left;
+        const feedError = parsedFeed.left;
         const message =
-          isHttpError(err) && err.status
-            ? `Feed unavailable (HTTP ${err.status})`
-            : getErrorMessage(err, 'Failed to fetch API status feed');
+          isHttpError(feedError) && feedError.status
+            ? `Feed unavailable (HTTP ${feedError.status})`
+            : getErrorMessage(feedError, 'Failed to fetch API status feed');
         return { items: [], error: message };
       }
 

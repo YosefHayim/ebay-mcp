@@ -1,4 +1,4 @@
-import { decodeEffectSchemaSync, z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { TOOL_FAMILY_KEYS } from '@/config/toolFamilies.js';
@@ -262,8 +262,8 @@ export const createToolGatingController = (
 };
 
 /** Wraps controller output as a standard text tool result. */
-const toToolResult = (data: unknown): CallToolResult => ({
-  content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+const toToolResult = (controllerOutput: unknown): CallToolResult => ({
+  content: [{ type: 'text', text: JSON.stringify(controllerOutput, null, 2) }],
 });
 
 /**
@@ -288,7 +288,7 @@ export const registerMetaTools = (server: McpServer, controller: ToolGatingContr
         "Discover eBay tools without loading them into context. Call with no arguments to list the tool families; pass `family` to list a family's tools, or `query` to keyword-search across all tools. Returns lightweight rows (name, family, summary) — enable a tool with enable_ebay_tools to get its full schema and call it.",
       inputSchema: listEbayToolsInputSchema.shape,
     },
-    (args) => toToolResult(controller.list(decodeEffectSchemaSync(listEbayToolsInputSchema, args))),
+    (args) => toToolResult(controller.list(args)),
   );
 
   server.registerTool(
@@ -298,10 +298,7 @@ export const registerMetaTools = (server: McpServer, controller: ToolGatingContr
         'Load specific eBay tools into context so they can be called. Pass the exact tool names from list_ebay_tools. Returns the names enabled, any unknown names, and the active tool count.',
       inputSchema: dynamicToolNamesInputSchema.shape,
     },
-    (args) => {
-      const { names } = decodeEffectSchemaSync(dynamicToolNamesInputSchema, args);
-      return toToolResult(controller.enable(names));
-    },
+    ({ names }) => toToolResult(controller.enable(names)),
   );
 
   server.registerTool(
@@ -311,9 +308,6 @@ export const registerMetaTools = (server: McpServer, controller: ToolGatingContr
         'Unload eBay tools previously enabled, reclaiming their context. Pass the exact tool names. Returns the names disabled, any unknown names, and the active tool count.',
       inputSchema: dynamicToolNamesInputSchema.shape,
     },
-    (args) => {
-      const { names } = decodeEffectSchemaSync(dynamicToolNamesInputSchema, args);
-      return toToolResult(controller.disable(names));
-    },
+    ({ names }) => toToolResult(controller.disable(names)),
   );
 };

@@ -1,10 +1,10 @@
 import { MarketplaceId } from '@/types/ebayEnums.js';
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
  * Account API v2 Schemas
  *
- * Effect-backed tool/endpoint input schemas for rate tables, payout settings,
+ * Zod tool/endpoint input schemas for rate tables, payout settings,
  * combined shipping rules, and user preferences. Request bodies mirror the
  * generated `sellAccountV2Oas3` DTOs; enum fields stay strings and list their
  * eBay values in the description.

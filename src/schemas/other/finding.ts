@@ -1,9 +1,9 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
  * Finding API Schemas
  *
- * Effect-backed input schemas for sold/completed listing search tools.
+ * Zod input schemas for sold/completed listing search tools.
  */
 
 /**

@@ -91,8 +91,8 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
 
 /**
  * Builds the "contributing" skill: how an AI working on the ebay-mcp repo should
- * operate. Mirrors AGENTS.md (validation commands, module map, the add-a-tool
- * flow, conventions) against the real `src/tools/categories/` layout.
+ * operate: validation commands, module map, the add-a-tool flow, and
+ * conventions, against the real `src/tools/categories/` layout.
  *
  * @param snapshot Live tool count and family index.
  * @returns The provider-neutral skill document.
@@ -105,16 +105,16 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
 export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
   slug: 'ebay-mcp-contributing',
   title: 'Contributing to ebay-mcp',
-  description: `Work on the ebay-mcp server itself: ${snapshot.toolCount} tools across eBay's Sell APIs (TypeScript/ESM, Effect-backed validation, OpenAPI-generated types). Use when adding or changing eBay tools/endpoints, wiring the registry, or running the project's checks.`,
-  intro: `A local MCP server exposing **${snapshot.toolCount} tools across 100% of eBay's Sell APIs** — TypeScript/Node.js (ESM), \`@modelcontextprotocol/sdk\`, Effect-backed validation, OpenAPI-generated types. Entry points: \`src/index.ts\` (STDIO) and \`src/serverHttp.ts\` (HTTP).`,
+  description: `Work on the ebay-mcp server itself: ${snapshot.toolCount} tools across eBay's Sell APIs (TypeScript/ESM, Zod tool-input schemas, OpenAPI-generated types). Use when adding or changing eBay tools/endpoints, wiring the registry, or running the project's checks.`,
+  intro: `A local MCP server exposing **${snapshot.toolCount} tools across 100% of eBay's Sell APIs** — TypeScript/Node.js (ESM), \`@modelcontextprotocol/sdk\`, Zod tool-input schemas, Effect for typed async errors, OpenAPI-generated types. Entry points: \`src/index.ts\` (STDIO) and \`src/serverHttp.ts\` (HTTP).`,
   sections: [
     {
       heading: 'Validation (run before a PR)',
       body: [
         '```bash',
-        'npm run check     # tsc --noEmit + eslint + prettier --check  (must pass)',
-        'npm test          # vitest run',
-        'npm run build     # tsc + tsc-alias → build/',
+        'pnpm check        # tsc --noEmit (src + mcp-apps) + biome check  (must pass)',
+        'pnpm test         # vitest run',
+        'pnpm build        # tsc + tsc-alias + MCP Apps views → build/',
         '```',
       ].join('\n'),
     },
@@ -124,12 +124,12 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
         '| Path | Owns |',
         '| --- | --- |',
         '| `index.ts` / `serverHttp.ts` | MCP entry points (STDIO / HTTP) |',
-        '| `api/` | eBay API client implementations (one area per file) |',
+        '| `api/` | eBay API modules (one area per folder), `client/` (REST and Trading XML clients), and the `ebaySellerApi.ts` facade |',
         '| `auth/` | OAuth 2.0 flow and token management |',
         '| `config/` | Environment loading, constants, marketplace defaults |',
         '| `tools/` | Tool wiring — `registry.ts`, `contracts.ts`, `defineTool.ts`, and `categories/` (13 family files that co-locate each tool definition with its handler via `defineTool`) |',
         "| `skills/` | Agent-skills generator (this skill's source) |",
-        '| `schemas/` | Shared Effect-backed schemas |',
+        '| `schemas/` | Shared Zod schemas per API family |',
         "| `types/` | TypeScript types — **auto-generated** from OpenAPI specs (don't hand-edit) |",
         '| `scripts/` | CLI tooling: `setup.ts`, `skills.ts`, `devSync.ts`, `diagnostics.ts` |',
         '| `utils/` | Shared utilities (logging, http, errors) |',
@@ -138,19 +138,19 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
     {
       heading: 'Add a tool or endpoint',
       body: [
-        '1. `npm run sync` — download the latest eBay specs, regenerate types, report missing endpoints.',
+        '1. `pnpm sync` — download the latest eBay specs, regenerate types, report missing endpoints.',
         '2. Add the API method in `src/api/`.',
         '3. Add a `defineTool({ ... handler })` entry in the matching `src/tools/categories/<family>.ts` — definition and handler live together; `registry.ts` derives everything from `categories/index.ts`.',
         '4. Add tests in `tests/`.',
-        '5. `npm run check && npm test`.',
+        '5. `pnpm check && pnpm test`.',
       ].join('\n'),
     },
     {
       heading: 'Conventions',
       body: [
         '- **No `any`** — specific types; prefer narrowing over assertions. `types/` is generated, so model new shapes from the specs.',
-        '- Validate tool inputs with Effect-backed schemas from `@/utils/effectSchema.js`; derive related schemas rather than duplicating fields.',
-        '- Commit with Conventional Commits (releases are changeset-driven).',
+        "- Validate tool inputs with Zod schemas (`import { z } from 'zod'`); derive related schemas rather than duplicating fields.",
+        '- Commit with Conventional Commits; merged PR labels (`major`/`minor`, else patch) pick the release bump.',
         '- Logs go to **stderr** only — stdout is reserved for the MCP protocol.',
       ].join('\n'),
     },

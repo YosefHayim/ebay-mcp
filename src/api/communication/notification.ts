@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -37,29 +37,29 @@ import type {
   updateSubscriptionSchema,
 } from '@/utils/communication/notification.js';
 import { Effect } from 'effect';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 
-type GetPublicKeyInput = InferEffectSchema<typeof getPublicKeySchema>;
-type GetConfigInput = InferEffectSchema<typeof getConfigSchema>;
-type UpdateConfigInput = InferEffectSchema<typeof updateConfigSchema>;
-type GetDestinationsInput = InferEffectSchema<typeof getDestinationsSchema>;
-type CreateDestinationInput = InferEffectSchema<typeof createDestinationSchema>;
-type GetDestinationInput = InferEffectSchema<typeof getDestinationSchema>;
-type UpdateDestinationInput = InferEffectSchema<typeof updateDestinationSchema>;
-type DeleteDestinationInput = InferEffectSchema<typeof deleteDestinationSchema>;
-type GetSubscriptionsInput = InferEffectSchema<typeof getSubscriptionsSchema>;
-type CreateSubscriptionInput = InferEffectSchema<typeof createSubscriptionSchema>;
-type GetSubscriptionInput = InferEffectSchema<typeof getSubscriptionSchema>;
-type UpdateSubscriptionInput = InferEffectSchema<typeof updateSubscriptionSchema>;
-type DeleteSubscriptionInput = InferEffectSchema<typeof deleteSubscriptionSchema>;
-type DisableSubscriptionInput = InferEffectSchema<typeof disableSubscriptionSchema>;
-type EnableSubscriptionInput = InferEffectSchema<typeof enableSubscriptionSchema>;
-type TestSubscriptionInput = InferEffectSchema<typeof testSubscriptionSchema>;
-type GetTopicInput = InferEffectSchema<typeof getTopicSchema>;
-type GetTopicsInput = InferEffectSchema<typeof getTopicsSchema>;
-type CreateSubscriptionFilterInput = InferEffectSchema<typeof createSubscriptionFilterSchema>;
-type GetSubscriptionFilterInput = InferEffectSchema<typeof getSubscriptionFilterSchema>;
-type DeleteSubscriptionFilterInput = InferEffectSchema<typeof deleteSubscriptionFilterSchema>;
+type GetPublicKeyInput = z.infer<typeof getPublicKeySchema>;
+type GetConfigInput = z.infer<typeof getConfigSchema>;
+type UpdateConfigInput = z.infer<typeof updateConfigSchema>;
+type GetDestinationsInput = z.infer<typeof getDestinationsSchema>;
+type CreateDestinationInput = z.infer<typeof createDestinationSchema>;
+type GetDestinationInput = z.infer<typeof getDestinationSchema>;
+type UpdateDestinationInput = z.infer<typeof updateDestinationSchema>;
+type DeleteDestinationInput = z.infer<typeof deleteDestinationSchema>;
+type GetSubscriptionsInput = z.infer<typeof getSubscriptionsSchema>;
+type CreateSubscriptionInput = z.infer<typeof createSubscriptionSchema>;
+type GetSubscriptionInput = z.infer<typeof getSubscriptionSchema>;
+type UpdateSubscriptionInput = z.infer<typeof updateSubscriptionSchema>;
+type DeleteSubscriptionInput = z.infer<typeof deleteSubscriptionSchema>;
+type DisableSubscriptionInput = z.infer<typeof disableSubscriptionSchema>;
+type EnableSubscriptionInput = z.infer<typeof enableSubscriptionSchema>;
+type TestSubscriptionInput = z.infer<typeof testSubscriptionSchema>;
+type GetTopicInput = z.infer<typeof getTopicSchema>;
+type GetTopicsInput = z.infer<typeof getTopicsSchema>;
+type CreateSubscriptionFilterInput = z.infer<typeof createSubscriptionFilterSchema>;
+type GetSubscriptionFilterInput = z.infer<typeof getSubscriptionFilterSchema>;
+type DeleteSubscriptionFilterInput = z.infer<typeof deleteSubscriptionFilterSchema>;
 /** Destination request body accepted by destination writes. */
 type DestinationRequest = components['schemas']['DestinationRequest'];
 /** Subscription creation request body. */
@@ -128,7 +128,7 @@ export type GetNotificationTopicsResponse = components['schemas']['TopicSearchRe
 
 /**
  * Notification API - Event notifications and subscriptions
- * Based on: docs/sell-apps/communication/commerce_notification_v1_oas3.json
+ * Based on: commerce_notification_v1_oas3.json
  */
 export class NotificationApi {
   private readonly basePath = '/commerce/notification/v1';
@@ -158,8 +158,11 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetPublicKeyInput>(input, 'input');
-      const validatedPublicKeyId = yield* requireStringEffect(request.publicKeyId, 'publicKeyId');
+      const validatedInput = yield* requireObjectEffect<GetPublicKeyInput>(input, 'input');
+      const validatedPublicKeyId = yield* requireStringEffect(
+        validatedInput.publicKeyId,
+        'publicKeyId',
+      );
 
       return yield* requestGetEffect<GetNotificationPublicKeyResponse>(
         apiClient,
@@ -208,9 +211,9 @@ export class NotificationApi {
     const path = `${this.basePath}/config`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<UpdateConfigInput>(input, 'input');
+      const configUpdate = yield* requireObjectEffect<UpdateConfigInput>(input, 'input');
 
-      return yield* requestPutEffect<void>(apiClient, path, body);
+      return yield* requestPutEffect<void>(apiClient, path, configUpdate);
     });
   };
 
@@ -234,10 +237,10 @@ export class NotificationApi {
     const path = `${this.basePath}/destination`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetDestinationsInput>(input, 'input');
-      const limit = yield* optionalPositiveNumberEffect(request.limit, 'limit');
+      const validatedInput = yield* requireObjectEffect<GetDestinationsInput>(input, 'input');
+      const limit = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
       const continuationToken = yield* optionalStringEffect(
-        request.continuationToken,
+        validatedInput.continuationToken,
         'continuationToken',
       );
       const params = buildEndpointParams({
@@ -271,9 +274,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetDestinationInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<GetDestinationInput>(input, 'input');
       const validatedDestinationId = yield* requireStringEffect(
-        request.destinationId,
+        validatedInput.destinationId,
         'destinationId',
       );
 
@@ -304,9 +307,9 @@ export class NotificationApi {
     const path = `${this.basePath}/destination`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<DestinationRequest>(input, 'input');
+      const destinationRequest = yield* requireObjectEffect<DestinationRequest>(input, 'input');
 
-      return yield* requestPostEffect<void>(apiClient, path, body);
+      return yield* requestPostEffect<void>(apiClient, path, destinationRequest);
     });
   };
 
@@ -332,15 +335,18 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UpdateDestinationInput>(input, 'input');
-      const { destinationId, ...destination } = request;
+      const validatedInput = yield* requireObjectEffect<UpdateDestinationInput>(input, 'input');
+      const { destinationId, ...destination } = validatedInput;
       const validatedDestinationId = yield* requireStringEffect(destinationId, 'destinationId');
-      const body = yield* requireObjectEffect<DestinationRequest>(destination, 'destination');
+      const destinationRequest = yield* requireObjectEffect<DestinationRequest>(
+        destination,
+        'destination',
+      );
 
       return yield* requestPutEffect<void>(
         apiClient,
         `${apiBasePath}/destination/${validatedDestinationId}`,
-        body,
+        destinationRequest,
       );
     });
   };
@@ -365,9 +371,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<DeleteDestinationInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<DeleteDestinationInput>(input, 'input');
       const validatedDestinationId = yield* requireStringEffect(
-        request.destinationId,
+        validatedInput.destinationId,
         'destinationId',
       );
 
@@ -398,10 +404,10 @@ export class NotificationApi {
     const path = `${this.basePath}/subscription`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetSubscriptionsInput>(input, 'input');
-      const limit = yield* optionalPositiveNumberEffect(request.limit, 'limit');
+      const validatedInput = yield* requireObjectEffect<GetSubscriptionsInput>(input, 'input');
+      const limit = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
       const continuationToken = yield* optionalStringEffect(
-        request.continuationToken,
+        validatedInput.continuationToken,
         'continuationToken',
       );
       const params = buildEndpointParams({
@@ -433,9 +439,12 @@ export class NotificationApi {
     const path = `${this.basePath}/subscription`;
 
     return Effect.gen(function* () {
-      const body = yield* requireObjectEffect<CreateSubscriptionRequest>(input, 'input');
+      const subscriptionRequest = yield* requireObjectEffect<CreateSubscriptionRequest>(
+        input,
+        'input',
+      );
 
-      return yield* requestPostEffect<void>(apiClient, path, body);
+      return yield* requestPostEffect<void>(apiClient, path, subscriptionRequest);
     });
   };
 
@@ -461,9 +470,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetSubscriptionInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<GetSubscriptionInput>(input, 'input');
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
 
@@ -496,10 +505,10 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<UpdateSubscriptionInput>(input, 'input');
-      const { subscriptionId, ...subscription } = request;
+      const validatedInput = yield* requireObjectEffect<UpdateSubscriptionInput>(input, 'input');
+      const { subscriptionId, ...subscription } = validatedInput;
       const validatedSubscriptionId = yield* requireStringEffect(subscriptionId, 'subscriptionId');
-      const body = yield* requireObjectEffect<UpdateSubscriptionRequest>(
+      const subscriptionUpdate = yield* requireObjectEffect<UpdateSubscriptionRequest>(
         subscription,
         'subscription',
       );
@@ -507,7 +516,7 @@ export class NotificationApi {
       return yield* requestPutEffect<void>(
         apiClient,
         `${apiBasePath}/subscription/${validatedSubscriptionId}`,
-        body,
+        subscriptionUpdate,
       );
     });
   };
@@ -532,9 +541,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<DeleteSubscriptionInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<DeleteSubscriptionInput>(input, 'input');
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
 
@@ -565,9 +574,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<DisableSubscriptionInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<DisableSubscriptionInput>(input, 'input');
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
 
@@ -598,9 +607,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<EnableSubscriptionInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<EnableSubscriptionInput>(input, 'input');
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
 
@@ -631,9 +640,9 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<TestSubscriptionInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<TestSubscriptionInput>(input, 'input');
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
 
@@ -664,8 +673,8 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetTopicInput>(input, 'input');
-      const validatedTopicId = yield* requireStringEffect(request.topicId, 'topicId');
+      const validatedInput = yield* requireObjectEffect<GetTopicInput>(input, 'input');
+      const validatedTopicId = yield* requireStringEffect(validatedInput.topicId, 'topicId');
 
       return yield* requestGetEffect<GetNotificationTopicResponse>(
         apiClient,
@@ -694,10 +703,10 @@ export class NotificationApi {
     const path = `${this.basePath}/topic`;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetTopicsInput>(input, 'input');
-      const limit = yield* optionalPositiveNumberEffect(request.limit, 'limit');
+      const validatedInput = yield* requireObjectEffect<GetTopicsInput>(input, 'input');
+      const limit = yield* optionalPositiveNumberEffect(validatedInput.limit, 'limit');
       const continuationToken = yield* optionalStringEffect(
-        request.continuationToken,
+        validatedInput.continuationToken,
         'continuationToken',
       );
       const params = buildEndpointParams({
@@ -734,15 +743,21 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<CreateSubscriptionFilterInput>(input, 'input');
-      const { subscriptionId, ...filter } = request;
+      const validatedInput = yield* requireObjectEffect<CreateSubscriptionFilterInput>(
+        input,
+        'input',
+      );
+      const { subscriptionId, ...filter } = validatedInput;
       const validatedSubscriptionId = yield* requireStringEffect(subscriptionId, 'subscriptionId');
-      const body = yield* requireObjectEffect<CreateSubscriptionFilterRequest>(filter, 'filter');
+      const filterRequest = yield* requireObjectEffect<CreateSubscriptionFilterRequest>(
+        filter,
+        'filter',
+      );
 
       return yield* requestPostEffect<void>(
         apiClient,
         `${apiBasePath}/subscription/${validatedSubscriptionId}/filter`,
-        body,
+        filterRequest,
       );
     });
   };
@@ -772,12 +787,12 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<GetSubscriptionFilterInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<GetSubscriptionFilterInput>(input, 'input');
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
-      const validatedFilterId = yield* requireStringEffect(request.filterId, 'filterId');
+      const validatedFilterId = yield* requireStringEffect(validatedInput.filterId, 'filterId');
 
       return yield* requestGetEffect<GetNotificationSubscriptionFilterResponse>(
         apiClient,
@@ -811,12 +826,15 @@ export class NotificationApi {
     const apiBasePath = this.basePath;
 
     return Effect.gen(function* () {
-      const request = yield* requireObjectEffect<DeleteSubscriptionFilterInput>(input, 'input');
+      const validatedInput = yield* requireObjectEffect<DeleteSubscriptionFilterInput>(
+        input,
+        'input',
+      );
       const validatedSubscriptionId = yield* requireStringEffect(
-        request.subscriptionId,
+        validatedInput.subscriptionId,
         'subscriptionId',
       );
-      const validatedFilterId = yield* requireStringEffect(request.filterId, 'filterId');
+      const validatedFilterId = yield* requireStringEffect(validatedInput.filterId, 'filterId');
 
       return yield* requestDeleteEffect<void>(
         apiClient,

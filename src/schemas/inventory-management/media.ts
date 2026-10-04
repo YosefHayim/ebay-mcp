@@ -1,9 +1,9 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
  * Media API Schemas
  *
- * Effect-backed schemas for the local-media upload tools (images via eBay
+ * Zod schemas for the local-media upload tools (images via eBay
  * Picture Services, videos via the Media API lifecycle).
  */
 

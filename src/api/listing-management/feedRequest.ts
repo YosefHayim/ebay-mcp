@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   type DownloadedFile,
   type DownloadTooLargeError,
@@ -104,7 +104,7 @@ export const exclusiveFeedFilters = <TQuery extends FeedListQuery>(
  *
  * @param client - Shared authenticated HTTP client.
  * @param collection - Collection path below the base path, e.g. `/schedule`.
- * @param body - Generated create-request DTO.
+ * @param createRequest - Generated create-request DTO.
  * @param config - Optional per-request headers.
  * @returns An Effect with the decoded ID and Location, or an EbayApiError.
  * @example postFeedResource(client, '/schedule', { feedType: 'LMS_ORDER_REPORT', scheduleTemplateId: 'T-1' })
@@ -112,14 +112,16 @@ export const exclusiveFeedFilters = <TQuery extends FeedListQuery>(
 export const postFeedResource = (
   client: EbayApiClient,
   collection: string,
-  body: unknown,
+  createRequest: unknown,
   config?: EbayRequestConfig,
 ): Effect.Effect<LocatedResource, EbayApiError> => {
   const path = `${FEED_BASE_PATH}${collection}`;
   return Effect.tryPromise({
-    try: () => client.postForResponse<unknown>(path, body, config),
+    try: () => client.postForResponse<unknown>(path, createRequest, config),
     catch: (cause) => new EbayApiError({ method: 'POST', path, cause }), // allow-duplicate
-  }).pipe(Effect.flatMap((response) => locatedResourceId(response.headers.location, path)));
+  }).pipe(
+    Effect.flatMap((createdResponse) => locatedResourceId(createdResponse.headers.location, path)),
+  );
 };
 
 /**
@@ -127,7 +129,7 @@ export const postFeedResource = (
  *
  * @param client - Shared authenticated HTTP client.
  * @param collection - Task collection path, e.g. `/order_task`.
- * @param body - Generated create-task DTO.
+ * @param taskRequest - Generated create-task DTO.
  * @param headers - Optional request headers such as Accept-Language.
  * @returns An Effect with the new task ID and Location, or an EbayApiError.
  * @example postFeedTask(client, '/task', { feedType: 'LMS_ORDER_ACK', schemaVersion: '1235' })
@@ -135,10 +137,10 @@ export const postFeedResource = (
 export const postFeedTask = (
   client: EbayApiClient,
   collection: string,
-  body: unknown,
+  taskRequest: unknown,
   headers?: Record<string, string>,
 ): Effect.Effect<CreatedFeedTask, EbayApiError> =>
-  postFeedResource(client, collection, body, headers ? { headers } : undefined).pipe(
+  postFeedResource(client, collection, taskRequest, headers ? { headers } : undefined).pipe(
     Effect.map(({ id, location }) => ({ taskId: id, location })),
   );
 

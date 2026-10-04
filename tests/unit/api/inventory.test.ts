@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { InventoryApi } from '@/api/listing-management/inventory.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import type { EbayApiError, EndpointInputError } from '@/api/shared/request.js';
 import { invalidInput } from '@tests/helpers/invalidInput.js';
 
@@ -35,13 +35,13 @@ describe('InventoryApi', () => {
 
   describe('inventory items', () => {
     it('gets inventory items without query params', async () => {
-      const response = { inventoryItems: [] };
-      vi.mocked(client.get).mockResolvedValue(response);
+      const stubInventoryItems = { inventoryItems: [] };
+      vi.mocked(client.get).mockResolvedValue(stubInventoryItems);
 
-      const result = await Effect.runPromise(api.getInventoryItems());
+      const inventoryItems = await Effect.runPromise(api.getInventoryItems());
 
       expect(client.get).toHaveBeenCalledWith('/sell/inventory/v1/inventory_item');
-      expect(result).toBe(response);
+      expect(inventoryItems).toBe(stubInventoryItems);
     });
 
     it('gets inventory items with validated pagination query params', async () => {
@@ -63,22 +63,22 @@ describe('InventoryApi', () => {
     });
 
     it('gets one inventory item by SKU', async () => {
-      const response = { sku: 'SKU-1' };
-      vi.mocked(client.get).mockResolvedValue(response);
+      const stubInventoryItem = { sku: 'SKU-1' };
+      vi.mocked(client.get).mockResolvedValue(stubInventoryItem);
 
-      const result = await Effect.runPromise(api.getInventoryItem({ sku: 'SKU-1' }));
+      const inventoryItem = await Effect.runPromise(api.getInventoryItem({ sku: 'SKU-1' }));
 
       expect(client.get).toHaveBeenCalledWith('/sell/inventory/v1/inventory_item/SKU-1');
-      expect(result).toBe(response);
+      expect(inventoryItem).toBe(stubInventoryItem);
     });
 
     it('creates or replaces one inventory item by SKU', async () => {
-      const body = { product: { title: 'Test Product' }, condition: 'NEW' };
+      const newItem = { product: { title: 'Test Product' }, condition: 'NEW' };
       vi.mocked(client.put).mockResolvedValue({ warnings: [] });
 
-      await Effect.runPromise(api.createOrReplaceInventoryItem({ sku: 'SKU-1', body }));
+      await Effect.runPromise(api.createOrReplaceInventoryItem({ sku: 'SKU-1', body: newItem }));
 
-      expect(client.put).toHaveBeenCalledWith('/sell/inventory/v1/inventory_item/SKU-1', body);
+      expect(client.put).toHaveBeenCalledWith('/sell/inventory/v1/inventory_item/SKU-1', newItem);
     });
 
     it('deletes one inventory item by SKU', async () => {
@@ -106,44 +106,46 @@ describe('InventoryApi', () => {
 
   describe('bulk inventory and compatibility', () => {
     it('posts bulk inventory item requests', async () => {
-      const body = { requests: [{ sku: 'SKU-1' }] };
+      const bulkInventoryRequest = { requests: [{ sku: 'SKU-1' }] };
       vi.mocked(client.post).mockResolvedValue({ responses: [] });
 
-      await Effect.runPromise(api.bulkCreateOrReplaceInventoryItem({ body }));
-      await Effect.runPromise(api.bulkGetInventoryItem({ body }));
+      await Effect.runPromise(api.bulkCreateOrReplaceInventoryItem({ body: bulkInventoryRequest }));
+      await Effect.runPromise(api.bulkGetInventoryItem({ body: bulkInventoryRequest }));
 
       expect(client.post).toHaveBeenNthCalledWith(
         1,
         '/sell/inventory/v1/bulk_create_or_replace_inventory_item',
-        body,
+        bulkInventoryRequest,
       );
       expect(client.post).toHaveBeenNthCalledWith(
         2,
         '/sell/inventory/v1/bulk_get_inventory_item',
-        body,
+        bulkInventoryRequest,
       );
     });
 
     it('posts bulk price and quantity requests', async () => {
-      const body = { requests: [{ offerId: 'OFFER-1', availableQuantity: 3 }] };
+      const priceQuantityRequest = { requests: [{ offerId: 'OFFER-1', availableQuantity: 3 }] };
       vi.mocked(client.post).mockResolvedValue({ responses: [] });
 
-      await Effect.runPromise(api.bulkUpdatePriceQuantity({ body }));
+      await Effect.runPromise(api.bulkUpdatePriceQuantity({ body: priceQuantityRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
         '/sell/inventory/v1/bulk_update_price_quantity',
-        body,
+        priceQuantityRequest,
       );
     });
 
     it('gets, writes, and deletes product compatibility', async () => {
-      const body = { compatibleProducts: [] };
-      vi.mocked(client.get).mockResolvedValue(body);
+      const compatibility = { compatibleProducts: [] };
+      vi.mocked(client.get).mockResolvedValue(compatibility);
       vi.mocked(client.put).mockResolvedValue({ warnings: [] });
       vi.mocked(client.delete).mockResolvedValue(undefined);
 
       await Effect.runPromise(api.getProductCompatibility({ sku: 'SKU-1' }));
-      await Effect.runPromise(api.createOrReplaceProductCompatibility({ sku: 'SKU-1', body }));
+      await Effect.runPromise(
+        api.createOrReplaceProductCompatibility({ sku: 'SKU-1', body: compatibility }),
+      );
       await Effect.runPromise(api.deleteProductCompatibility({ sku: 'SKU-1' }));
 
       expect(client.get).toHaveBeenCalledWith(
@@ -151,7 +153,7 @@ describe('InventoryApi', () => {
       );
       expect(client.put).toHaveBeenCalledWith(
         '/sell/inventory/v1/inventory_item/SKU-1/product_compatibility',
-        body,
+        compatibility,
       );
       expect(client.delete).toHaveBeenCalledWith(
         '/sell/inventory/v1/inventory_item/SKU-1/product_compatibility',
@@ -161,13 +163,13 @@ describe('InventoryApi', () => {
 
   describe('inventory item groups', () => {
     it('gets, writes, and deletes inventory item groups', async () => {
-      const body = {
+      const itemGroup = {
         aspects: {},
         inventoryItemGroupKey: 'GROUP-1',
         title: 'Test Group',
         variantSKUs: ['SKU-1'],
       };
-      vi.mocked(client.get).mockResolvedValue(body);
+      vi.mocked(client.get).mockResolvedValue(itemGroup);
       vi.mocked(client.put).mockResolvedValue({ warnings: [] });
       vi.mocked(client.delete).mockResolvedValue(undefined);
 
@@ -175,7 +177,7 @@ describe('InventoryApi', () => {
       await Effect.runPromise(
         api.createOrReplaceInventoryItemGroup({
           inventoryItemGroupKey: 'GROUP-1',
-          body,
+          body: itemGroup,
         }),
       );
       await Effect.runPromise(api.deleteInventoryItemGroup({ inventoryItemGroupKey: 'GROUP-1' }));
@@ -183,7 +185,7 @@ describe('InventoryApi', () => {
       expect(client.get).toHaveBeenCalledWith('/sell/inventory/v1/inventory_item_group/GROUP-1');
       expect(client.put).toHaveBeenCalledWith(
         '/sell/inventory/v1/inventory_item_group/GROUP-1',
-        body,
+        itemGroup,
       );
       expect(client.delete).toHaveBeenCalledWith('/sell/inventory/v1/inventory_item_group/GROUP-1');
     });
@@ -191,10 +193,10 @@ describe('InventoryApi', () => {
 
   describe('SKU location mappings', () => {
     it('gets, writes, and deletes SKU location mappings by generated operation names', async () => {
-      const body = {
+      const locationMapping = {
         locations: [{ merchantLocationKey: 'LOC-1' }],
       };
-      vi.mocked(client.get).mockResolvedValue(body);
+      vi.mocked(client.get).mockResolvedValue(locationMapping);
       vi.mocked(client.put).mockResolvedValue(undefined);
       vi.mocked(client.delete).mockResolvedValue(undefined);
 
@@ -203,7 +205,7 @@ describe('InventoryApi', () => {
         api.createOrReplaceSkuLocationMapping({
           listingId: 'LISTING-1',
           sku: 'SKU-1',
-          body,
+          body: locationMapping,
         }),
       );
       await Effect.runPromise(
@@ -215,7 +217,7 @@ describe('InventoryApi', () => {
       );
       expect(client.put).toHaveBeenCalledWith(
         '/sell/inventory/v1/listing/LISTING-1/sku/SKU-1/locations',
-        body,
+        locationMapping,
       );
       expect(client.delete).toHaveBeenCalledWith(
         '/sell/inventory/v1/listing/LISTING-1/sku/SKU-1/locations',
@@ -261,7 +263,7 @@ describe('InventoryApi', () => {
     });
 
     it('creates, gets, updates, and deletes offers', async () => {
-      const body = {
+      const offer = {
         sku: 'SKU-1',
         marketplaceId: 'EBAY_US',
         format: 'FIXED_PRICE',
@@ -271,14 +273,14 @@ describe('InventoryApi', () => {
       vi.mocked(client.put).mockResolvedValue({ offerId: 'OFFER-1' });
       vi.mocked(client.delete).mockResolvedValue(undefined);
 
-      await Effect.runPromise(api.createOffer({ body }));
+      await Effect.runPromise(api.createOffer({ body: offer }));
       await Effect.runPromise(api.getOffer({ offerId: 'OFFER-1' }));
-      await Effect.runPromise(api.updateOffer({ offerId: 'OFFER-1', body }));
+      await Effect.runPromise(api.updateOffer({ offerId: 'OFFER-1', body: offer }));
       await Effect.runPromise(api.deleteOffer({ offerId: 'OFFER-1' }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/inventory/v1/offer', body);
+      expect(client.post).toHaveBeenCalledWith('/sell/inventory/v1/offer', offer);
       expect(client.get).toHaveBeenCalledWith('/sell/inventory/v1/offer/OFFER-1');
-      expect(client.put).toHaveBeenCalledWith('/sell/inventory/v1/offer/OFFER-1', body);
+      expect(client.put).toHaveBeenCalledWith('/sell/inventory/v1/offer/OFFER-1', offer);
       expect(client.delete).toHaveBeenCalledWith('/sell/inventory/v1/offer/OFFER-1');
     });
 
@@ -320,21 +322,25 @@ describe('InventoryApi', () => {
     });
 
     it('posts inventory item group offer request bodies', async () => {
-      const body = { inventoryItemGroupKey: 'GROUP-1', marketplaceId: 'EBAY_US' };
+      const itemGroupOfferRequest = { inventoryItemGroupKey: 'GROUP-1', marketplaceId: 'EBAY_US' };
       vi.mocked(client.post).mockResolvedValue({ listingId: 'LISTING-1' });
 
-      await Effect.runPromise(api.publishOfferByInventoryItemGroup({ body }));
-      await Effect.runPromise(api.withdrawOfferByInventoryItemGroup({ body }));
+      await Effect.runPromise(
+        api.publishOfferByInventoryItemGroup({ body: itemGroupOfferRequest }),
+      );
+      await Effect.runPromise(
+        api.withdrawOfferByInventoryItemGroup({ body: itemGroupOfferRequest }),
+      );
 
       expect(client.post).toHaveBeenNthCalledWith(
         1,
         '/sell/inventory/v1/offer/publish_by_inventory_item_group',
-        body,
+        itemGroupOfferRequest,
       );
       expect(client.post).toHaveBeenNthCalledWith(
         2,
         '/sell/inventory/v1/offer/withdraw_by_inventory_item_group',
-        body,
+        itemGroupOfferRequest,
       );
     });
   });
@@ -352,22 +358,26 @@ describe('InventoryApi', () => {
     });
 
     it('gets, creates, updates, and deletes inventory locations', async () => {
-      const body = { name: 'Warehouse', locationTypes: ['WAREHOUSE'] };
+      const location = { name: 'Warehouse', locationTypes: ['WAREHOUSE'] };
       vi.mocked(client.get).mockResolvedValue({ merchantLocationKey: 'LOC-1' });
       vi.mocked(client.post).mockResolvedValue(undefined);
       vi.mocked(client.delete).mockResolvedValue(undefined);
 
       await Effect.runPromise(api.getInventoryLocation({ merchantLocationKey: 'LOC-1' }));
-      await Effect.runPromise(api.createInventoryLocation({ merchantLocationKey: 'LOC-1', body }));
-      await Effect.runPromise(api.updateInventoryLocation({ merchantLocationKey: 'LOC-1', body }));
+      await Effect.runPromise(
+        api.createInventoryLocation({ merchantLocationKey: 'LOC-1', body: location }),
+      );
+      await Effect.runPromise(
+        api.updateInventoryLocation({ merchantLocationKey: 'LOC-1', body: location }),
+      );
       await Effect.runPromise(api.deleteInventoryLocation({ merchantLocationKey: 'LOC-1' }));
 
       expect(client.get).toHaveBeenCalledWith('/sell/inventory/v1/location/LOC-1');
-      expect(client.post).toHaveBeenNthCalledWith(1, '/sell/inventory/v1/location/LOC-1', body);
+      expect(client.post).toHaveBeenNthCalledWith(1, '/sell/inventory/v1/location/LOC-1', location);
       expect(client.post).toHaveBeenNthCalledWith(
         2,
         '/sell/inventory/v1/location/LOC-1/update_location_details',
-        body,
+        location,
       );
       expect(client.delete).toHaveBeenCalledWith('/sell/inventory/v1/location/LOC-1');
     });
@@ -402,12 +412,15 @@ describe('InventoryApi', () => {
 
   describe('listing migration and request failures', () => {
     it('posts bulk migrate listing request bodies', async () => {
-      const body = { requests: [{ listingId: 'LISTING-1' }] };
+      const migrateRequest = { requests: [{ listingId: 'LISTING-1' }] };
       vi.mocked(client.post).mockResolvedValue({ responses: [] });
 
-      await Effect.runPromise(api.bulkMigrateListing({ body }));
+      await Effect.runPromise(api.bulkMigrateListing({ body: migrateRequest }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/inventory/v1/bulk_migrate_listing', body);
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/inventory/v1/bulk_migrate_listing',
+        migrateRequest,
+      );
     });
 
     it('returns tagged API errors for transport failures', async () => {

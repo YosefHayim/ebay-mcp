@@ -4,7 +4,7 @@ import { Effect } from 'effect';
 import nock from 'nock';
 import process from 'node:process';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EbaySellerApi } from '@/api/index.js';
+import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
 
@@ -86,10 +86,10 @@ describe('ebay_get_offers registered MCP contract', () => {
       .query(true)
       .reply(200, { offers: [] });
 
-    const result = await client.callTool({ name: 'ebay_get_offers', arguments: args });
+    const rejectedLookup = await client.callTool({ name: 'ebay_get_offers', arguments: args });
 
-    expect(result.isError).toBe(true);
-    expect(result.content).toEqual([
+    expect(rejectedLookup.isError).toBe(true);
+    expect(rejectedLookup.content).toEqual([
       expect.objectContaining({
         type: 'text',
         text: expect.stringContaining('Input validation error'),
@@ -110,7 +110,7 @@ describe('ebay_get_offers registered MCP contract', () => {
       })
       .reply(200, { total: 1, offers: [{ offerId: 'offer-1', sku: 'SKU-1' }] });
 
-    const result = await client.callTool({
+    const offersResult = await client.callTool({
       name: 'ebay_get_offers',
       arguments: {
         sku: 'SKU-1',
@@ -121,9 +121,9 @@ describe('ebay_get_offers registered MCP contract', () => {
       },
     });
 
-    expect(result.isError).not.toBe(true);
+    expect(offersResult.isError).not.toBe(true);
     expect(endpoint.isDone()).toBe(true);
-    expect(result.content).toEqual([
+    expect(offersResult.content).toEqual([
       {
         type: 'text',
         text: JSON.stringify({ total: 1, offers: [{ offerId: 'offer-1', sku: 'SKU-1' }] }, null, 2),

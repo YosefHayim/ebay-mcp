@@ -1,4 +1,4 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/api/client.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   decodeEndpointInputEffect,
@@ -22,22 +22,22 @@ import {
   getTransferInputSchema,
 } from '@/schemas/account-management/finances.js';
 import type { components } from '@/types/sell-apps/account-management/sellFinancesV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 
 const BASE_PATH = '/sell/finances/v1';
 
-type GetOrderEarningsInput = InferEffectSchema<typeof getOrderEarningsInputSchema>;
-type GetOrderEarningsByIdInput = InferEffectSchema<typeof getOrderEarningsByIdInputSchema>;
-type GetOrderEarningsSummaryInput = InferEffectSchema<typeof getOrderEarningsSummaryInputSchema>;
-type GetPayoutInput = InferEffectSchema<typeof getPayoutInputSchema>;
-type GetPayoutsInput = InferEffectSchema<typeof getPayoutsInputSchema>;
-type GetPayoutSummaryInput = InferEffectSchema<typeof getPayoutSummaryInputSchema>;
-type GetSellerFundsSummaryInput = InferEffectSchema<typeof getSellerFundsSummaryInputSchema>;
-type GetTransactionsInput = InferEffectSchema<typeof getTransactionsInputSchema>;
-type GetTransactionSummaryInput = InferEffectSchema<typeof getTransactionSummaryInputSchema>;
-type GetTransferInput = InferEffectSchema<typeof getTransferInputSchema>;
-type GetBillingActivitiesInput = InferEffectSchema<typeof getBillingActivitiesInputSchema>;
+type GetOrderEarningsInput = z.infer<typeof getOrderEarningsInputSchema>;
+type GetOrderEarningsByIdInput = z.infer<typeof getOrderEarningsByIdInputSchema>;
+type GetOrderEarningsSummaryInput = z.infer<typeof getOrderEarningsSummaryInputSchema>;
+type GetPayoutInput = z.infer<typeof getPayoutInputSchema>;
+type GetPayoutsInput = z.infer<typeof getPayoutsInputSchema>;
+type GetPayoutSummaryInput = z.infer<typeof getPayoutSummaryInputSchema>;
+type GetSellerFundsSummaryInput = z.infer<typeof getSellerFundsSummaryInputSchema>;
+type GetTransactionsInput = z.infer<typeof getTransactionsInputSchema>;
+type GetTransactionSummaryInput = z.infer<typeof getTransactionSummaryInputSchema>;
+type GetTransferInput = z.infer<typeof getTransferInputSchema>;
+type GetBillingActivitiesInput = z.infer<typeof getBillingActivitiesInputSchema>;
 /** Query fields shared by the paginated Finances collections. */
 type FinancesPageQuery = Pick<GetTransactionsInput, 'filter' | 'limit' | 'offset' | 'sort'>;
 
@@ -188,12 +188,12 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getOrderEarningsInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(getOrderEarningsInputSchema, input);
 
       return yield* getFromApiz<OrderEarningsResponse>(
         `${BASE_PATH}/order_earnings`,
-        pageQuery(request),
-        request.marketplaceId,
+        pageQuery(validatedInput),
+        validatedInput.marketplaceId,
       );
     });
   };
@@ -318,12 +318,12 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getPayoutsInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(getPayoutsInputSchema, input);
 
       return yield* getFromApiz<PayoutsResponse | undefined>(
         `${BASE_PATH}/payout`,
-        pageQuery(request),
-        request.marketplaceId,
+        pageQuery(validatedInput),
+        validatedInput.marketplaceId,
       );
     });
   };
@@ -416,12 +416,12 @@ export class FinancesApi {
     const getFromApiz = this.getFromApiz;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getTransactionsInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(getTransactionsInputSchema, input);
 
       return yield* getFromApiz<TransactionsResponse | undefined>(
         `${BASE_PATH}/transaction`,
-        pageQuery(request),
-        request.marketplaceId,
+        pageQuery(validatedInput),
+        validatedInput.marketplaceId,
       );
     });
   };
@@ -517,16 +517,19 @@ export class FinancesApi {
     const client = this.client;
 
     return Effect.gen(function* () {
-      const request = yield* decodeEndpointInputEffect(getBillingActivitiesInputSchema, input);
+      const validatedInput = yield* decodeEndpointInputEffect(
+        getBillingActivitiesInputSchema,
+        input,
+      );
       const config: EbayRequestConfig | undefined =
-        request.acceptLanguage === undefined
+        validatedInput.acceptLanguage === undefined
           ? undefined
-          : { headers: { 'Accept-Language': request.acceptLanguage } };
+          : { headers: { 'Accept-Language': validatedInput.acceptLanguage } };
 
       return yield* requestGetEffect<BillingActivityResponse>(
         client,
         `${BASE_PATH}/billing_activity`,
-        pageQuery(request),
+        pageQuery(validatedInput),
         config,
       );
     });

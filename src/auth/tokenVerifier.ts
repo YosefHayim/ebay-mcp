@@ -177,7 +177,7 @@ export class TokenVerifier {
 
       // Prepare introspection request. Client credentials authenticate via HTTP
       // Basic (RFC 7662 §2.1) rather than form body fields.
-      const requestData: TokenIntrospectionRequest = {
+      const introspectionRequest: TokenIntrospectionRequest = {
         token,
         token_type_hint: 'access_token',
       };
@@ -193,11 +193,11 @@ export class TokenVerifier {
       }
 
       const params = new URLSearchParams({
-        token: requestData.token,
+        token: introspectionRequest.token,
       });
 
       // Make introspection request
-      const data = yield* this.requestVerifierData<TokenIntrospectionResponse>(
+      const introspection = yield* this.requestVerifierData<TokenIntrospectionResponse>(
         'verifyViaIntrospection',
         'introspectionRequest',
         'Token introspection failed',
@@ -210,7 +210,7 @@ export class TokenVerifier {
       );
 
       // Check if token is active
-      if (!data.active) {
+      if (!introspection.active) {
         return yield* Effect.fail(
           tokenVerifierError({
             operation: 'verifyViaIntrospection',
@@ -221,18 +221,18 @@ export class TokenVerifier {
       }
 
       // Validate audience
-      if (!this.validateAudience(data.aud)) {
+      if (!this.validateAudience(introspection.aud)) {
         return yield* Effect.fail(
           tokenVerifierError({
             operation: 'verifyViaIntrospection',
             reason: 'invalidAudience',
-            message: `Invalid audience. Expected: ${this.config.expectedAudience}, Got: ${data.aud}`,
+            message: `Invalid audience. Expected: ${this.config.expectedAudience}, Got: ${introspection.aud}`,
           }),
         );
       }
 
       // Validate scopes
-      const scopes = data.scope ? data.scope.split(' ') : [];
+      const scopes = introspection.scope ? introspection.scope.split(' ') : [];
       if (this.config.requiredScopes) {
         const hasRequiredScopes = this.config.requiredScopes.every((scope) =>
           scopes.includes(scope),
@@ -250,11 +250,11 @@ export class TokenVerifier {
 
       return {
         token,
-        clientId: data.client_id || 'missing-client-id',
+        clientId: introspection.client_id || 'missing-client-id',
         scopes,
-        expiresAt: data.exp,
-        audience: data.aud,
-        subject: data.sub,
+        expiresAt: introspection.exp,
+        audience: introspection.aud,
+        subject: introspection.sub,
       };
     });
 
@@ -295,7 +295,7 @@ export class TokenVerifier {
             cause,
           }),
       });
-      const { payload } = yield* Effect.tryPromise({
+      const { payload: claims } = yield* Effect.tryPromise({
         try: () =>
           jwtVerify(token, JWKS, {
             issuer: metadata.issuer,
@@ -310,10 +310,10 @@ export class TokenVerifier {
           }),
       });
       let scopes: string[] = [];
-      if (typeof payload.scope === 'string') {
-        scopes = payload.scope.split(' ');
-      } else if (Array.isArray(payload.scope)) {
-        scopes = payload.scope.filter((scope): scope is string => typeof scope === 'string');
+      if (typeof claims.scope === 'string') {
+        scopes = claims.scope.split(' ');
+      } else if (Array.isArray(claims.scope)) {
+        scopes = claims.scope.filter((scope): scope is string => typeof scope === 'string');
       }
 
       if (this.config.requiredScopes) {
@@ -332,19 +332,19 @@ export class TokenVerifier {
       }
 
       let clientId = 'missing-client-id';
-      if (typeof payload.client_id === 'string') {
-        clientId = payload.client_id;
-      } else if (typeof payload.azp === 'string') {
-        clientId = payload.azp;
+      if (typeof claims.client_id === 'string') {
+        clientId = claims.client_id;
+      } else if (typeof claims.azp === 'string') {
+        clientId = claims.azp;
       }
 
       return {
         token,
         clientId,
         scopes,
-        expiresAt: payload.exp,
-        audience: payload.aud,
-        subject: payload.sub,
+        expiresAt: claims.exp,
+        audience: claims.aud,
+        subject: claims.sub,
       };
     });
 

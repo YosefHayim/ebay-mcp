@@ -17,7 +17,7 @@ const renderBody = (doc: SkillDoc, baseLevel: number): string => {
 };
 
 /** YAML frontmatter scalar that is safe for arbitrary text (JSON strings are valid YAML). */
-const yamlString = (value: string): string => JSON.stringify(value);
+const yamlString = (text: string): string => JSON.stringify(text);
 
 /**
  * Renders a Claude Code skill file (`SKILL.md`): YAML frontmatter (`name`,
@@ -94,7 +94,7 @@ export const renderCodexSection = (doc: SkillDoc): string => renderBody(doc, 2);
  *
  * @example
  * ```ts
- * const payload = renderSkill('codex', doc, 'using');
+ * const skillContent = renderSkill('codex', doc, 'using');
  * ```
  */
 export const renderSkill = (provider: SkillProvider, doc: SkillDoc, layer: SkillLayer): string => {

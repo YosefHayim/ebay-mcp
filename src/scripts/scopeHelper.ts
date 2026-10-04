@@ -325,5 +325,5 @@ export const getAllScopesString = (environment: 'sandbox' | 'production'): strin
 export const parseScopeString = (scopeString: string): string[] =>
   scopeString
     .split(/\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+    .map((scope) => scope.trim())
+    .filter((scope) => scope.length > 0);

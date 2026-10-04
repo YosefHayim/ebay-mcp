@@ -1,7 +1,7 @@
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
- * Effect-backed schemas for token utility tools
+ * Zod schemas for token utility tools
  */
 
 /**

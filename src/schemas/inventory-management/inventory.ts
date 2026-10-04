@@ -1,5 +1,4 @@
-import { z } from '@/utils/effectSchema.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import {
   Condition,
   LengthUnit,
@@ -16,7 +15,7 @@ import {
 /**
  * Inventory Management API Schemas
  *
- * This file contains Effect-backed schemas for all Inventory Management endpoints.
+ * This file contains Zod schemas for all Inventory Management endpoints.
  * Schemas are organized by endpoint and include both input and output validation.
  */
 
@@ -716,95 +715,3 @@ export const bulkPublishResponseSchema = z.object({
 // ============================================================================
 // JSON Schema Conversion Functions
 // ============================================================================
-
-/**
- * Converts Inventory Management API Effect-backed schemas to JSON Schema format for MCP tools.
- *
- * @returns Inventory Management API JSON schemas keyed by endpoint or shared model name.
- * @example
- * ```ts
- * const schemas = getInventoryManagementJsonSchemas();
- * ```
- */
-export const getInventoryManagementJsonSchemas = () => {
-  return {
-    // Inventory Items
-    getInventoryItemsInput: zodToJsonSchema(getInventoryItemsInputSchema, 'getInventoryItemsInput'),
-    getInventoryItemsOutput: zodToJsonSchema(
-      getInventoryItemsOutputSchema,
-      'getInventoryItemsOutput',
-    ),
-    getInventoryItemInput: zodToJsonSchema(getInventoryItemInputSchema, 'getInventoryItemInput'),
-    getInventoryItemOutput: zodToJsonSchema(getInventoryItemOutputSchema, 'getInventoryItemOutput'),
-    createInventoryItemInput: zodToJsonSchema(
-      createInventoryItemInputSchema,
-      'createInventoryItemInput',
-    ),
-    createInventoryItemOutput: zodToJsonSchema(
-      createInventoryItemOutputSchema,
-      'createInventoryItemOutput',
-    ),
-
-    // Offers
-    getOffersInput: zodToJsonSchema(getOffersInputSchema, 'getOffersInput'),
-    getOffersOutput: zodToJsonSchema(getOffersOutputSchema, 'getOffersOutput'),
-    createOfferInput: zodToJsonSchema(createOfferInputSchema, 'createOfferInput'),
-    createOfferOutput: zodToJsonSchema(createOfferOutputSchema, 'createOfferOutput'),
-    publishOfferInput: zodToJsonSchema(publishOfferInputSchema, 'publishOfferInput'),
-    publishOfferOutput: zodToJsonSchema(publishOfferOutputSchema, 'publishOfferOutput'),
-    offerDetails: zodToJsonSchema(offerResponseSchema, 'offerDetails'),
-
-    // Inventory Locations
-    getInventoryLocationsInput: zodToJsonSchema(
-      getInventoryLocationsInputSchema,
-      'getInventoryLocationsInput',
-    ),
-    getInventoryLocationsOutput: zodToJsonSchema(
-      getInventoryLocationsOutputSchema,
-      'getInventoryLocationsOutput',
-    ),
-    createInventoryLocationInput: zodToJsonSchema(
-      createInventoryLocationInputSchema,
-      'createInventoryLocationInput',
-    ),
-    createInventoryLocationOutput: zodToJsonSchema(
-      createInventoryLocationOutputSchema,
-      'createInventoryLocationOutput',
-    ),
-
-    // Product Compatibility
-    getProductCompatibilityInput: zodToJsonSchema(
-      getProductCompatibilityInputSchema,
-      'getProductCompatibilityInput',
-    ),
-    getProductCompatibilityOutput: zodToJsonSchema(
-      getProductCompatibilityOutputSchema,
-      'getProductCompatibilityOutput',
-    ),
-
-    // Inventory Item Groups
-    getInventoryItemGroupInput: zodToJsonSchema(
-      getInventoryItemGroupInputSchema,
-      'getInventoryItemGroupInput',
-    ),
-    getInventoryItemGroupOutput: zodToJsonSchema(
-      getInventoryItemGroupOutputSchema,
-      'getInventoryItemGroupOutput',
-    ),
-    inventoryItemGroup: zodToJsonSchema(inventoryItemGroupSchema, 'inventoryItemGroup'),
-
-    // Bulk Operations
-    bulkInventoryItemRequest: zodToJsonSchema(
-      bulkInventoryItemRequestSchema,
-      'bulkInventoryItemRequest',
-    ),
-    bulkInventoryItemResponse: zodToJsonSchema(
-      bulkInventoryItemResponseSchema,
-      'bulkInventoryItemResponse',
-    ),
-    bulkOfferRequest: zodToJsonSchema(bulkOfferRequestSchema, 'bulkOfferRequest'),
-    bulkOfferResponse: zodToJsonSchema(bulkOfferResponseSchema, 'bulkOfferResponse'),
-    bulkPublishRequest: zodToJsonSchema(bulkPublishRequestSchema, 'bulkPublishRequest'),
-    bulkPublishResponse: zodToJsonSchema(bulkPublishResponseSchema, 'bulkPublishResponse'),
-  };
-};

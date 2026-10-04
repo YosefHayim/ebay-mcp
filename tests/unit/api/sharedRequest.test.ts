@@ -12,7 +12,7 @@ import {
   requireObjectEffect,
   requireStringEffect,
 } from '@/api/shared/request.js';
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 
 describe('shared API request helpers', () => {
   it('builds endpoint-owned query params and omits empty values', () => {

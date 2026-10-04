@@ -15,25 +15,25 @@ const auctionItem = {
   ListingDuration: 'Days_7',
 };
 
-const auctionCreate = (item: Record<string, unknown>) =>
+const auctionCreate = (tradingItem: Record<string, unknown>) =>
   findTradingListingFormatViolation({
-    item,
+    item: tradingItem,
     format: FormatType.AUCTION,
     parameter: 'item',
     isCreate: true,
   });
 
-const auctionRevise = (item: Record<string, unknown>) =>
+const auctionRevise = (tradingItem: Record<string, unknown>) =>
   findTradingListingFormatViolation({
-    item,
+    item: tradingItem,
     format: FormatType.AUCTION,
     parameter: 'fields',
     isCreate: false,
   });
 
-const fixedPrice = (item: Record<string, unknown>) =>
+const fixedPrice = (tradingItem: Record<string, unknown>) =>
   findTradingListingFormatViolation({
-    item,
+    item: tradingItem,
     format: FormatType.FIXED_PRICE,
     parameter: 'item',
     isCreate: true,

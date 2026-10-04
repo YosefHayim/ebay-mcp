@@ -1,5 +1,5 @@
 import { LengthUnit, MarketplaceId, WeightUnit } from '@/types/ebayEnums.js';
-import { z } from '@/utils/effectSchema.js';
+import { z } from 'zod';
 
 /**
  * Logistics API input schemas. The request bodies mirror the generated

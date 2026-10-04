@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import { EbayApiError } from '@/api/shared/request.js';
 import { getIdentityBaseUrl } from '@/config/environment.js';
 import type { components } from '@/types/sell-apps/other-apis/commerceIdentityV1Oas3.js';

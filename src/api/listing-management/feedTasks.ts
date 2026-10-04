@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client.js';
+import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
 import {
   decodeEndpointInputEffect,
   requestGetEffect,
@@ -15,7 +15,7 @@ import type {
   components,
   operations,
 } from '@/types/sell-apps/listing-management/sellFeedV1Oas3.js';
-import type { InferEffectSchema } from '@/utils/effectSchemaTypes.js';
+import type { z } from 'zod';
 import { Effect } from 'effect';
 import {
   downloadFeedFile,
@@ -30,9 +30,9 @@ import type { MediaUpload } from './media.js';
 /** Feed files can be up to 15 MB, far larger than JSON calls. */
 const UPLOAD_TIMEOUT_MS = 10 * 60_000;
 
-type GetFeedTasksInput = InferEffectSchema<typeof getFeedTasksInputSchema>;
-type CreateFeedTaskInput = InferEffectSchema<typeof createFeedTaskInputSchema>;
-type FeedTaskIdInput = InferEffectSchema<typeof feedTaskIdInputSchema>;
+type GetFeedTasksInput = z.infer<typeof getFeedTasksInputSchema>;
+type CreateFeedTaskInput = z.infer<typeof createFeedTaskInputSchema>;
+type FeedTaskIdInput = z.infer<typeof feedTaskIdInputSchema>;
 type CreateTaskRequest = components['schemas']['CreateTaskRequest'];
 
 /** Multipart body documented for uploadFile: fileName, name=file, type=form-data, then the file. */
@@ -97,7 +97,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
         createFeedTaskInputSchema,
         input,
       );
-      const body: CreateTaskRequest = task;
+      const taskRequest: CreateTaskRequest = task;
       const headers: Record<string, string> = {};
       if (marketplaceId) {
         headers['X-EBAY-C-MARKETPLACE-ID'] = marketplaceId;
@@ -105,7 +105,7 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
       if (acceptLanguage) {
         headers['Accept-Language'] = acceptLanguage;
       }
-      return yield* postFeedTask(client, '/task', body, headers);
+      return yield* postFeedTask(client, '/task', taskRequest, headers);
     });
 
   /**

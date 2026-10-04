@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
 import prompts from 'prompts';
 import {
   ALL_PROVIDERS,
@@ -28,6 +26,7 @@ import {
 import { getErrorMessage } from '@/utils/errors.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
+import { isEntryModule } from '@/utils/entryModule.js';
 
 /** Parsed command-line options for the skills installer. */
 interface SkillsFlags {
@@ -58,8 +57,8 @@ interface RunSkillsWizardOptions {
 const ALL_LAYERS: readonly SkillLayer[] = ['using', 'contributing'];
 
 /** Splits a comma list flag value into trimmed, non-empty tokens. */
-const parseList = (value: string | undefined): string[] =>
-  (value ?? '')
+const parseList = (rawList: string | undefined): string[] =>
+  (rawList ?? '')
     .split(',')
     .map((token) => token.trim())
     .filter(Boolean);
@@ -76,11 +75,11 @@ const readFlagValue = (argv: string[], flag: string): string | undefined => {
 const parseFlags = (argv: string[]): SkillsFlags => {
   const args = argv.filter((arg) => arg !== 'skills');
   const providers = parseList(readFlagValue(args, '--providers')).filter(
-    (value): value is SkillProvider => (ALL_PROVIDERS as readonly string[]).includes(value),
+    (token): token is SkillProvider => (ALL_PROVIDERS as readonly string[]).includes(token),
   );
   const layers = parseList(
     readFlagValue(args, '--layer') ?? readFlagValue(args, '--layers'),
-  ).filter((value): value is SkillLayer => (ALL_LAYERS as readonly string[]).includes(value));
+  ).filter((token): token is SkillLayer => (ALL_LAYERS as readonly string[]).includes(token));
   return {
     help: args.includes('--help') || args.includes('-h'),
     yes: args.includes('--yes') || args.includes('-y'),
@@ -261,7 +260,9 @@ export const runSkillsWizard = async (options: RunSkillsWizardOptions = {}): Pro
   }
 
   const rendered = renderSkillTargets({ providers, layers, scope, cwd, home, snapshot });
-  const plans = rendered.map((item) => planWrite(item.target, item.payload));
+  const plans = rendered.map((renderedTarget) =>
+    planWrite(renderedTarget.target, renderedTarget.payload),
+  );
   printPreview(plans);
 
   if (flags.dryRun) {
@@ -304,12 +305,12 @@ export const runSkillsWizard = async (options: RunSkillsWizardOptions = {}): Pro
   // targets sharing one file (both Codex layers → one AGENTS.md) compose instead
   // of the second clobbering the first.
   let written = 0;
-  for (const item of rendered) {
-    const plan = planWrite(item.target, item.payload);
-    const result = applyWrite(plan, { dryRun: false, force: flags.force });
-    if (result.written) {
+  for (const renderedTarget of rendered) {
+    const plan = planWrite(renderedTarget.target, renderedTarget.payload);
+    const applied = applyWrite(plan, { dryRun: false, force: flags.force });
+    if (applied.written) {
       written += 1;
-      printSuccess(`${result.action} ${plan.target.path}`);
+      printSuccess(`${applied.action} ${plan.target.path}`);
     }
   }
 
@@ -317,9 +318,7 @@ export const runSkillsWizard = async (options: RunSkillsWizardOptions = {}): Pro
   printInfo(`${written} file(s) written. Restart your AI tool so it picks up the new skills.`);
 };
 
-const entryPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
-const modulePath = resolve(fileURLToPath(import.meta.url));
-if (entryPath && modulePath === entryPath) {
+if (isEntryModule(import.meta.url)) {
   void Effect.runPromise(
     Effect.either(
       Effect.tryPromise({
@@ -327,9 +326,9 @@ if (entryPath && modulePath === entryPath) {
         catch: (error) => error,
       }),
     ),
-  ).then((result) => {
-    if (Either.isLeft(result)) {
-      console.error(ui.error('\n  Skills install failed:'), getErrorMessage(result.left));
+  ).then((skillsOutcome) => {
+    if (Either.isLeft(skillsOutcome)) {
+      console.error(ui.error('\n  Skills install failed:'), getErrorMessage(skillsOutcome.left));
       process.exitCode = 1;
     }
   });

@@ -9,11 +9,11 @@ const LESS_THAN = 0x3c;
 
 /** Whether markup opens the document, after an optional byte-order mark and any whitespace. */
 const opensWithMarkup = (bytes: Buffer): boolean => {
-  const body = bytes.subarray(0, UTF8_BOM.length).equals(UTF8_BOM)
+  const withoutBom = bytes.subarray(0, UTF8_BOM.length).equals(UTF8_BOM)
     ? bytes.subarray(UTF8_BOM.length)
     : bytes;
-  const first = body.findIndex((byte) => !XML_WHITESPACE.has(byte));
-  return first !== -1 && body[first] === LESS_THAN;
+  const first = withoutBom.findIndex((byte) => !XML_WHITESPACE.has(byte));
+  return first !== -1 && withoutBom[first] === LESS_THAN;
 };
 
 /**
