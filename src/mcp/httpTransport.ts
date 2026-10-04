@@ -40,6 +40,8 @@ export interface HttpOAuthConfig {
 export interface HttpTransportConfig {
   /** Enables OAuth bearer-token middleware when true. */
   authEnabled: boolean;
+  /** Browser origins allowed to call the server cross-origin. */
+  corsOrigins: (string | RegExp)[];
   /** Optional eBay config override used by tests and embedded callers. */
   ebayConfig?: EbayConfig;
   /** Host interface for the Express server URL. */
@@ -56,6 +58,19 @@ export interface HttpTransportConfig {
    */
   staticAuthToken?: string;
 }
+
+const LOOPBACK_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+const parseCorsOrigins = (value: string | undefined): (string | RegExp)[] => {
+  const origins = (value || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  if (origins.length === 0) {
+    return [LOOPBACK_ORIGIN];
+  }
+  return origins;
+};
 
 const getProjectRoot = (): string => {
   const filename = fileURLToPath(import.meta.url);
@@ -89,6 +104,7 @@ export const createHttpTransportConfigFromEnv = (env: NodeJS.ProcessEnv): HttpTr
     useIntrospection: env.OAUTH_USE_INTROSPECTION !== 'false',
   },
   authEnabled: env.OAUTH_ENABLED !== 'false',
+  corsOrigins: parseCorsOrigins(env.MCP_CORS_ORIGINS),
   projectRoot: getProjectRoot(),
   staticAuthToken: env.MCP_AUTH_TOKEN,
 });
@@ -263,7 +279,7 @@ export const createHttpMcpApp = async (
 
   app.use(
     cors({
-      origin: '*',
+      origin: config.corsOrigins,
       exposedHeaders: ['Mcp-Session-Id'],
     }),
   );

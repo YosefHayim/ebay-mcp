@@ -12,6 +12,7 @@ import process from 'node:process';
 function createTestConfig(overrides: Partial<HttpTransportConfig> = {}): HttpTransportConfig {
   return {
     authEnabled: false,
+    corsOrigins: ['https://app.example.test'],
     ebayConfig: {
       clientId: 'client',
       clientSecret: 'secret',
@@ -97,6 +98,51 @@ describe('HTTP MCP transport', () => {
     });
 
     expect(config.staticAuthToken).toBe('deploy-secret');
+  });
+
+  it('allows only loopback browser origins when MCP_CORS_ORIGINS is unset', async () => {
+    const { corsOrigins } = createHttpTransportConfigFromEnv({});
+    const app = await createHttpMcpApp(createTestConfig({ corsOrigins }));
+
+    const local = await request(app).get('/health').set('Origin', 'http://localhost:6274');
+    const loopback = await request(app).get('/health').set('Origin', 'http://127.0.0.1:3000');
+    const remote = await request(app).get('/health').set('Origin', 'https://evil.example.test');
+
+    expect(local.headers['access-control-allow-origin']).toBe('http://localhost:6274');
+    expect(loopback.headers['access-control-allow-origin']).toBe('http://127.0.0.1:3000');
+    expect(remote.headers['access-control-allow-origin']).toBeUndefined();
+  });
+
+  it('reads the CORS allowlist from MCP_CORS_ORIGINS', () => {
+    const config = createHttpTransportConfigFromEnv({
+      MCP_CORS_ORIGINS: 'https://app.example.test, https://inspector.example.test,',
+    });
+
+    expect(config.corsOrigins).toEqual([
+      'https://app.example.test',
+      'https://inspector.example.test',
+    ]);
+  });
+
+  it('answers preflight for allowed origins and exposes the MCP session header', async () => {
+    const app = await createHttpMcpApp(createTestConfig());
+
+    const preflight = await request(app)
+      .options('/')
+      .set('Origin', 'https://app.example.test')
+      .set('Access-Control-Request-Method', 'POST')
+      .set('Access-Control-Request-Headers', 'content-type,mcp-session-id');
+    const blocked = await request(app)
+      .options('/')
+      .set('Origin', 'https://other.example.test')
+      .set('Access-Control-Request-Method', 'POST');
+    const allowed = await request(app).get('/health').set('Origin', 'https://app.example.test');
+
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers['access-control-allow-origin']).toBe('https://app.example.test');
+    expect(preflight.headers['access-control-allow-headers']).toBe('content-type,mcp-session-id');
+    expect(blocked.headers['access-control-allow-origin']).toBeUndefined();
+    expect(allowed.headers['access-control-expose-headers']).toBe('Mcp-Session-Id');
   });
 
   it('keeps health available without OAuth', async () => {

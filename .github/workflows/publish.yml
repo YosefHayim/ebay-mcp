@@ -1,29 +1,19 @@
 name: Publish Package
 
 # Publishes ebay-mcp to npm via OIDC trusted publishing (no NPM_TOKEN).
-# Mirrors the universal-agent-toolkit publish workflow. The workflow filename
-# `publish.yml` must stay aligned with the npm Trusted Publisher configuration
-# for the `ebay-mcp` package (changing the filename invalidates the OIDC match).
+# The workflow filename `publish.yml` must stay aligned with the npm Trusted Publisher
+# configuration for the `ebay-mcp` package (changing the filename invalidates the OIDC match).
 #
-# Triggers:
-#   - push of a v*.*.* tag (manual `git push --tags` / external)
-#   - workflow_run after Release completes (GITHUB_TOKEN-pushed tags do not
-#     fire `push:tags` in downstream workflows; this is the bridge)
-#   - workflow_dispatch (manual recovery, e.g. publish an existing tag)
+# Runs only on a release tag and builds exactly that tag:
+#   - workflow_dispatch on a tag: started by release.yml after it pushes the tag, or by
+#     hand to retry a release: `gh workflow run publish.yml --ref v1.2.3`
+#   - push of a v*.*.* tag by a maintainer
 
 on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_run:
-    workflows: ['Release']
-    types: [completed]
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Existing tag to publish (e.g. v1.8.8). Defaults to main HEAD.'
-        required: false
-        default: ''
 
 permissions:
   id-token: write
@@ -31,40 +21,15 @@ permissions:
 
 jobs:
   publish:
-    if: >
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-    env:
-      INPUT_TAG: ${{ inputs.tag }}
     steps:
-      - name: Resolve checkout ref
-        id: ref
-        run: |
-          case "$GITHUB_EVENT_NAME" in
-            workflow_dispatch)
-              if [ -n "$INPUT_TAG" ]; then
-                echo "ref=$INPUT_TAG" >> "$GITHUB_OUTPUT"
-              else
-                echo "ref=main" >> "$GITHUB_OUTPUT"
-              fi
-              ;;
-            workflow_run)
-              echo "ref=main" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
-              ;;
-          esac
-
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.ref.outputs.ref }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -86,6 +51,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Set version from tag
+        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
 
       - name: Type check
         run: pnpm typecheck
