@@ -1,4 +1,4 @@
-import { apiLogger, logRequest, logResponse } from '@/utils/logger.js';
+import { apiLogger, createLogger, logRequest, logResponse } from '@/utils/logger.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 afterEach(() => {
@@ -30,5 +30,25 @@ describe('HTTP logging', () => {
     expect(http.mock.calls[1]?.[1]).toEqual({
       data: expect.stringMatching(/\.\.\. \[truncated\]$/),
     });
+  });
+});
+
+describe('component logger', () => {
+  it('redacts secrets before they reach the log output', () => {
+    const { _stderr: stderr } = console as unknown as { _stderr: NodeJS.WriteStream };
+    const write = vi.spyOn(stderr, 'write').mockImplementation(() => true);
+
+    const credentials = 'client:s3cret';
+
+    createLogger('Test').info(`Auth Server: https://${credentials}@auth.example.test/realms/mcp`, {
+      clientSecret: 'hunter2',
+      scopes: ['mcp:tools'],
+    });
+
+    const output = write.mock.calls.map(([chunk]) => String(chunk)).join('');
+    expect(output).toContain('[Test] Auth Server: https://[REDACTED]@auth.example.test/realms/mcp');
+    expect(output).toContain('mcp:tools');
+    expect(output).not.toContain('s3cret');
+    expect(output).not.toContain('hunter2');
   });
 });

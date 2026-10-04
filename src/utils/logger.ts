@@ -3,6 +3,7 @@ import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
 import { getLoggingConfig } from '@/config/environment.js';
+import { redactSecretFields, redactSecrets } from '@/utils/logRedaction.js';
 
 /**
  * Log directory for eBay MCP Server
@@ -143,26 +144,39 @@ export interface LogPaths {
  * logger.info('Ready');
  * ```
  */
-export const createLogger = (component: string): ComponentLogger => ({
-  error: (message: string, meta?: Record<string, unknown>) => {
-    logger.error(`[${component}] ${message}`, meta);
-  },
-  warn: (message: string, meta?: Record<string, unknown>) => {
-    logger.warn(`[${component}] ${message}`, meta);
-  },
-  info: (message: string, meta?: Record<string, unknown>) => {
-    logger.info(`[${component}] ${message}`, meta);
-  },
-  http: (message: string, meta?: Record<string, unknown>) => {
-    logger.http(`[${component}] ${message}`, meta);
-  },
-  debug: (message: string, meta?: Record<string, unknown>) => {
-    logger.debug(`[${component}] ${message}`, meta);
-  },
-  verbose: (message: string, meta?: Record<string, unknown>) => {
-    logger.verbose(`[${component}] ${message}`, meta);
-  },
-});
+export const createLogger = (component: string): ComponentLogger => {
+  const toRedactedEntry = (message: string, meta?: Record<string, unknown>) => {
+    const redactedMessage = redactSecrets(message);
+    return { message: `[${component}] ${redactedMessage}`, meta: redactSecretFields(meta) };
+  };
+
+  return {
+    error: (message: string, meta?: Record<string, unknown>) => {
+      const entry = toRedactedEntry(message, meta);
+      logger.error(entry.message, entry.meta);
+    },
+    warn: (message: string, meta?: Record<string, unknown>) => {
+      const entry = toRedactedEntry(message, meta);
+      logger.warn(entry.message, entry.meta);
+    },
+    info: (message: string, meta?: Record<string, unknown>) => {
+      const entry = toRedactedEntry(message, meta);
+      logger.info(entry.message, entry.meta);
+    },
+    http: (message: string, meta?: Record<string, unknown>) => {
+      const entry = toRedactedEntry(message, meta);
+      logger.http(entry.message, entry.meta);
+    },
+    debug: (message: string, meta?: Record<string, unknown>) => {
+      const entry = toRedactedEntry(message, meta);
+      logger.debug(entry.message, entry.meta);
+    },
+    verbose: (message: string, meta?: Record<string, unknown>) => {
+      const entry = toRedactedEntry(message, meta);
+      logger.verbose(entry.message, entry.meta);
+    },
+  };
+};
 
 /**
  * Pre-configured loggers for different components
