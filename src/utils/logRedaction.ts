@@ -1,12 +1,12 @@
 const REDACTED = '[REDACTED]';
-const URL_CREDENTIALS = /([a-z][\w+.-]*:\/\/)[^\s/@]+@/gi;
+const URL_CREDENTIALS = /\/\/[^\s/@]+@/g;
 const SECRET_KEY = /secret|password|token|authorization|cookie|api.?key/i;
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
 
 export const redactSecrets = (text: string): string =>
-  text.replace(URL_CREDENTIALS, `$1${REDACTED}@`);
+  text.replace(URL_CREDENTIALS, `//${REDACTED}@`);
 
 export const redactSecretFields = (value: unknown): unknown => {
   if (typeof value === 'string') {

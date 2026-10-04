@@ -24,6 +24,12 @@ describe('log redaction', () => {
     expect(messages.map((message) => redactSecrets(message))).toEqual(messages);
   });
 
+  it('scans long messages in linear time', () => {
+    const longMessage = 'a'.repeat(200_000);
+
+    expect(redactSecrets(longMessage)).toBe(longMessage);
+  });
+
   it('masks secret-named fields at any depth without touching other context', () => {
     const meta = {
       url: 'https://user:pass@api.example.test/x',
