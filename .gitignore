@@ -1,226 +1,30 @@
-# Dependencies
+# dependencies
 node_modules/
-.npm/
-.pnpm-store/
-.yarn/
-yarn.lock
-package-lock.json
-.bower-*/
 
-# Build output
+# build
 build/
-dist/
-out/
-*.tsbuildinfo
-*.js.map
-*.d.ts.map
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-.env.development
-.env.test
-.env.production
-.env.staging
-*.env.backup
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-*.lnk
-
-# IDE and editors
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
-.idea/
-*.iml
-*.iws
-*.ipr
-.project
-.classpath
-.settings/
-*.sublime-project
-*.sublime-workspace
-*.swp
-*.swo
-*.swn
-*~
-.vi
-.vim/
-.netrwhist
-
-# Testing
-coverage/
-.nyc_output/
-.vitest/
-test-results/
-*.lcov
-.jest/
-junit.xml
-
-# Cache directories
 .cache/
-.parcel-cache/
-.eslintcache
-.stylelintcache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-.node_repl_history
-*.tgz
-
-# Temporary files
-*.tmp
-*.temp
-tmp/
-temp/
-*.bak
-*.backup
-*.old
-*.orig
-~*
-
-# Docker
-docker-compose.override.yml
-.dockerignore.local
-
-# Diagnostic reports
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-lib-cov
-
-# TypeScript cache
-*.tsbuildinfo
-tsconfig.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
-tmp/
-temp/
-
-# Security and secrets
-*.key
-*.pem
-*.cert
-*.crt
-*.p12
-*.pfx
-secrets/
-.secrets/
-credentials.json
-
-# Local agent instruction files
-/CLAUDE.md
-GEMINI.md
-.claude
-.mcp.json
-
-# Generated reports
 devSyncReport.json
 
-# Bun lock file (project uses pnpm)
-bun.lock
+# env
+.env
+.env.*
+!.env.example
 
-# External tool configs
-context7.json
-Taskfile.yml
+# logs
+*.log
 
-# Local agent/tooling artifacts at repo root
-.*
-*.json
-*.md
-!README.md
+# testing
+coverage/
 
-# Tracked structure & config deliverables the broad rules above would otherwise
-# hide (those rules target local agent scratch files, not project config/docs).
-!/.github/
-!/.github/**
-!/biome.json
-!/tsconfig.base.json
-!/mcp-apps/tsconfig.json
+# secrets
+*.pem
+*.key
+secrets/
 
-# Kiro CLI agent config (local)
-.kiro
-
-# Kimi Code CLI local config + skills
-.kimi-code/
+# editor and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
