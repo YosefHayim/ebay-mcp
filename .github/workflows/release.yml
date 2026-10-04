@@ -20,6 +20,10 @@ jobs:
     permissions:
       contents: write
       actions: write
+    # The PR title is untrusted input: scripts read it only from this variable,
+    # never from an inline expression in run.
+    env:
+      RELEASE_TITLE: ${{ github.event.pull_request.title || 'Manual release' }}
 
     steps:
       - name: Checkout
@@ -57,23 +61,13 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Get release description
-        if: steps.skip_check.outputs.skip != 'true'
-        id: desc
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "title=${{ github.event.pull_request.title }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "title=Manual release" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Determine version bump
         if: steps.skip_check.outputs.skip != 'true'
         id: bump
         env:
           LABELS: ${{ toJson(github.event.pull_request.labels.*.name || '') }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             echo "type=patch" >> "$GITHUB_OUTPUT"
           elif echo "$LABELS" | grep -q '"major"'; then
             echo "type=major" >> "$GITHUB_OUTPUT"
@@ -126,7 +120,6 @@ jobs:
         if: steps.skip_check.outputs.skip != 'true'
         id: notes
         env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           BUMP_TYPE: ${{ steps.bump.outputs.type }}
@@ -141,8 +134,8 @@ jobs:
             echo "body<<RELEASE_EOF"
             echo "## What Changed"
             echo ""
-            if [ "${{ github.event_name }}" = "pull_request" ]; then
-              echo "**PR:** [#${PR_NUMBER} - ${PR_TITLE}](${PR_URL})"
+            if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+              echo "**PR:** [#${PR_NUMBER} - ${RELEASE_TITLE}](${PR_URL})"
             else
               echo "**Manual release triggered via workflow_dispatch**"
             fi
@@ -159,9 +152,8 @@ jobs:
         if: steps.skip_check.outputs.skip != 'true'
         env:
           TAG: ${{ steps.version.outputs.tag }}
-          TITLE: ${{ steps.desc.outputs.title }}
         run: |
-          git tag -a "$TAG" -m "Release ${TAG} - ${TITLE}"
+          git tag -a "$TAG" -m "Release ${TAG} - ${RELEASE_TITLE}"
           git push origin "refs/tags/${TAG}"
 
       - name: Create GitHub Release
@@ -169,7 +161,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }} - ${{ steps.desc.outputs.title }}
+          name: ${{ steps.version.outputs.tag }} - ${{ env.RELEASE_TITLE }}
           body: ${{ steps.notes.outputs.body }}
 
       # npm trusted publishing is bound to publish.yml, so the publish runs there.
