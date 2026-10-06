@@ -251,9 +251,21 @@ billing agreement; `ebay_cancel_shipment` refunds it while the label is unused.
   release.
 
 Eligible keysets add the scope to `EBAY_OAUTH_SCOPES`, keeping the other scopes they need, and
-repeat OAuth consent. eBay requires Digital Signatures on Finances calls for sellers in the EU and
-UK, and this server does not sign requests yet, so those sellers get eBay's signature error from
-the Finances tools.
+repeat OAuth consent.
+
+**Digital signatures (EU/UK sellers).** eBay requires
+[Digital Signatures](https://developer.ebay.com/develop/guides/digital-signatures-for-apis) on every
+Finances API call and on `issueRefund` for sellers domiciled in the EU or UK; without them eBay
+answers `403 Missing x-ebay-signature-key header`. To enable signing:
+
+1. Run `ebay_create_signing_key` (ED25519 is recommended) and keep the response — eBay never shows
+   the private key again.
+2. Set `EBAY_SIGNING_KEY_JWE` to its `jwe` and `EBAY_SIGNING_PRIVATE_KEY` to its `privateKey`
+   (the base64 value as returned, or a PEM key), then restart the server.
+
+Those calls then carry the `x-ebay-signature-key`, `Content-Digest`, `Signature-Input`, and
+`Signature` headers (RFC 9421). Other calls are never signed, and nothing changes while the two
+variables are unset.
 
 ## eBay MCP vs. the raw eBay API
 
@@ -392,6 +404,8 @@ EBAY_MARKETPLACE_ID=EBAY_US         # default marketplace (overridable per tool)
 # EBAY_SITE_ID=0                    # Trading API site override; defaults from EBAY_MARKETPLACE_ID
 EBAY_CONTENT_LANGUAGE=en-US         # default request content language
 EBAY_USER_REFRESH_TOKEN=your_token  # for higher rate limits
+# EBAY_SIGNING_KEY_JWE=<jwe>         # Digital Signatures for EU/UK sellers (jwe from ebay_create_signing_key)
+# EBAY_SIGNING_PRIVATE_KEY=<key>     # privateKey from the same response (base64 PKCS#8 or PEM)
 EBAY_MCP_UI=on                      # interactive MCP Apps views (beta); "off" forces plain JSON
 EBAY_MCP_TOOLS=all                  # tool exposure: "all", "dynamic", or a family list (see below)
 EBAY_READ_ONLY=false                # when true, only register read-only tools (gets/lists/searches)

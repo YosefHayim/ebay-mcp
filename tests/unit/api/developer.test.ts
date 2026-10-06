@@ -14,6 +14,7 @@ describe('DeveloperApi', () => {
       post: vi.fn(),
       put: vi.fn(),
       delete: vi.fn(),
+      getConfig: vi.fn(() => ({ environment: 'production' })),
     } as unknown as EbayApiClient;
     api = new DeveloperApi(client);
   });
@@ -215,7 +216,11 @@ describe('DeveloperApi', () => {
 
       const signingKeyList = await Effect.runPromise(api.getSigningKeys({}));
 
-      expect(client.get).toHaveBeenCalledWith('/developer/key_management/v1/signing_key');
+      expect(client.get).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/developer/key_management/v1/signing_key',
+        undefined,
+        { absolute: true, tokenType: 'application' },
+      );
       expect(signingKeyList).toEqual(mockResponse);
       expect(signingKeyList.signingKeys).toHaveLength(2);
     });
@@ -226,7 +231,11 @@ describe('DeveloperApi', () => {
 
       const signingKeyList = await Effect.runPromise(api.getSigningKeys({}));
 
-      expect(client.get).toHaveBeenCalledWith('/developer/key_management/v1/signing_key');
+      expect(client.get).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/developer/key_management/v1/signing_key',
+        undefined,
+        { absolute: true, tokenType: 'application' },
+      );
       expect(signingKeyList.signingKeys).toHaveLength(0);
     });
   });
@@ -246,7 +255,11 @@ describe('DeveloperApi', () => {
 
       const signingKey = await Effect.runPromise(api.createSigningKey({}));
 
-      expect(client.post).toHaveBeenCalledWith('/developer/key_management/v1/signing_key', {});
+      expect(client.post).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/developer/key_management/v1/signing_key',
+        {},
+        { absolute: true, tokenType: 'application' },
+      );
       expect(signingKey).toEqual(mockResponse);
       expect(signingKey.signingKeyId).toBe('new_key_123');
     });
@@ -271,8 +284,9 @@ describe('DeveloperApi', () => {
       const signingKey = await Effect.runPromise(api.createSigningKey(input));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/developer/key_management/v1/signing_key',
+        'https://apiz.ebay.com/developer/key_management/v1/signing_key',
         input.request,
+        { absolute: true, tokenType: 'application' },
       );
       expect(signingKey).toEqual(mockResponse);
     });
@@ -292,7 +306,11 @@ describe('DeveloperApi', () => {
 
       const signingKey = await Effect.runPromise(api.getSigningKey({ signingKeyId: 'key_001' }));
 
-      expect(client.get).toHaveBeenCalledWith('/developer/key_management/v1/signing_key/key_001');
+      expect(client.get).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/developer/key_management/v1/signing_key/key_001',
+        undefined,
+        { absolute: true, tokenType: 'application' },
+      );
       expect(signingKey).toEqual(mockResponse);
       expect(signingKey.signingKeyId).toBe('key_001');
     });

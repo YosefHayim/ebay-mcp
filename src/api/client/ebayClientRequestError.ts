@@ -7,6 +7,7 @@ export type EbayClientRequestErrorKind =
   | 'tokenAcquisition'
   | 'missingAccessToken'
   | 'tokenRefresh'
+  | 'signing'
   | 'remoteRateLimit'
   | 'httpStatus'
   | 'transport';

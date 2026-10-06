@@ -320,6 +320,7 @@ export class FulfillmentApi {
       const refundRequest = yield* requireObjectEffect<IssueRefundRequest>(input.body, 'body');
       const path = `${this.basePath}/order/${orderId}/issue_refund`;
 
-      return yield* requestPostEffect<Refund>(this.client, path, refundRequest);
+      // eBay requires a digital signature on issueRefund for EU/UK sellers.
+      return yield* requestPostEffect<Refund>(this.client, path, refundRequest, { signed: true });
     });
 }

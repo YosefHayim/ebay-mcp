@@ -133,7 +133,9 @@ export type BillingActivityResponse = components['schemas']['BillingActivityResp
 
 /**
  * Finances API - payouts, transactions, transfers, seller funds, billing activity, and order
- * earnings. Every operation except getBillingActivities is served from the apiz host.
+ * earnings. Every operation except getBillingActivities is served from the apiz host. Every
+ * call is digitally signed when signing credentials are configured, as eBay requires for
+ * EU/UK sellers.
  */
 export class FinancesApi {
   public constructor(private readonly client: EbayApiClient) {}
@@ -150,8 +152,8 @@ export class FinancesApi {
     const client = this.client;
     const config: EbayRequestConfig =
       marketplaceId === undefined
-        ? { absolute: true }
-        : { absolute: true, headers: { 'X-EBAY-C-MARKETPLACE-ID': marketplaceId } };
+        ? { absolute: true, signed: true }
+        : { absolute: true, signed: true, headers: { 'X-EBAY-C-MARKETPLACE-ID': marketplaceId } };
 
     return Effect.tryPromise({
       try: () => {
@@ -521,10 +523,10 @@ export class FinancesApi {
         getBillingActivitiesInputSchema,
         input,
       );
-      const config: EbayRequestConfig | undefined =
+      const config: EbayRequestConfig =
         validatedInput.acceptLanguage === undefined
-          ? undefined
-          : { headers: { 'Accept-Language': validatedInput.acceptLanguage } };
+          ? { signed: true }
+          : { signed: true, headers: { 'Accept-Language': validatedInput.acceptLanguage } };
 
       return yield* requestGetEffect<BillingActivityResponse>(
         client,
