@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -19,6 +19,7 @@ import type {
 import type { DeveloperAnalyticsComponents as AnalyticsComponents } from '@/types/application-settings/developerAnalyticsV1BetaOas3.js';
 import type { DeveloperClientRegistrationComponents as ClientComponents } from '@/types/application-settings/developerClientRegistrationV1Oas3.js';
 import type { DeveloperKeyManagementComponents as KeyComponents } from '@/types/application-settings/developerKeyManagementV1Oas3.js';
+import { getIdentityBaseUrl } from '@/config/environment.js';
 import { Effect } from 'effect';
 import type { z } from 'zod';
 
@@ -52,6 +53,21 @@ export class DeveloperApi {
   private readonly analyticsBasePath = '/developer/analytics/v1_beta';
   private readonly clientBasePath = '/developer/client_registration/v1';
   private readonly keyBasePath = '/developer/key_management/v1';
+
+  /**
+   * Key Management is served from the apiz host (api.ebay.com answers 404) and
+   * authenticates with a client-credentials application token.
+   */
+  private readonly keyRequestConfig: EbayRequestConfig = {
+    absolute: true,
+    tokenType: 'application',
+  };
+
+  /** Full apiz URL for a Key Management path, honouring EBAY_MCP_API_BASE_URL. */
+  private keyUrl(path: string): string {
+    const { environment, apiBaseUrl } = this.client.getConfig();
+    return `${getIdentityBaseUrl(environment, apiBaseUrl)}${this.keyBasePath}${path}`;
+  }
 
   public constructor(private readonly client: EbayApiClient) {}
 
@@ -166,9 +182,13 @@ export class DeveloperApi {
     input: GetSigningKeysInput = {},
   ): Effect.Effect<QuerySigningKeysResponse, EbayApiError> => {
     void input;
-    return requestGetEffect<QuerySigningKeysResponse>(
-      this.client,
-      `${this.keyBasePath}/signing_key`,
+    return Effect.suspend(() =>
+      requestGetEffect<QuerySigningKeysResponse>(
+        this.client,
+        this.keyUrl('/signing_key'),
+        undefined,
+        this.keyRequestConfig,
+      ),
     );
   };
 
@@ -190,10 +210,13 @@ export class DeveloperApi {
   public createSigningKey = (
     input: CreateSigningKeyInput = {},
   ): Effect.Effect<SigningKey, EbayApiError> =>
-    requestPostEffect<SigningKey>(
-      this.client,
-      `${this.keyBasePath}/signing_key`,
-      (input.request as CreateSigningKeyRequest | undefined) ?? {},
+    Effect.suspend(() =>
+      requestPostEffect<SigningKey>(
+        this.client,
+        this.keyUrl('/signing_key'),
+        (input.request as CreateSigningKeyRequest | undefined) ?? {},
+        this.keyRequestConfig,
+      ),
     );
 
   /**
@@ -218,7 +241,9 @@ export class DeveloperApi {
 
       return yield* requestGetEffect<SigningKey>(
         this.client,
-        `${this.keyBasePath}/signing_key/${signingKeyId}`,
+        this.keyUrl(`/signing_key/${signingKeyId}`),
+        undefined,
+        this.keyRequestConfig,
       );
     });
 }

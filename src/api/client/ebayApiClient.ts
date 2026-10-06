@@ -4,6 +4,7 @@ import {
   type EbayClientRequestError,
 } from '@/api/client/ebayClientRequestError.js';
 import { RateLimitTracker } from '@/api/client/rateLimitTracker.js';
+import { parseSigningPrivateKey, signEbayRequest } from '@/api/client/requestSigner.js';
 import { getBaseUrl } from '@/config/environment.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { getErrorMessage } from '@/utils/errors.js';
@@ -16,6 +17,7 @@ import {
 import { isRecord } from '@/utils/typeGuards.js';
 import { apiLogger, logRequest, logResponse, logErrorResponse } from '@/utils/logger.js';
 import { Cause, Effect, Exit } from 'effect';
+import type { KeyObject } from 'node:crypto';
 
 /**
  * Which eBay OAuth token a request authenticates with.
@@ -51,6 +53,12 @@ export interface EbayRequestConfig {
    * requiring a client-credentials application token (the Buy APIs).
    */
   tokenType?: EbayTokenType;
+  /**
+   * Attach eBay Digital Signature headers (RFC 9421) when signing credentials are
+   * configured. Set for the calls eBay requires signatures on for EU/UK sellers
+   * (the Finances API, Fulfillment issueRefund); a no-op without credentials.
+   */
+  signed?: boolean;
 }
 
 /** Successful eBay response with the transport metadata some endpoints put their result in. */
@@ -84,6 +92,45 @@ const deleteHeader = (headers: Record<string, string>, name: string): void => {
   }
 };
 
+/**
+ * Serialize a body exactly as the HTTP adapter would so its Content-Digest
+ * matches the bytes on the wire. Multipart and Blob bodies are streamed by
+ * fetch and cannot be digested up front, so they cannot be signed.
+ */
+const serializeSignedBody = (
+  requestBody: unknown,
+): { data: unknown; bytes: string | Uint8Array | undefined } | undefined => {
+  if (requestBody === undefined || requestBody === null) {
+    return { data: requestBody, bytes: undefined };
+  }
+  if (typeof requestBody === 'string' || requestBody instanceof Uint8Array) {
+    return { data: requestBody, bytes: requestBody };
+  }
+  if (requestBody instanceof ArrayBuffer) {
+    return { data: requestBody, bytes: new Uint8Array(requestBody) };
+  }
+  if (requestBody instanceof URLSearchParams) {
+    const encoded = requestBody.toString();
+    return { data: requestBody, bytes: encoded };
+  }
+  if (requestBody instanceof FormData || requestBody instanceof Blob) {
+    return undefined;
+  }
+  const json = JSON.stringify(requestBody);
+  return { data: json, bytes: json };
+};
+
+const SIGNATURE_ERROR_PATTERN = /signature/i;
+const TRAILING_PERIOD_PATTERN = /\.?$/;
+
+/** True when an eBay error body points at a missing or rejected digital signature. */
+const isSignatureFailure = (detail: string | undefined): boolean =>
+  detail !== undefined && SIGNATURE_ERROR_PATTERN.test(detail);
+
+/** Remediation appended to signature failures when the server has no signing credentials. */
+const SIGNING_SETUP_HINT =
+  ' eBay requires Digital Signatures on this call for EU/UK sellers. Create a key with ebay_create_signing_key, then set EBAY_SIGNING_KEY_JWE (the jwe value) and EBAY_SIGNING_PRIVATE_KEY (the privateKey value) and restart the server.';
+
 /** Normalized request options used by the client transport Effect. */
 interface EbayRequestOptions {
   /** Query-string parameters appended to the request URL. */
@@ -102,6 +149,8 @@ interface EbayRequestOptions {
   readonly maxBytes?: number;
   /** Token the request must authenticate with; omit for the default path. */
   readonly tokenType?: EbayTokenType;
+  /** Attach eBay Digital Signature headers when signing credentials are configured. */
+  readonly signed?: boolean;
 }
 
 /** Retry counters carried between recursive request attempts. */
@@ -150,6 +199,8 @@ export class EbayApiClient {
   private readonly rateLimitTracker: RateLimitTracker;
   private readonly config: EbayConfig;
   private readonly timeoutMs = 30_000;
+  /** Parsed signing key, cached after the first signed request. */
+  private signingKey: KeyObject | undefined;
 
   /**
    * Build default request headers based on configured marketplace and language.
@@ -178,6 +229,17 @@ export class EbayApiClient {
     this.authClient = new EbayOAuthClient(config);
     this.baseUrl = getBaseUrl(config.environment, config.apiBaseUrl);
     this.rateLimitTracker = new RateLimitTracker();
+  }
+
+  /** Whether both digital-signature credentials are configured. */
+  hasSigningCredentials(): boolean {
+    return Boolean(this.config.signingKeyJwe && this.config.signingPrivateKey);
+  }
+
+  /** Parse (once) and return the configured signing key. */
+  private getSigningKey(privateKey: string): KeyObject {
+    this.signingKey ??= parseSigningPrivateKey(privateKey);
+    return this.signingKey;
   }
 
   /**
@@ -357,6 +419,40 @@ export class EbayApiClient {
         headers.Authorization = `Bearer ${token}`;
       }
 
+      let requestBody = options.data;
+      const { signingKeyJwe, signingPrivateKey } = this.config;
+      if (options.signed && signingKeyJwe && signingPrivateKey) {
+        const serialized = serializeSignedBody(options.data);
+        if (!serialized) {
+          return yield* Effect.fail(
+            clientRequestError({
+              kind: 'signing',
+              method,
+              url,
+              message: 'Multipart and Blob request bodies cannot be digitally signed.',
+            }),
+          );
+        }
+        requestBody = serialized.data;
+        const signatureHeaders = yield* Effect.try({
+          try: () =>
+            signEbayRequest(
+              { method, url, body: serialized.bytes },
+              { jwe: signingKeyJwe },
+              this.getSigningKey(signingPrivateKey),
+            ),
+          catch: (cause) =>
+            clientRequestError({
+              kind: 'signing',
+              method,
+              url,
+              message: `Failed to sign request: ${getErrorMessage(cause)}`,
+              cause,
+            }),
+        });
+        Object.assign(headers, signatureHeaders);
+      }
+
       this.rateLimitTracker.recordRequest();
       logRequest(
         method,
@@ -370,7 +466,7 @@ export class EbayApiClient {
         url,
         params: options.params,
         headers,
-        body: options.data,
+        body: requestBody,
         timeoutMs: options.timeoutMs ?? this.timeoutMs,
         responseType: options.responseType,
         maxBytes: options.maxBytes,
@@ -510,13 +606,29 @@ export class EbayApiClient {
     }
 
     if (error.status != null) {
+      const detail = this.ebayErrorDetail(error.data);
+      // Without signing credentials, a signature rejection on a call eBay requires
+      // signatures for is a setup problem: surface it as guidance so the
+      // remediation is not replaced by eBay's text. Unsigned calls keep eBay's error.
+      if (options.signed && isSignatureFailure(detail) && !this.hasSigningCredentials()) {
+        return Effect.fail(
+          clientRequestError({
+            kind: 'signing',
+            method,
+            url,
+            status: error.status,
+            message: `${detail?.replace(TRAILING_PERIOD_PATTERN, '.')}${SIGNING_SETUP_HINT}`,
+            cause: error,
+          }),
+        );
+      }
       return Effect.fail(
         clientRequestError({
           kind: 'httpStatus',
           method,
           url,
           status: error.status,
-          message: `eBay API Error: ${this.ebayErrorDetail(error.data) ?? error.message}${this.ebayErrorBody(error.data)}`,
+          message: `eBay API Error: ${detail ?? error.message}${this.ebayErrorBody(error.data)}`,
           cause: error,
         }),
       );
@@ -549,6 +661,7 @@ export class EbayApiClient {
       timeoutMs: config?.timeoutMs,
       maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
+      signed: config?.signed,
     });
   }
 
@@ -569,6 +682,7 @@ export class EbayApiClient {
       timeoutMs: config?.timeoutMs,
       maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
+      signed: config?.signed,
     });
   }
 
@@ -601,6 +715,7 @@ export class EbayApiClient {
       timeoutMs: config?.timeoutMs,
       maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
+      signed: config?.signed,
     });
   }
 
@@ -633,6 +748,7 @@ export class EbayApiClient {
       timeoutMs: config?.timeoutMs,
       maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
+      signed: config?.signed,
     });
   }
 
@@ -653,6 +769,7 @@ export class EbayApiClient {
       timeoutMs: config?.timeoutMs,
       maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
+      signed: config?.signed,
     });
   }
 
@@ -682,6 +799,7 @@ export class EbayApiClient {
       timeoutMs: config?.timeoutMs,
       maxBytes: config?.maxBytes,
       tokenType: config?.tokenType,
+      signed: config?.signed,
     });
   }
 

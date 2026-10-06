@@ -36,6 +36,20 @@ export interface EbayConfig {
    * @see https://github.com/YosefHayim/ebay-mcp/issues/122
    */
   disableAuthHeader?: boolean;
+  /**
+   * JWE from the Key Management API `createSigningKey` response, sent in the
+   * `x-ebay-signature-key` header of digitally signed requests. Sourced from
+   * `EBAY_SIGNING_KEY_JWE`; signing is enabled only when this and
+   * {@link signingPrivateKey} are both set.
+   * @see https://developer.ebay.com/develop/guides/digital-signatures-for-apis
+   */
+  signingKeyJwe?: string;
+  /**
+   * Private key from the same `createSigningKey` response (base64 PKCS#8 DER or
+   * PEM; Ed25519 or RSA) used to sign requests eBay requires signatures on for
+   * EU/UK sellers. Sourced from `EBAY_SIGNING_PRIVATE_KEY`.
+   */
+  signingPrivateKey?: string;
 }
 
 /**

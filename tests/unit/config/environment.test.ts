@@ -142,6 +142,36 @@ describe('Environment Configuration', () => {
 
       stderrWriteSpy.mockRestore();
     });
+
+    it('read digital signature credentials when both are set', () => {
+      process.env.EBAY_CLIENT_ID = 'test_client_id';
+      process.env.EBAY_CLIENT_SECRET = 'test_client_secret';
+      process.env.EBAY_SIGNING_KEY_JWE = ' jwe-value ';
+      process.env.EBAY_SIGNING_PRIVATE_KEY = 'test-signing-private-key';
+
+      const config = getEbayConfig();
+
+      expect(config.signingKeyJwe).toBe('jwe-value');
+      expect(config.signingPrivateKey).toBe('test-signing-private-key');
+    });
+
+    it('ignore and warn about a half-configured signing key', () => {
+      const stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+      process.env.EBAY_CLIENT_ID = 'test_client_id';
+      process.env.EBAY_CLIENT_SECRET = 'test_client_secret';
+      process.env.EBAY_SIGNING_KEY_JWE = 'jwe-value';
+      delete process.env.EBAY_SIGNING_PRIVATE_KEY;
+
+      const config = getEbayConfig();
+
+      expect(config.signingKeyJwe).toBeUndefined();
+      expect(config.signingPrivateKey).toBeUndefined();
+      expect(stderrWriteSpy).toHaveBeenCalledWith(
+        expect.stringContaining('EBAY_SIGNING_PRIVATE_KEY'),
+      );
+
+      stderrWriteSpy.mockRestore();
+    });
   });
 
   describe('getBaseUrl', () => {

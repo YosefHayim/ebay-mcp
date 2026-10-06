@@ -262,6 +262,7 @@ describe('FulfillmentApi', () => {
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/issue_refund',
         refundRequest,
+        { signed: true },
       );
       expect(refund).toEqual(mockRefund);
     });
@@ -298,6 +299,7 @@ describe('FulfillmentApi', () => {
       expect(mockClient.post).toHaveBeenCalledWith(
         '/sell/fulfillment/v1/order/12345-67890/issue_refund',
         refundRequest,
+        { signed: true },
       );
       expect(refund).toEqual(mockRefund);
     });
