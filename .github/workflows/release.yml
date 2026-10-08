@@ -1,30 +1,25 @@
 name: Release
-
-on:
+'on':
   pull_request:
-    types: [closed]
-    branches: [main]
-  workflow_dispatch:
-
+    types:
+      - closed
+    branches:
+      - main
+  workflow_dispatch: null
 concurrency:
-  group: release-main
-  cancel-in-progress: false
-
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   release:
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.merged == true &&
+    if: |
+      github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true &&
        !contains(github.event.pull_request.labels.*.name, 'no-release'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
       actions: write
-    # The PR title is untrusted input: scripts read it only from this variable,
-    # never from an inline expression in run.
     env:
       RELEASE_TITLE: ${{ github.event.pull_request.title || 'Manual release' }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -32,25 +27,14 @@ jobs:
           ref: main
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup workspace
+        uses: ./.github/actions/setup
         with:
-          node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Check if release needed
         id: skip_check
         run: |
@@ -60,7 +44,6 @@ jobs:
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
-
       - name: Determine version bump
         if: steps.skip_check.outputs.skip != 'true'
         id: bump
@@ -76,9 +59,6 @@ jobs:
           else
             echo "type=patch" >> "$GITHUB_OUTPUT"
           fi
-
-      # The version lives in the tag, not in a commit: main is protected (CI Gate is
-      # required), so this job cannot push a version-bump commit to it.
       - name: Determine release version
         if: steps.skip_check.outputs.skip != 'true'
         id: version
@@ -103,19 +83,15 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Release tag will be ${TAG}"
-
       - name: Type check
         if: steps.skip_check.outputs.skip != 'true'
         run: pnpm typecheck
-
       - name: Run tests
         if: steps.skip_check.outputs.skip != 'true'
         run: pnpm test
-
       - name: Build
         if: steps.skip_check.outputs.skip != 'true'
         run: pnpm build
-
       - name: Build release notes from commits
         if: steps.skip_check.outputs.skip != 'true'
         id: notes
@@ -147,7 +123,6 @@ jobs:
             echo ""
             echo "RELEASE_EOF"
           } >> "$GITHUB_OUTPUT"
-
       - name: Create and push tag
         if: steps.skip_check.outputs.skip != 'true'
         env:
@@ -155,7 +130,6 @@ jobs:
         run: |
           git tag -a "$TAG" -m "Release ${TAG} - ${RELEASE_TITLE}"
           git push origin "refs/tags/${TAG}"
-
       - name: Create GitHub Release
         if: steps.skip_check.outputs.skip != 'true'
         uses: softprops/action-gh-release@v3
@@ -163,12 +137,10 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }} - ${{ env.RELEASE_TITLE }}
           body: ${{ steps.notes.outputs.body }}
-
-      # npm trusted publishing is bound to publish.yml, so the publish runs there.
-      # A tag pushed with GITHUB_TOKEN fires no push event; workflow_dispatch is allowed.
       - name: Start npm publish
         if: steps.skip_check.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
         run: gh workflow run publish.yml --ref "$TAG"
+    timeout-minutes: 15
