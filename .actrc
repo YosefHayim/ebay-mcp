@@ -1,0 +1,4 @@
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+-P ubuntu-slim=catthehacker/ubuntu:act-latest
+--container-architecture linux/arm64
+--env npm_config_store_dir=/root/.local/share/pnpm/store

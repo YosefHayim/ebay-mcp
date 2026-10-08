@@ -1,17 +1,11 @@
 name: eBay API Sync
-
-# Runs `pnpm sync` on a schedule and opens an issue listing eBay endpoints
-# not yet exposed as tools.
-
-on:
-  schedule:
-    # Every ~3 weeks (1st and 22nd of each month) at 08:00 UTC.
-    - cron: '0 8 1,22 * *'
-  workflow_dispatch:
-
+'on':
+  workflow_dispatch: null
 permissions:
   contents: read
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   sync-check:
     name: Check for un-exposed endpoints
@@ -22,19 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      - name: Setup workspace
+        uses: ./.github/actions/setup
       - name: Run API sync check
         id: sync
         run: |
@@ -46,9 +29,11 @@ jobs:
             TOOLS_IMPLEMENTED=$(jq '.toolsImplemented' devSyncReport.json)
             MISSING_COUNT=$(jq '.missingEndpoints | length' devSyncReport.json)
 
-            echo "endpoints_in_specs=$ENDPOINTS_IN_SPECS" >> "$GITHUB_OUTPUT"
-            echo "tools_implemented=$TOOLS_IMPLEMENTED" >> "$GITHUB_OUTPUT"
-            echo "missing_count=$MISSING_COUNT" >> "$GITHUB_OUTPUT"
+            {
+              echo "endpoints_in_specs=$ENDPOINTS_IN_SPECS"
+              echo "tools_implemented=$TOOLS_IMPLEMENTED"
+              echo "missing_count=$MISSING_COUNT"
+            } >> "$GITHUB_OUTPUT"
 
             # Calculate coverage percentage
             if [ "$ENDPOINTS_IN_SPECS" -gt 0 ]; then
@@ -62,7 +47,6 @@ jobs:
             # Save to file for multi-line output
             echo "$MISSING_LIST" > missing-endpoints.txt
           fi
-
       - name: Upload sync report
         uses: actions/upload-artifact@v7
         with:
@@ -71,7 +55,6 @@ jobs:
             devSyncReport.json
             syncOutput.txt
           retention-days: 30
-
       - name: Check for new endpoints and create issue
         if: steps.sync.outputs.missing_count > 0
         uses: actions/github-script@v8
@@ -157,14 +140,16 @@ jobs:
             } else {
               console.log('Recent API sync issue already exists, skipping creation');
             }
-
       - name: Summary
         run: |
-          echo "## eBay API Sync Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Endpoints in Specs | ${{ steps.sync.outputs.endpoints_in_specs }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Tools Implemented | ${{ steps.sync.outputs.tools_implemented }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Coverage | ${{ steps.sync.outputs.coverage }}% |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Missing Endpoints | ${{ steps.sync.outputs.missing_count }} |" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## eBay API Sync Summary"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Endpoints in Specs | ${{ steps.sync.outputs.endpoints_in_specs }} |"
+            echo "| Tools Implemented | ${{ steps.sync.outputs.tools_implemented }} |"
+            echo "| Coverage | ${{ steps.sync.outputs.coverage }}% |"
+            echo "| Missing Endpoints | ${{ steps.sync.outputs.missing_count }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+    timeout-minutes: 15
