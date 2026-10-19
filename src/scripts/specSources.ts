@@ -5,6 +5,8 @@
  * `src/types/<folder>/`, so `folder` must match the existing generated-type layout.
  */
 
+import { basename } from 'node:path';
+
 /** One eBay OpenAPI spec that `pnpm sync` downloads and generates types from. */
 export interface SpecSource {
   /** eBay API name shown in sync output. */
@@ -13,7 +15,10 @@ export interface SpecSource {
   readonly folder: string;
   /** Official OpenAPI 3 JSON download URL. */
   readonly url: string;
+  readonly fileName?: string;
 }
+
+export const specFileName = ({ url, fileName }: SpecSource): string => fileName || basename(url);
 
 /** Every spec `pnpm sync` downloads, grouped the same way as `src/types/`. */
 export const specSources: readonly SpecSource[] = [
@@ -75,7 +80,8 @@ export const specSources: readonly SpecSource[] = [
   {
     api: 'Account API (v2)',
     folder: 'sell-apps/account-management',
-    url: 'https://developer.ebay.com/api-docs/master/sell/account/v2/openapi/3/sell_account_v2_oas3.json',
+    url: 'https://developer.ebay.com/develop/api/spec/account_api_v2.json',
+    fileName: 'sell_account_v2_oas3.json',
   },
   {
     api: 'Finances API',

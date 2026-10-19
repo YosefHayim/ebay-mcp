@@ -4,13 +4,19 @@ import chalk from 'chalk';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execFileSync, execSync } from 'child_process';
 import { Effect, Either } from 'effect';
 import { getErrorMessage } from '@/utils/errors.js';
-import { httpRequest } from '@/utils/http.js';
 import process from 'node:process';
+import {
+  classifyOperation,
+  collectImplementedNames,
+  normalizeForMatching,
+} from './specCoverage.js';
+import { refreshCachedSpec } from './specDownload.js';
 import { replaceDanglingSchemaRefs } from './specRefs.js';
-import { specSources } from './specSources.js';
+import { specFileName, specSources } from './specSources.js';
+import { generatedNamespaceNames, renameGeneratedNamespaces } from './specTypeNames.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,29 +25,6 @@ const PROJECT_ROOT = join(__dirname, '../..');
 const SPECS_DIR = join(PROJECT_ROOT, '.cache/ebay-specs');
 const TYPES_DIR = join(PROJECT_ROOT, 'src/types');
 const TOOLS_DIRS = [join(PROJECT_ROOT, 'src/tools/categories')];
-
-/** Repo-specific OpenAPI namespace aliases preserved after type regeneration. */
-const GENERATED_TYPE_ALIASES: Record<
-  string,
-  { readonly components: string; readonly operations: string }
-> = {
-  developerAnalyticsV1BetaOas3: {
-    components: 'DeveloperAnalyticsComponents',
-    operations: 'DeveloperAnalyticsOperations',
-  },
-  developerClientRegistrationV1Oas3: {
-    components: 'DeveloperClientRegistrationComponents',
-    operations: 'DeveloperClientRegistrationOperations',
-  },
-  developerKeyManagementV1Oas3: {
-    components: 'DeveloperKeyManagementComponents',
-    operations: 'DeveloperKeyManagementOperations',
-  },
-  sellComplianceV1Oas3: {
-    components: 'SellComplianceComponents',
-    operations: 'SellComplianceOperations',
-  },
-};
 
 const ui = {
   success: chalk.green,
@@ -52,68 +35,15 @@ const ui = {
   bold: chalk.bold,
 };
 
-/**
- * Checks whether an openapi-typescript output exposes a generated namespace.
- *
- * @param content - Generated TypeScript declaration content to inspect.
- * @param exportName - Namespace export that must exist before adding an alias.
- * @returns True when the generated output exposes the requested namespace.
- *
- * @example
- * ```ts
- * hasGeneratedExport(content, 'components');
- * ```
- */
-const hasGeneratedExport = (content: string, exportName: 'components' | 'operations'): boolean =>
-  content.includes(`export interface ${exportName}`) ||
-  content.includes(`export type ${exportName}`);
-
-/**
- * Appends repo-specific generated type aliases after openapi-typescript rewrites a file.
- *
- * @param outputPath - Generated TypeScript declaration file path.
- * @param camelCaseName - OpenAPI spec basename used as the generated type file name.
- * @returns Nothing; the generated file is updated in place when aliases are needed.
- *
- * @example
- * ```ts
- * preserveGeneratedTypeAliases(outputPath, 'sellComplianceV1Oas3');
- * ```
- */
-const preserveGeneratedTypeAliases = (outputPath: string, camelCaseName: string): void => {
-  const aliases = GENERATED_TYPE_ALIASES[camelCaseName];
-  if (!aliases) {
+const applyNamespaceNames = (outputPath: string, camelCaseName: string): void => {
+  const names = generatedNamespaceNames[camelCaseName];
+  if (!names) {
     return;
   }
 
-  const content = readFileSync(outputPath, 'utf-8');
-  const aliasLines: string[] = [];
-
-  if (
-    hasGeneratedExport(content, 'components') &&
-    !content.includes(`export type ${aliases.components}`)
-  ) {
-    aliasLines.push(
-      '/** Repo-specific alias for generated OpenAPI components. */',
-      `export type ${aliases.components} = components;`,
-    );
-  }
-
-  if (
-    hasGeneratedExport(content, 'operations') &&
-    !content.includes(`export type ${aliases.operations}`)
-  ) {
-    aliasLines.push(
-      '/** Repo-specific alias for generated OpenAPI operations. */',
-      `export type ${aliases.operations} = operations;`,
-    );
-  }
-
-  if (aliasLines.length === 0) {
-    return;
-  }
-
-  writeFileSync(outputPath, `${content.trimEnd()}\n\n${aliasLines.join('\n')}\n`);
+  const generatedTypes = readFileSync(outputPath, 'utf-8');
+  const renamedTypes = renameGeneratedNamespaces(generatedTypes, names);
+  writeFileSync(outputPath, renamedTypes);
 };
 
 function showSpinner(message: string): () => void {
@@ -144,71 +74,68 @@ interface EndpointInfo {
   summary: string;
 }
 
+interface UnavailableSpec {
+  api: string;
+  fileName: string;
+  url: string;
+  reason: string;
+}
+
 interface SyncReport {
   specsDownloaded: number;
+  unavailableSpecs: UnavailableSpec[];
   typesGenerated: number;
   endpointsInSpecs: number;
   toolsImplemented: number;
+  exactMatches: number;
+  fuzzyMatchedEndpoints: EndpointInfo[];
   missingEndpoints: EndpointInfo[];
 }
 
-async function downloadSpecs(): Promise<number> {
+async function downloadSpecs(): Promise<{ downloaded: number; unavailable: UnavailableSpec[] }> {
   console.log(ui.bold('\n📥 Downloading OpenAPI Specifications\n'));
 
   console.log(ui.dim(`  Found ${specSources.length} spec URLs\n`));
 
   let downloaded = 0;
-  let failed = 0;
-  for (const { api, folder, url } of specSources) {
-    const fileName = basename(url);
-    const folderPath = join(SPECS_DIR, folder);
-    const filePath = join(folderPath, fileName);
+  const unavailable: UnavailableSpec[] = [];
+  for (const source of specSources) {
+    const { api, folder, url } = source;
+    const fileName = specFileName(source);
+    const specPath = join(SPECS_DIR, folder, fileName);
 
     const stopSpinner = showSpinner(`Downloading ${api} (${fileName})...`);
+    const refresh = refreshCachedSpec(url, specPath).pipe(Effect.either);
+    const refreshOutcome = await Effect.runPromise(refresh);
+    stopSpinner();
 
-    const downloadedSpec = await Effect.runPromise(
-      Effect.either(
-        Effect.tryPromise({
-          try: async () => {
-            mkdirSync(folderPath, { recursive: true });
-            const specResponse = await httpRequest<Buffer>({
-              url,
-              responseType: 'arraybuffer',
-              timeoutMs: 20_000,
-            });
-            writeFileSync(filePath, specResponse.data);
-          },
-          catch: (error) => error,
-        }).pipe(Effect.ensuring(Effect.sync(stopSpinner))),
-      ),
-    );
-
-    if (Either.isLeft(downloadedSpec)) {
-      console.log(
-        `  ${ui.error('✗')} ${api} (${fileName}): ${getErrorMessage(downloadedSpec.left)}`,
-      );
-      failed++;
-    } else {
+    if (Either.isRight(refreshOutcome)) {
       console.log(`  ${ui.success('✓')} ${api} (${fileName})`);
       downloaded++;
+      continue;
     }
+
+    const reason = refreshOutcome.left.message;
+    const cacheNote = existsSync(specPath) ? 'kept the cached copy' : 'no cached copy';
+    console.log(`  ${ui.error('✗')} ${api} (${fileName}): unavailable, ${reason}; ${cacheNote}`);
+    unavailable.push({ api, fileName, url, reason });
   }
 
-  if (failed > 0 && downloaded === 0) {
+  if (unavailable.length > 0 && downloaded === 0) {
     console.log(
       ui.error(
-        `\n  ✗ All ${failed} spec downloads failed — eBay is likely blocking automated requests (HTTP 403).`,
+        `\n  ✗ All ${unavailable.length} spec downloads failed — eBay is likely blocking automated requests (HTTP 403).`,
       ),
     );
   }
 
-  return downloaded;
+  return { downloaded, unavailable };
 }
 
 function generateTypes(): number {
   console.log(ui.bold('\n🔧 Generating TypeScript Types\n'));
 
-  let generated = 0;
+  const generatedPaths: string[] = [];
   let skipped = 0;
 
   function processDirectory(dir: string): void {
@@ -289,9 +216,9 @@ function generateTypes(): number {
         );
 
         if (Either.isRight(generatedFile)) {
-          preserveGeneratedTypeAliases(outputPath, camelCaseName);
+          applyNamespaceNames(outputPath, camelCaseName);
           console.log(`  ${ui.success('✓')} ${camelCaseName}.ts`);
-          generated++;
+          generatedPaths.push(outputPath);
         } else {
           console.log(
             `  ${ui.error('✗')} ${camelCaseName}.ts (generation failed): ${getErrorMessage(generatedFile.left)}`,
@@ -303,8 +230,16 @@ function generateTypes(): number {
 
   processDirectory(SPECS_DIR);
 
-  console.log(ui.dim(`\n  Generated: ${generated}, Skipped: ${skipped}`));
-  return generated;
+  // Format with the repo's Biome settings so regenerating unchanged specs leaves no diff.
+  if (generatedPaths.length > 0) {
+    execFileSync('npx', ['biome', 'format', '--write', ...generatedPaths], {
+      stdio: 'pipe',
+      cwd: PROJECT_ROOT,
+    });
+  }
+
+  console.log(ui.dim(`\n  Generated: ${generatedPaths.length}, Skipped: ${skipped}`));
+  return generatedPaths.length;
 }
 
 function extractEndpointsFromSpecs(): EndpointInfo[] {
@@ -383,76 +318,6 @@ function getImplementedTools(): Set<string> {
   return tools;
 }
 
-function camelToSnake(str: string): string {
-  return str
-    .replace(/([A-Z])/g, '_$1')
-    .toLowerCase()
-    .replace(/^_/, '');
-}
-
-function normalizeForMatching(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-/**
- * Known mappings from OpenAPI operationId to our tool names
- * This handles cases where naming conventions differ significantly
- */
-const KNOWN_OPERATION_MAPPINGS: Record<string, string[]> = {
-  // Feedback API
-  getitemsawaitingfeedback: ['ebay_get_awaiting_feedback'],
-  leavefeedback: ['ebay_leave_feedback_for_buyer'],
-
-  // Notification API — tools use the ebay_*_notification_* naming convention
-  getconfig: ['ebay_get_notification_config'],
-  updateconfig: ['ebay_update_notification_config'],
-  getdestinations: ['ebay_get_notification_destinations'],
-  createdestination: ['ebay_create_notification_destination'],
-  getdestination: ['ebay_get_notification_destination'],
-  updatedestination: ['ebay_update_notification_destination'],
-  deletedestination: ['ebay_delete_notification_destination'],
-  getsubscriptions: ['ebay_get_notification_subscriptions'],
-  createsubscription: ['ebay_create_notification_subscription'],
-  getsubscription: ['ebay_get_notification_subscription'],
-  updatesubscription: ['ebay_update_notification_subscription'],
-  deletesubscription: ['ebay_delete_notification_subscription'],
-  disablesubscription: ['ebay_disable_notification_subscription'],
-  enablesubscription: ['ebay_enable_notification_subscription'],
-  testsubscription: ['ebay_test_notification_subscription'],
-  createsubscriptionfilter: ['ebay_create_notification_subscription_filter'],
-  getsubscriptionfilter: ['ebay_get_notification_subscription_filter'],
-  deletesubscriptionfilter: ['ebay_delete_notification_subscription_filter'],
-  gettopic: ['ebay_get_notification_topic'],
-  gettopics: ['ebay_get_notification_topics'],
-  getpublickey: ['ebay_get_notification_public_key'],
-
-  // Negotiation API
-  findeligibleitems: ['ebay_find_eligible_items'],
-
-  // Marketing API
-  createadbylistingid: ['ebay_create_ad_by_listing_id'],
-  updatebid: ['ebay_update_bid'],
-  bulkcreatekeyword: ['ebay_bulk_create_keyword'],
-  bulkupdatekeyword: ['ebay_bulk_update_keyword'],
-  bulkcreatenegativekeyword: ['ebay_bulk_create_negative_keyword'],
-  bulkupdatenegativekeyword: ['ebay_bulk_update_negative_keyword'],
-  getnegativekeywords: ['ebay_get_negative_keywords'],
-  createnegativekeyword: ['ebay_create_negative_keyword'],
-  getnegativekeyword: ['ebay_get_negative_keyword'],
-  updatenegativekeyword: ['ebay_update_negative_keyword'],
-  getreportmetadata: ['ebay_get_report_metadata'],
-  getreportmetadataforreporttype: ['ebay_get_report_metadata_for_report_type'],
-  getpromotionreports: ['ebay_get_promotion_reports'],
-  getaudiences: ['ebay_get_audiences'],
-
-  // Dispute/Fulfillment API
-  fetchevidencecontent: ['ebay_fetch_evidence_content'],
-  getactivities: ['ebay_get_payment_dispute_activities', 'ebay_get_activities'],
-  uploadevidencefile: ['ebay_upload_evidence_file'],
-  addevidence: ['ebay_add_evidence'],
-  updateevidence: ['ebay_update_evidence'],
-};
-
 /**
  * Get all implemented API methods from source files
  */
@@ -487,10 +352,10 @@ function getImplementedApiMethods(): Set<string> {
             /(?:async\s+(\w+)\s*\(|(?:public\s+)?(\w+)\s*=\s*(?:async\s*)?\()/g,
           );
           for (const match of methodMatches) {
-            const name = match[1] ?? match[2];
+            const name = match[1] || match[2];
             // Skip common non-method bindings that the broader regex can catch.
             if (!name || name === 'const' || name === 'let' || name === 'var') continue;
-            methods.add(normalizeForMatching(name));
+            methods.add(name);
           }
         }
       }
@@ -501,75 +366,20 @@ function getImplementedApiMethods(): Set<string> {
   return methods;
 }
 
-/**
- * Generate all possible name variations for an operationId
- */
-function generateNameVariations(opId: string): string[] {
-  const variations: string[] = [];
-  const normalized = normalizeForMatching(opId);
-
-  // Direct variations
-  variations.push(normalized);
-  variations.push(`ebay${normalized}`);
-  variations.push(normalizeForMatching(`ebay_${camelToSnake(opId)}`));
-  variations.push(normalizeForMatching(camelToSnake(opId)));
-
-  // Remove common suffixes/prefixes that might differ
-  const withoutItems = normalized.replace(/items?$/, '');
-  if (withoutItems !== normalized) {
-    variations.push(withoutItems);
-    variations.push(`ebay${withoutItems}`);
-  }
-
-  // Handle "ByX" patterns -> remove them
-  const withoutBy = normalized.replace(/by\w+$/, '');
-  if (withoutBy !== normalized) {
-    variations.push(withoutBy);
-    variations.push(`ebay${withoutBy}`);
-  }
-
-  // Handle "ForX" patterns -> remove them
-  const withoutFor = normalized.replace(/for\w+$/, '');
-  if (withoutFor !== normalized) {
-    variations.push(withoutFor);
-    variations.push(`ebay${withoutFor}`);
-  }
-
-  // Handle plural/singular
-  if (normalized.endsWith('s') && !normalized.endsWith('ss')) {
-    const singular = normalized.slice(0, -1);
-    variations.push(singular);
-    variations.push(`ebay${singular}`);
-  } else {
-    const plural = normalized + 's';
-    variations.push(plural);
-    variations.push(`ebay${plural}`);
-  }
-
-  // Check known mappings
-  if (KNOWN_OPERATION_MAPPINGS[normalized]) {
-    for (const mapped of KNOWN_OPERATION_MAPPINGS[normalized]) {
-      variations.push(normalizeForMatching(mapped));
-    }
-  }
-
-  return [...new Set(variations)];
+interface CoverageAnalysis {
+  total: number;
+  exact: number;
+  fuzzy: EndpointInfo[];
+  missing: EndpointInfo[];
 }
 
-function analyzeEndpoints(): { total: number; implemented: number; missing: EndpointInfo[] } {
+function analyzeEndpoints(): CoverageAnalysis {
   console.log(ui.bold('\n📊 Analyzing API Coverage\n'));
 
   const specEndpoints = extractEndpointsFromSpecs();
   const implementedTools = getImplementedTools();
   const implementedApiMethods = getImplementedApiMethods();
-
-  // Normalize all tool names
-  const normalizedTools = new Set(
-    Array.from(implementedTools).map((toolName) => normalizeForMatching(toolName)),
-  );
-
-  // Combine tools and API methods for matching
-  const allImplemented = new Set([...normalizedTools, ...implementedApiMethods]);
+  const implemented = collectImplementedNames([...implementedApiMethods], [...implementedTools]);
 
   // Track unique endpoints (dedupe by operationId)
   const seenOperationIds = new Set<string>();
@@ -583,22 +393,22 @@ function analyzeEndpoints(): { total: number; implemented: number; missing: Endp
     }
   }
 
+  const fuzzy: EndpointInfo[] = [];
   const missing: EndpointInfo[] = [];
-  let matchedCount = 0;
+  let exact = 0;
 
   for (const endpoint of uniqueEndpoints) {
-    const opId = endpoint.operationId;
-    const variations = generateNameVariations(opId);
-
-    const isImplemented = variations.some((name) => allImplemented.has(name));
-
-    if (isImplemented) {
-      matchedCount++;
+    const coverage = classifyOperation(endpoint.operationId, implemented);
+    if (coverage === 'exact') {
+      exact++;
+    } else if (coverage === 'fuzzy') {
+      fuzzy.push(endpoint);
     } else {
       missing.push(endpoint);
     }
   }
 
+  const matchedCount = exact + fuzzy.length;
   const coveragePercent =
     uniqueEndpoints.length > 0 ? ((matchedCount / uniqueEndpoints.length) * 100).toFixed(1) : '0';
 
@@ -607,13 +417,25 @@ function analyzeEndpoints(): { total: number; implemented: number; missing: Endp
   console.log(`  ${ui.success('Tools implemented:')} ${implementedTools.size}`);
   console.log(`  ${ui.success('API methods found:')} ${implementedApiMethods.size}`);
   console.log(`  ${ui.success('Endpoints covered:')} ${matchedCount} (${coveragePercent}%)`);
+  console.log(`    ${ui.success('Exact operationId matches:')} ${exact}`);
+  console.log(`    ${ui.warning('Fuzzy-only matches:')} ${fuzzy.length}`);
   console.log(`  ${ui.warning('Potentially missing:')} ${missing.length}`);
 
-  return {
-    total: uniqueEndpoints.length,
-    implemented: matchedCount,
-    missing,
-  };
+  return { total: uniqueEndpoints.length, exact, fuzzy, missing };
+}
+
+function showFuzzyMatches(fuzzy: EndpointInfo[]): void {
+  if (fuzzy.length === 0) {
+    return;
+  }
+
+  console.log(ui.bold('\nFuzzy-only Matches\n'));
+  console.log(
+    ui.dim('  No API method carries these operationIds exactly; a looser name matched:\n'),
+  );
+  for (const ep of fuzzy) {
+    console.log(`    ${ui.dim(ep.method.padEnd(6))} ${ep.path} ${ui.dim(`(${ep.operationId})`)}`);
+  }
 }
 
 function showMissingEndpoints(missing: EndpointInfo[]): void {
@@ -699,14 +521,19 @@ ${ui.bold('What this does:')}
 
   const report: SyncReport = {
     specsDownloaded: 0,
+    unavailableSpecs: [],
     typesGenerated: 0,
     endpointsInSpecs: 0,
     toolsImplemented: 0,
+    exactMatches: 0,
+    fuzzyMatchedEndpoints: [],
     missingEndpoints: [],
   };
 
   if (!(reportOnly || skipDownload)) {
-    report.specsDownloaded = await downloadSpecs();
+    const downloads = await downloadSpecs();
+    report.specsDownloaded = downloads.downloaded;
+    report.unavailableSpecs = downloads.unavailable;
   }
 
   // If the download step ran but fetched nothing (for example, blocked
@@ -725,9 +552,12 @@ ${ui.bold('What this does:')}
 
   const analysis = analyzeEndpoints();
   report.endpointsInSpecs = analysis.total;
-  report.toolsImplemented = analysis.implemented;
+  report.toolsImplemented = analysis.exact + analysis.fuzzy.length;
+  report.exactMatches = analysis.exact;
+  report.fuzzyMatchedEndpoints = analysis.fuzzy;
   report.missingEndpoints = analysis.missing;
 
+  showFuzzyMatches(analysis.fuzzy);
   showMissingEndpoints(analysis.missing);
   generateReport(report);
 
