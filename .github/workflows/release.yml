@@ -1,14 +1,15 @@
 name: Release
 'on':
-  pull_request:
+  # Merged fork PRs get a read-only token under pull_request; this job only checks out main.
+  pull_request_target:
     types:
       - closed
     branches:
       - main
   workflow_dispatch: null
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: release-main
+  cancel-in-progress: false
 jobs:
   release:
     if: |
@@ -110,7 +111,7 @@ jobs:
             echo "body<<RELEASE_EOF"
             echo "## What Changed"
             echo ""
-            if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            if [ "$GITHUB_EVENT_NAME" = "pull_request_target" ]; then
               echo "**PR:** [#${PR_NUMBER} - ${RELEASE_TITLE}](${PR_URL})"
             else
               echo "**Manual release triggered via workflow_dispatch**"

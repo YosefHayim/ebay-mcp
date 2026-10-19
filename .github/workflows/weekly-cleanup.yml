@@ -22,14 +22,14 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - name: Delete old workflow runs
         env:
           DAYS_TO_KEEP: ${{ github.event.inputs.days_to_keep || 30 }}
         run: |
+          if ! [[ "$DAYS_TO_KEEP" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::days_to_keep must be a positive whole number, got '$DAYS_TO_KEEP'"
+            exit 1
+          fi
           echo "Keeping workflow runs from the last $DAYS_TO_KEEP days."
           echo "Repository: ${{ github.repository }}"
 

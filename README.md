@@ -428,7 +428,7 @@ User-token limits vary by account tier (Individual 10k · Commercial 25k · Ente
 
 ### MCP client compatibility
 
-Auto-configured by `npm run setup`. Requires [Node.js](https://nodejs.org/en) ≥ 20 and MCP protocol 1.0+ over STDIO (default) or HTTP.
+Auto-configured by `npm run setup`. Requires [Node.js](https://nodejs.org/en) ≥ 24 and MCP protocol 1.0+ over STDIO (default) or HTTP.
 
 | Client                 | Platform              | Config path                                                                  |
 | ---------------------- | --------------------- | ---------------------------------------------------------------------------- |
@@ -593,7 +593,7 @@ It runs entirely on your machine over STDIO (or local HTTP). There is no cloud r
 <details>
 <summary><strong>What do I need to get started?</strong></summary>
 
-Node.js ≥ 20, a free [eBay Developer Account](https://developer.ebay.com/) (Client ID + Client Secret), then run `npm run setup`.
+Node.js ≥ 24, a free [eBay Developer Account](https://developer.ebay.com/) (Client ID + Client Secret), then run `npm run setup`.
 
 </details>
 
@@ -684,6 +684,8 @@ pnpm check:ci                              # Biome lint + format
 pnpm test && pnpm test:integration         # Vitest unit + integration
 pnpm build                                 # Build to build/
 ```
+
+To run the CI gate locally in Docker before pushing, use [act](https://nektosact.com): `act workflow_dispatch -W .github/workflows/ci.yml`. The root `.actrc` picks the runner image and keeps the pnpm store outside the workspace.
 
 ## Resources
 
