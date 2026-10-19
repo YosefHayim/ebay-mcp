@@ -17,9 +17,9 @@ import type { ToolEntry } from '@/tools/registry.js';
 import { Effect } from 'effect';
 
 const FINANCES_SCOPE_NOTE =
-  'Requires the sell.finances scope. eBay requires Digital Signatures on Finances API calls for EU/UK sellers, which this server does not add.';
+  'Requires the sell.finances scope. eBay requires Digital Signatures on Finances API calls for EU/UK sellers; set EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY to sign them.';
 
-const EARNINGS_SCOPE_NOTE = `Requires the optional ${FINANCES_EARNINGS_SCOPE} scope, which is not requested by default: add it to EBAY_OAUTH_SCOPES and re-run OAuth consent. eBay grants it only to approved US, CN, or HK sellers with USD payouts. eBay requires Digital Signatures on Finances API calls for EU/UK sellers, which this server does not add.`;
+const EARNINGS_SCOPE_NOTE = `Requires the optional ${FINANCES_EARNINGS_SCOPE} scope, which is not requested by default: add it to EBAY_OAUTH_SCOPES and re-run OAuth consent. eBay grants it only to approved US, CN, or HK sellers with USD payouts. eBay requires Digital Signatures on Finances API calls for EU/UK sellers; set EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY to sign them.`;
 
 /** Finances API tools for payouts, transactions, transfers, seller funds, billing activity, and order earnings. */
 export const financesEntries: ToolEntry[] = [

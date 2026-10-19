@@ -96,9 +96,9 @@ export const getUiRuntimeConfig = (): UiRuntimeConfig => ({
  * const scopes = getDefaultScopes('production');
  * ```
  */
-export const getDefaultScopes = (environment: EbayEnvironment): string[] => {
-  return [...(environment === 'production' ? productionScopes : sandboxScopes)];
-};
+export const getDefaultScopes = (environment: EbayEnvironment): string[] => [
+  ...(environment === 'production' ? productionScopes : sandboxScopes),
+];
 
 /** Optional scope requiring keyset eligibility and fresh user consent. */
 export const POST_ORDER_DOCUMENT_SCOPE =
@@ -335,6 +335,7 @@ export const getEbayConfig = (): EbayConfig => {
     appAccessToken,
     apiBaseUrl,
     disableAuthHeader,
+    signing: getSigningConfig(),
   };
 };
 
@@ -555,6 +556,19 @@ export const getProxyAuthConfig = (): ProxyAuthConfig => {
   }
 
   return { apiBaseUrl, disableAuthHeader, warnings, errors, infos };
+};
+
+const getSigningConfig = (): EbayConfig['signing'] => {
+  const keyJwe = process.env.EBAY_SIGNING_KEY_JWE?.trim();
+  const privateKey = process.env.EBAY_SIGNING_PRIVATE_KEY?.trim();
+  if (keyJwe && privateKey) {
+    return { keyJwe, privateKey };
+  }
+  if (keyJwe || privateKey) {
+    writeConfigDiagnostic(
+      'Digital signatures need both EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY; only one is set, so requests will not be signed.',
+    );
+  }
 };
 
 /**

@@ -104,7 +104,7 @@ export const developerEntries: ToolEntry[] = [
   defineTool({
     name: 'ebay_create_signing_key',
     description:
-      'Create a new signing keypair for API digital signatures. Supports ED25519 (recommended) or RSA ciphers. IMPORTANT: Save the private key immediately as eBay does not store it.',
+      'Create a new signing keypair for API digital signatures. Supports ED25519 (recommended) or RSA ciphers. IMPORTANT: Save the private key immediately as eBay does not store it. To sign the calls eBay requires signatures on for EU/UK sellers (Finances API, issueRefund), set EBAY_SIGNING_KEY_JWE to the returned jwe and EBAY_SIGNING_PRIVATE_KEY to the returned privateKey, then restart the server.',
     inputSchema: createSigningKeyInputSchema.shape,
     outputSchema: zodToJsonSchema(signingKeySchema, {
       name: 'CreateSigningKeyOutput',

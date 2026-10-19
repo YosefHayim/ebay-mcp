@@ -39,7 +39,10 @@ describe('FinancesApi apiz collections', () => {
     client.get.mockResolvedValue(financesPage);
 
     expect(await Effect.runPromise(run())).toBe(financesPage);
-    expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, page, { absolute: true });
+    expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, page, {
+      absolute: true,
+      signed: true,
+    });
   });
 
   it.each<[string, string, FinancesCall]>([
@@ -57,16 +60,23 @@ describe('FinancesApi apiz collections', () => {
   ])('%s sends only the filter query to the apiz host', async (_, path, run) => {
     await Effect.runPromise(run());
 
-    expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, summaryFilter, { absolute: true });
+    expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, summaryFilter, {
+      absolute: true,
+      signed: true,
+    });
   });
 
   it('omits the query entirely when no paging or filter input is given', async () => {
     await Effect.runPromise(finances.getPayouts());
     await Effect.runPromise(finances.getSellerFundsSummary());
 
-    expect(client.get).toHaveBeenNthCalledWith(1, `${APIZ}/payout`, undefined, { absolute: true });
+    expect(client.get).toHaveBeenNthCalledWith(1, `${APIZ}/payout`, undefined, {
+      absolute: true,
+      signed: true,
+    });
     expect(client.get).toHaveBeenNthCalledWith(2, `${APIZ}/seller_funds_summary`, undefined, {
       absolute: true,
+      signed: true,
     });
   });
 
@@ -89,7 +99,10 @@ describe('FinancesApi apiz resources by ID', () => {
   ])('%s encodes the ID in the path', async (_, run, path) => {
     await Effect.runPromise(run());
 
-    expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, undefined, { absolute: true });
+    expect(client.get).toHaveBeenCalledWith(`${APIZ}${path}`, undefined, {
+      absolute: true,
+      signed: true,
+    });
   });
 
   it('sends a per-call marketplace header when marketplaceId is given', async () => {
@@ -97,6 +110,7 @@ describe('FinancesApi apiz resources by ID', () => {
 
     expect(client.get).toHaveBeenCalledWith(`${APIZ}/payout/P1`, undefined, {
       absolute: true,
+      signed: true,
       headers: { 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_DE' },
     });
   });
@@ -111,7 +125,7 @@ describe('FinancesApi hosts', () => {
     expect(client.get).toHaveBeenCalledWith(
       'https://apiz.ebay.com/sell/finances/v1/seller_funds_summary',
       undefined,
-      { absolute: true },
+      { absolute: true, signed: true },
     );
   });
 
@@ -126,7 +140,7 @@ describe('FinancesApi hosts', () => {
     expect(client.get).toHaveBeenCalledWith(
       'https://proxy.example.com/sell/finances/v1/transfer/T1',
       undefined,
-      { absolute: true },
+      { absolute: true, signed: true },
     );
   });
 
@@ -139,11 +153,11 @@ describe('FinancesApi hosts', () => {
         finances.getBillingActivities({ filter: 'orderId:{12-34}', limit: 10, offset: 0 }),
       ),
     ).toBe(billingActivities);
-    expect(client.get).toHaveBeenCalledWith('/sell/finances/v1/billing_activity', {
-      filter: 'orderId:{12-34}',
-      limit: 10,
-      offset: 0,
-    });
+    expect(client.get).toHaveBeenCalledWith(
+      '/sell/finances/v1/billing_activity',
+      { filter: 'orderId:{12-34}', limit: 10, offset: 0 },
+      { signed: true },
+    );
     expect(client.getConfig).not.toHaveBeenCalled();
   });
 
@@ -156,6 +170,7 @@ describe('FinancesApi hosts', () => {
       '/sell/finances/v1/billing_activity',
       { filter: 'orderId:{12-34}' },
       {
+        signed: true,
         headers: { 'Accept-Language': 'de-DE' },
       },
     );

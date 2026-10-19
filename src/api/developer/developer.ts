@@ -1,7 +1,7 @@
-import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
-  type EbayApiError,
+  EbayApiError,
   type EndpointInputError,
   requestGetEffect,
   requestPostEffect,
@@ -19,6 +19,7 @@ import type {
 import type { DeveloperAnalyticsComponents as AnalyticsComponents } from '@/types/application-settings/developerAnalyticsV1BetaOas3.js';
 import type { DeveloperClientRegistrationComponents as ClientComponents } from '@/types/application-settings/developerClientRegistrationV1Oas3.js';
 import type { DeveloperKeyManagementComponents as KeyComponents } from '@/types/application-settings/developerKeyManagementV1Oas3.js';
+import { getIdentityBaseUrl } from '@/config/environment.js';
 import { Effect } from 'effect';
 import type { z } from 'zod';
 
@@ -52,6 +53,31 @@ export class DeveloperApi {
   private readonly analyticsBasePath = '/developer/analytics/v1_beta';
   private readonly clientBasePath = '/developer/client_registration/v1';
   private readonly keyBasePath = '/developer/key_management/v1';
+
+  /**
+   * Key Management is served from the apiz host (api.ebay.com answers 404) and
+   * authenticates with a client-credentials application token.
+   */
+  private readonly keyRequestConfig: EbayRequestConfig = {
+    absolute: true,
+    tokenType: 'application',
+  };
+
+  /** Full apiz URL for a Key Management path, honouring EBAY_MCP_API_BASE_URL. */
+  private readonly keyUrl = (path: string): string => {
+    const { environment, apiBaseUrl } = this.client.getConfig();
+    const identityBaseUrl = getIdentityBaseUrl(environment, apiBaseUrl);
+    return `${identityBaseUrl}${path}`;
+  };
+
+  private readonly getFromKeyManagement = <T>(path: string): Effect.Effect<T, EbayApiError> =>
+    Effect.tryPromise({
+      try: () => {
+        const url = this.keyUrl(path);
+        return this.client.get<T>(url, undefined, this.keyRequestConfig);
+      },
+      catch: (cause) => new EbayApiError({ method: 'GET', path, cause }), // allow-duplicate
+    });
 
   public constructor(private readonly client: EbayApiClient) {}
 
@@ -166,10 +192,7 @@ export class DeveloperApi {
     input: GetSigningKeysInput = {},
   ): Effect.Effect<QuerySigningKeysResponse, EbayApiError> => {
     void input;
-    return requestGetEffect<QuerySigningKeysResponse>(
-      this.client,
-      `${this.keyBasePath}/signing_key`,
-    );
+    return this.getFromKeyManagement<QuerySigningKeysResponse>(`${this.keyBasePath}/signing_key`);
   };
 
   /**
@@ -189,12 +212,18 @@ export class DeveloperApi {
    */
   public createSigningKey = (
     input: CreateSigningKeyInput = {},
-  ): Effect.Effect<SigningKey, EbayApiError> =>
-    requestPostEffect<SigningKey>(
-      this.client,
-      `${this.keyBasePath}/signing_key`,
-      (input.request as CreateSigningKeyRequest | undefined) ?? {},
-    );
+  ): Effect.Effect<SigningKey, EbayApiError> => {
+    const path = `${this.keyBasePath}/signing_key`;
+    const signingKeyRequest = (input.request as CreateSigningKeyRequest | undefined) || {};
+
+    return Effect.tryPromise({
+      try: () => {
+        const url = this.keyUrl(path);
+        return this.client.post<SigningKey>(url, signingKeyRequest, this.keyRequestConfig);
+      },
+      catch: (cause) => new EbayApiError({ method: 'POST', path, cause }), // allow-duplicate
+    });
+  };
 
   /**
    * Retrieves a specific signing key by eBay signing key ID.
@@ -216,9 +245,8 @@ export class DeveloperApi {
       const endpointInput = yield* requireObjectEffect<GetSigningKeyInput>(input, 'input');
       const signingKeyId = yield* requireStringEffect(endpointInput.signingKeyId, 'signingKeyId');
 
-      return yield* requestGetEffect<SigningKey>(
-        this.client,
-        `${this.keyBasePath}/signing_key/${signingKeyId}`,
+      return yield* this.getFromKeyManagement<SigningKey>(
+        `${this.keyBasePath}/signing_key/${encodeURIComponent(signingKeyId)}`,
       );
     });
 }

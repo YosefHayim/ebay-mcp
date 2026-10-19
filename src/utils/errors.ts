@@ -66,6 +66,7 @@ const KIND_IS_GUIDANCE: Record<EbayClientRequestErrorKind, boolean> = {
   tokenAcquisition: true,
   missingAccessToken: true,
   tokenRefresh: true,
+  signing: true,
   remoteRateLimit: true,
   httpStatus: false,
   transport: false,
