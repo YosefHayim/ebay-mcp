@@ -1,0 +1,31 @@
+name: Setup
+description: Install the project Node version and frozen dependencies with an explicit store cache.
+inputs:
+  registry-url:
+    description: Registry used when publishing a package.
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        package-manager-cache: false
+        registry-url: ${{ inputs.registry-url }}
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v6
+    - name: Locate dependency cache
+      id: store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+    - name: Cache dependencies
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ runner.arch }}-node24-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-${{ runner.arch }}-node24-
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

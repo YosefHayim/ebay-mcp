@@ -1,21 +1,12 @@
 name: Report failure
-
-# Reusable (workflow_call): open (or comment on) a `ci-failure` issue with the
-# failing job's captured log tail, so the error is readable straight from the
-# issue — no Actions-log streaming. The gate calls this only on a main failure.
-
-on:
-  workflow_call:
-
-permissions:
-  contents: read
-  issues: write
-  actions: read
-
+'on':
+  workflow_call: null
+# No permissions block: the job inherits the caller job's grant. Asking for issues: write
+# here fails the whole CI run at startup on fork PRs, whose token is capped to read.
 jobs:
   report-failure:
     name: File or update a ci-failure issue
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: File or update a ci-failure issue with the captured error
         uses: actions/github-script@v7
@@ -97,3 +88,4 @@ jobs:
             } else {
               await github.rest.issues.create({ owner, repo, title, body, labels: [label] });
             }
+    timeout-minutes: 5
