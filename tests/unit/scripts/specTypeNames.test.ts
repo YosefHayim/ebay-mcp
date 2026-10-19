@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { generatedNamespaceNames, renameGeneratedNamespaces } from '@/scripts/specTypeNames.js';
 
 const generatedTypes = `export interface paths {
-  '/compliance': {
+  '/signing_key': {
     /** @description See the components page for operations limits. */
-    get: operations['getListingViolations'];
+    get: operations['getSigningKeys'];
   };
 }
 export interface components {
   schemas: {
-    Summary: { violations?: components['schemas']['Violation'][] };
+    QuerySigningKeysResponse: { signingKeys?: components['schemas']['SigningKey'][] };
   };
 }
 export interface operations {
-  getListingViolations: { responses: { 200: components['schemas']['Summary'] } };
+  getSigningKeys: { responses: { 200: components['schemas']['QuerySigningKeysResponse'] } };
 }
 `;
 
@@ -21,14 +21,14 @@ describe('renameGeneratedNamespaces', () => {
   it('renames namespace declarations and references but not description text', () => {
     const renamedTypes = renameGeneratedNamespaces(
       generatedTypes,
-      generatedNamespaceNames.sellComplianceV1Oas3,
+      generatedNamespaceNames.developerKeyManagementV1Oas3,
     );
 
-    expect(renamedTypes).toContain('export interface SellComplianceComponents {');
-    expect(renamedTypes).toContain('export interface SellComplianceOperations {');
-    expect(renamedTypes).toContain("get: SellComplianceOperations['getListingViolations'];");
+    expect(renamedTypes).toContain('export interface DeveloperKeyManagementComponents {');
+    expect(renamedTypes).toContain('export interface DeveloperKeyManagementOperations {');
+    expect(renamedTypes).toContain("get: DeveloperKeyManagementOperations['getSigningKeys'];");
     expect(renamedTypes).toContain(
-      "violations?: SellComplianceComponents['schemas']['Violation'][]",
+      "signingKeys?: DeveloperKeyManagementComponents['schemas']['SigningKey'][]",
     );
     expect(renamedTypes).toContain('See the components page for operations limits.');
     expect(renamedTypes).not.toContain("components['");

@@ -24,7 +24,7 @@ const advertisedToolCount = getToolDefinitions().length;
  * Anything else in the band is treated as a stale tool-count claim.
  */
 const NON_COUNT_NUMBERS = new Set([
-  360, // unique endpoints reported by `pnpm sync --report` (devSyncReport.json is generated, not committed)
+  356, // unique endpoints reported by `pnpm sync --report` (devSyncReport.json is generated, not committed)
 ]);
 
 /**

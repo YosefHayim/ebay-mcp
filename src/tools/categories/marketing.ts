@@ -309,14 +309,6 @@ export const marketingEntries: ToolEntry[] = [
     handler: (api, args) => Effect.runPromise(api.marketing.getCampaignByName(args)),
   }),
   defineTool({
-    name: 'ebay_launch_campaign',
-    description: 'Launch campaign through the eBay Marketing API.',
-    inputSchema: marketingSchemas.launchCampaignInputSchema.shape,
-    outputSchema: emptyResponseSchema,
-    annotations: { readOnlyHint: false },
-    handler: (api, args) => Effect.runPromise(api.marketing.launchCampaign(args)),
-  }),
-  defineTool({
     name: 'ebay_pause_campaign',
     description: 'Pause campaign through the eBay Marketing API.',
     inputSchema: marketingSchemas.pauseCampaignInputSchema.shape,
@@ -331,14 +323,6 @@ export const marketingEntries: ToolEntry[] = [
     outputSchema: emptyResponseSchema,
     annotations: { readOnlyHint: false },
     handler: (api, args) => Effect.runPromise(api.marketing.resumeCampaign(args)),
-  }),
-  defineTool({
-    name: 'ebay_setup_quick_campaign',
-    description: 'Setup quick campaign through the eBay Marketing API.',
-    inputSchema: marketingSchemas.setupQuickCampaignInputSchema.shape,
-    outputSchema: emptyResponseSchema,
-    annotations: { readOnlyHint: false },
-    handler: (api, args) => Effect.runPromise(api.marketing.setupQuickCampaign(args)),
   }),
   defineTool({
     name: 'ebay_suggest_budget',

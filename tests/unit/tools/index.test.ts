@@ -248,10 +248,6 @@ describe('Tools Layer', () => {
       identity: {
         getUser: vi.fn(),
       },
-      compliance: {
-        getListingViolations: vi.fn(),
-        getListingViolationsSummary: vi.fn(),
-      },
       vero: {
         reportInfringement: vi.fn(),
         getReportedItems: vi.fn(),

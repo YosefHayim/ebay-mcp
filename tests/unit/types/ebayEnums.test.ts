@@ -19,7 +19,6 @@ import {
   LineItemFulfillmentStatus,
   OfferStatus,
   ListingStatus,
-  ComplianceType,
   TimeDurationUnit,
   WeightUnit,
   LengthUnit,
@@ -36,6 +35,8 @@ import {
   MessageReferenceType,
   FeedbackRating,
   ReportedItemType,
+  ListingDuration,
+  LocaleEnum,
 } from '@/types/ebayEnums.js';
 
 describe('eBay Enums', () => {
@@ -195,16 +196,6 @@ describe('eBay Enums', () => {
       expect(ListingStatus.ENDED).toBe('ENDED');
       expect(ListingStatus.INACTIVE).toBe('INACTIVE');
       expect(ListingStatus.OUT_OF_STOCK).toBe('OUT_OF_STOCK');
-    });
-  });
-
-  describe('ComplianceType', () => {
-    it('have compliance type values', () => {
-      expect(ComplianceType.PRODUCT_ADOPTION).toBe('PRODUCT_ADOPTION');
-      expect(ComplianceType.PRODUCT_SAFETY).toBe('PRODUCT_SAFETY');
-      expect(ComplianceType.ASPECTS_ADOPTION).toBe('ASPECTS_ADOPTION');
-      expect(ComplianceType.REGULATORY).toBe('REGULATORY');
-      expect(ComplianceType.RETURNS_POLICY).toBe('RETURNS_POLICY');
     });
   });
 
@@ -449,7 +440,6 @@ describe('eBay Enums', () => {
         LineItemFulfillmentStatus,
         OfferStatus,
         ListingStatus,
-        ComplianceType,
         TimeDurationUnit,
         WeightUnit,
         LengthUnit,
@@ -466,9 +456,11 @@ describe('eBay Enums', () => {
         MessageReferenceType,
         FeedbackRating,
         ReportedItemType,
+        ListingDuration,
+        LocaleEnum,
       ];
 
-      expect(enumTypes).toHaveLength(32);
+      expect(enumTypes).toHaveLength(33);
     });
   });
 });

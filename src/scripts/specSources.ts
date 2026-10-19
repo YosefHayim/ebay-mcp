@@ -139,11 +139,6 @@ export const specSources: readonly SpecSource[] = [
     url: 'https://developer.ebay.com/api-docs/master/commerce/translation/openapi/3/commerce_translation_v1_beta_oas3.json',
   },
   {
-    api: 'Compliance API',
-    folder: 'sell-apps/other-apis',
-    url: 'https://developer.ebay.com/api-docs/master/sell/compliance/openapi/3/sell_compliance_v1_oas3.json',
-  },
-  {
     api: 'Identity API',
     folder: 'sell-apps/other-apis',
     url: 'https://developer.ebay.com/api-docs/master/commerce/identity/openapi/3/commerce_identity_v1_oas3.json',

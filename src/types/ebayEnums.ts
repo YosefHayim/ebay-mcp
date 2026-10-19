@@ -588,47 +588,6 @@ export enum ListingStatus {
 }
 
 /**
- * Compliance Types
- *
- * Types of compliance issues.
- *
- * Reference: https://developer.ebay.com/api-docs/sell/compliance/types/com:ComplianceTypeEnum
- */
-export enum ComplianceType {
-  /** @deprecated Note: The ASPECTS_ADOPTION compliance type has been deprecated and will be decommissioned on September 9th, 2025.
-   * Use this compliance type to see if a seller's listings have missing or invalid item aspects (item specifics).
-   * For each category, eBay maintains a list of required and recommended item aspects. */
-  ASPECTS_ADOPTION = 'ASPECTS_ADOPTION',
-
-  /** Use this compliance type to see if any of the seller's listings are violating eBay's policy of using an 'HTTP' link
-   * (to eBay and non-eBay sites) in the listing instead of 'HTTPS' links. This requirement includes links to externally-hosted
-   * listing images. If the server hosting the listing images does not support the HTTPS protocol, this server cannot be used
-   * to host listing images. */
-  HTTPS = 'HTTPS',
-
-  /** Use this compliance type to see if any listings are violating eBay's policy of not allowing links in the listing to sites
-   * outside of eBay. The seller including a personal email address and/or a phone number in the listing is also a violation of this policy.
-   * All communication between seller and buyers should be handled through eBay's communication system. The only exceptions to this
-   * outside links rule are links to product videos, information on freight shipping services, or any legally required information. */
-  OUTSIDE_EBAY_BUYING_AND_SELLING = 'OUTSIDE_EBAY_BUYING_AND_SELLING',
-
-  /** Product safety compliance */
-  PRODUCT_SAFETY = 'PRODUCT_SAFETY',
-
-  /** Product Adoption is not enforced at this time, so this compliance type is not currently applicable. */
-  PRODUCT_ADOPTION = 'PRODUCT_ADOPTION',
-
-  /** Product Adoption is not enforced at this time, so this compliance type is not currently applicable. */
-  PRODUCT_ADOPTION_CONFORMANCE = 'PRODUCT_ADOPTION_CONFORMANCE',
-
-  /** Regulatory compliance */
-  REGULATORY = 'REGULATORY',
-
-  /** Returns policy compliance */
-  RETURNS_POLICY = 'RETURNS_POLICY',
-}
-
-/**
  * Language Codes (ISO 639-1)
  *
  * Two-letter language codes used for content localization.
@@ -1436,13 +1395,6 @@ export const EbayEnums = {
    */
   isValidListingStatus(status: string): status is ListingStatus {
     return Object.values(ListingStatus).includes(status as ListingStatus);
-  },
-
-  /**
-   * Check if a compliance type is valid
-   */
-  isValidComplianceType(type: string): type is ComplianceType {
-    return Object.values(ComplianceType).includes(type as ComplianceType);
   },
 
   /**

@@ -9,8 +9,6 @@ import {
   getConsignPreferencesInputSchema,
   getHandoverSheetInputSchema,
   getLabelsInputSchema,
-  getListingViolationsInputSchema,
-  getListingViolationsSummaryInputSchema,
   getPackagesByLineItemIdInputSchema,
   getTrackingInputSchema,
   getUserInputSchema,
@@ -32,22 +30,6 @@ export const otherEntries: ToolEntry[] = [
     description: 'Get user identity information',
     inputSchema: getUserInputSchema.shape,
     handler: (api, args) => Effect.runPromise(api.identity.getUser(args)),
-  }),
-  // Compliance API — decommissioned by eBay on 2026-03-30 (no API replacement).
-  // Tools stay registered so callers get a clear failure instead of a bare 404.
-  defineTool({
-    name: 'ebay_get_listing_violations',
-    description:
-      'DECOMMISSIONED: eBay shut down the Sell Compliance API on 2026-03-30. This tool always fails with a clear message. Use Seller Hub → Performance → Issue Resolution Center instead (no API equivalent).',
-    inputSchema: getListingViolationsInputSchema.shape,
-    handler: (api, args) => Effect.runPromise(api.compliance.getListingViolations(args)),
-  }),
-  defineTool({
-    name: 'ebay_get_listing_violations_summary',
-    description:
-      'DECOMMISSIONED: eBay shut down the Sell Compliance API on 2026-03-30. This tool always fails with a clear message. Use Seller Hub → Performance → Issue Resolution Center instead (no API equivalent).',
-    inputSchema: getListingViolationsSummaryInputSchema.shape,
-    handler: (api, args) => Effect.runPromise(api.compliance.getListingViolationsSummary(args)),
   }),
   // VERO API
   defineTool({

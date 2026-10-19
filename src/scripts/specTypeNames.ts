@@ -21,10 +21,6 @@ export const generatedNamespaceNames: Readonly<Record<string, NamespaceNames>> =
     components: 'DeveloperKeyManagementComponents',
     operations: 'DeveloperKeyManagementOperations',
   },
-  sellComplianceV1Oas3: {
-    components: 'SellComplianceComponents',
-    operations: 'SellComplianceOperations',
-  },
 };
 
 export const renameGeneratedNamespaces = (generatedTypes: string, names: NamespaceNames): string =>

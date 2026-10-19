@@ -20,7 +20,6 @@ import { RecommendationApi } from '@/api/marketing-and-promotions/recommendation
 import { DisputeApi } from '@/api/order-management/dispute.js';
 import { FulfillmentApi } from '@/api/order-management/fulfillment.js';
 import { LogisticsApi } from '@/api/order-management/logistics.js';
-import { ComplianceApi } from '@/api/other/compliance.js';
 import { EDeliveryApi } from '@/api/other/edelivery.js';
 import { BrowseApi } from '@/api/other/browse.js';
 import { FindingApi } from '@/api/other/finding.js';
@@ -62,7 +61,6 @@ export class EbaySellerApi {
   public notification: NotificationApi;
   public feedback: FeedbackApi;
   public identity: IdentityApi;
-  public compliance: ComplianceApi;
   public vero: VeroApi;
   public translation: TranslationApi;
   public edelivery: EDeliveryApi;
@@ -97,7 +95,6 @@ export class EbaySellerApi {
     this.notification = new NotificationApi(this.client);
     this.feedback = new FeedbackApi(this.client);
     this.identity = new IdentityApi(this.client);
-    this.compliance = new ComplianceApi(this.client);
     this.vero = new VeroApi(this.client);
     this.translation = new TranslationApi(this.client);
     this.edelivery = new EDeliveryApi(this.client);
@@ -189,7 +186,6 @@ export * from '@/api/marketing-and-promotions/recommendation.js';
 export * from '@/api/order-management/dispute.js';
 export * from '@/api/order-management/fulfillment.js';
 export * from '@/api/order-management/logistics.js';
-export * from '@/api/other/compliance.js';
 export * from '@/api/other/edelivery.js';
 export { BrowseApi } from '@/api/other/browse.js';
 export { buildBrowseFilter, requireNoPriceFilterConflict } from '@/api/other/browseFilter.js';

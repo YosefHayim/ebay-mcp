@@ -5,7 +5,6 @@ import { z } from 'zod';
  *
  * This file contains Zod schemas for various eBay APIs including:
  * - Commerce Identity API
- * - Sell Compliance API
  * - Commerce Translation API
  * - Commerce VERO API
  * - Sell eDelivery International Shipping API
@@ -43,90 +42,6 @@ const userConsentSchema = z.object({
 
 const getUserConsentResponseSchema = z.object({
   consents: z.array(userConsentSchema).optional(),
-});
-
-// ============================================================================
-// Sell Compliance API Schemas
-// ============================================================================
-
-const nameValueListSchema = z.object({
-  name: z.string().optional(),
-  value: z.string().optional(),
-});
-
-const correctiveRecommendationsSchema = z.object({
-  complianceDetail: z.string().optional(),
-  complianceDetailDescription: z.string().optional(),
-  correctiveActionDetails: z.string().optional(),
-  productRecommendation: z
-    .object({
-      epid: z.string().optional(),
-    })
-    .optional(),
-});
-
-const variationDetailsSchema = z.object({
-  sku: z.string().optional(),
-  variationAspects: z.array(nameValueListSchema).optional(),
-});
-
-const complianceDetailSchema = z.object({
-  complianceState: z.string().optional(),
-  complianceType: z.string().optional(),
-  message: z.string().optional(),
-  reasons: z
-    .array(
-      z.object({
-        complianceDetailType: z.string().optional(),
-        message: z.string().optional(),
-        variation: variationDetailsSchema.optional(),
-        violationData: z.array(nameValueListSchema).optional(),
-      }),
-    )
-    .optional(),
-  correctiveRecommendations: correctiveRecommendationsSchema.optional(),
-});
-
-const complianceSummaryInfoSchema = z.object({
-  complianceSummary: z
-    .object({
-      violationSummaries: z
-        .array(
-          z.object({
-            complianceType: z.string().optional(),
-            listingCount: z.number().int().optional(),
-          }),
-        )
-        .optional(),
-    })
-    .optional(),
-});
-
-const complianceViolationSchema = z.object({
-  listingId: z.string().optional(),
-  offerId: z.string().optional(),
-  sku: z.string().optional(),
-  complianceType: z.string().optional(),
-  complianceDetails: z.array(complianceDetailSchema).optional(),
-});
-
-const pageMetadataSchema = z.object({
-  href: z.string().optional(),
-  limit: z.number().int().optional(),
-  next: z.string().optional(),
-  offset: z.number().int().optional(),
-  prev: z.string().optional(),
-  total: z.number().int().optional(),
-});
-
-const listingViolationSummaryResponseSchema = z.object({
-  href: z.string().optional(),
-  limit: z.number().int().optional(),
-  listingViolations: z.array(complianceViolationSchema).optional(),
-  next: z.string().optional(),
-  offset: z.number().int().optional(),
-  prev: z.string().optional(),
-  total: z.number().int().optional(),
 });
 
 // ============================================================================
@@ -327,19 +242,6 @@ export const getTrackingInputSchema = z.object({
 
 /** Empty input schema for Commerce Identity API getUser. */
 export const getUserInputSchema = z.object({});
-
-/** Input schema for Sell Compliance API getListingViolations. */
-export const getListingViolationsInputSchema = z.object({
-  complianceType: z.string().optional(),
-  offset: z.number().int().optional(),
-  limit: z.number().int().optional(),
-  filter: z.string().optional(),
-});
-
-/** Input schema for Sell Compliance API getListingViolationsSummary. */
-export const getListingViolationsSummaryInputSchema = z.object({
-  complianceType: z.string().optional(),
-});
 
 /** Empty input schema for eDelivery getAddressPreferences. */
 export const getAddressPreferencesInputSchema = z.object({});

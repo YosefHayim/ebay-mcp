@@ -70,7 +70,6 @@ describe('EbaySellerApi', () => {
       expect(api.notification).toBeDefined();
       expect(api.feedback).toBeDefined();
       expect(api.identity).toBeDefined();
-      expect(api.compliance).toBeDefined();
       expect(api.vero).toBeDefined();
       expect(api.translation).toBeDefined();
       expect(api.edelivery).toBeDefined();

@@ -277,20 +277,6 @@ export const dynamicAdRatePreferenceSchema = z.object({
   minAdRate: z.string().optional(),
 });
 
-// Quick Setup Schema
-/**
- * Validates the Marketing API quick setup request model.
- */
-export const quickSetupRequestSchema = z.object({
-  campaignName: z.string(),
-  dailyBudget: amountSchema.optional(),
-  endDate: z.string().optional(),
-  fundingStrategy: fundingStrategySchema.optional(),
-  listingIds: z.array(z.string()).optional(),
-  marketplaceId: z.string(),
-  startDate: z.string().optional(),
-});
-
 export const cloneCampaignInputSchema = z.object({
   campaignId: z.string().describe('campaignId required endpoint parameter'),
   request: cloneCampaignRequestSchema.describe('Clone campaign request body'),
@@ -357,12 +343,6 @@ export const getCampaignByNameInputSchema = z.object({
   campaignName: z.string().describe('campaignName required endpoint parameter'),
 });
 
-/** Validates the Marketing API launchCampaign endpoint input. */
-
-export const launchCampaignInputSchema = z.object({
-  campaignId: z.string().describe('campaignId required endpoint parameter'),
-});
-
 /** Validates the Marketing API pauseCampaign endpoint input. */
 
 export const pauseCampaignInputSchema = z.object({
@@ -373,12 +353,6 @@ export const pauseCampaignInputSchema = z.object({
 
 export const resumeCampaignInputSchema = z.object({
   campaignId: z.string().describe('campaignId required endpoint parameter'),
-});
-
-/** Validates the Marketing API setupQuickCampaign endpoint input. */
-
-export const setupQuickCampaignInputSchema = z.object({
-  request: quickSetupRequestSchema.describe('Setup quick campaign request body'),
 });
 
 /** Validates the Marketing API suggestBudget endpoint input. */

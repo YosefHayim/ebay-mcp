@@ -77,7 +77,6 @@ describe('isReadOnlyTool', () => {
     'ebay_bulk_update_price_quantity',
     'ebay_pause_campaign',
     'ebay_resume_campaign',
-    'ebay_launch_campaign',
     'ebay_clone_campaign',
     'ebay_end_listing',
     'ebay_relist_item',
@@ -94,7 +93,6 @@ describe('isReadOnlyTool', () => {
     expect(isReadOnlyTool(def('ebay_translate'))).toBe(false);
     expect(isReadOnlyTool(def('ebay_clear_tokens'))).toBe(false);
     expect(isReadOnlyTool(def('ebay_refresh_access_token'))).toBe(false);
-    expect(isReadOnlyTool(def('ebay_setup_quick_campaign'))).toBe(false);
   });
 
   it('does not false-positive on markdown / setup substrings', () => {

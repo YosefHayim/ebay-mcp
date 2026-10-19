@@ -176,10 +176,6 @@ describe('Comprehensive Tools Coverage', () => {
       identity: {
         getUser: vi.fn(),
       },
-      compliance: {
-        getListingViolations: vi.fn(),
-        getListingViolationsSummary: vi.fn(),
-      },
       vero: {
         createVeroReport: vi.fn(),
         getVeroReport: vi.fn(),
@@ -1567,32 +1563,6 @@ describe('Comprehensive Tools Coverage', () => {
       vi.mocked(mockApi.identity.getUser).mockReturnValue(Effect.succeed(mockResponse));
       await executeTool(mockApi, 'ebay_get_user', {});
       expect(mockApi.identity.getUser).toHaveBeenCalledWith({});
-    });
-
-    it('ebay_get_listing_violations', async () => {
-      const mockResponse = { listingViolations: [] };
-      vi.mocked(mockApi.compliance.getListingViolations).mockReturnValue(
-        Effect.succeed(mockResponse),
-      );
-      await executeTool(mockApi, 'ebay_get_listing_violations', {
-        complianceType: 'PRODUCT_ADOPTION',
-      });
-      expect(mockApi.compliance.getListingViolations).toHaveBeenCalledWith({
-        complianceType: 'PRODUCT_ADOPTION',
-      });
-    });
-
-    it('ebay_get_listing_violations_summary', async () => {
-      const mockResponse = { violationSummaries: [] };
-      vi.mocked(mockApi.compliance.getListingViolationsSummary).mockReturnValue(
-        Effect.succeed(mockResponse),
-      );
-      await executeTool(mockApi, 'ebay_get_listing_violations_summary', {
-        complianceType: 'PRODUCT_ADOPTION',
-      });
-      expect(mockApi.compliance.getListingViolationsSummary).toHaveBeenCalledWith({
-        complianceType: 'PRODUCT_ADOPTION',
-      });
     });
 
     it('ebay_create_vero_report', async () => {
