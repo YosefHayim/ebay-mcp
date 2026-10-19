@@ -28,18 +28,16 @@ const vitestConfig = defineConfig({
         // Exclude server entry points (tested via integration)
         'src/index.ts',
         'src/serverHttp.ts',
-        // Exclude simple template generators
-        'src/tools/token-template.ts',
-        'src/tools/tool-definitions.ts',
         // Exclude script files
         'src/scripts/**',
       ],
       include: ['src/**/*.ts'],
+      // Floors at the measured baseline: coverage may rise, never drop.
       thresholds: {
-        lines: 75,
-        functions: 90,
-        branches: 65,
-        statements: 75,
+        lines: 86,
+        functions: 76,
+        branches: 82,
+        statements: 86,
       },
     },
     // Unit suite only. The hermetic integration suite runs via its own config —

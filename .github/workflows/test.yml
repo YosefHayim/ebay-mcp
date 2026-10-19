@@ -14,6 +14,6 @@ jobs:
         uses: ./.github/actions/setup
       - name: Run integration tests
         run: pnpm test:integration
-      - name: Run unit tests with informational coverage
-        run: pnpm exec vitest run --coverage.enabled --coverage.thresholds.lines=0 --coverage.thresholds.functions=0 --coverage.thresholds.branches=0 --coverage.thresholds.statements=0
+      - name: Run unit tests with the coverage gate
+        run: pnpm test:coverage
     timeout-minutes: 20
