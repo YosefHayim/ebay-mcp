@@ -36,10 +36,11 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getPaymentDisputeSummaries({ orderId: 'ORDER123', limit: 10 }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/fulfillment/v1/payment_dispute_summary', {
-        order_id: 'ORDER123',
-        limit: '10',
-      });
+      expect(client.get).toHaveBeenCalledWith(
+        'https://apiz.sandbox.ebay.com/sell/fulfillment/v1/payment_dispute_summary',
+        { order_id: 'ORDER123', limit: '10' },
+        { absolute: true },
+      );
     });
 
     it('get payment dispute by ID', async () => {
@@ -48,7 +49,11 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getPaymentDispute({ paymentDisputeId: 'DISPUTE123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/fulfillment/v1/payment_dispute/DISPUTE123');
+      expect(client.get).toHaveBeenCalledWith(
+        'https://apiz.sandbox.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE123',
+        undefined,
+        { absolute: true },
+      );
     });
 
     it('contest payment dispute', async () => {
@@ -59,8 +64,9 @@ describe('Other APIs', () => {
       );
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE123/contest',
+        'https://apiz.sandbox.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE123/contest',
         { returnAddress: {} },
+        { absolute: true },
       );
     });
 
@@ -72,8 +78,9 @@ describe('Other APIs', () => {
       );
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE123/accept',
+        'https://apiz.sandbox.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE123/accept',
         { returnAddress: {} },
+        { absolute: true },
       );
     });
   });
@@ -350,7 +357,7 @@ describe('Other APIs', () => {
         }),
       );
 
-      expect(client.post).toHaveBeenCalledWith('/commerce/translation/v1/translate', {
+      expect(client.post).toHaveBeenCalledWith('/commerce/translation/v1_beta/translate', {
         from: 'en',
         to: 'es',
         translationContext: 'ITEM_TITLE',
@@ -373,9 +380,12 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getActualCosts({ trackingNumbers: 'TRACK123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/actual_costs', {
-        tracking_numbers: 'TRACK123',
-      });
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/actual_costs',
+        {
+          tracking_numbers: 'TRACK123',
+        },
+      );
     });
 
     it('gets address preferences', async () => {
@@ -384,7 +394,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getAddressPreferences({}));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/address_preference');
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/address_preference',
+      );
     });
 
     it('creates address preference with body input', async () => {
@@ -395,7 +407,7 @@ describe('Other APIs', () => {
       await Effect.runPromise(api.createAddressPreference({ body: addressPreference }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/logistics/v1/address_preference',
+        '/sell/edelivery_international_shipping/v1/address_preference',
         addressPreference,
       );
     });
@@ -406,7 +418,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getConsignPreferences({}));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/consign_preference');
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/consign_preference',
+      );
     });
 
     it('creates consign preference with body input', async () => {
@@ -417,7 +431,7 @@ describe('Other APIs', () => {
       await Effect.runPromise(api.createConsignPreference({ body: consignPreference }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/logistics/v1/consign_preference',
+        '/sell/edelivery_international_shipping/v1/consign_preference',
         consignPreference,
       );
     });
@@ -429,7 +443,7 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getAgents({ limit: 50, offset: 10 }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/agents', {
+      expect(client.get).toHaveBeenCalledWith('/sell/edelivery_international_shipping/v1/agents', {
         limit: '50',
         offset: '10',
       });
@@ -441,9 +455,12 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getBatteryQualifications({ limit: 25 }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/battery_qualifications', {
-        limit: '25',
-      });
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/battery_qualifications',
+        {
+          limit: '25',
+        },
+      );
     });
 
     it('gets dropoff sites with pagination query params', async () => {
@@ -452,9 +469,12 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getDropoffSites({ offset: 5 }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/dropoff_sites', {
-        offset: '5',
-      });
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/dropoff_sites',
+        {
+          offset: '5',
+        },
+      );
     });
 
     it('gets services with pagination query params', async () => {
@@ -463,7 +483,10 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getServices({ limit: 20 }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/services', { limit: '20' });
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/services',
+        { limit: '20' },
+      );
     });
 
     // Bundles
@@ -474,7 +497,10 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.createBundle({ body: bundleRequest }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/bundle', bundleRequest);
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/bundle',
+        bundleRequest,
+      );
     });
 
     it('gets bundle by ID', async () => {
@@ -483,7 +509,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getBundle({ bundleId: 'BUNDLE123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/bundle/BUNDLE123');
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/bundle/BUNDLE123',
+      );
     });
 
     it('cancels bundle without a synthetic body', async () => {
@@ -491,7 +519,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.cancelBundle({ bundleId: 'BUNDLE123' }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/bundle/BUNDLE123/cancel');
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/bundle/BUNDLE123/cancel',
+      );
     });
 
     it('gets bundle label by ID', async () => {
@@ -500,7 +530,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getBundleLabel({ bundleId: 'BUNDLE123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/bundle/BUNDLE123/label');
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/bundle/BUNDLE123/label',
+      );
     });
 
     // Packages (Single)
@@ -511,7 +543,10 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.createPackage({ body: packageRequest }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/package', packageRequest);
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package',
+        packageRequest,
+      );
     });
 
     it('gets package by ID', async () => {
@@ -520,7 +555,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getPackage({ packageId: 'PKG123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/package/PKG123');
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package/PKG123',
+      );
     });
 
     it('deletes package by ID', async () => {
@@ -528,7 +565,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.deletePackage({ packageId: 'PKG123' }));
 
-      expect(client.delete).toHaveBeenCalledWith('/sell/logistics/v1/package/PKG123');
+      expect(client.delete).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package/PKG123',
+      );
     });
 
     it('gets packages by order line item ID', async () => {
@@ -537,7 +576,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getPackagesByLineItemId({ orderLineItemId: 'ORDER_LINE_123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/package/ORDER_LINE_123/item');
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package/ORDER_LINE_123/item',
+      );
     });
 
     it('cancels package without a synthetic body', async () => {
@@ -545,7 +586,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.cancelPackage({ packageId: 'PKG123' }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/package/PKG123/cancel');
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package/PKG123/cancel',
+      );
     });
 
     it('clones package without a synthetic body', async () => {
@@ -554,7 +597,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.clonePackage({ packageId: 'PKG123' }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/package/PKG123/clone');
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package/PKG123/clone',
+      );
     });
 
     it('confirms package without a synthetic body', async () => {
@@ -562,7 +607,9 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.confirmPackage({ packageId: 'PKG123' }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/package/PKG123/confirm');
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/package/PKG123/confirm',
+      );
     });
 
     // Packages (Bulk)
@@ -574,7 +621,7 @@ describe('Other APIs', () => {
       await Effect.runPromise(api.bulkCancelPackages({ body: bulkPackagesRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/logistics/v1/package/bulk_cancel_packages',
+        '/sell/edelivery_international_shipping/v1/package/bulk_cancel_packages',
         bulkPackagesRequest,
       );
     });
@@ -587,7 +634,7 @@ describe('Other APIs', () => {
       await Effect.runPromise(api.bulkConfirmPackages({ body: bulkPackagesRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/logistics/v1/package/bulk_confirm_packages',
+        '/sell/edelivery_international_shipping/v1/package/bulk_confirm_packages',
         bulkPackagesRequest,
       );
     });
@@ -600,7 +647,7 @@ describe('Other APIs', () => {
       await Effect.runPromise(api.bulkDeletePackages({ body: bulkPackagesRequest }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/sell/logistics/v1/package/bulk_delete_packages',
+        '/sell/edelivery_international_shipping/v1/package/bulk_delete_packages',
         bulkPackagesRequest,
       );
     });
@@ -618,7 +665,7 @@ describe('Other APIs', () => {
         }),
       );
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/labels', {
+      expect(client.get).toHaveBeenCalledWith('/sell/edelivery_international_shipping/v1/labels', {
         page_size: 'A4',
         print_preference: 'nameEn',
         tracking_numbers: 'TRACK123',
@@ -631,9 +678,12 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getHandoverSheet({ trackingNumbers: 'TRACK123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/handover_sheet', {
-        tracking_numbers: 'TRACK123',
-      });
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/handover_sheet',
+        {
+          tracking_numbers: 'TRACK123',
+        },
+      );
     });
 
     it('gets tracking with generated query params', async () => {
@@ -642,9 +692,12 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.getTracking({ trackingNumber: 'TRACK123' }));
 
-      expect(client.get).toHaveBeenCalledWith('/sell/logistics/v1/tracking', {
-        tracking_number: 'TRACK123',
-      });
+      expect(client.get).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/tracking',
+        {
+          tracking_number: 'TRACK123',
+        },
+      );
     });
 
     // Other
@@ -655,7 +708,10 @@ describe('Other APIs', () => {
 
       await Effect.runPromise(api.createComplaint({ body: complaint }));
 
-      expect(client.post).toHaveBeenCalledWith('/sell/logistics/v1/complaint', complaint);
+      expect(client.post).toHaveBeenCalledWith(
+        '/sell/edelivery_international_shipping/v1/complaint',
+        complaint,
+      );
     });
 
     it('rejects missing tracking number before getTracking requests eBay', async () => {

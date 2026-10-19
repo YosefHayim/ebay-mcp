@@ -1,4 +1,4 @@
-import type { EbayApiClient } from '@/api/client/ebayApiClient.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
   type EbayApiError,
@@ -11,6 +11,7 @@ import {
   requireObjectEffect,
   requireStringEffect,
 } from '@/api/shared/request.js';
+import { getIdentityBaseUrl } from '@/config/environment.js';
 import type {
   components,
   operations,
@@ -200,10 +201,18 @@ const requireUploadEvidenceFileBodyEffect = (
   );
 };
 
-/** eBay Fulfillment payment dispute endpoints. */
-export class DisputeApi {
-  private readonly basePath = '/sell/fulfillment/v1';
+const FULFILLMENT_BASE_PATH = '/sell/fulfillment/v1';
 
+const APIZ_REQUEST: EbayRequestConfig = { absolute: true };
+
+const apizUrl = (client: EbayApiClient, path: string): string => {
+  const { environment, apiBaseUrl } = client.getConfig();
+  const apizBaseUrl = getIdentityBaseUrl(environment, apiBaseUrl);
+  return `${apizBaseUrl}${FULFILLMENT_BASE_PATH}${path}`;
+};
+
+/** eBay Fulfillment payment dispute endpoints, served from the apiz host only. */
+export class DisputeApi {
   public constructor(private readonly client: EbayApiClient) {}
 
   /**
@@ -229,9 +238,9 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}`);
 
-      return yield* requestGetEffect<PaymentDispute>(this.client, path);
+      return yield* requestGetEffect<PaymentDispute>(this.client, url, undefined, APIZ_REQUEST);
     });
 
   /**
@@ -263,13 +272,17 @@ export class DisputeApi {
       );
       const evidenceId = yield* requireStringEffect(input.evidenceId, 'evidenceId');
       const fileId = yield* requireStringEffect(input.fileId, 'fileId');
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/fetch_evidence_content`;
+      const url = apizUrl(
+        this.client,
+        `/payment_dispute/${paymentDisputeId}/fetch_evidence_content`,
+      );
       const params = buildEndpointParams({
         evidenceId: { wireName: 'evidence_id', value: evidenceId },
         fileId: { wireName: 'file_id', value: fileId },
       });
 
-      return yield* requestGetEffect<FetchEvidenceContentResponse>(this.client, path, params, {
+      return yield* requestGetEffect<FetchEvidenceContentResponse>(this.client, url, params, {
+        absolute: true,
         headers: { Accept: 'application/octet-stream' },
         responseType: 'arraybuffer',
       });
@@ -298,9 +311,14 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/activity`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}/activity`);
 
-      return yield* requestGetEffect<PaymentDisputeActivityHistory>(this.client, path);
+      return yield* requestGetEffect<PaymentDisputeActivityHistory>(
+        this.client,
+        url,
+        undefined,
+        APIZ_REQUEST,
+      );
     });
 
   /**
@@ -332,7 +350,7 @@ export class DisputeApi {
       );
       const limit = yield* optionalPositiveNumberEffect(input.limit, 'limit');
       const offset = yield* optionalNonNegativeNumberEffect(input.offset, 'offset');
-      const path = `${this.basePath}/payment_dispute_summary`;
+      const url = apizUrl(this.client, '/payment_dispute_summary');
       const params = buildEndpointParams({
         orderId: { wireName: 'order_id', value: orderId },
         buyerUsername: { wireName: 'buyer_username', value: buyerUsername },
@@ -346,7 +364,12 @@ export class DisputeApi {
         offset: { wireName: 'offset', value: offset === undefined ? undefined : String(offset) },
       });
 
-      return yield* requestGetEffect<DisputeSummaryResponse>(this.client, path, params);
+      return yield* requestGetEffect<DisputeSummaryResponse>(
+        this.client,
+        url,
+        params,
+        APIZ_REQUEST,
+      );
     });
 
   /**
@@ -375,9 +398,9 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/accept`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}/accept`);
 
-      return yield* requestPostEffect<void>(this.client, path, input.body);
+      return yield* requestPostEffect<void>(this.client, url, input.body, APIZ_REQUEST);
     });
 
   /**
@@ -406,9 +429,9 @@ export class DisputeApi {
         input.paymentDisputeId,
         'paymentDisputeId',
       );
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/contest`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}/contest`);
 
-      return yield* requestPostEffect<void>(this.client, path, input.body);
+      return yield* requestPostEffect<void>(this.client, url, input.body, APIZ_REQUEST);
     });
 
   /**
@@ -438,9 +461,10 @@ export class DisputeApi {
         'paymentDisputeId',
       );
       const evidenceFile = yield* requireUploadEvidenceFileBodyEffect(input.body);
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/upload_evidence_file`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}/upload_evidence_file`);
 
-      return yield* requestPostEffect<FileEvidence>(this.client, path, evidenceFile, {
+      return yield* requestPostEffect<FileEvidence>(this.client, url, evidenceFile, {
+        absolute: true,
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     });
@@ -475,12 +499,13 @@ export class DisputeApi {
         input.body,
         'body',
       );
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/add_evidence`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}/add_evidence`);
 
       return yield* requestPostEffect<AddEvidencePaymentDisputeResponse>(
         this.client,
-        path,
+        url,
         addEvidenceRequest,
+        APIZ_REQUEST,
       );
     });
 
@@ -514,12 +539,13 @@ export class DisputeApi {
         input.body,
         'body',
       );
-      const path = `${this.basePath}/payment_dispute/${paymentDisputeId}/update_evidence`;
+      const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}/update_evidence`);
 
       return yield* requestPostEffect<UpdateEvidenceResponse>(
         this.client,
-        path,
+        url,
         updateEvidenceRequest,
+        APIZ_REQUEST,
       );
     });
 }
