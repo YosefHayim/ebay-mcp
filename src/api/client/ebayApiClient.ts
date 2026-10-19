@@ -4,11 +4,12 @@ import {
   type EbayClientRequestError,
 } from '@/api/client/ebayClientRequestError.js';
 import { RateLimitTracker } from '@/api/client/rateLimitTracker.js';
-import { parseSigningPrivateKey, signEbayRequest } from '@/api/client/requestSigner.js';
-import { getBaseUrl } from '@/config/environment.js';
+import { parseSigningPrivateKey, signEbayRequest } from '@/api/client/signEbayRequest.js';
+import { getBaseUrl, getIdentityBaseUrl } from '@/config/environment.js';
 import type { EbayConfig } from '@/types/ebay.js';
 import { getErrorMessage } from '@/utils/errors.js';
 import {
+  type HttpError,
   type HttpResponse,
   httpRequestEffect,
   isHttpError,
@@ -92,33 +93,44 @@ const deleteHeader = (headers: Record<string, string>, name: string): void => {
   }
 };
 
+interface SerializedBody {
+  readonly wireBody: unknown;
+  readonly digestBytes?: string | Uint8Array;
+}
+
+interface SignedRequest {
+  readonly wireBody: unknown;
+  readonly signatureHeaders: Record<string, string>;
+}
+
 /**
  * Serialize a body exactly as the HTTP adapter would so its Content-Digest
- * matches the bytes on the wire. Multipart and Blob bodies are streamed by
- * fetch and cannot be digested up front, so they cannot be signed.
+ * matches the bytes on the wire. Multipart and Blob bodies never reach here:
+ * fetch streams them, so they cannot be digested up front.
  */
-const serializeSignedBody = (
-  requestBody: unknown,
-): { data: unknown; bytes: string | Uint8Array | undefined } | undefined => {
+const serializeSignedBody = (requestBody: unknown): SerializedBody => {
   if (requestBody === undefined || requestBody === null) {
-    return { data: requestBody, bytes: undefined };
+    return { wireBody: requestBody };
   }
   if (typeof requestBody === 'string' || requestBody instanceof Uint8Array) {
-    return { data: requestBody, bytes: requestBody };
+    return { wireBody: requestBody, digestBytes: requestBody };
   }
   if (requestBody instanceof ArrayBuffer) {
-    return { data: requestBody, bytes: new Uint8Array(requestBody) };
+    return { wireBody: requestBody, digestBytes: new Uint8Array(requestBody) };
   }
   if (requestBody instanceof URLSearchParams) {
     const encoded = requestBody.toString();
-    return { data: requestBody, bytes: encoded };
-  }
-  if (requestBody instanceof FormData || requestBody instanceof Blob) {
-    return undefined;
+    return { wireBody: requestBody, digestBytes: encoded };
   }
   const json = JSON.stringify(requestBody);
-  return { data: json, bytes: json };
+  return { wireBody: json, digestBytes: json };
 };
+
+// A proxy forwards eBay's Host header and path, so the signature covers the eBay URL.
+const ebayFacingUrl = (url: string, ebayBaseUrl: string, apiBaseUrl: string | undefined): string =>
+  apiBaseUrl !== undefined && url.startsWith(apiBaseUrl)
+    ? `${ebayBaseUrl}${url.slice(apiBaseUrl.length)}`
+    : url;
 
 const SIGNATURE_ERROR_PATTERN = /signature/i;
 const TRAILING_PERIOD_PATTERN = /\.?$/;
@@ -231,15 +243,59 @@ export class EbayApiClient {
     this.rateLimitTracker = new RateLimitTracker();
   }
 
-  /** Whether both digital-signature credentials are configured. */
-  hasSigningCredentials(): boolean {
-    return Boolean(this.config.signingKeyJwe && this.config.signingPrivateKey);
-  }
-
   /** Parse (once) and return the configured signing key. */
   private getSigningKey(privateKey: string): KeyObject {
-    this.signingKey ??= parseSigningPrivateKey(privateKey);
+    if (this.signingKey === undefined) {
+      this.signingKey = parseSigningPrivateKey(privateKey);
+    }
     return this.signingKey;
+  }
+
+  private signRequest(
+    method: string,
+    url: string,
+    options: EbayRequestOptions,
+  ): Effect.Effect<SignedRequest, EbayClientRequestError> {
+    const { signing, environment, apiBaseUrl } = this.config;
+    if (!options.signed || signing === undefined) {
+      return Effect.succeed({ wireBody: options.data, signatureHeaders: {} });
+    }
+    if (options.data instanceof FormData || options.data instanceof Blob) {
+      return Effect.fail(
+        clientRequestError({
+          kind: 'signing',
+          method,
+          url,
+          message: 'Multipart and Blob request bodies cannot be digitally signed.',
+        }),
+      );
+    }
+
+    const { wireBody, digestBytes } = serializeSignedBody(options.data);
+    // Absolute signed endpoints are the apiz-hosted Finances calls.
+    const ebayBaseUrl = options.absolute
+      ? getIdentityBaseUrl(environment)
+      : getBaseUrl(environment);
+    const signedUrl = ebayFacingUrl(url, ebayBaseUrl, apiBaseUrl);
+    return Effect.try({
+      try: () => {
+        const signingKey = this.getSigningKey(signing.privateKey);
+        const signatureHeaders = signEbayRequest(
+          { method, url: signedUrl, bodyBytes: digestBytes },
+          signing.keyJwe,
+          signingKey,
+        );
+        return { wireBody, signatureHeaders };
+      },
+      catch: (cause) =>
+        clientRequestError({
+          kind: 'signing',
+          method,
+          url,
+          message: `Failed to sign request: ${getErrorMessage(cause)}`,
+          cause,
+        }),
+    });
   }
 
   /**
@@ -419,39 +475,8 @@ export class EbayApiClient {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      let requestBody = options.data;
-      const { signingKeyJwe, signingPrivateKey } = this.config;
-      if (options.signed && signingKeyJwe && signingPrivateKey) {
-        const serialized = serializeSignedBody(options.data);
-        if (!serialized) {
-          return yield* Effect.fail(
-            clientRequestError({
-              kind: 'signing',
-              method,
-              url,
-              message: 'Multipart and Blob request bodies cannot be digitally signed.',
-            }),
-          );
-        }
-        requestBody = serialized.data;
-        const signatureHeaders = yield* Effect.try({
-          try: () =>
-            signEbayRequest(
-              { method, url, body: serialized.bytes },
-              { jwe: signingKeyJwe },
-              this.getSigningKey(signingPrivateKey),
-            ),
-          catch: (cause) =>
-            clientRequestError({
-              kind: 'signing',
-              method,
-              url,
-              message: `Failed to sign request: ${getErrorMessage(cause)}`,
-              cause,
-            }),
-        });
-        Object.assign(headers, signatureHeaders);
-      }
+      const { wireBody, signatureHeaders } = yield* this.signRequest(method, url, options);
+      Object.assign(headers, signatureHeaders);
 
       this.rateLimitTracker.recordRequest();
       logRequest(
@@ -466,7 +491,7 @@ export class EbayApiClient {
         url,
         params: options.params,
         headers,
-        body: requestBody,
+        body: wireBody,
         timeoutMs: options.timeoutMs ?? this.timeoutMs,
         responseType: options.responseType,
         maxBytes: options.maxBytes,
@@ -606,32 +631,8 @@ export class EbayApiClient {
     }
 
     if (error.status != null) {
-      const detail = this.ebayErrorDetail(error.data);
-      // Without signing credentials, a signature rejection on a call eBay requires
-      // signatures for is a setup problem: surface it as guidance so the
-      // remediation is not replaced by eBay's text. Unsigned calls keep eBay's error.
-      if (options.signed && isSignatureFailure(detail) && !this.hasSigningCredentials()) {
-        return Effect.fail(
-          clientRequestError({
-            kind: 'signing',
-            method,
-            url,
-            status: error.status,
-            message: `${detail?.replace(TRAILING_PERIOD_PATTERN, '.')}${SIGNING_SETUP_HINT}`,
-            cause: error,
-          }),
-        );
-      }
-      return Effect.fail(
-        clientRequestError({
-          kind: 'httpStatus',
-          method,
-          url,
-          status: error.status,
-          message: `eBay API Error: ${detail ?? error.message}${this.ebayErrorBody(error.data)}`,
-          cause: error,
-        }),
-      );
+      const statusError = this.httpStatusError(error, context);
+      return Effect.fail(statusError);
     }
 
     return Effect.fail(
@@ -643,6 +644,33 @@ export class EbayApiClient {
         cause: error,
       }),
     );
+  }
+
+  private httpStatusError(
+    error: HttpError,
+    context: RequestFailureContext,
+  ): EbayClientRequestError {
+    const { method, url, options } = context;
+    const detail = this.ebayErrorDetail(error.data);
+    // Without credentials, a signature rejection is a setup problem: show setup guidance.
+    if (options.signed && isSignatureFailure(detail) && this.config.signing === undefined) {
+      return clientRequestError({
+        kind: 'signing',
+        method,
+        url,
+        status: error.status,
+        message: `${detail?.replace(TRAILING_PERIOD_PATTERN, '.')}${SIGNING_SETUP_HINT}`,
+        cause: error,
+      });
+    }
+    return clientRequestError({
+      kind: 'httpStatus',
+      method,
+      url,
+      status: error.status,
+      message: `eBay API Error: ${detail || error.message}${this.ebayErrorBody(error.data)}`,
+      cause: error,
+    });
   }
 
   /**

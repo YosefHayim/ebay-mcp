@@ -265,7 +265,9 @@ answers `403 Missing x-ebay-signature-key header`. To enable signing:
 
 Those calls then carry the `x-ebay-signature-key`, `Content-Digest`, `Signature-Input`, and
 `Signature` headers (RFC 9421). Other calls are never signed, and nothing changes while the two
-variables are unset.
+variables are unset. Behind `EBAY_MCP_API_BASE_URL`, calls are signed for the eBay host and path
+they reach (`api.ebay.com` or `apiz.ebay.com`), so the proxy must forward eBay's `Host` header and
+the original eBay path.
 
 ## eBay MCP vs. the raw eBay API
 

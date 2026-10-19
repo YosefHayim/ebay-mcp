@@ -96,9 +96,9 @@ export const getUiRuntimeConfig = (): UiRuntimeConfig => ({
  * const scopes = getDefaultScopes('production');
  * ```
  */
-export const getDefaultScopes = (environment: EbayEnvironment): string[] => {
-  return [...(environment === 'production' ? productionScopes : sandboxScopes)];
-};
+export const getDefaultScopes = (environment: EbayEnvironment): string[] => [
+  ...(environment === 'production' ? productionScopes : sandboxScopes),
+];
 
 /** Optional scope requiring keyset eligibility and fresh user consent. */
 export const POST_ORDER_DOCUMENT_SCOPE =
@@ -313,14 +313,6 @@ export const getEbayConfig = (): EbayConfig => {
   const marketplaceId = (process.env.EBAY_MARKETPLACE_ID ?? '').trim() || 'EBAY_US';
   const contentLanguage = (process.env.EBAY_CONTENT_LANGUAGE ?? '').trim() || 'en-US';
   const { apiBaseUrl, disableAuthHeader } = getProxyAuthConfig();
-  const signingKeyJwe = (process.env.EBAY_SIGNING_KEY_JWE ?? '').trim();
-  const signingPrivateKey = (process.env.EBAY_SIGNING_PRIVATE_KEY ?? '').trim();
-
-  if ((signingKeyJwe === '') !== (signingPrivateKey === '')) {
-    writeConfigDiagnostic(
-      'Digital signatures need both EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY; only one is set, so requests will not be signed.',
-    );
-  }
 
   // Only require client credentials when this server authenticates to eBay itself.
   // In proxy auth mode the upstream proxy supplies auth, so absent credentials are
@@ -343,7 +335,7 @@ export const getEbayConfig = (): EbayConfig => {
     appAccessToken,
     apiBaseUrl,
     disableAuthHeader,
-    ...(signingKeyJwe && signingPrivateKey ? { signingKeyJwe, signingPrivateKey } : {}),
+    signing: getSigningConfig(),
   };
 };
 
@@ -564,6 +556,19 @@ export const getProxyAuthConfig = (): ProxyAuthConfig => {
   }
 
   return { apiBaseUrl, disableAuthHeader, warnings, errors, infos };
+};
+
+const getSigningConfig = (): EbayConfig['signing'] => {
+  const keyJwe = process.env.EBAY_SIGNING_KEY_JWE?.trim();
+  const privateKey = process.env.EBAY_SIGNING_PRIVATE_KEY?.trim();
+  if (keyJwe && privateKey) {
+    return { keyJwe, privateKey };
+  }
+  if (keyJwe || privateKey) {
+    writeConfigDiagnostic(
+      'Digital signatures need both EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY; only one is set, so requests will not be signed.',
+    );
+  }
 };
 
 /**

@@ -19,43 +19,32 @@ import { createHash, createPrivateKey, type KeyObject, sign } from 'node:crypto'
 /** Label used for the single signature eBay expects. */
 const SIGNATURE_LABEL = 'sig1';
 
+/** Header name eBay reads the signing key JWE from. */
+const SIGNATURE_KEY_HEADER = 'x-ebay-signature-key';
+
 const PEM_PATTERN = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
 
 /**
  * Sign the signature base with Ed25519, or RSASSA-PKCS1-v1_5 with SHA-256.
  */
 const signBase = (signatureBase: string, key: KeyObject): string => {
-  const data = Buffer.from(signatureBase, 'utf8');
+  const signatureBaseBytes = Buffer.from(signatureBase, 'utf8');
   const digest = key.asymmetricKeyType === 'ed25519' ? null : 'sha256';
-  return sign(digest, data, key).toString('base64');
+  return sign(digest, signatureBaseBytes, key).toString('base64');
 };
 
 /** Lower-cased `@authority`: host plus any non-default port (`URL.host` already omits defaults). */
 const authorityOf = (url: URL): string => url.host.toLowerCase();
 
-/** Signing material for eBay digital signatures, as returned by `createSigningKey`. */
-export interface EbaySigningCredentials {
-  /** The `jwe` value from the signing key; sent verbatim in `x-ebay-signature-key`. */
-  readonly jwe: string;
-  /**
-   * The `privateKey` value from the signing key: base64 PKCS#8 DER (as eBay returns it)
-   * or a PEM block. Ed25519 and RSA keys are supported.
-   */
-  readonly privateKey: string;
-}
-
 /** A request about to be sent, reduced to what the signature covers. */
 export interface SignableRequest {
   /** HTTP method, e.g. `GET`. */
   readonly method: string;
-  /** Fully qualified request URL (query string is ignored by `@path`). */
+  /** Fully qualified URL eBay receives (query string is ignored by `@path`). */
   readonly url: string;
-  /** Exact body bytes sent on the wire; `undefined` for requests without a body. */
-  readonly body?: string | Uint8Array;
+  /** Exact body bytes sent on the wire; omitted for requests without a body. */
+  readonly bodyBytes?: string | Uint8Array;
 }
-
-/** Header name eBay reads the signing key JWE from. */
-export const SIGNATURE_KEY_HEADER = 'x-ebay-signature-key';
 
 /** Raised when the configured signing private key cannot be used. */
 export class EbaySigningKeyError extends Error {
@@ -103,11 +92,11 @@ export const parseSigningPrivateKey = (privateKey: string): KeyObject => {
 /**
  * Compute the RFC 9530 `Content-Digest` header value for a body.
  *
- * @param body - Exact body bytes (strings are encoded as UTF-8).
+ * @param bodyBytes - Exact body bytes (strings are encoded as UTF-8).
  * @returns The header value, e.g. `sha-256=:X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE=:`.
  */
-export const computeContentDigest = (body: string | Uint8Array): string =>
-  `sha-256=:${createHash('sha256').update(body).digest('base64')}:`;
+export const computeContentDigest = (bodyBytes: string | Uint8Array): string =>
+  `sha-256=:${createHash('sha256').update(bodyBytes).digest('base64')}:`;
 
 /**
  * Build the RFC 9421 signature base for the components eBay covers.
@@ -134,43 +123,44 @@ export const buildSignatureBase = (
  * documented `Signature-Input`. Call this once per attempt so retries carry a
  * fresh `created` timestamp.
  *
- * @param request - Method, full URL, and the exact body bytes.
- * @param credentials - JWE and private key from `createSigningKey`.
+ * @param request - Method, the URL eBay receives, and the exact body bytes.
+ * @param jwe - The `jwe` value from `createSigningKey`, sent in `x-ebay-signature-key`.
  * @param key - Parsed private key (see {@link parseSigningPrivateKey}).
  * @param now - Clock override in milliseconds, for tests.
  * @returns Headers to merge into the outgoing request.
  *
  * @example
  * ```ts
- * const key = parseSigningPrivateKey(credentials.privateKey);
- * const headers = signEbayRequest({ method: 'GET', url }, credentials, key);
+ * const key = parseSigningPrivateKey(privateKey);
+ * const headers = signEbayRequest({ method: 'GET', url }, jwe, key);
  * ```
  */
 export const signEbayRequest = (
   request: SignableRequest,
-  credentials: Pick<EbaySigningCredentials, 'jwe'>,
+  jwe: string,
   key: KeyObject,
   now: number = Date.now(),
 ): Record<string, string> => {
   const url = new URL(request.url);
   const created = Math.floor(now / 1000);
-  const headers: Record<string, string> = { [SIGNATURE_KEY_HEADER]: credentials.jwe };
+  const headers: Record<string, string> = { [SIGNATURE_KEY_HEADER]: jwe };
   const components: Array<readonly [string, string]> = [];
 
-  if (request.body !== undefined) {
-    const contentDigest = computeContentDigest(request.body);
+  if (request.bodyBytes !== undefined) {
+    const contentDigest = computeContentDigest(request.bodyBytes);
     headers['Content-Digest'] = contentDigest;
     components.push(['content-digest', contentDigest]);
   }
   components.push(
-    [SIGNATURE_KEY_HEADER, credentials.jwe],
+    [SIGNATURE_KEY_HEADER, jwe],
     ['@method', request.method.toUpperCase()],
     ['@path', url.pathname],
     ['@authority', authorityOf(url)],
   );
 
   const signatureParams = `(${components.map(([name]) => `"${name}"`).join(' ')});created=${created}`;
-  const signature = signBase(buildSignatureBase(components, signatureParams), key);
+  const signatureBase = buildSignatureBase(components, signatureParams);
+  const signature = signBase(signatureBase, key);
 
   headers['Signature-Input'] = `${SIGNATURE_LABEL}=${signatureParams}`;
   headers.Signature = `${SIGNATURE_LABEL}=:${signature}:`;

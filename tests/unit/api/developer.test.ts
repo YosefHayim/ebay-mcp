@@ -290,6 +290,18 @@ describe('DeveloperApi', () => {
       );
       expect(signingKey).toEqual(mockResponse);
     });
+
+    it('fails with EbayApiError carrying the relative eBay path', async () => {
+      vi.mocked(client.post).mockRejectedValue(new Error('eBay API Error: Bad request'));
+
+      const error = await Effect.runPromise(Effect.flip(api.createSigningKey({})));
+
+      expect(error._tag).toBe('EbayApiError');
+      expect(error).toMatchObject({
+        method: 'POST',
+        path: '/developer/key_management/v1/signing_key',
+      });
+    });
   });
 
   describe('getSigningKey', () => {
@@ -315,6 +327,34 @@ describe('DeveloperApi', () => {
       expect(signingKey.signingKeyId).toBe('key_001');
     });
 
+    it('encodes the signing key ID in the path', async () => {
+      vi.mocked(client.get).mockResolvedValue({});
+
+      await Effect.runPromise(api.getSigningKey({ signingKeyId: 'key/1?x' }));
+
+      expect(client.get).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/developer/key_management/v1/signing_key/key%2F1%3Fx',
+        undefined,
+        { absolute: true, tokenType: 'application' },
+      );
+    });
+
+    it('handle API errors when getting signing key', async () => {
+      vi.mocked(client.get).mockRejectedValue(new Error('Key not found'));
+
+      const error = await Effect.runPromise(
+        Effect.flip(api.getSigningKey({ signingKeyId: 'nonexistent_key' })),
+      );
+
+      expect(error._tag).toBe('EbayApiError');
+      expect(error).toMatchObject({
+        method: 'GET',
+        path: '/developer/key_management/v1/signing_key/nonexistent_key',
+      });
+    });
+  });
+
+  describe('getSigningKey input validation', () => {
     it('returns typed input error when signingKeyId is empty', async () => {
       const error = await Effect.runPromise(Effect.flip(api.getSigningKey({ signingKeyId: '' })));
 
@@ -347,16 +387,6 @@ describe('DeveloperApi', () => {
 
       expect(error._tag).toBe('EndpointInputError');
       expect(error.parameter).toBe('signingKeyId');
-    });
-
-    it('handle API errors when getting signing key', async () => {
-      vi.mocked(client.get).mockRejectedValue(new Error('Key not found'));
-
-      const error = await Effect.runPromise(
-        Effect.flip(api.getSigningKey({ signingKeyId: 'nonexistent_key' })),
-      );
-
-      expect(error._tag).toBe('EbayApiError');
     });
   });
 

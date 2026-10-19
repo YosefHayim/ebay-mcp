@@ -151,8 +151,10 @@ describe('Environment Configuration', () => {
 
       const config = getEbayConfig();
 
-      expect(config.signingKeyJwe).toBe('jwe-value');
-      expect(config.signingPrivateKey).toBe('test-signing-private-key');
+      expect(config.signing).toEqual({
+        keyJwe: 'jwe-value',
+        privateKey: 'test-signing-private-key',
+      });
     });
 
     it('ignore and warn about a half-configured signing key', () => {
@@ -164,8 +166,7 @@ describe('Environment Configuration', () => {
 
       const config = getEbayConfig();
 
-      expect(config.signingKeyJwe).toBeUndefined();
-      expect(config.signingPrivateKey).toBeUndefined();
+      expect(config.signing).toBeUndefined();
       expect(stderrWriteSpy).toHaveBeenCalledWith(
         expect.stringContaining('EBAY_SIGNING_PRIVATE_KEY'),
       );

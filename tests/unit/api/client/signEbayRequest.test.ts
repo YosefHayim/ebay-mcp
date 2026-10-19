@@ -4,8 +4,9 @@ import {
   EbaySigningKeyError,
   parseSigningPrivateKey,
   signEbayRequest,
-} from '@/api/client/requestSigner.js';
-import { createPrivateKey, generateKeyPairSync, type KeyObject, sign, verify } from 'node:crypto';
+} from '@/api/client/signEbayRequest.js';
+import { verifyEbaySignature } from '@tests/helpers/verifyEbaySignature.js';
+import { createPrivateKey, generateKeyPairSync, type KeyObject, sign } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -25,35 +26,13 @@ const RFC_ED25519_PEM = RFC_ED25519_KEY.export({ format: 'pem', type: 'pkcs8' })
 
 const JWE = 'test-signing-key-jwe';
 const NOW = 1_658_440_308_000;
+const SIGNATURE_HEADER_PATTERN = /^sig1=:[A-Za-z0-9+/]+=*:$/;
+const PRIVATE_KEY_HINT_PATTERN = /EBAY_SIGNING_PRIVATE_KEY/;
+const SUPPORTED_KEY_TYPES_PATTERN = /ED25519 or RSA/;
 
 /** Base64 PKCS#8 DER — the shape eBay's createSigningKey returns. */
 const toBase64Der = (key: KeyObject): string =>
   key.export({ format: 'der', type: 'pkcs8' }).toString('base64');
-
-/** Rebuild the signature base from the emitted headers and verify the signature. */
-const verifyHeaders = (
-  headers: Record<string, string>,
-  request: { method: string; url: string },
-  publicKey: KeyObject,
-): boolean => {
-  const url = new URL(request.url);
-  const signatureParams = headers['Signature-Input'].replace(/^sig1=/, '');
-  const values: Record<string, string> = {
-    'content-digest': headers['Content-Digest'] ?? '',
-    'x-ebay-signature-key': headers['x-ebay-signature-key'],
-    '@method': request.method,
-    '@path': url.pathname,
-    '@authority': url.host,
-  };
-  const names = [...signatureParams.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
-  const base = buildSignatureBase(
-    names.map((name) => [name, values[name]] as const),
-    signatureParams,
-  );
-  const signature = Buffer.from(headers.Signature.replace(/^sig1=:|:$/g, ''), 'base64');
-  const digest = publicKey.asymmetricKeyType === 'ed25519' ? null : 'sha256';
-  return verify(digest, Buffer.from(base), publicKey, signature);
-};
 
 describe('computeContentDigest', () => {
   it('matches the example in eBay digital signature guide', () => {
@@ -69,7 +48,7 @@ describe('computeContentDigest', () => {
 
 describe('buildSignatureBase', () => {
   it('reproduces the RFC 9421 B.2.6 Ed25519 signature', () => {
-    const base = buildSignatureBase(
+    const signatureBase = buildSignatureBase(
       [
         ['date', 'Tue, 20 Apr 2021 02:07:55 GMT'],
         ['@method', 'POST'],
@@ -81,7 +60,11 @@ describe('buildSignatureBase', () => {
       '("date" "@method" "@path" "@authority" "content-type" "content-length");created=1618884473;keyid="test-key-ed25519"',
     );
 
-    const signature = sign(null, Buffer.from(base), parseSigningPrivateKey(RFC_ED25519_PEM));
+    const signature = sign(
+      null,
+      Buffer.from(signatureBase),
+      parseSigningPrivateKey(RFC_ED25519_PEM),
+    );
 
     expect(signature.toString('base64')).toBe(
       'wqcAqbmYJ2ji2glfAMaRy4gruYYnx2nEFN2HN6jrnDnQCK1u02Gb04v9EDgwUPiu4A0w6vuQv5lIp5WPpBKRCw==',
@@ -108,12 +91,14 @@ describe('parseSigningPrivateKey', () => {
 
   it('rejects malformed keys with a configuration hint', () => {
     expect(() => parseSigningPrivateKey('not-a-key')).toThrow(EbaySigningKeyError);
-    expect(() => parseSigningPrivateKey('not-a-key')).toThrow(/EBAY_SIGNING_PRIVATE_KEY/);
+    expect(() => parseSigningPrivateKey('not-a-key')).toThrow(PRIVATE_KEY_HINT_PATTERN);
   });
 
   it('rejects key types eBay does not support', () => {
     const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
-    expect(() => parseSigningPrivateKey(toBase64Der(privateKey))).toThrow(/ED25519 or RSA/);
+    expect(() => parseSigningPrivateKey(toBase64Der(privateKey))).toThrow(
+      SUPPORTED_KEY_TYPES_PATTERN,
+    );
   });
 });
 
@@ -123,50 +108,50 @@ describe('signEbayRequest', () => {
   it('signs a bodiless request with the components eBay documents', () => {
     const { privateKey, publicKey } = generateKeyPairSync('ed25519');
 
-    const headers = signEbayRequest({ method: 'GET', url }, { jwe: JWE }, privateKey, NOW);
+    const headers = signEbayRequest({ method: 'GET', url }, JWE, privateKey, NOW);
 
     expect(headers['x-ebay-signature-key']).toBe(JWE);
     expect(headers['Content-Digest']).toBeUndefined();
     expect(headers['Signature-Input']).toBe(
       'sig1=("x-ebay-signature-key" "@method" "@path" "@authority");created=1658440308',
     );
-    expect(headers.Signature).toMatch(/^sig1=:[A-Za-z0-9+/]+=*:$/);
-    expect(verifyHeaders(headers, { method: 'GET', url }, publicKey)).toBe(true);
+    expect(headers.Signature).toMatch(SIGNATURE_HEADER_PATTERN);
+    expect(verifyEbaySignature(headers, { method: 'GET', url }, publicKey)).toBe(true);
   });
 
   it('covers content-digest first when a body is sent', () => {
     const { privateKey, publicKey } = generateKeyPairSync('ed25519');
-    const body = '{"reasonForRefund":"BUYER_CANCEL"}';
+    const refundJson = '{"reasonForRefund":"BUYER_CANCEL"}';
     const refundUrl = 'https://api.ebay.com/sell/fulfillment/v1/order/1-2/issue_refund';
 
     const headers = signEbayRequest(
-      { method: 'POST', url: refundUrl, body },
-      { jwe: JWE },
+      { method: 'POST', url: refundUrl, bodyBytes: refundJson },
+      JWE,
       privateKey,
       NOW,
     );
 
-    expect(headers['Content-Digest']).toBe(computeContentDigest(body));
+    expect(headers['Content-Digest']).toBe(computeContentDigest(refundJson));
     expect(headers['Signature-Input']).toBe(
       'sig1=("content-digest" "x-ebay-signature-key" "@method" "@path" "@authority");created=1658440308',
     );
-    expect(verifyHeaders(headers, { method: 'POST', url: refundUrl }, publicKey)).toBe(true);
+    expect(verifyEbaySignature(headers, { method: 'POST', url: refundUrl }, publicKey)).toBe(true);
   });
 
   it('signs with RSASSA-PKCS1-v1_5 SHA-256 for RSA keys', () => {
     const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 
-    const headers = signEbayRequest({ method: 'get', url }, { jwe: JWE }, privateKey, NOW);
+    const headers = signEbayRequest({ method: 'get', url }, JWE, privateKey, NOW);
 
-    expect(verifyHeaders(headers, { method: 'GET', url }, publicKey)).toBe(true);
+    expect(verifyEbaySignature(headers, { method: 'GET', url }, publicKey)).toBe(true);
   });
 
   it('keeps a non-default port in @authority', () => {
     const { privateKey, publicKey } = generateKeyPairSync('ed25519');
-    const proxyUrl = 'http://localhost:8080/sell/finances/v1/payout';
+    const portUrl = 'http://localhost:8080/sell/finances/v1/payout';
 
-    const headers = signEbayRequest({ method: 'GET', url: proxyUrl }, { jwe: JWE }, privateKey);
+    const headers = signEbayRequest({ method: 'GET', url: portUrl }, JWE, privateKey);
 
-    expect(verifyHeaders(headers, { method: 'GET', url: proxyUrl }, publicKey)).toBe(true);
+    expect(verifyEbaySignature(headers, { method: 'GET', url: portUrl }, publicKey)).toBe(true);
   });
 });

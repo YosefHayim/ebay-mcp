@@ -1,7 +1,7 @@
 import type { EbayApiClient, EbayRequestConfig } from '@/api/client/ebayApiClient.js';
 import {
   buildEndpointParams,
-  type EbayApiError,
+  EbayApiError,
   type EndpointInputError,
   requestGetEffect,
   requestPostEffect,
@@ -64,10 +64,20 @@ export class DeveloperApi {
   };
 
   /** Full apiz URL for a Key Management path, honouring EBAY_MCP_API_BASE_URL. */
-  private keyUrl(path: string): string {
+  private readonly keyUrl = (path: string): string => {
     const { environment, apiBaseUrl } = this.client.getConfig();
-    return `${getIdentityBaseUrl(environment, apiBaseUrl)}${this.keyBasePath}${path}`;
-  }
+    const identityBaseUrl = getIdentityBaseUrl(environment, apiBaseUrl);
+    return `${identityBaseUrl}${path}`;
+  };
+
+  private readonly getFromKeyManagement = <T>(path: string): Effect.Effect<T, EbayApiError> =>
+    Effect.tryPromise({
+      try: () => {
+        const url = this.keyUrl(path);
+        return this.client.get<T>(url, undefined, this.keyRequestConfig);
+      },
+      catch: (cause) => new EbayApiError({ method: 'GET', path, cause }), // allow-duplicate
+    });
 
   public constructor(private readonly client: EbayApiClient) {}
 
@@ -182,14 +192,7 @@ export class DeveloperApi {
     input: GetSigningKeysInput = {},
   ): Effect.Effect<QuerySigningKeysResponse, EbayApiError> => {
     void input;
-    return Effect.suspend(() =>
-      requestGetEffect<QuerySigningKeysResponse>(
-        this.client,
-        this.keyUrl('/signing_key'),
-        undefined,
-        this.keyRequestConfig,
-      ),
-    );
+    return this.getFromKeyManagement<QuerySigningKeysResponse>(`${this.keyBasePath}/signing_key`);
   };
 
   /**
@@ -209,15 +212,18 @@ export class DeveloperApi {
    */
   public createSigningKey = (
     input: CreateSigningKeyInput = {},
-  ): Effect.Effect<SigningKey, EbayApiError> =>
-    Effect.suspend(() =>
-      requestPostEffect<SigningKey>(
-        this.client,
-        this.keyUrl('/signing_key'),
-        (input.request as CreateSigningKeyRequest | undefined) ?? {},
-        this.keyRequestConfig,
-      ),
-    );
+  ): Effect.Effect<SigningKey, EbayApiError> => {
+    const path = `${this.keyBasePath}/signing_key`;
+    const signingKeyRequest = (input.request as CreateSigningKeyRequest | undefined) || {};
+
+    return Effect.tryPromise({
+      try: () => {
+        const url = this.keyUrl(path);
+        return this.client.post<SigningKey>(url, signingKeyRequest, this.keyRequestConfig);
+      },
+      catch: (cause) => new EbayApiError({ method: 'POST', path, cause }), // allow-duplicate
+    });
+  };
 
   /**
    * Retrieves a specific signing key by eBay signing key ID.
@@ -239,11 +245,8 @@ export class DeveloperApi {
       const endpointInput = yield* requireObjectEffect<GetSigningKeyInput>(input, 'input');
       const signingKeyId = yield* requireStringEffect(endpointInput.signingKeyId, 'signingKeyId');
 
-      return yield* requestGetEffect<SigningKey>(
-        this.client,
-        this.keyUrl(`/signing_key/${signingKeyId}`),
-        undefined,
-        this.keyRequestConfig,
+      return yield* this.getFromKeyManagement<SigningKey>(
+        `${this.keyBasePath}/signing_key/${encodeURIComponent(signingKeyId)}`,
       );
     });
 }
