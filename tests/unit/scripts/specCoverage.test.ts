@@ -33,8 +33,8 @@ describe('classifyOperation', () => {
   });
 
   it('reports fuzzy for known operation mappings', () => {
-    const implemented = collectImplementedNames([], ['ebay_get_awaiting_feedback']);
-    expect(classifyOperation('getItemsAwaitingFeedback', implemented)).toBe('fuzzy');
+    const implemented = collectImplementedNames([], ['ebay_get_notification_config']);
+    expect(classifyOperation('getConfig', implemented)).toBe('fuzzy');
   });
 
   it('reports missing when nothing matches', () => {

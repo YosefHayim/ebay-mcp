@@ -449,7 +449,7 @@ describe('AccountApi', () => {
         .mockResolvedValueOnce(mockPrograms);
 
       expect(await Effect.runPromise(accountApi.getPrivileges({}))).toEqual(mockPrivileges);
-      expect(await Effect.runPromise(accountApi.getKyc({}))).toEqual(mockKyc);
+      expect(await Effect.runPromise(accountApi.getKYC({}))).toEqual(mockKyc);
       expect(await Effect.runPromise(accountApi.getRateTables({}))).toEqual(mockRateTables);
       expect(await Effect.runPromise(accountApi.getOptedInPrograms({}))).toEqual(mockPrograms);
 

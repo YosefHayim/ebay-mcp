@@ -939,12 +939,12 @@ export class AccountApi {
    *
    * @example
    * ```ts
-   * const kyc = await Effect.runPromise(accountApi.getKyc({}));
+   * const kyc = await Effect.runPromise(accountApi.getKYC({}));
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/account/resources/kyc/methods/getKYC
    */
-  getKyc = (_input: EmptyAccountInput = {}): Effect.Effect<KycResponse, EbayApiError> =>
+  getKYC = (_input: EmptyAccountInput = {}): Effect.Effect<KycResponse, EbayApiError> =>
     requestGetEffect<KycResponse>(this.client, `${ACCOUNT_BASE_PATH}/kyc`);
 
   /**

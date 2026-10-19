@@ -36,7 +36,7 @@ describe('Comprehensive Tools Coverage', () => {
         createCustomPolicy: vi.fn(),
         getCustomPolicy: vi.fn(),
         updateCustomPolicy: vi.fn(),
-        getKyc: vi.fn(),
+        getKYC: vi.fn(),
         getPaymentsProgram: vi.fn(),
         getPaymentsProgramOnboarding: vi.fn(),
         getRateTables: vi.fn(),
@@ -170,7 +170,7 @@ describe('Comprehensive Tools Coverage', () => {
       },
       feedback: {
         getFeedback: vi.fn(),
-        leaveFeedbackForBuyer: vi.fn(),
+        leaveFeedback: vi.fn(),
         getFeedbackRatingSummary: vi.fn(),
       },
       identity: {
@@ -203,7 +203,7 @@ describe('Comprehensive Tools Coverage', () => {
         createPackage: vi.fn(),
         getPackage: vi.fn(),
         deletePackage: vi.fn(),
-        getPackagesByLineItemId: vi.fn(),
+        getPackagesByLineItemID: vi.fn(),
         cancelPackage: vi.fn(),
         clonePackage: vi.fn(),
         confirmPackage: vi.fn(),
@@ -453,9 +453,9 @@ describe('Comprehensive Tools Coverage', () => {
 
     it('ebay_get_kyc', async () => {
       const mockResponse = { status: 'APPROVED' };
-      vi.mocked(mockApi.account.getKyc).mockReturnValue(Effect.succeed(mockResponse));
+      vi.mocked(mockApi.account.getKYC).mockReturnValue(Effect.succeed(mockResponse));
       await executeTool(mockApi, 'ebay_get_kyc', {});
-      expect(mockApi.account.getKyc).toHaveBeenCalledWith({});
+      expect(mockApi.account.getKYC).toHaveBeenCalledWith({});
     });
 
     it('ebay_get_payments_program', async () => {
@@ -1689,16 +1689,14 @@ describe('Comprehensive Tools Coverage', () => {
 
     it('ebay_leave_feedback_for_buyer', async () => {
       const mockResponse = { feedbackId: 'FEEDBACK123' };
-      vi.mocked(mockApi.feedback.leaveFeedbackForBuyer).mockReturnValue(
-        Effect.succeed(mockResponse),
-      );
+      vi.mocked(mockApi.feedback.leaveFeedback).mockReturnValue(Effect.succeed(mockResponse));
       const args = {
         listingId: 'LISTING123',
         commentText: 'Great buyer!',
         commentType: 'POSITIVE',
       };
       await executeTool(mockApi, 'ebay_leave_feedback_for_buyer', args);
-      expect(mockApi.feedback.leaveFeedbackForBuyer).toHaveBeenCalledWith(args);
+      expect(mockApi.feedback.leaveFeedback).toHaveBeenCalledWith(args);
     });
 
     it('ebay_get_feedback_rating_summary', async () => {

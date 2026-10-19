@@ -574,7 +574,7 @@ describe('Other APIs', () => {
       const mockResponse = { packageId: 'PKG123' };
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      await Effect.runPromise(api.getPackagesByLineItemId({ orderLineItemId: 'ORDER_LINE_123' }));
+      await Effect.runPromise(api.getPackagesByLineItemID({ orderLineItemId: 'ORDER_LINE_123' }));
 
       expect(client.get).toHaveBeenCalledWith(
         '/sell/edelivery_international_shipping/v1/package/ORDER_LINE_123/item',

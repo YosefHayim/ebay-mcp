@@ -9,7 +9,7 @@ import {
   getConsignPreferencesInputSchema,
   getHandoverSheetInputSchema,
   getLabelsInputSchema,
-  getPackagesByLineItemIdInputSchema,
+  getPackagesByLineItemIDInputSchema,
   getTrackingInputSchema,
   getUserInputSchema,
   getVeroReasonCodeInputSchema,
@@ -176,8 +176,8 @@ export const otherEntries: ToolEntry[] = [
   defineTool({
     name: 'ebay_get_packages_by_line_item_id',
     description: 'Get package details by order line item ID',
-    inputSchema: getPackagesByLineItemIdInputSchema.shape,
-    handler: (api, args) => Effect.runPromise(api.edelivery.getPackagesByLineItemId(args)),
+    inputSchema: getPackagesByLineItemIDInputSchema.shape,
+    handler: (api, args) => Effect.runPromise(api.edelivery.getPackagesByLineItemID(args)),
   }),
   defineTool({
     name: 'ebay_cancel_package',

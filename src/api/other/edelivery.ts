@@ -84,8 +84,8 @@ export interface CreatePackageInput {
   readonly body: CreatePackageRequest;
 }
 
-/** Input accepted by getPackagesByLineItemId. */
-export interface GetPackagesByLineItemIdInput {
+/** Input accepted by getPackagesByLineItemID. */
+export interface GetPackagesByLineItemIDInput {
   /** Fulfillment order line item identifier sent as order_line_item_id. */
   readonly orderLineItemId: string;
 }
@@ -281,7 +281,7 @@ export type DeletePackageResponse = void;
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/getPackagesByLineItemID
  */
-export type GetPackagesByLineItemIdResponse = components['schemas']['GetItemPackageIdResponses'];
+export type GetPackagesByLineItemIDResponse = components['schemas']['GetItemPackageIdResponses'];
 
 /**
  * No-content response returned by cancelPackage.
@@ -909,20 +909,20 @@ export class EDeliveryApi {
    * @example
    * ```ts
    * const packages = await Effect.runPromise(
-   *   edeliveryApi.getPackagesByLineItemId({ orderLineItemId: 'LINE123' }),
+   *   edeliveryApi.getPackagesByLineItemID({ orderLineItemId: 'LINE123' }),
    * );
    * ```
    *
    * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/getPackagesByLineItemID
    */
-  public getPackagesByLineItemId = (
-    input: GetPackagesByLineItemIdInput,
-  ): Effect.Effect<GetPackagesByLineItemIdResponse, EbayApiError | EndpointInputError> => {
+  public getPackagesByLineItemID = (
+    input: GetPackagesByLineItemIDInput,
+  ): Effect.Effect<GetPackagesByLineItemIDResponse, EbayApiError | EndpointInputError> => {
     const client = this.client;
     const basePath = this.basePath;
 
     return Effect.gen(function* () {
-      const validatedInput = yield* requireObjectEffect<GetPackagesByLineItemIdInput>(
+      const validatedInput = yield* requireObjectEffect<GetPackagesByLineItemIDInput>(
         input,
         'input',
       );
@@ -931,7 +931,7 @@ export class EDeliveryApi {
         'orderLineItemId',
       );
 
-      return yield* requestGetEffect<GetPackagesByLineItemIdResponse>(
+      return yield* requestGetEffect<GetPackagesByLineItemIDResponse>(
         client,
         `${basePath}/package/${orderLineItemId}/item`,
       );

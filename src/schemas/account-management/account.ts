@@ -591,7 +591,7 @@ export const kycOutputSchema = z.object({
 });
 
 /** Validates the Account Management API get KYC request payload. */
-export const getKycInputSchema = z.object({});
+export const getKYCInputSchema = z.object({});
 
 /** Validates the Account Management API payments program request payload. */
 export const getPaymentsProgramInputSchema = z.object({

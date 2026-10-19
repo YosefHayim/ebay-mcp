@@ -28,7 +28,7 @@ import {
   getPaymentPoliciesOutputSchema,
   getPaymentPolicyByNameInputSchema,
   getPaymentPolicyInputSchema,
-  getKycInputSchema,
+  getKYCInputSchema,
   getOptedInProgramsInputSchema,
   getPaymentsProgramInputSchema,
   getPaymentsProgramOnboardingInputSchema,
@@ -312,13 +312,13 @@ export const accountEntries: ToolEntry[] = [
   defineTool({
     name: 'ebay_get_kyc',
     description: 'Get seller KYC (Know Your Customer) status',
-    inputSchema: getKycInputSchema.shape,
+    inputSchema: getKYCInputSchema.shape,
     outputSchema: zodToJsonSchema(kycOutputSchema, {
       name: 'KYCResponse',
       $refStrategy: 'none',
     }) as OutputArgs,
     annotations: { readOnlyHint: true },
-    handler: (api, args) => Effect.runPromise(api.account.getKyc(args)),
+    handler: (api, args) => Effect.runPromise(api.account.getKYC(args)),
   }),
   defineTool({
     name: 'ebay_get_payments_program',

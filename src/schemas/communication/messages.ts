@@ -210,7 +210,7 @@ export const getFeedbackSummaryOutputSchema = z.object({
 /**
  * Validates the Communication API get awaiting feedback request payload.
  */
-export const getAwaitingFeedbackInputSchema = z.object({
+export const getItemsAwaitingFeedbackInputSchema = z.object({
   filter: z.string().optional().describe('Filter criteria for awaiting feedback'),
   limit: z.number().optional().describe('Number of items to return'),
   offset: z.number().optional().describe('Number of items to skip'),
@@ -219,7 +219,7 @@ export const getAwaitingFeedbackInputSchema = z.object({
 /**
  * Validates the Communication API get awaiting feedback response payload.
  */
-export const getAwaitingFeedbackOutputSchema = z.object({
+export const getItemsAwaitingFeedbackOutputSchema = z.object({
   items: z
     .array(
       z.object({

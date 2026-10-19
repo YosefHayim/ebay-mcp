@@ -214,8 +214,8 @@ export const packageIdInputSchema = z.object({
   packageId: z.string(),
 });
 
-/** Input schema for eDelivery getPackagesByLineItemId. */
-export const getPackagesByLineItemIdInputSchema = z.object({
+/** Input schema for eDelivery getPackagesByLineItemID. */
+export const getPackagesByLineItemIDInputSchema = z.object({
   orderLineItemId: z.string(),
 });
 

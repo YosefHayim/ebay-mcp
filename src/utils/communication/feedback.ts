@@ -40,8 +40,8 @@ const sortSchema = z
   })
   .optional();
 
-/** Schema for getAwaitingFeedback input. */
-export const getAwaitingFeedbackSchema = z.object({
+/** Schema for getItemsAwaitingFeedback input. */
+export const getItemsAwaitingFeedbackSchema = z.object({
   filter: filterSchema,
   limit: limitSchema,
   offset: offsetSchema,
@@ -109,7 +109,7 @@ export const getFeedbackRatingSummarySchema = z.object({
 });
 
 /** Schema for leaveFeedback input. */
-export const leaveFeedbackForBuyerSchema = z.object({
+export const leaveFeedbackSchema = z.object({
   commentText: z
     .string({
       invalid_type_error: 'commentText must be a string',

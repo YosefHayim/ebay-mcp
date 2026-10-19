@@ -17,13 +17,13 @@ beforeEach(() => {
   api = new FeedbackApi(client);
 });
 
-describe('getAwaitingFeedback', () => {
+describe('getItemsAwaitingFeedback', () => {
   it('get awaiting feedback with parameters', async () => {
     const mockResponse = { feedback: [] };
     vi.mocked(client.get).mockResolvedValue(mockResponse);
 
     await Effect.runPromise(
-      api.getAwaitingFeedback({ filter: 'filter:test', limit: 10, offset: 0 }),
+      api.getItemsAwaitingFeedback({ filter: 'filter:test', limit: 10, offset: 0 }),
     );
 
     expect(client.get).toHaveBeenCalledWith('/commerce/feedback/v1/awaiting_feedback', {
@@ -37,7 +37,7 @@ describe('getAwaitingFeedback', () => {
     const mockResponse = { feedback: [] };
     vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-    await Effect.runPromise(api.getAwaitingFeedback());
+    await Effect.runPromise(api.getItemsAwaitingFeedback());
 
     expect(client.get).toHaveBeenCalledWith('/commerce/feedback/v1/awaiting_feedback');
   });
@@ -92,7 +92,7 @@ describe('getFeedbackRatingSummary', () => {
   });
 });
 
-describe('leaveFeedbackForBuyer', () => {
+describe('leaveFeedback', () => {
   it('leave feedback for buyer', async () => {
     const mockResponse = { feedbackId: '123' };
     const feedbackData = {
@@ -102,15 +102,13 @@ describe('leaveFeedbackForBuyer', () => {
     };
     vi.mocked(client.post).mockResolvedValue(mockResponse);
 
-    await Effect.runPromise(api.leaveFeedbackForBuyer(feedbackData));
+    await Effect.runPromise(api.leaveFeedback(feedbackData));
 
     expect(client.post).toHaveBeenCalledWith('/commerce/feedback/v1/feedback', feedbackData);
   });
 
   it('fail when feedbackData is missing', async () => {
-    const error = await Effect.runPromise(
-      Effect.flip(api.leaveFeedbackForBuyer(invalidInput(undefined))),
-    );
+    const error = await Effect.runPromise(Effect.flip(api.leaveFeedback(invalidInput(undefined))));
 
     expect(error._tag).toBe('EndpointInputError');
     expect(error.message).toContain('feedbackData is required');

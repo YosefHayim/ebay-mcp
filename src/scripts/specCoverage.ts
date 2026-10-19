@@ -1,8 +1,4 @@
 const KNOWN_OPERATION_MAPPINGS: Readonly<Record<string, readonly string[]>> = {
-  // Feedback API
-  getitemsawaitingfeedback: ['ebay_get_awaiting_feedback'],
-  leavefeedback: ['ebay_leave_feedback_for_buyer'],
-
   // Notification API — tools use the ebay_*_notification_* naming convention
   getconfig: ['ebay_get_notification_config'],
   updateconfig: ['ebay_update_notification_config'],

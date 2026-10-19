@@ -91,13 +91,13 @@ export class FeedbackApi {
    * @example
    * ```ts
    * const awaiting = await Effect.runPromise(
-   *   feedbackApi.getAwaitingFeedback({ filter: 'userRole:SELLER', limit: 25 }),
+   *   feedbackApi.getItemsAwaitingFeedback({ filter: 'userRole:SELLER', limit: 25 }),
    * );
    * ```
    *
    * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/awaiting_feedback/methods/getItemsAwaitingFeedback
    */
-  getAwaitingFeedback = (
+  getItemsAwaitingFeedback = (
     input: GetAwaitingFeedbackInput = {},
   ): Effect.Effect<AwaitingFeedbackResponse, EbayApiError | EndpointInputError> => {
     const client = this.client;
@@ -224,13 +224,13 @@ export class FeedbackApi {
    * @example
    * ```ts
    * const feedback = await Effect.runPromise(
-   *   feedbackApi.leaveFeedbackForBuyer({ commentText: 'Great buyer', commentType: 'POSITIVE' }),
+   *   feedbackApi.leaveFeedback({ commentText: 'Great buyer', commentType: 'POSITIVE' }),
    * );
    * ```
    *
    * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/feedback/methods/leaveFeedback
    */
-  leaveFeedbackForBuyer = (
+  leaveFeedback = (
     feedbackData: LeaveFeedbackRequest,
   ): Effect.Effect<LeaveFeedbackResponse, EbayApiError | EndpointInputError> => {
     const client = this.client;

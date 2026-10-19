@@ -2,10 +2,10 @@ import { defineTool } from '@/tools/defineTool.js';
 import type { ToolEntry } from '@/tools/registry.js';
 import { Effect } from 'effect';
 import {
-  getAwaitingFeedbackSchema,
+  getItemsAwaitingFeedbackSchema,
   getFeedbackRatingSummarySchema,
   getFeedbackSchema,
-  leaveFeedbackForBuyerSchema,
+  leaveFeedbackSchema,
   respondToFeedbackSchema,
 } from '@/utils/communication/feedback.js';
 import {
@@ -241,14 +241,14 @@ export const communicationEntries: ToolEntry[] = [
     name: 'ebay_leave_feedback_for_buyer',
     description:
       'Leave feedback for a buyer. Provide orderLineItemId, commentType (POSITIVE/NEUTRAL/NEGATIVE), and commentText.',
-    inputSchema: leaveFeedbackForBuyerSchema.shape,
-    handler: (api, args) => Effect.runPromise(api.feedback.leaveFeedbackForBuyer(args)),
+    inputSchema: leaveFeedbackSchema.shape,
+    handler: (api, args) => Effect.runPromise(api.feedback.leaveFeedback(args)),
   }),
   defineTool({
     name: 'ebay_get_awaiting_feedback',
     description: 'Get transactions awaiting feedback from the seller',
-    inputSchema: getAwaitingFeedbackSchema.shape,
-    handler: (api, args) => Effect.runPromise(api.feedback.getAwaitingFeedback(args)),
+    inputSchema: getItemsAwaitingFeedbackSchema.shape,
+    handler: (api, args) => Effect.runPromise(api.feedback.getItemsAwaitingFeedback(args)),
   }),
   defineTool({
     name: 'ebay_respond_to_feedback',
