@@ -20,12 +20,10 @@ const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const advertisedToolCount = getToolDefinitions().length;
 
 /**
- * Numbers inside {@link COUNT_BAND} that legitimately are not the tool count.
- * Anything else in the band is treated as a stale tool-count claim.
+ * An endpoint count such as "356 unique endpoints" (from `pnpm sync --report`), which is not a
+ * tool count. Only the phrase is skipped, so the same number quoted as tools is still caught.
  */
-const NON_COUNT_NUMBERS = new Set([
-  356, // unique endpoints reported by `pnpm sync --report` (devSyncReport.json is generated, not committed)
-]);
+const ENDPOINT_COUNT_PATTERN = /\d+ (?:unique )?endpoints/g;
 
 /**
  * Range searched for stale counts. Wide enough to catch a drifting tool count,
@@ -44,17 +42,23 @@ const proseDocs = ['README.md', 'llms.txt'];
 
 const readDoc = (name: string): string => readFileSync(`${repoRoot}${name}`, 'utf8');
 
-/** Collect every in-band number that is neither the live count nor a known non-count. */
+/** Collect every in-band number that is neither the live count nor an endpoint count. */
 const staleCountsIn = (text: string): number[] => {
-  const found = [...text.matchAll(DIGITS_PATTERN)]
+  const toolCountText = text.replace(ENDPOINT_COUNT_PATTERN, '');
+  const found = [...toolCountText.matchAll(DIGITS_PATTERN)]
     .map((match) => Number(match[0]))
     .filter((count) => count >= COUNT_BAND.min && count <= COUNT_BAND.max)
-    .filter((count) => count !== advertisedToolCount && !NON_COUNT_NUMBERS.has(count));
+    .filter((count) => count !== advertisedToolCount);
 
   return [...new Set(found)];
 };
 
 describe('advertised tool count', () => {
+  it('skips endpoint counts but still flags the same number quoted as tools', () => {
+    expect(staleCountsIn('across 356 unique endpoints (356 endpoints)')).toEqual([]);
+    expect(staleCountsIn('356 tools across 356 endpoints')).toEqual([356]);
+  });
+
   it.each(proseDocs)('%s quotes no tool count other than the live registry', (name) => {
     expect(staleCountsIn(readDoc(name))).toEqual([]);
   });

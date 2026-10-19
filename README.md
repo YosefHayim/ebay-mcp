@@ -33,7 +33,7 @@
 
 ---
 
-**eBay MCP** is a local [Model Context Protocol](https://modelcontextprotocol.io) server that connects AI assistants — [Claude Desktop](https://claude.ai/download), [Claude Code](https://code.claude.com/docs/en/overview), [Cursor](https://cursor.com/), [Cline](https://cline.bot/), [Windsurf](https://windsurf.com/), [Zed](https://zed.dev/), [Continue.dev](https://docs.continue.dev/), [Roo Code](https://roocode.com/), and [Amazon Q Developer](https://aws.amazon.com/q/developer/) — directly to **[eBay's Sell APIs](https://developer.ebay.com/api-docs/sell/static/overview.html)**. It exposes **380 tools** spanning **100% of eBay's Sell API surface** (356 unique endpoints) for inventory management, order fulfillment, promoted-listings marketing, analytics, and developer tooling. Everything runs on your machine over STDIO or local HTTP — **no cloud relay**, and your eBay credentials never leave your computer.
+**eBay MCP** is a local [Model Context Protocol](https://modelcontextprotocol.io) server that connects AI assistants — [Claude Desktop](https://claude.ai/download), [Claude Code](https://code.claude.com/docs/en/overview), [Cursor](https://cursor.com/), [Cline](https://cline.bot/), [Windsurf](https://windsurf.com/), [Zed](https://zed.dev/), [Continue.dev](https://docs.continue.dev/), [Roo Code](https://roocode.com/), and [Amazon Q Developer](https://aws.amazon.com/q/developer/) — directly to **[eBay's Sell APIs](https://developer.ebay.com/api-docs/sell/static/overview.html)**. It exposes **380 tools** spanning **100% of the eBay Sell, Commerce and Developer APIs it tracks** (356 unique endpoints) for inventory management, order fulfillment, promoted-listings marketing, analytics, and developer tooling. Everything runs on your machine over STDIO or local HTTP — **no cloud relay**, and your eBay credentials never leave your computer.
 
 > **Disclaimer:** Unofficial, third-party project — **not affiliated with or endorsed by eBay Inc.** Provided "as is" without warranty. You are responsible for complying with [eBay's API License Agreement](https://developer.ebay.com/join/api-license-agreement) and [data-handling requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html), keeping your credentials secure, and staying within rate limits. Test in sandbox before production. See [LICENSE](LICENSE).
 
@@ -553,7 +553,7 @@ Common tasks, phrased as you'd ask your AI assistant:
 <details>
 <summary><strong>What is the eBay MCP server?</strong></summary>
 
-A local [Model Context Protocol](https://modelcontextprotocol.io) server that exposes **380 tools** covering **100% of eBay's Sell APIs** (356 endpoints) to AI assistants — inventory, order fulfillment, marketing, analytics, and developer tools.
+A local [Model Context Protocol](https://modelcontextprotocol.io) server that exposes **380 tools** covering **100% of the eBay Sell, Commerce and Developer APIs it tracks** (356 endpoints) to AI assistants — inventory, order fulfillment, marketing, analytics, and developer tools.
 
 </details>
 
@@ -588,7 +588,7 @@ Interactive [MCP Apps](#interactive-ui-mcp-apps) views only appear on hosts that
 <details>
 <summary><strong>How many eBay APIs and tools does it cover?</strong></summary>
 
-380 tools across 356 unique endpoints — 100% of eBay's Sell APIs.
+380 tools across 356 unique endpoints — 100% of the eBay Sell, Commerce and Developer APIs it tracks.
 
 </details>
 

@@ -27,7 +27,7 @@ export const buildUsingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
   slug: 'ebay-mcp-using',
   title: 'Using the eBay MCP tools',
   description: `Drive eBay's Sell APIs through the ebay-mcp server: ${snapshot.toolCount} tools for listings, orders, marketing, and analytics. Use when creating or revising listings, fulfilling orders, issuing refunds, running Promoted Listings campaigns, or debugging eBay auth/rate-limit errors.`,
-  intro: `The \`ebay-mcp\` server exposes **${snapshot.toolCount} tools across 100% of eBay's Sell APIs**, running locally over MCP. Every tool is named \`ebay_<verb>_<noun>\` (plus two ChatGPT-connector tools, \`search\`/\`fetch\`). You already see each tool's input schema via \`tools/list\` — this skill covers what discovery can't: which tools to chain, what eBay requires first, and how to read its errors.`,
+  intro: `The \`ebay-mcp\` server exposes **${snapshot.toolCount} tools covering 100% of the eBay Sell, Commerce and Developer APIs it tracks**, running locally over MCP. Every tool is named \`ebay_<verb>_<noun>\` (plus two ChatGPT-connector tools, \`search\`/\`fetch\`). You already see each tool's input schema via \`tools/list\` — this skill covers what discovery can't: which tools to chain, what eBay requires first, and how to read its errors.`,
   sections: [
     {
       heading: 'Authentication & environment',
@@ -106,7 +106,7 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
   slug: 'ebay-mcp-contributing',
   title: 'Contributing to ebay-mcp',
   description: `Work on the ebay-mcp server itself: ${snapshot.toolCount} tools across eBay's Sell APIs (TypeScript/ESM, Zod tool-input schemas, OpenAPI-generated types). Use when adding or changing eBay tools/endpoints, wiring the registry, or running the project's checks.`,
-  intro: `A local MCP server exposing **${snapshot.toolCount} tools across 100% of eBay's Sell APIs** — TypeScript/Node.js (ESM), \`@modelcontextprotocol/sdk\`, Zod tool-input schemas, Effect for typed async errors, OpenAPI-generated types. Entry points: \`src/index.ts\` (STDIO) and \`src/serverHttp.ts\` (HTTP).`,
+  intro: `A local MCP server exposing **${snapshot.toolCount} tools covering 100% of the eBay Sell, Commerce and Developer APIs it tracks** — TypeScript/Node.js (ESM), \`@modelcontextprotocol/sdk\`, Zod tool-input schemas, Effect for typed async errors, OpenAPI-generated types. Entry points: \`src/index.ts\` (STDIO) and \`src/serverHttp.ts\` (HTTP).`,
   sections: [
     {
       heading: 'Validation (run before a PR)',
