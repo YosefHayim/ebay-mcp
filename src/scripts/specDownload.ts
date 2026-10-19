@@ -1,14 +1,17 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Data, Effect } from 'effect';
 import { getErrorMessage } from '@/utils/errors.js';
 import { type HttpError, httpRequestEffect } from '@/utils/http.js';
 
+const isVersionText = (version: unknown): boolean =>
+  typeof version === 'string' && version.trim() !== '';
+
 const hasSpecVersion = (spec: unknown): boolean =>
   spec !== null &&
   typeof spec === 'object' &&
-  (('openapi' in spec && typeof spec.openapi === 'string') ||
-    ('swagger' in spec && typeof spec.swagger === 'string'));
+  (('openapi' in spec && isVersionText(spec.openapi)) ||
+    ('swagger' in spec && isVersionText(spec.swagger)));
 
 export class UnusableSpecError extends Data.TaggedError('UnusableSpecError')<{
   readonly message: string;
@@ -42,14 +45,22 @@ export const refreshCachedSpec = (
 ): Effect.Effect<void, HttpError | UnusableSpecError | SpecCacheWriteError> =>
   httpRequestEffect<Buffer>({ url, responseType: 'arraybuffer', timeoutMs: 20_000 }).pipe(
     Effect.flatMap((specResponse) => checkSpecDownload(specResponse.data)),
-    Effect.flatMap((specBytes) =>
-      Effect.try({
+    Effect.flatMap((specBytes) => {
+      // Write beside the cache, then rename, so a failed write never truncates the cached spec.
+      const downloadPath = `${specPath}.download`;
+      return Effect.try({
         try: () => {
           mkdirSync(dirname(specPath), { recursive: true });
-          writeFileSync(specPath, specBytes);
+          writeFileSync(downloadPath, specBytes);
+          renameSync(downloadPath, specPath);
         },
-        catch: (error) =>
-          new SpecCacheWriteError({ specPath, message: getErrorMessage(error, 'write failed') }),
-      }),
-    ),
+        catch: (error) => {
+          rmSync(downloadPath, { force: true });
+          return new SpecCacheWriteError({
+            specPath,
+            message: getErrorMessage(error, 'write failed'),
+          });
+        },
+      });
+    }),
   );

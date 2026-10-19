@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -31,6 +31,8 @@ describe('checkSpecDownload', () => {
     expect(failureMessage('{"error":"not found"}')).toBe('JSON has no openapi or swagger version');
     expect(failureMessage('[]')).toBe('JSON has no openapi or swagger version');
     expect(failureMessage('null')).toBe('JSON has no openapi or swagger version');
+    expect(failureMessage('{"openapi":""}')).toBe('JSON has no openapi or swagger version');
+    expect(failureMessage('{"swagger":"  "}')).toBe('JSON has no openapi or swagger version');
   });
 
   it('accepts OpenAPI 3 and Swagger 2 documents', () => {
@@ -88,5 +90,19 @@ describe('refreshCachedSpec', () => {
 
     expect(Either.isRight(refreshOutcome)).toBe(true);
     expect(readFileSync(specPath, 'utf-8')).toBe(FRESH_SPEC);
+    expect(existsSync(`${specPath}.download`)).toBe(false);
+  });
+
+  it('reports a failed cache write and leaves no partial download behind', async () => {
+    const url = await serveSpecBody(FRESH_SPEC);
+    const specPath = cachedSpecPath();
+    rmSync(specPath);
+    mkdirSync(specPath);
+
+    const refresh = refreshCachedSpec(url, specPath).pipe(Effect.either);
+    const refreshOutcome = await Effect.runPromise(refresh);
+
+    expect(Either.isLeft(refreshOutcome) && refreshOutcome.left._tag).toBe('SpecCacheWriteError');
+    expect(existsSync(`${specPath}.download`)).toBe(false);
   });
 });
