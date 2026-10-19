@@ -1,10 +1,8 @@
 name: Report failure
 'on':
   workflow_call: null
-permissions:
-  contents: read
-  issues: write
-  actions: read
+# No permissions block: the job inherits the caller job's grant. Asking for issues: write
+# here fails the whole CI run at startup on fork PRs, whose token is capped to read.
 jobs:
   report-failure:
     name: File or update a ci-failure issue
