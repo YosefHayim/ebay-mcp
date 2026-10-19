@@ -77,7 +77,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "1.7.4",
-    "@modelcontextprotocol/sdk": "1.29.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "chalk": "^5.6.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -116,7 +116,7 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.5",
     "vite-plugin-singlefile": "2.3.3",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.12"
   },
   "packageManager": "pnpm@10.14.0",
   "engines": {
@@ -126,7 +126,17 @@
     "overrides": {
       "esbuild": ">=0.28.1",
       "yaml": ">=2.8.3",
-      "js-yaml": ">=4.2.0"
+      "js-yaml": "^4.3.2",
+      "@hono/node-server": "^1.19.15",
+      "brace-expansion@^2.0.0": "^2.1.7",
+      "fast-uri": "^3.1.8",
+      "hono": "^4.13.7",
+      "ip-address": "^10.7.1",
+      "nanoid@^3.0.0": "^3.3.18",
+      "postcss": "^8.5.23",
+      "proxy-addr": "^2.0.8",
+      "qs": "^6.16.0",
+      "source-map-js": "^1.2.2"
     }
   }
 }
