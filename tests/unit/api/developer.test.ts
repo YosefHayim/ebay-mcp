@@ -154,7 +154,7 @@ describe('DeveloperApi', () => {
         client_id_issued_at: 1_704_067_200,
         client_secret_expires_at: 0,
         registration_client_uri:
-          'https://api.ebay.com/developer/client_registration/v1/client/new_client_123',
+          'https://tppz.ebay.com/developer/registration/v1/client/new_client_123',
         registration_access_token: 'access_token_abc',
       };
 
@@ -163,8 +163,9 @@ describe('DeveloperApi', () => {
       const registration = await Effect.runPromise(api.registerClient({ clientSettings }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/developer/client_registration/v1/client/register',
+        'https://tppz.ebay.com/developer/registration/v1/client/register',
         clientSettings,
+        { absolute: true },
       );
       expect(registration).toEqual(mockResponse);
     });
@@ -184,8 +185,9 @@ describe('DeveloperApi', () => {
       const registration = await Effect.runPromise(api.registerClient({ clientSettings }));
 
       expect(client.post).toHaveBeenCalledWith(
-        '/developer/client_registration/v1/client/register',
+        'https://tppz.ebay.com/developer/registration/v1/client/register',
         clientSettings,
+        { absolute: true },
       );
       expect(registration).toEqual(mockResponse);
     });

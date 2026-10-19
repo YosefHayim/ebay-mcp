@@ -13,6 +13,7 @@ describe('DisputeApi', () => {
       post: vi.fn(),
       put: vi.fn(),
       delete: vi.fn(),
+      getConfig: vi.fn(() => ({ environment: 'production' })),
     } as unknown as EbayApiClient;
 
     disputeApi = new DisputeApi(mockClient);
@@ -32,7 +33,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.get).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123',
+        undefined,
+        { absolute: true },
       );
       expect(dispute).toEqual(mockDispute);
     });
@@ -61,12 +64,13 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.get).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/fetch_evidence_content',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/fetch_evidence_content',
         {
           evidence_id: 'EVIDENCE-456',
           file_id: 'FILE-789',
         },
         {
+          absolute: true,
           headers: { Accept: 'application/octet-stream' },
           responseType: 'arraybuffer',
         },
@@ -88,7 +92,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.get).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/activity',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/activity',
+        undefined,
+        { absolute: true },
       );
       expect(activities).toEqual(mockActivity);
     });
@@ -105,7 +111,11 @@ describe('DisputeApi', () => {
 
       const summaries = await Effect.runPromise(disputeApi.getPaymentDisputeSummaries());
 
-      expect(mockClient.get).toHaveBeenCalledWith('/sell/fulfillment/v1/payment_dispute_summary');
+      expect(mockClient.get).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute_summary',
+        undefined,
+        { absolute: true },
+      );
       expect(summaries).toEqual(mockSummaries);
     });
 
@@ -129,17 +139,37 @@ describe('DisputeApi', () => {
         }),
       );
 
-      expect(mockClient.get).toHaveBeenCalledWith('/sell/fulfillment/v1/payment_dispute_summary', {
-        order_id: 'ORDER-123',
-        buyer_username: 'buyer-one',
-        open_date_from: '2025-01-01T00:00:00.000Z',
-        open_date_to: '2025-01-31T00:00:00.000Z',
-        payment_dispute_status: 'OPEN',
-        limit: '10',
-        offset: '0',
-      });
+      expect(mockClient.get).toHaveBeenCalledWith(
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute_summary',
+        {
+          order_id: 'ORDER-123',
+          buyer_username: 'buyer-one',
+          open_date_from: '2025-01-01T00:00:00.000Z',
+          open_date_to: '2025-01-31T00:00:00.000Z',
+          payment_dispute_status: 'OPEN',
+          limit: '10',
+          offset: '0',
+        },
+        { absolute: true },
+      );
       expect(summaries).toEqual(mockSummaries);
     });
+  });
+
+  it('sends payment dispute calls to EBAY_MCP_API_BASE_URL when a proxy is configured', async () => {
+    vi.mocked(mockClient.getConfig).mockReturnValue({
+      environment: 'production',
+      apiBaseUrl: 'http://127.0.0.1:8787',
+    } as ReturnType<EbayApiClient['getConfig']>);
+    vi.mocked(mockClient.get).mockResolvedValue({});
+
+    await Effect.runPromise(disputeApi.getPaymentDispute({ paymentDisputeId: 'DISPUTE-123' }));
+
+    expect(mockClient.get).toHaveBeenCalledWith(
+      'http://127.0.0.1:8787/sell/fulfillment/v1/payment_dispute/DISPUTE-123',
+      undefined,
+      { absolute: true },
+    );
   });
 
   describe('contestPaymentDispute', () => {
@@ -151,7 +181,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/contest',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/contest',
+        undefined,
+        { absolute: true },
       );
     });
 
@@ -174,8 +206,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/contest',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/contest',
         contestRequest,
+        { absolute: true },
       );
     });
   });
@@ -187,7 +220,9 @@ describe('DisputeApi', () => {
       await Effect.runPromise(disputeApi.acceptPaymentDispute({ paymentDisputeId: 'DISPUTE-123' }));
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/accept',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/accept',
+        undefined,
+        { absolute: true },
       );
     });
 
@@ -210,8 +245,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/accept',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/accept',
         acceptRequest,
+        { absolute: true },
       );
     });
   });
@@ -230,9 +266,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/upload_evidence_file',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/upload_evidence_file',
         evidenceFile,
-        { headers: { 'Content-Type': 'multipart/form-data' } },
+        { absolute: true, headers: { 'Content-Type': 'multipart/form-data' } },
       );
       expect(fileEvidence).toEqual(mockFileEvidence);
     });
@@ -257,8 +293,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/add_evidence',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/add_evidence',
         evidenceRequest,
+        { absolute: true },
       );
       expect(addedEvidence).toEqual(mockResponse);
     });
@@ -278,8 +315,9 @@ describe('DisputeApi', () => {
       );
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        '/sell/fulfillment/v1/payment_dispute/DISPUTE-123/update_evidence',
+        'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/DISPUTE-123/update_evidence',
         evidenceUpdate,
+        { absolute: true },
       );
     });
   });

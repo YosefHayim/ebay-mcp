@@ -24,7 +24,7 @@ export type TranslateResponse = components['schemas']['TranslateResponse'];
 
 /** Translation API - listing title and description translation. */
 export class TranslationApi {
-  private readonly basePath = '/commerce/translation/v1';
+  private readonly basePath = '/commerce/translation/v1_beta';
 
   public constructor(private readonly client: EbayApiClient) {}
 

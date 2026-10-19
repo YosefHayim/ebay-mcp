@@ -19,7 +19,7 @@ import type {
 import type { DeveloperAnalyticsComponents as AnalyticsComponents } from '@/types/application-settings/developerAnalyticsV1BetaOas3.js';
 import type { DeveloperClientRegistrationComponents as ClientComponents } from '@/types/application-settings/developerClientRegistrationV1Oas3.js';
 import type { DeveloperKeyManagementComponents as KeyComponents } from '@/types/application-settings/developerKeyManagementV1Oas3.js';
-import { getIdentityBaseUrl } from '@/config/environment.js';
+import { getClientRegistrationBaseUrl, getIdentityBaseUrl } from '@/config/environment.js';
 import { Effect } from 'effect';
 import type { z } from 'zod';
 
@@ -51,7 +51,7 @@ type GetSigningKeyInput = z.infer<typeof getSigningKeyInputSchema>;
  */
 export class DeveloperApi {
   private readonly analyticsBasePath = '/developer/analytics/v1_beta';
-  private readonly clientBasePath = '/developer/client_registration/v1';
+  private readonly clientBasePath = '/developer/registration/v1';
   private readonly keyBasePath = '/developer/key_management/v1';
 
   /**
@@ -148,7 +148,7 @@ export class DeveloperApi {
   // ========================================
 
   /**
-   * Registers a third-party financial application with eBay.
+   * Registers a third-party financial application with eBay through the tppz host.
    *
    * @param input - Generated ClientSettings request body.
    * @returns An Effect that succeeds with eBay's generated ClientDetails response.
@@ -164,12 +164,16 @@ export class DeveloperApi {
    */
   public registerClient = (
     input: RegisterClientInput,
-  ): Effect.Effect<ClientDetails, EbayApiError> =>
-    requestPostEffect<ClientDetails>(
+  ): Effect.Effect<ClientDetails, EbayApiError> => {
+    const { environment, apiBaseUrl } = this.client.getConfig();
+    const registrationBaseUrl = getClientRegistrationBaseUrl(environment, apiBaseUrl);
+    return requestPostEffect<ClientDetails>(
       this.client,
-      `${this.clientBasePath}/client/register`,
+      `${registrationBaseUrl}${this.clientBasePath}/client/register`,
       input.clientSettings as ClientSettings,
+      { absolute: true },
     );
+  };
 
   // ========================================
   // SIGNING KEY MANAGEMENT

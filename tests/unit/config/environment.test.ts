@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   getEbayConfig,
   getBaseUrl,
+  getClientRegistrationBaseUrl,
   getIdentityBaseUrl,
   getProxyAuthConfig,
   getTradingSiteId,
@@ -312,11 +313,14 @@ describe('Environment Configuration', () => {
     });
   });
 
-  describe('getBaseUrl / getIdentityBaseUrl with override', () => {
+  describe('host base URLs with override', () => {
     it('returns the override when provided, for either environment', () => {
       expect(getBaseUrl('production', 'http://localhost:8080')).toBe('http://localhost:8080');
       expect(getBaseUrl('sandbox', 'https://proxy.internal')).toBe('https://proxy.internal');
       expect(getIdentityBaseUrl('production', 'http://localhost:8080')).toBe(
+        'http://localhost:8080',
+      );
+      expect(getClientRegistrationBaseUrl('sandbox', 'http://localhost:8080')).toBe(
         'http://localhost:8080',
       );
     });
@@ -325,6 +329,8 @@ describe('Environment Configuration', () => {
       expect(getBaseUrl('production')).toBe('https://api.ebay.com');
       expect(getBaseUrl('sandbox', undefined)).toBe('https://api.sandbox.ebay.com');
       expect(getIdentityBaseUrl('production')).toBe('https://apiz.ebay.com');
+      expect(getClientRegistrationBaseUrl('production')).toBe('https://tppz.ebay.com');
+      expect(getClientRegistrationBaseUrl('sandbox')).toBe('https://tppz.sandbox.ebay.com');
     });
   });
 

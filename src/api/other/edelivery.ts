@@ -384,7 +384,7 @@ export type CreateComplaintResponse =
 
 /** eDelivery International Shipping API endpoints. */
 export class EDeliveryApi {
-  private readonly basePath = '/sell/logistics/v1';
+  private readonly basePath = '/sell/edelivery_international_shipping/v1';
 
   public constructor(private readonly client: EbayApiClient) {}
 

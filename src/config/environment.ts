@@ -455,6 +455,27 @@ export const getMediaBaseUrl = (environment: EbayEnvironment, overrideBaseUrl?: 
   return environment === 'production' ? 'https://apim.ebay.com' : 'https://apim.sandbox.ebay.com';
 };
 
+/**
+ * Get base URL for the Client Registration API (uses the tppz subdomain).
+ *
+ * @param environment eBay environment used when no override is configured.
+ * @param overrideBaseUrl Base URL override from `EBAY_MCP_API_BASE_URL`.
+ * @returns Client Registration API base URL for direct eBay or proxy traffic.
+ * @example
+ * ```ts
+ * const registrationBaseUrl = getClientRegistrationBaseUrl('production');
+ * ```
+ */
+export const getClientRegistrationBaseUrl = (
+  environment: EbayEnvironment,
+  overrideBaseUrl?: string,
+): string => {
+  if (overrideBaseUrl) {
+    return overrideBaseUrl;
+  }
+  return environment === 'production' ? 'https://tppz.ebay.com' : 'https://tppz.sandbox.ebay.com';
+};
+
 /** Hosts treated as loopback when deciding whether a cleartext base URL is safe. */
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]', '0.0.0.0']);
 
