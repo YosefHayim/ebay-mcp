@@ -562,11 +562,11 @@ export interface components {
     };
     /** @description This type is used by the seller to provide additional information about the condition of an item in a structured format. */
     ConditionDescriptor: {
-      /** @description This string provides additional information about a condition descriptor. Open text is passed in this field.<br><br>In the case of trading cards, this field houses the optional <b>Certification Number</b> condition descriptor for graded cards. <br><br><b>Max Length:</b> 30 characters */
+      /** @description This string provides additional information about a condition descriptor. Open text is passed in this field.<br><br>In the case of trading cards and coins, this field houses the optional <b>Certification Number</b> condition descriptor for graded items.<br><br><b>Max Length:</b> 30 characters */
       additionalInfo?: string;
-      /** @description This string provides the name of a condition descriptor. A numeric ID is passed in this field. This numeric ID maps to the name of a condition descriptor. Condition descriptor name-value pairs provide more information about an item's condition in a structured way. <br><br>To retrieve all condition descriptor name numeric IDs for a category, refer to the <b>conditionDescriptorId</b> field returned in the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies " target="_blank">getItemConditionPolicies</a> method of Metadata API. <br><br>In the case of trading cards, this field is used to provide condition descriptors for a card. For graded cards, the condition descriptors for <b>Grader</b> and <b>Grade</b> are required, while the condition descriptor for <b>Certification Number</b> is optional. For ungraded cards, only the <b>Card Condition</b> condition descriptor is required. */
+      /** @description This string provides the name of a condition descriptor. A numeric ID is passed in this field. This numeric ID maps to the name of a condition descriptor. Condition descriptor name-value pairs provide more information about an item's condition in a structured way. <br><br>To retrieve all condition descriptor name numeric IDs for a category, refer to the <b>conditionDescriptorId</b> field returned in the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies " target="_blank">getItemConditionPolicies</a> method of Metadata API. <br><br>In the case of trading cards, this field is used to provide condition descriptors for a card. For graded cards, the condition descriptors for <b>Grader</b> and <b>Grade</b> are required, while the condition descriptor for <b>Certification Number</b> is optional. For ungraded cards, only the <b>Card Condition</b> condition descriptor is required.<br><br>In the case of coins, this field is used to provide condition descriptors for a coin. For graded coins, the condition descriptors for <b>Grader</b>, <b>Number Grade</b>, and <b>Letter Grade</b> are required, while the condition descriptor for <b>Certification Number</b> is optional. For ungraded coins, only the <b>Coin Condition</b> condition descriptor is required. */
       name?: string;
-      /** @description This array provides the value(s) associated with a condition descriptor. One or more numeric IDs is passed in this field. Commas are used as delimiters between successive name/value pairs. These numeric IDs map to the values associated with a condition descriptor name. Condition descriptor name-value pairs provide more information about an item's condition in a structured way. <br><br>To retrieve all condition descriptor value numeric IDs for a category, refer to the <b>ConditionDescriptorValueId</b> array returned in the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies " target="_blank">getItemConditionPolicies</a> method of Metadata API. <br><br>In the case of trading cards, this field houses the information on the <b>Grader</b> and <b>Grade</b> descriptors of graded cards and the <b>Card Condition</b> descriptor for ungraded cards. */
+      /** @description This array provides the value(s) associated with a condition descriptor. One or more numeric IDs is passed in this field. Commas are used as delimiters between successive name/value pairs. These numeric IDs map to the values associated with a condition descriptor name. Condition descriptor name-value pairs provide more information about an item's condition in a structured way. <br><br>To retrieve all condition descriptor value numeric IDs for a category, refer to the <b>ConditionDescriptorValueId</b> array returned in the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies " target="_blank">getItemConditionPolicies</a> method of Metadata API. <br><br>In the case of trading cards, this field houses the information on the <b>Grader</b> and <b>Grade</b> descriptors of graded cards and the <b>Card Condition</b> descriptor for ungraded cards.<br><br>In the case of coins, this field houses the information on the <b>Grader</b> and <b>Number Grade</b>, and <b>Letter Grade</b> descriptors of graded coins and the <b>Coin Condition</b> descriptor for ungraded coins. */
       values?: string[];
     };
     /** @description This type specifies custom product compliance and/or take-back policies that apply to a specified country. */
@@ -656,7 +656,7 @@ export interface components {
     EbayOfferDetailsWithId: {
       /**
        * Format: int32
-       * @description This integer value sets the quantity of the inventory item that will be available through the offer. Quantity must be set to <code>1</code> or more in order for the inventory item to be purchasable. This value should not be more than the quantity that is specified for the inventory item record. For auction listings, this value must be <code>1</code>. <br><br>If this field exists for the current unpublished or published offer, it should be provided again in the <strong>updateOffer</strong> call, even if the value is not changing. If this particular field is omitted in an <strong>updateOffer</strong> call, the general available quantity set for the inventory item record may be used instead, and this may not be accurate if the inventory item is being sold across multiple marketplaces.
+       * @description This integer value sets the quantity of the inventory item that will be available through the offer. Quantity must be set to <code>1</code> or more in order for the inventory item to be purchasable. This value should not be more than the quantity that is specified for the inventory item record. For auction listings, this field should not be provided. <br><br>If this field exists for the current unpublished or published offer, it should be provided again in the <strong>updateOffer</strong> call, even if the value is not changing. If this particular field is omitted in an <strong>updateOffer</strong> call, the general available quantity set for the inventory item record may be used instead, and this may not be accurate if the inventory item is being sold across multiple marketplaces.
        */
       availableQuantity?: number;
       /** @description The unique identifier of the eBay category that the inventory item is/will be listed under. This field is not immediately required for an unpublished offer, but will be required before publishing the offer. Sellers can use the <a href="/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions " target="_blank">getCategorySuggestions</a> method of the Taxonomy API to retrieve suggested category ID values. The seller passes in a query string like "<em>iPhone 6</em>", and category ID values for suggested categories are returned in the response.<br><br>If this field exists for the current unpublished offer, it should be provided again in the <strong>updateOffer</strong> call, even if the eBay category is not changing. For a published offer (aka active eBay listing), this field must be provided or an error may occur. The eBay category of an active eBay listing cannot be changed once the listing has one or more sales, or if the listing is scheduled to end in less than 12 hours.<br><br><div class="msgbox_important"><p class="msgbox_importantInDiv" data-mc-autonum="&lt;b&gt;&lt;span style=&quot;color: #dd1e31;&quot; class=&quot;mcFormatColor&quot;&gt;Important! &lt;/span&gt;&lt;/b&gt;"><span class="autonumber"><span><b><span style="color: #dd1e31;" class="mcFormatColor">Important!</span></b></span></span>Publish offer note: This field is required before an offer can be published to create an active listing. </p></span></div> */
@@ -704,7 +704,7 @@ export interface components {
     EbayOfferDetailsWithKeys: {
       /**
        * Format: int32
-       * @description This integer value sets the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field. Quantity must be set to <code>1</code> or more in order for the inventory item to be purchasable, but this field is not necessarily required, even for published offers, if the general quantity of the inventory item has already been set in the inventory item record.<br><br>For auction listings, this value must be <code>1</code>.<br><br><span class="tablenote"> <strong>Note:</strong> The <b>availableQuantity</b> field if set here overrides the <b>quantity</b> field set in the inventory item. See the note in <a href ="/api-docs/sell/static/inventory/publishing-offers.html#offer" target="blank">Offer fields</a> for details.</span>
+       * @description This integer value sets the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field. Quantity must be set to <code>1</code> or more in order for the inventory item to be purchasable, but this field is not necessarily required, even for published offers, if the general quantity of the inventory item has already been set in the inventory item record.<br><br>For auction listings, this field should not be provided.<br><br><span class="tablenote"> <strong>Note:</strong> The <b>availableQuantity</b> field if set here overrides the <b>quantity</b> field set in the inventory item. See the note in <a href ="/api-docs/sell/static/inventory/publishing-offers.html#offer" target="blank">Offer fields</a> for details.</span>
        */
       availableQuantity?: number;
       /** @description The unique identifier of the eBay category that the product will be listed under. This field is not immediately required upon creating an offer, but will be required before publishing the offer. <br><br>Sellers can use the <a href="/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions " target="_blank">getCategorySuggestions</a> method of the Taxonomy API to retrieve suggested category ID values. The seller passes in a query string like "<em>iPhone 6</em>", and category ID values for suggested categories are returned in the response.<br><br><div class="msgbox_important"><p class="msgbox_importantInDiv" data-mc-autonum="&lt;b&gt;&lt;span style=&quot;color: #dd1e31;&quot; class=&quot;mcFormatColor&quot;&gt;Important! &lt;/span&gt;&lt;/b&gt;"><span class="autonumber"><span><b><span style="color: #dd1e31;" class="mcFormatColor">Important!</span></b></span></span>Publish offer note: This field is required before an offer can be published to create an active listing. </p></span></div><p><span class="tablenote"><strong>Note:</strong> When listing in categoryID 173651 (Auto Performance Tuning Devices & Software), use of catalog products is required. For more information, see <a href="/api-docs/sell/static/inventory/tuning-devices-and-software-rest.html" target="_blank">Tuning devices and software</a>.</span></p> */
@@ -902,7 +902,7 @@ export interface components {
       condition?: string;
       /** @description This string field is used by the seller to more clearly describe the condition of a used inventory item, or an inventory item whose <strong>condition</strong> value is not <code>NEW</code>, <code>LIKE_NEW</code>, <code>NEW_OTHER</code>, or <code>NEW_WITH_DEFECTS</code>.<br><br>The <strong>conditionDescription</strong> field is available for all eBay categories. If the <strong>conditionDescription</strong> field is used with an item in one of the new conditions (mentioned in previous paragraph), eBay will simply ignore this field if included, and eBay will return a warning message to the user. <br><br>This field should only be used to further clarify the condition of the used item. It should not be used for branding, promotions, shipping, returns, payment or other information unrelated to the condition of the used item. Make sure that the <strong>condition</strong> value, condition description, listing description, and the item's pictures do not contradict one another. <br><br>This field is not always required, but is required if an inventory item is being updated and a condition description already exists for that inventory item. <br><br>This field is returned in the <strong>getInventoryItem</strong> and <strong>getInventoryItems</strong> calls if a condition description was provided for a used inventory item.<br><br><strong>Max Length</strong>: 1000. */
       conditionDescription?: string;
-      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Condition descriptors are name-value attributes that can be either closed set or open text inputs.<br><br>For trading card listings in <b>Non-Sport Trading Card Singles</b> (183050), <b>CCG Individual Cards</b> (183454), and <b>Sports Trading Card Singles</b> (261328) categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the card as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>To retrieve all condition descriptor numeric IDs for a category, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
+      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Condition descriptors are name-value attributes that can be either closed set or open text inputs.<br><br>For trading card and coin listings in applicable categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the item as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>To retrieve all condition descriptor numeric IDs for a category, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
       conditionDescriptors?: components['schemas']['ConditionDescriptor'][];
       /** @description This container is used if the seller is offering one or more calculated shipping options for the inventory item, or if the seller is offering flat-rate shipping but is including a shipping surcharge based on the item's weight. This container is used to specify the dimensions and weight of a shipping package.<br><br><span class="tablenote"><b>Note:</b> Package weight and dimensions are only supported for the following marketplaces: AU, CA, DE, IT, UK, US, and Motors. If this information is provided on other marketplaces, it will be ignored.</span><br>This container is not always required, but is required if an inventory item is being updated and shipping package data already exists for that inventory item.<br><br>This container is returned in the <strong>getInventoryItem</strong> and <strong>getInventoryItems</strong> calls if package type, package weight, and/or package dimensions are specified for an inventory item.<br><br>See the <a href="https://pages.ebay.com/help/pay/calculated-shipping.html " target="_blank">Calculated shipping</a> help page for more information on calculated shipping. */
       packageWeightAndSize?: components['schemas']['PackageWeightAndSize'];
@@ -961,7 +961,7 @@ export interface components {
       condition?: string;
       /** @description This string field is used by the seller to more clearly describe the condition of a used inventory item, or an inventory item whose <strong>condition</strong> value is not <code>NEW</code>, <code>LIKE_NEW</code>, <code>NEW_OTHER</code>, or <code>NEW_WITH_DEFECTS</code>.<br><br>The <strong>conditionDescription</strong> field is available for all eBay categories. If the <strong>conditionDescription</strong> field is used with an item in one of the new conditions (mentioned in previous paragraph), eBay will simply ignore this field if included, and eBay will return a warning message to the user. <br><br>This field should only be used to further clarify the condition of the used item. It should not be used for branding, promotions, shipping, returns, payment or other information unrelated to the condition of the used item. Make sure that the <strong>condition</strong> value, condition description, listing description, and the item's pictures do not contradict one another. <br><br>This field is not always required, but is required if an inventory item is being updated and a condition description already exists for that inventory item. <br><br>This field is returned in the <strong>getInventoryItem</strong>, <strong>bulkGetInventoryItem</strong>, and <strong>getInventoryItems</strong> calls if a condition description was provided for a used inventory item.<br><br><b>Max Length</b>: 1000 */
       conditionDescription?: string;
-      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Condition descriptors are name-value attributes that can be either closed set or open text inputs.<br><br>For trading card listings in <b>Non-Sport Trading Card Singles</b> (183050), <b>CCG Individual Cards</b> (183454), and <b>Sports Trading Card Singles</b> (261328) categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the card as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>To retrieve all condition descriptor numeric IDs for a category, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
+      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Condition descriptors are name-value attributes that can be either closed set or open text inputs.<br><br>For trading card and coin listings in applicable categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the item as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>To retrieve all condition descriptor numeric IDs for a category, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
       conditionDescriptors?: components['schemas']['ConditionDescriptor'][];
       /** @description This request parameter sets the natural language that was provided in the field values of the request payload (i.e., en_AU, en_GB or de_DE). For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:LocaleEnum'>eBay API documentation</a> */
       locale?: string;
@@ -980,7 +980,7 @@ export interface components {
       condition?: string;
       /** @description This string field is used by the seller to more clearly describe the condition of used items, or items that are not 'Brand New', 'New with tags', or 'New in box'. The ConditionDescription field is available for all categories. If the ConditionDescription field is used with an item in a new condition (Condition IDs 1000-1499), eBay will simply ignore this field if included, and eBay will return a warning message to the user. This field should only be used to further clarify the condition of the used item. It should not be used for branding, promotions, shipping, returns, payment or other information unrelated to the condition of the item. Make sure that the condition value, condition description, listing description, and the item's pictures do not contradict one another.Max length: 1000. */
       conditionDescription?: string;
-      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Descriptors are name-value attributes that can be either closed set or open text.<br><br>For trading card listings in <b>Non-Sport Trading Card Singles</b> (183050), <b>CCG Individual Cards</b> (183454), and <b>Sports Trading Card Singles</b> (261328) categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the card as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>For more information on the numeric IDs and their text equivalents, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
+      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Condition descriptors are name-value attributes that can be either closed set or open text inputs.<br><br>For trading card and coin listings in applicable categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the item as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>To retrieve all condition descriptor numeric IDs for a category, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
       conditionDescriptors?: components['schemas']['ConditionDescriptor'][];
       /** @description This array is returned if the inventory item is associated with any inventory item group(s). The value(s) returned in this array are the unique identifier(s) of the inventory item's variation in a multiple-variation listing. This array is not returned if the inventory item is not associated with any inventory item groups. */
       inventoryItemGroupKeys?: string[];
@@ -1000,7 +1000,7 @@ export interface components {
       condition?: string;
       /** @description This string field is used by the seller to more clearly describe the condition of used items, or items that are not 'Brand New', 'New with tags', or 'New in box'. The ConditionDescription field is available for all categories. If the ConditionDescription field is used with an item in a new condition (Condition IDs 1000-1499), eBay will simply ignore this field if included, and eBay will return a warning message to the user. This field should only be used to further clarify the condition of the used item. It should not be used for branding, promotions, shipping, returns, payment or other information unrelated to the condition of the item. Make sure that the condition value, condition description, listing description, and the item's pictures do not contradict one another.<br><br><strong>Max length</strong>: 1000 */
       conditionDescription?: string;
-      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Descriptors are name-value attributes that can be either closed set or open text.<br><br>For trading card listings in <b>Non-Sport Trading Card Singles</b> (183050), <b>CCG Individual Cards</b> (183454), and <b>Sports Trading Card Singles</b> (261328) categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the card as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>For more information on the numeric IDs and their text equivalents, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
+      /** @description This container is used by the seller to provide additional information about the condition of an item in a structured format. Condition descriptors are name-value attributes that can be either closed set or open text inputs.<br><br>For trading card and coin listings in applicable categories, sellers must use either <code>LIKE_NEW</code> (2750) or <code>USED_VERY_GOOD</code> (4000) item condition to specify the item as <b>Graded</b> or <b>Ungraded</b>, respectively. Use of either of these conditions requires the seller to use this array to provide one or more applicable Condition Descriptor name-value pairs.<br><br>To retrieve all condition descriptor numeric IDs for a category, use the <a href="/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies" target="_blank">getItemConditionPolicies</a> method of the Metadata API. */
       conditionDescriptors?: components['schemas']['ConditionDescriptor'][];
       /** @description This array is returned if the inventory item is associated with any inventory item group(s). The value(s) returned in this array are the unique identifier(s) of the inventory item group(s). This array is not returned if the inventory item is not associated with any inventory item groups. */
       groupIds?: string[];
@@ -1726,21 +1726,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -1775,21 +1781,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -1824,21 +1836,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -1868,21 +1886,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -1933,21 +1957,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -1968,28 +1998,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2021,21 +2059,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2065,21 +2109,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2130,21 +2180,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2165,28 +2221,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2216,21 +2280,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2281,21 +2351,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2316,28 +2392,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2372,21 +2456,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2418,21 +2508,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2462,21 +2558,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2499,28 +2601,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2557,21 +2667,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2606,21 +2722,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2658,21 +2780,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2710,14 +2838,18 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2747,21 +2879,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2802,28 +2940,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2844,28 +2990,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2900,21 +3054,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2944,21 +3104,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -2993,14 +3159,18 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3030,21 +3200,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3070,21 +3246,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3114,21 +3296,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3157,28 +3345,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Location Already Exists */
       409: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3199,28 +3395,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3250,21 +3454,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3294,21 +3504,27 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3340,14 +3556,18 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };
@@ -3376,28 +3596,36 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Bad Request */
       400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
       /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
       };
     };
   };

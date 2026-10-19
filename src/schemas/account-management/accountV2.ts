@@ -143,10 +143,9 @@ const endOfAuctionEmailPreferencesSchema = z.object({
 });
 
 /**
- * PATCH body for setUserPreferences. eBay's OAS3 file references an undefined
- * SetUserPreferencesRequest, so this mirrors the definition in eBay's published
- * Account v2 spec (the GetUserPreferencesResponse `*PreferencesType` containers,
- * with SetItemsAwaitingPaymentPreferencesType for unpaid-item settings).
+ * PATCH body for setUserPreferences, mirroring the generated SetUserPreferencesRequest
+ * (the GetUserPreferencesResponse `*PreferencesType` containers, with
+ * SetItemsAwaitingPaymentPreferencesType for unpaid-item settings).
  */
 const setUserPreferencesSchema = z.object({
   combinedPaymentPreferences: z

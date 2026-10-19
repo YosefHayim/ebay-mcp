@@ -24,9 +24,8 @@ export interface ResolvableSpec {
 /**
  * Replaces references to component schemas the spec never defines with an open schema.
  *
- * eBay occasionally publishes a spec with a dangling `$ref` (Account v2 references
- * `SetUserPreferencesRequest` without defining it), and openapi-typescript aborts the
- * whole file on the first unresolved reference. Rewriting only the dangling references
+ * eBay occasionally publishes a spec with a dangling `$ref`, and openapi-typescript
+ * aborts the whole file on the first unresolved reference. Rewriting only the dangling references
  * keeps every defined type exact, while the undefined payload generates as `unknown`
  * with a description naming the missing schema.
  *

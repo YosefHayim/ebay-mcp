@@ -45,12 +45,8 @@ type Schemas = components['schemas'];
 type RateTableUpdate = Schemas['RateTableUpdate'];
 /** Generated request body for updatePayoutPercentage. */
 type UpdatePayoutPercentageRequest = Schemas['UpdatePayoutPercentageRequest'];
-/**
- * Request body for setUserPreferences. eBay's OAS3 file references an undefined
- * SetUserPreferencesRequest (generated as `unknown`), so the body is typed from the
- * tool schema, which mirrors eBay's published definition.
- */
-type SetUserPreferencesRequest = SetUserPreferencesInput['preferences'];
+/** Generated request body for setUserPreferences. */
+type SetUserPreferencesRequest = Schemas['SetUserPreferencesRequest'];
 
 /** Combined-shipping-rules POST operations that share the marketplace header contract. */
 type CombinedShippingRulesOperation =
@@ -494,12 +490,6 @@ export class AccountV2Api {
   /**
    * Changes one or more seller preferences for one marketplace (PATCH: send only
    * the preferences being changed).
-   *
-   * eBay's OAS3 spec references an undefined `SetUserPreferencesRequest`, so the
-   * generated body type is `unknown`. The body is typed from the tool schema,
-   * which mirrors the definition in eBay's published Account v2 spec: the
-   * `*PreferencesType` containers returned by getUserPreferences, with
-   * SetItemsAwaitingPaymentPreferencesType for unpaid-item settings.
    *
    * @param input - Marketplace header and the preferences PATCH body.
    * @returns An Effect that succeeds when eBay returns 204 No Content.
