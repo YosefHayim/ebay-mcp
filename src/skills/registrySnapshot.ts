@@ -26,7 +26,7 @@ const FAMILY_BLURBS: Record<string, string> = {
   taxonomy:
     'Category trees, category suggestions, required item aspects, expired categories, and charities',
   communication: 'Buyer messages, member messages, and notification settings',
-  browse: 'Sold/completed listing search (Finding API) for pricing comps',
+  browse: 'Active listing search and item details (Browse API) for market research',
   other: 'Feedback, recommendations, and assorted Sell-API helpers',
   developer: 'API status, rate limits, client registration, and signing keys',
   trading: 'Legacy Trading API (XML) — create / revise / relist / end fixed-price listings',

@@ -22,7 +22,6 @@ import { FulfillmentApi } from '@/api/order-management/fulfillment.js';
 import { LogisticsApi } from '@/api/order-management/logistics.js';
 import { EDeliveryApi } from '@/api/other/edelivery.js';
 import { BrowseApi } from '@/api/other/browse.js';
-import { FindingApi } from '@/api/other/finding.js';
 import { IdentityApi } from '@/api/other/identity.js';
 import { TranslationApi } from '@/api/other/translation.js';
 import { VeroApi } from '@/api/other/vero.js';
@@ -65,7 +64,6 @@ export class EbaySellerApi {
   public translation: TranslationApi;
   public edelivery: EDeliveryApi;
   public browse: BrowseApi;
-  public finding: FindingApi;
   public developer: DeveloperApi;
   public trading: TradingApi;
 
@@ -99,7 +97,6 @@ export class EbaySellerApi {
     this.translation = new TranslationApi(this.client);
     this.edelivery = new EDeliveryApi(this.client);
     this.browse = new BrowseApi(this.client);
-    this.finding = new FindingApi(this.client);
     this.developer = new DeveloperApi(this.client);
     const tradingClient = new TradingApiClient(this.client);
     this.trading = new TradingApi(tradingClient);
@@ -204,7 +201,6 @@ export {
   type SearchActiveItemsInput,
   type SearchActiveItemsResult,
 } from '@/api/other/browseTypes.js';
-export * from '@/api/other/finding.js';
 export * from '@/api/other/identity.js';
 export * from '@/api/other/translation.js';
 export * from '@/api/other/vero.js';

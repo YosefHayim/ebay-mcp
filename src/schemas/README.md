@@ -18,7 +18,7 @@ arguments (`z.infer`).
 | `inventory-management/` | Inventory items, offers, locations, Feed, Media, Stores |
 | `marketing/` | Campaigns, ads, keywords, promotions, reports |
 | `metadata/` | Marketplace policies, compatibility, shipping metadata |
-| `other/` | Identity, VeRO, translation, eDelivery, Browse/Finding |
+| `other/` | Identity, VeRO, translation, eDelivery, Browse |
 | `taxonomy/` | Category trees, item aspects, Charity |
 
 ## Schema ownership

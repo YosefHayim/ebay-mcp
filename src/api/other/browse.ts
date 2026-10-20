@@ -56,8 +56,7 @@ export class BrowseApi {
    *
    * Uses the Buy Browse API (`item_summary/search`) with the application
    * access token eBay requires for Browse, minted from client credentials
-   * under the basic `api_scope`. The counterpart of `findCompletedItems` for
-   * live listings.
+   * under the basic `api_scope`. Returns live listings only.
    *
    * @param input - Query plus optional pagination, sort, and filters.
    * @returns An Effect that succeeds with cleaned active-listing summaries.
