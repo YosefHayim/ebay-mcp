@@ -701,7 +701,7 @@ pnpm test && pnpm test:integration         # Vitest unit + integration
 pnpm build                                 # Build to build/
 ```
 
-To run the CI gate locally in Docker before pushing, use [act](https://nektosact.com): `act workflow_dispatch -W .github/workflows/ci.yml`. The root `.actrc` picks the runner image and keeps the pnpm store outside the workspace.
+To run the CI gate locally in Docker before pushing, use [act](https://nektosact.com): `act workflow_dispatch -W .github/workflows/ci.yml`. The machine `~/.actrc` selects the runner, architecture and shared caches.
 
 ## Resources
 

@@ -13,17 +13,46 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
+  changes:
+    name: Changes
+    runs-on: ubuntu-latest
+    outputs:
+      since: ${{ steps.filter.outputs.everything != 'true' && github.event.pull_request.base.sha || '' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          token: ''
+          filters: |
+            everything:
+              - pnpm-lock.yaml
+              - biome.json
+              - 'tsconfig*.json'
+              - 'mcp-apps/tsconfig.json'
+              - 'vitest*.cts'
+              - '.github/**'
+              - package.json
+    timeout-minutes: 5
   biome:
+    needs: changes
     uses: ./.github/workflows/biome.yml
+    with:
+      since: ${{ needs.changes.outputs.since }}
   typecheck:
     uses: ./.github/workflows/typecheck.yml
   test:
+    needs: changes
     uses: ./.github/workflows/test.yml
+    with:
+      since: ${{ needs.changes.outputs.since }}
   build:
     uses: ./.github/workflows/build.yml
   gate:
     name: CI Gate
     needs:
+      - changes
       - biome
       - typecheck
       - test
@@ -42,6 +71,7 @@ jobs:
   report-failure:
     name: Open issue on main failure
     needs:
+      - changes
       - biome
       - typecheck
       - test

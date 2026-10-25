@@ -1,6 +1,11 @@
 name: Test
 'on':
-  workflow_call: null
+  workflow_call:
+    inputs:
+      since:
+        description: Base commit to compare against. Empty runs everything.
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -10,10 +15,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Setup workspace
         uses: ./.github/actions/setup
       - name: Run integration tests
+        if: inputs.since == ''
         run: pnpm test:integration
       - name: Run unit tests with the coverage gate
+        if: inputs.since == ''
         run: pnpm test:coverage
+      - name: Run integration tests for changed files
+        if: inputs.since != ''
+        env:
+          SINCE: ${{ inputs.since }}
+        run: pnpm exec vitest run --config vitest.integration.config.cts --changed "$SINCE" --passWithNoTests
+      - name: Run unit tests for changed files
+        if: inputs.since != ''
+        env:
+          SINCE: ${{ inputs.since }}
+        run: pnpm exec vitest run --changed "$SINCE" --passWithNoTests
     timeout-minutes: 20
