@@ -1,81 +1,95 @@
 name: CI
 'on':
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch: null
 permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   changes:
     name: Changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
     outputs:
       since: ${{ steps.filter.outputs.everything != 'true' && github.event.pull_request.base.sha || '' }}
+      code: ${{ github.event_name != 'pull_request' || steps.filter.outputs.code == 'true' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         if: github.event_name == 'pull_request'
         with:
           token: ''
           filters: |
-            everything:
+            everything: &everything
               - pnpm-lock.yaml
-              - biome.json
+              - package.json
               - 'tsconfig*.json'
               - 'mcp-apps/tsconfig.json'
               - 'vitest*.cts'
               - '.github/**'
-              - package.json
-    timeout-minutes: 5
-  biome:
+            code:
+              - *everything
+              - 'src/**'
+              - 'mcp-apps/**'
+              - 'tests/**'
+              - 'public/**'
+  verify:
+    name: Test and build
     needs: changes
-    uses: ./.github/workflows/biome.yml
-    with:
-      since: ${{ needs.changes.outputs.since }}
-  typecheck:
-    uses: ./.github/workflows/typecheck.yml
-  test:
-    needs: changes
-    uses: ./.github/workflows/test.yml
-    with:
-      since: ${{ needs.changes.outputs.since }}
-  build:
-    uses: ./.github/workflows/build.yml
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Setup workspace
+        uses: ./.github/actions/setup
+      - name: Run integration tests
+        if: needs.changes.outputs.since == ''
+        run: pnpm test:integration
+      - name: Run unit tests with the coverage gate
+        if: needs.changes.outputs.since == ''
+        run: pnpm test:coverage
+      - name: Run integration tests for changed files
+        if: needs.changes.outputs.since != ''
+        env:
+          SINCE: ${{ needs.changes.outputs.since }}
+        run: pnpm exec vitest run --config vitest.integration.config.cts --changed "$SINCE"
+      - name: Run unit tests for changed files
+        if: needs.changes.outputs.since != ''
+        env:
+          SINCE: ${{ needs.changes.outputs.since }}
+        run: pnpm exec vitest run --changed "$SINCE"
+      - name: Build
+        run: pnpm build
   gate:
     name: CI Gate
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
     needs:
       - changes
-      - biome
-      - typecheck
-      - test
-      - build
+      - verify
     if: always()
-    runs-on: ubuntu-slim
     steps:
-      - name: Require every gate to pass
-        run: |
-          echo "biome=${{ needs.biome.result }} typecheck=${{ needs.typecheck.result }} test=${{ needs.test.result }} build=${{ needs.build.result }}"
-          test "${{ needs.biome.result }}" = "success" \
-            && test "${{ needs.typecheck.result }}" = "success" \
-            && test "${{ needs.test.result }}" = "success" \
-            && test "${{ needs.build.result }}" = "success"
-    timeout-minutes: 5
+      - name: Require every check to pass
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
   report-failure:
     name: Open issue on main failure
     needs:
       - changes
-      - biome
-      - typecheck
-      - test
-      - build
+      - verify
     if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
