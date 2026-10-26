@@ -3,12 +3,17 @@ name: CI
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch: null
 permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   changes:
     name: Changes
@@ -80,3 +85,14 @@ jobs:
       - name: Require every check to pass
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: exit 1
+  report-failure:
+    name: Open issue on main failure
+    needs:
+      - changes
+      - verify
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    uses: ./.github/workflows/report-failure.yml
