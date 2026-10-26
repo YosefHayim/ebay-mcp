@@ -1,0 +1,21 @@
+name: Warm cache
+'on':
+  push:
+    branches:
+      - main
+    paths:
+      - pnpm-lock.yaml
+      - .github/actions/setup/action.yml
+      - .github/workflows/warm-cache.yml
+  workflow_dispatch: null
+permissions:
+  contents: read
+jobs:
+  warm:
+    name: Warm dependency cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup workspace
+        uses: ./.github/actions/setup

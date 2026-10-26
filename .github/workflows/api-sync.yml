@@ -15,7 +15,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup workspace
         uses: ./.github/actions/setup
       - name: Run API sync check
@@ -48,7 +48,7 @@ jobs:
             echo "$MISSING_LIST" > missing-endpoints.txt
           fi
       - name: Upload sync report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: syncReport
           path: |
@@ -57,7 +57,7 @@ jobs:
           retention-days: 30
       - name: Check for new endpoints and create issue
         if: steps.sync.outputs.missing_count > 0
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const fs = require('fs');
