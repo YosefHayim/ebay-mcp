@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "tasks": {
+    "lint": {},
+    "typecheck": {},
+    "typecheck:mcp-apps": {},
+    "test": {},
+    "build": { "outputs": ["build/**"] }
+  }
+}
