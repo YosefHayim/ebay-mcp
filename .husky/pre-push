@@ -1,6 +1,1 @@
-CI=1 pnpm install --frozen-lockfile
-pnpm run check:ci
-pnpm run typecheck
-pnpm run typecheck:mcp-apps
-pnpm run test
-pnpm run build
+pnpm check
