@@ -35,6 +35,30 @@ export const uploadImagesInputSchema = z.object({
     ),
 });
 
+/** Validates the ebay_upload_image_data input. */
+export const uploadImageDataInputSchema = z.object({
+  images: z
+    .array(
+      z.object({
+        data: z
+          .string()
+          .min(1)
+          .describe(
+            'Image bytes as base64, optionally prefixed with a data URL header (data:image/jpeg;base64,...). JPG, PNG, GIF, BMP, TIFF, WEBP, AVIF or HEIC, up to 12 MB decoded',
+          ),
+        fileName: z
+          .string()
+          .min(1)
+          .max(100)
+          .optional()
+          .describe('File name sent to eBay; defaults to image-<n> with the detected extension'),
+      }),
+    )
+    .min(1)
+    .max(24)
+    .describe('Images in listing order'),
+});
+
 /** Validates the ebay_upload_video input. */
 export const uploadVideoInputSchema = z.object({
   path: mediaReferenceSchema.describe(

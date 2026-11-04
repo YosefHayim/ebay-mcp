@@ -10,6 +10,7 @@ import { getMediaAccessConfig } from '@/config/mediaAccess.js';
 import {
   attachMediaInputSchema,
   attachMediaOutputSchema,
+  uploadImageDataInputSchema,
   uploadImagesInputSchema,
   uploadImagesOutputSchema,
   uploadVideoInputSchema,
@@ -19,6 +20,7 @@ import {
 import { defineTool } from '@/tools/defineTool.js';
 import type { ToolEntry } from '@/tools/registry.js';
 import type { OutputArgs } from '@/tools/types.js';
+import { decodeInlineImages } from '@/utils/inlineMedia.js';
 import { loadLocalMedia, loadLocalMediaList } from '@/utils/localMedia.js';
 import { Effect } from 'effect';
 import { zodToJsonSchema } from 'zod-to-json-schema';
@@ -140,6 +142,23 @@ export const mediaEntries: ToolEntry[] = [
     handler: (api, args) =>
       Effect.runPromise(
         loadLocalMediaList(args.paths, 'image', getMediaAccessConfig()).pipe(
+          Effect.flatMap((files) => api.media.uploadImageFiles(files)),
+        ),
+      ),
+  }),
+  defineTool({
+    name: 'ebay_upload_image_data',
+    description:
+      'Upload pictures passed inline as base64 to eBay Picture Services and return the EPS image URLs in the same order, ready for product.imageUrls or Trading API PictureDetails.PictureURL. Use it when the images are not on the machine running this server (for example photos attached to a chat). The image type is detected from the file signature. Uses the Media API (createImageFromFile); requires sell.inventory. Unused images expire after a while; they become permanent once a listing uses them.',
+    inputSchema: uploadImageDataInputSchema.shape,
+    outputSchema: zodToJsonSchema(uploadImagesOutputSchema, {
+      name: 'UploadImageDataResponse',
+      $refStrategy: 'none',
+    }) as OutputArgs,
+    annotations: { readOnlyHint: false },
+    handler: (api, args) =>
+      Effect.runPromise(
+        decodeInlineImages(args.images).pipe(
           Effect.flatMap((files) => api.media.uploadImageFiles(files)),
         ),
       ),

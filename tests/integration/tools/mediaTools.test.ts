@@ -7,7 +7,12 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { EbaySellerApi } from '@/api/ebaySellerApi.js';
 import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
 import type { EbayConfig } from '@/types/ebay.js';
-import { createMediaFixture, type MediaFixture } from '@tests/helpers/mediaFixtures.js';
+import {
+  createMediaFixture,
+  JPEG_BYTES,
+  type MediaFixture,
+  PNG_BYTES,
+} from '@tests/helpers/mediaFixtures.js';
 import { Effect } from 'effect';
 import nock from 'nock';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -106,6 +111,7 @@ describe('media tools registration', () => {
     expect(names).toEqual(
       expect.arrayContaining([
         'ebay_upload_images',
+        'ebay_upload_image_data',
         'ebay_upload_video',
         'ebay_get_video',
         'ebay_attach_media_to_inventory_item',
@@ -171,6 +177,54 @@ describe('ebay_upload_images', () => {
 
     expect(disabledUpload.isError).toBe(true);
     expect(disabledUpload.text).toContain('EBAY_MCP_MEDIA_DIRS');
+  });
+});
+
+describe('ebay_upload_image_data', () => {
+  it('uploads inline base64 pictures in order without any media directory configured', async () => {
+    delete process.env.EBAY_MCP_MEDIA_ROOT;
+    delete process.env.EBAY_MCP_MEDIA_DIRS;
+    const first = mockImageUpload('https://i.ebayimg.com/inline-front.jpg');
+    const second = mockImageUpload('https://i.ebayimg.com/inline-back.png');
+
+    const uploadResult = await callTool('ebay_upload_image_data', {
+      images: [
+        { data: JPEG_BYTES.toString('base64'), fileName: 'front.jpg' },
+        { data: `data:image/png;base64,${PNG_BYTES.toString('base64')}` },
+      ],
+    });
+
+    expect(uploadResult.isError).toBe(false);
+    expect(uploadResult.payload).toEqual({
+      images: [
+        {
+          source: 'front.jpg',
+          imageId: expect.stringMatching(/^IMG-/),
+          imageUrl: 'https://i.ebayimg.com/inline-front.jpg',
+          expirationDate: '2026-09-30T00:00:00.000Z',
+        },
+        {
+          source: 'inline image 2',
+          imageId: expect.stringMatching(/^IMG-/),
+          imageUrl: 'https://i.ebayimg.com/inline-back.png',
+          expirationDate: '2026-09-30T00:00:00.000Z',
+        },
+      ],
+    });
+    expect(first.isDone()).toBe(true);
+    expect(second.isDone()).toBe(true);
+  });
+
+  it('rejects data that is not an image without contacting eBay', async () => {
+    const upload = mockImageUpload('https://i.ebayimg.com/never-inline.jpg');
+
+    const rejected = await callTool('ebay_upload_image_data', {
+      images: [{ data: Buffer.from('hello world').toString('base64') }],
+    });
+
+    expect(rejected.isError).toBe(true);
+    expect(rejected.text).toContain('not a supported image');
+    expect(upload.isDone()).toBe(false);
   });
 });
 
