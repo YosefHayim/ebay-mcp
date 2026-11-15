@@ -112,7 +112,7 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
       heading: 'Validation (run before a PR)',
       body: [
         '```bash',
-        'pnpm check        # tsc --noEmit (src + mcp-apps) + biome check  (must pass)',
+        'pnpm check        # tsc --noEmit (src, including src/mcp-apps) + biome check  (must pass)',
         'pnpm test         # vitest run',
         'pnpm build        # tsc + tsc-alias + MCP Apps views → build/',
         '```',
