@@ -1,4 +1,4 @@
-import type { StoredTokenData } from '@/types/ebay.js';
+import type { StoredTokenData } from '@/shared/ebay.js';
 
 /**
  * Mock token storage for testing

@@ -1,8 +1,8 @@
 import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Data, Effect } from 'effect';
-import { getErrorMessage } from '@/utils/errors.js';
-import { type HttpError, httpRequestEffect } from '@/utils/http.js';
+import { getErrorMessage } from '@/shared/errors.js';
+import { type HttpError, httpRequestEffect } from '@/shared/http.js';
 
 const isVersionText = (version: unknown): boolean =>
   typeof version === 'string' && version.trim() !== '';

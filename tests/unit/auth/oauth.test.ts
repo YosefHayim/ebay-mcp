@@ -12,7 +12,7 @@ import {
   DotEnvCredentialStore,
   type CredentialStore,
 } from '@/auth/credentialSession.js';
-import type { EbayConfig } from '@/types/ebay.js';
+import type { EbayConfig } from '@/shared/ebay.js';
 import { mockOAuthTokenEndpoint, cleanupMocks } from '@tests/helpers/mockHttp.js';
 import process from 'node:process';
 import { Effect } from 'effect';

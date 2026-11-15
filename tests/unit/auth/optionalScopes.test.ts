@@ -9,7 +9,7 @@ import {
   getRequestedScopes,
   LOGISTICS_SCOPE,
   validateScopes,
-} from '@/config/environment.js';
+} from '@/shared/environment.js';
 import { describe, expect, it } from 'vitest';
 
 const optionalScopes = [FINANCES_EARNINGS_SCOPE, LOGISTICS_SCOPE];

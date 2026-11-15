@@ -1,4 +1,4 @@
-import { buildSignatureBase } from '@/api/client/signEbayRequest.js';
+import { buildSignatureBase } from '@/ebay-client/signEbayRequest.js';
 import { type KeyObject, verify } from 'node:crypto';
 
 const SIGNATURE_LABEL_PATTERN = /^sig1=/;

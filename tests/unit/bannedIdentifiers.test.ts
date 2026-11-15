@@ -21,7 +21,7 @@ const BANNED_NAMES = new Set(['resolve']);
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const SCANNED_DIRS = ['src', 'tests'];
 /** Generated OpenAPI types keep upstream names. */
-const GENERATED_DIR = path.join('src', 'types');
+const GENERATED_DIR = path.join('src', 'ebay-openapi-types');
 const SOURCE_FILE_PATTERN = /\.(ts|tsx|cts|mts)$/;
 
 const sourceFiles = SCANNED_DIRS.flatMap((dir) =>

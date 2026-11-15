@@ -25,7 +25,11 @@ import { useApp, useHostStyles } from '@modelcontextprotocol/ext-apps/react';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { type ReactNode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { ToolCallRef, ViewArchetype, ViewModelByArchetype } from '@/tools/ui/viewModels.js';
+import type {
+  ToolCallRef,
+  ViewArchetype,
+  ViewModelByArchetype,
+} from '@/tool-registry/ui/viewModels.js';
 
 /**
  * Narrows a raw tool result to the view model for `archetype`, or `null` if the

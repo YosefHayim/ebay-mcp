@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 import { closeSync, existsSync, fsyncSync, openSync, readFileSync, writeFileSync } from 'fs';
-import { CREDENTIAL_ENV_PATH } from '@/config/credentialFile.js';
-import { stringifyEnv } from '@/utils/envFile.js';
-import type { EbayConfig, EbayUserToken, StoredTokenData } from '@/types/ebay.js';
+import { CREDENTIAL_ENV_PATH } from '@/shared/credentialFile.js';
+import { stringifyEnv } from '@/shared/envFile.js';
+import type { EbayConfig, EbayUserToken, StoredTokenData } from '@/shared/ebay.js';
 import { Data, Effect } from 'effect';
 
 /**

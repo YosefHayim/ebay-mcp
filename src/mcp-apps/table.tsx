@@ -6,7 +6,7 @@
 
 import type { App } from '@modelcontextprotocol/ext-apps/react';
 import { type ReactNode, useEffect, useState } from 'react';
-import type { TableViewModel } from '@/tools/ui/viewModels.js';
+import type { TableViewModel } from '@/tool-registry/ui/viewModels.js';
 import { AppShell, drill, EmptyState, mount, runServerTool, useViewModel } from './host.js';
 
 /** Renders the live table, owning the rows so "Load more" can append in place. */

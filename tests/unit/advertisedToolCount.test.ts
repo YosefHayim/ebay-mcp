@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { getToolDefinitions } from '@/tools/index.js';
+import { getToolDefinitions } from '@/tool-registry/index.js';
 
 /**
  * Advertised-tool-count guard.

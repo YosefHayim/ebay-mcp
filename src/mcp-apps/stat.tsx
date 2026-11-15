@@ -5,7 +5,7 @@
  */
 
 import type { ReactNode } from 'react';
-import type { StatTile, StatViewModel } from '@/tools/ui/viewModels.js';
+import type { StatTile, StatViewModel } from '@/tool-registry/ui/viewModels.js';
 import { AppShell, EmptyState, mount, useViewModel } from './host.js';
 
 /** Maps a tile tone to its CSS modifier class. */

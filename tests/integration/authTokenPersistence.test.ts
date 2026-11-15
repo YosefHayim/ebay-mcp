@@ -7,7 +7,7 @@ import { Effect } from 'effect';
 import nock from 'nock';
 import { DotEnvCredentialStore } from '@/auth/credentialSession.js';
 import { EbayOAuthClient } from '@/auth/oauth.js';
-import type { EbayConfig } from '@/types/ebay.js';
+import type { EbayConfig } from '@/shared/ebay.js';
 
 const config: EbayConfig = {
   clientId: 'integration_client_id',

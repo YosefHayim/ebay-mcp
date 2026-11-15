@@ -4,7 +4,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import { getErrorMessage } from '@/utils/errors.js';
+import { getErrorMessage } from '@/shared/errors.js';
 import type { TokenVerifier } from './tokenVerifier.js';
 import type { VerifiedToken } from './oauthTypes.js';
 import { Effect, Either } from 'effect';

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { validateEnvironmentConfig } from '@/config/environment.js';
-import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/mcp/runtime.js';
-import { runDiagnostics } from '@/scripts/diagnostics.js';
-import { runSetup } from '@/scripts/setup.js';
-import { runSkillsWizard } from '@/scripts/skills.js';
-import { getErrorMessage } from '@/utils/errors.js';
-import { serverLogger, getLogPaths, isFileLoggingEnabled } from '@/utils/logger.js';
-import { getCachedUpdateNotice } from '@/utils/version.js';
+import { validateEnvironmentConfig } from '@/shared/environment.js';
+import { createEbayMcpRuntime, type EbayMcpRuntime } from '@/server/runtime.js';
+import { runDiagnostics } from '@/cli/diagnostics.js';
+import { runSetup } from '@/cli/setup.js';
+import { runSkillsWizard } from '@/cli/skills.js';
+import { getErrorMessage } from '@/shared/errors.js';
+import { serverLogger, getLogPaths, isFileLoggingEnabled } from '@/shared/logger.js';
+import { getCachedUpdateNotice } from '@/shared/version.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
 

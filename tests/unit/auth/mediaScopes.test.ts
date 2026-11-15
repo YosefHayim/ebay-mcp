@@ -4,10 +4,10 @@ import {
   getRequestedScopes,
   POST_ORDER_DOCUMENT_SCOPE,
   validateScopes,
-} from '@/config/environment.js';
-import { isReadOnlyTool } from '@/mcp/readOnlyFilter.js';
-import { toolNamesInFamilies } from '@/mcp/toolGating.js';
-import { mediaEntries } from '@/tools/categories/media.js';
+} from '@/shared/environment.js';
+import { isReadOnlyTool } from '@/server/readOnlyFilter.js';
+import { toolNamesInFamilies } from '@/server/toolGating.js';
+import { mediaEntries } from '@/ebay-apis/inventory/mediaTools.js';
 import { describe, expect, it } from 'vitest';
 
 const listing = [

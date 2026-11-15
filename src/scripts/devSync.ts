@@ -6,7 +6,7 @@ import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { execFileSync, execSync } from 'child_process';
 import { Effect, Either } from 'effect';
-import { getErrorMessage } from '@/utils/errors.js';
+import { getErrorMessage } from '@/shared/errors.js';
 import process from 'node:process';
 import {
   classifyOperation,
@@ -23,8 +23,13 @@ const __dirname = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '../..');
 /** Local, git-ignored cache of downloaded eBay OpenAPI specs. */
 const SPECS_DIR = join(PROJECT_ROOT, '.cache/ebay-specs');
-const TYPES_DIR = join(PROJECT_ROOT, 'src/types');
-const TOOLS_DIRS = [join(PROJECT_ROOT, 'src/tools/categories')];
+const TYPES_DIR = join(PROJECT_ROOT, 'src/ebay-openapi-types');
+const TOOLS_DIRS = [
+  join(PROJECT_ROOT, 'src/ebay-apis'),
+  join(PROJECT_ROOT, 'src/auth'),
+  join(PROJECT_ROOT, 'src/server'),
+  join(PROJECT_ROOT, 'src/tool-registry'),
+];
 
 const ui = {
   success: chalk.green,
@@ -169,10 +174,7 @@ function generateTypes(): number {
           continue;
         }
 
-        const relativePath = fullPath.replace(SPECS_DIR + '/', '');
-        const outputDir = join(TYPES_DIR, dirname(relativePath));
-
-        mkdirSync(outputDir, { recursive: true });
+        mkdirSync(TYPES_DIR, { recursive: true });
 
         const baseFileName = basename(entry.name, '.json');
         const camelCaseName = baseFileName
@@ -184,7 +186,7 @@ function generateTypes(): number {
           )
           .join('');
 
-        const outputPath = join(outputDir, `${camelCaseName}.ts`);
+        const outputPath = join(TYPES_DIR, `${camelCaseName}.ts`);
 
         const generatedFile = Effect.runSync(
           Effect.either(
@@ -300,7 +302,10 @@ function collectToolNames(dir: string, tools: Set<string>): void {
 
     if (entry.isDirectory()) {
       collectToolNames(fullPath, tools);
-    } else if (entry.isFile() && entry.name.endsWith('.ts')) {
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith('Tools.ts') || entry.name === 'toolCategories.ts')
+    ) {
       const content = readFileSync(fullPath, 'utf-8');
       const nameMatches = content.matchAll(/name:\s*['"`]([^'"`]+)['"`]/g);
       for (const match of nameMatches) {
@@ -323,7 +328,7 @@ function getImplementedTools(): Set<string> {
  */
 function getImplementedApiMethods(): Set<string> {
   const methods = new Set<string>();
-  const apiDir = join(PROJECT_ROOT, 'src/api');
+  const apiDirs = [join(PROJECT_ROOT, 'src/ebay-apis'), join(PROJECT_ROOT, 'src/ebay-client')];
 
   function processDirectory(dir: string): void {
     if (!existsSync(dir)) return;
@@ -335,7 +340,11 @@ function getImplementedApiMethods(): Set<string> {
 
       if (entry.isDirectory()) {
         processDirectory(fullPath);
-      } else if (entry.name.endsWith('.ts')) {
+      } else if (
+        entry.name.endsWith('.ts') &&
+        !entry.name.endsWith('Tools.ts') &&
+        !entry.name.endsWith('Schemas.ts')
+      ) {
         const source = Effect.runSync(
           Effect.either(
             Effect.try({
@@ -362,7 +371,9 @@ function getImplementedApiMethods(): Set<string> {
     }
   }
 
-  processDirectory(apiDir);
+  for (const apiDir of apiDirs) {
+    processDirectory(apiDir);
+  }
   return methods;
 }
 

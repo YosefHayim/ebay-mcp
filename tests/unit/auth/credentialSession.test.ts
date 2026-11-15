@@ -16,7 +16,7 @@ import {
   isTokenExpired,
   maskToken,
 } from '@/auth/credentialSession.js';
-import { CREDENTIAL_ENV_PATH, resolveCredentialEnvPath } from '@/config/credentialFile.js';
+import { CREDENTIAL_ENV_PATH, resolveCredentialEnvPath } from '@/shared/credentialFile.js';
 
 describe('credential session', () => {
   let tempDir: string | undefined;
@@ -52,7 +52,7 @@ describe('credential session', () => {
   });
 
   it('resolves the credential file from the installed package root (issue #157)', () => {
-    const installedModuleUrl = new URL('../../../build/config/credentialFile.js', import.meta.url);
+    const installedModuleUrl = new URL('../../../build/shared/credentialFile.js', import.meta.url);
 
     expect(CREDENTIAL_ENV_PATH).toBe(fileURLToPath(new URL('../../../.env', import.meta.url)));
     expect(resolveCredentialEnvPath(installedModuleUrl)).toBe(

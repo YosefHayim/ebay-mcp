@@ -2,17 +2,17 @@
  * eBay API MCP Server with HTTP Transport and OAuth 2.1 Authorization.
  */
 
-import { validateEnvironmentConfig } from '@/config/environment.js';
+import { validateEnvironmentConfig } from '@/shared/environment.js';
 import {
   createHttpMcpApp,
   createHttpTransportConfigFromEnv,
   getHttpServerUrl,
-} from '@/mcp/httpTransport.js';
-import { getErrorMessage } from '@/utils/errors.js';
-import { serverLogger } from '@/utils/logger.js';
+} from '@/server/httpTransport.js';
+import { getErrorMessage } from '@/shared/errors.js';
+import { serverLogger } from '@/shared/logger.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
-import { isEntryModule } from '@/utils/entryModule.js';
+import { isEntryModule } from '@/shared/entryModule.js';
 
 const CONFIG = createHttpTransportConfigFromEnv(process.env);
 
