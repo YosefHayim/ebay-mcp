@@ -21,11 +21,11 @@
     "sync": "tsx src/scripts/devSync.ts",
     "diagnose": "node build/scripts/diagnostics.js",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/src.tsbuildinfo",
-    "typecheck:mcp-apps": "tsc -p mcp-apps/tsconfig.json --noEmit",
+    "typecheck:mcp-apps": "tsc -p src/mcp-apps/tsconfig.json --noEmit",
     "check": "turbo run lint typecheck typecheck:mcp-apps test build --output-logs=errors-only",
     "check:ci": "biome ci .",
     "verify": "pnpm run check:ci && pnpm run typecheck && pnpm run typecheck:mcp-apps && pnpm run test && pnpm run build",
-    "fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true \"{src,mcp-apps}/**/*.{ts,tsx,js,json,md,css,html}\"",
+    "fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true \"src/**/*.{ts,tsx,js,json,md,css,html}\"",
     "lint": "biome check .",
     "lint:fix": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true .",
     "format": "biome format --write .",
@@ -64,7 +64,7 @@
     "build/types/ebayEnums.js",
     "build/index.d.ts",
     "build/serverHttp.d.ts",
-    "public/icons/*.png",
+    "assets/icons/*.png",
     "README.md"
   ],
   "repository": {

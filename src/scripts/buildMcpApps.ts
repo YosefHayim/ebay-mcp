@@ -23,7 +23,7 @@ import { serverLogger } from '@/utils/logger.js';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptsDir, '../..');
-const mcpAppsDir = path.resolve(repoRoot, 'mcp-apps');
+const mcpAppsDir = path.resolve(repoRoot, 'src', 'mcp-apps');
 const outDir = path.resolve(repoRoot, 'build', 'ui');
 
 /** Vite config for a single archetype's single-page, fully-inlined build. */

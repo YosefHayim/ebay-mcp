@@ -1,7 +1,7 @@
 <!-- Keywords: eBay MCP server, eBay Model Context Protocol, eBay API for AI assistants, eBay Sell API, Claude eBay integration, Cursor eBay, eBay inventory automation, eBay order management AI, eBay OAuth, eBay developer tools, MCP server for eBay -->
 
 <p align="center">
-  <a href="https://github.com/YosefHayim/ebay-mcp"><img src="public/ebay-mcp-hero.png" alt="eBay MCP Server — connect Claude, Cursor, and any AI assistant to eBay's Sell APIs with one command (npm run setup)" width="820" /></a>
+  <a href="https://github.com/YosefHayim/ebay-mcp"><img src=".github/readme/ebay-mcp-hero.png" alt="eBay MCP Server — connect Claude, Cursor, and any AI assistant to eBay's Sell APIs with one command (npm run setup)" width="820" /></a>
 </p>
 
 <p align="center">
@@ -366,19 +366,19 @@ The setup wizard (`npm run setup`) handles OAuth automatically. Here's where to 
 
 **Step 1** — In the [Developer Portal](https://developer.ebay.com/my/keys), copy your **App ID (Client ID)** and **Cert ID (Client Secret)**:
 
-![Step 1 - Copy Client ID and Client Secret from the eBay Developer Portal](public/screenshot-guides/STEP%20-%201%20-%20COPY%20CLIENT%20ID%20AND%20CLIENT%20SECRET%20TO%20ENV%20FILE.png)
+![Step 1 - Copy Client ID and Client Secret from the eBay Developer Portal](.github/readme/setup-step-1-copy-client-id-and-secret.png)
 
 **Step 2** — In your app's **User Tokens** settings, copy the **RuName** (eBay Redirect URL):
 
-![Step 2 - Copy the RuName redirect URL from eBay sign-in settings](public/screenshot-guides/STEP%20-%202%20-%20COPY%20REDIRECT%20URL.png)
+![Step 2 - Copy the RuName redirect URL from eBay sign-in settings](.github/readme/setup-step-2-copy-redirect-url.png)
 
 **Step 3** — Run `npm run setup`. It opens your browser for OAuth login and guides you through eBay sign-in:
 
-![Step 3 - Sign in to eBay during the OAuth flow started by npm run setup](public/screenshot-guides/STEP%203%20-%20RUN%20COMMAND%20NPM%20RUN%20SETUP%20AND%20PREFORM%20OAUTH%20LOGIN.png)
+![Step 3 - Sign in to eBay during the OAuth flow started by npm run setup](.github/readme/setup-step-3-run-setup-and-oauth-login.png)
 
 **Step 4** — Paste the authorization code from the callback URL when prompted:
 
-![Step 4 - Paste the authorization code into the eBay MCP setup wizard](public/screenshot-guides/STEP%20-%204%20-%20PASTE%20INTO%20THE%20SETUP%20WIZARD.png)
+![Step 4 - Paste the authorization code into the eBay MCP setup wizard](.github/readme/setup-step-4-paste-into-setup-wizard.png)
 
 The wizard exchanges the code for tokens, saves them, and configures your MCP client. You now have user-token authentication (10k–50k requests/day instead of the default 1k/day).
 

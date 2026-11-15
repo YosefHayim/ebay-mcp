@@ -638,11 +638,11 @@ export const getOAuthAuthorizationUrl = (
 };
 
 const iconUrl = (size: string): string => {
-  const url = new URL(`../../public/icons/${size}.png`, import.meta.url);
+  const url = new URL(`../../assets/icons/${size}.png`, import.meta.url);
   const path = fileURLToPath(url);
   if (!existsSync(path)) {
     writeConfigDiagnostic(
-      `Icon not found at ${path}. Ensure public/icons is included in the package.`,
+      `Icon not found at ${path}. Ensure assets/icons is included in the package.`,
     );
   }
   return url.toString();

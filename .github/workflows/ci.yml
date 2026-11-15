@@ -34,15 +34,14 @@ jobs:
               - pnpm-lock.yaml
               - package.json
               - 'tsconfig*.json'
-              - 'mcp-apps/tsconfig.json'
+              - 'src/mcp-apps/tsconfig.json'
               - 'vitest*.cts'
               - '.github/**'
             code:
               - *everything
               - 'src/**'
-              - 'mcp-apps/**'
               - 'tests/**'
-              - 'public/**'
+              - 'assets/**'
   verify:
     name: Test and build
     needs: changes
