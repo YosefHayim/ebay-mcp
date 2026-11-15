@@ -6,6 +6,7 @@ export const BrandMark = ({ label = 'ebay-mcp' }: BrandMarkProps) => (
   <a href="#top" class="brand" aria-label="ebay-mcp home">
     <span class="glyph">
       <svg
+        aria-hidden="true"
         width="14"
         height="14"
         viewBox="0 0 24 24"

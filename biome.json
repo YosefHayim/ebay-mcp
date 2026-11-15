@@ -119,19 +119,18 @@
           "complexity": {
             "noExcessiveLinesPerFunction": "off"
           },
-          "suspicious": {
-            "noConsole": "off"
-          },
           "security": {
             "noDangerouslySetInnerHtml": "off"
-          },
-          "correctness": {
-            "useUniqueElementIds": "off",
-            "useJsxKeyInIterable": "off"
-          },
-          "a11y": {
-            "useSemanticElements": "off",
-            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["site/build-site.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

@@ -1,3 +1,4 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { CheckIcon } from '@site/landing/check-icon.tsx';
 import { CopyButton } from '@site/landing/copy-button.tsx';
 import { HeroConsole } from '@site/landing/hero-console.tsx';
@@ -15,12 +16,16 @@ const HERO_CHECKS = [
 ];
 
 export const Hero = ({ catalog }: HeroProps) => (
-  <section id="top" class="block hero on">
+  <section id={SECTION_ANCHORS.top} class="block hero on">
     <div class="wrap herogrid">
       <div>
         <h1 class="h1">
           {HEADLINE_WORDS.map((headlineWord, wordIndex) => (
-            <span class="word rise" style={`animation-delay:${120 + wordIndex * 90}ms`}>
+            <span
+              key={headlineWord}
+              class="word rise"
+              style={`animation-delay:${120 + wordIndex * 90}ms`}
+            >
               {headlineWord}
             </span>
           ))}
@@ -55,7 +60,7 @@ export const Hero = ({ catalog }: HeroProps) => (
         </div>
         <ul class="checks rise" style="animation-delay:920ms">
           {HERO_CHECKS.map((checkLine) => (
-            <li>
+            <li key={checkLine}>
               <CheckIcon size={16} color="#5fd39a" />
               {checkLine}
             </li>

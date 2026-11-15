@@ -1,3 +1,4 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { BrandIcon } from '@site/icons/brand-icons.tsx';
 import { FamilyIcon } from '@site/icons/family-icons.tsx';
 import { PRICE_CHANGE_ROWS } from '@site/data/price-rows.ts';
@@ -69,7 +70,7 @@ export const PipelineIllustration = ({ catalog }: PipelineIllustrationProps) => 
     'One request, start to finish. The tool names and endpoint paths are real; the prices are an example.';
 
   return (
-    <section id="flow" class="wrap section">
+    <section id={SECTION_ANCHORS.flow} class="wrap section">
       <div class="head reveal">
         <div>
           <h2 class="h2">Follow one request from chat to eBay and back.</h2>
@@ -86,7 +87,7 @@ export const PipelineIllustration = ({ catalog }: PipelineIllustrationProps) => 
             <span class="num">1</span>
             <span class="marks">
               {CLIENT_MARKS.map((clientMark, markIndex) => (
-                <span class={`mark mark-${markIndex}`}>
+                <span key={clientMark} class={`mark mark-${markIndex}`}>
                   <BrandIcon brand={clientMark} size={20} />
                 </span>
               ))}
@@ -104,7 +105,7 @@ export const PipelineIllustration = ({ catalog }: PipelineIllustrationProps) => 
               </div>
               <div class="rows">
                 {priceRows.map((priceRow) => (
-                  <div class="row">
+                  <div key={priceRow.title} class="row">
                     <span>{priceRow.title}</span>
                     <span class="old">{priceRow.oldPrice}</span>
                     <span class="new">{priceRow.newPrice}</span>
@@ -147,7 +148,7 @@ export const PipelineIllustration = ({ catalog }: PipelineIllustrationProps) => 
           </h3>
           <div class="srows">
             {SERVER_ROWS.map((serverRow) => (
-              <div>
+              <div key={serverRow.label}>
                 <div class="srow is-lit" data-lit-at={serverRow.litAt}>
                   <span class="tick">
                     <TickIcon />
@@ -164,11 +165,16 @@ export const PipelineIllustration = ({ catalog }: PipelineIllustrationProps) => 
                       const litAt = 1800 + usedIndex * 350;
 
                       return isUsedFamily ? (
-                        <span class="fchip is-lit" data-lit-at={litAt} title={family.title}>
+                        <span
+                          key={family.key}
+                          class="fchip is-lit"
+                          data-lit-at={litAt}
+                          title={family.title}
+                        >
                           <FamilyIcon familyKey={family.key} size={16} />
                         </span>
                       ) : (
-                        <span class="fchip" title={family.title}>
+                        <span key={family.key} class="fchip" title={family.title}>
                           <FamilyIcon familyKey={family.key} size={16} />
                         </span>
                       );
@@ -220,13 +226,14 @@ export const PipelineIllustration = ({ catalog }: PipelineIllustrationProps) => 
           <div class="erows">
             {EBAY_ROWS.map((ebayRow) => (
               <div
+                key={ebayRow.name}
                 class={ebayRow.isUsed ? 'erow is-lit' : 'erow'}
                 data-lit-at={ebayRow.isUsed ? 5400 : undefined}
               >
                 {ebayRow.name}
                 {ebayRow.isUsed
                   ? SELL_LINES.map((sellLine) => (
-                      <div class="eline is-lit" data-lit-at={sellLine.litAt}>
+                      <div key={sellLine.path} class="eline is-lit" data-lit-at={sellLine.litAt}>
                         <b>{sellLine.method}</b>
                         {sellLine.path}
                         <span class="sub">{sellLine.note}</span>

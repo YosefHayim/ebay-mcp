@@ -47,7 +47,7 @@ export const SiteFooter = () => (
         <h4>Docs</h4>
         <ul>
           {DOC_LINKS.map((docLink) => (
-            <li>
+            <li key={docLink.href}>
               <a href={docLink.href}>{docLink.label}</a>
             </li>
           ))}
@@ -58,7 +58,7 @@ export const SiteFooter = () => (
         <h4>Clients</h4>
         <ul>
           {CLIENT_LINKS.map((clientName) => (
-            <li>
+            <li key={clientName}>
               <a href="#setup">{clientName}</a>
             </li>
           ))}

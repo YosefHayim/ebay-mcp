@@ -1,7 +1,8 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { FAQ_ENTRIES } from '@site/data/faq-entries.ts';
 
 export const FaqList = () => (
-  <section id="faq" class="wrap section">
+  <section id={SECTION_ANCHORS.faq} class="wrap section">
     <div class="faq">
       <div class="faqhead reveal">
         <h2 class="h2">Questions, answered.</h2>
@@ -11,7 +12,7 @@ export const FaqList = () => (
           const isFirst = faqIndex === 0;
 
           return (
-            <div class={isFirst ? 'q is-open' : 'q'}>
+            <div key={faqEntry.question} class={isFirst ? 'q is-open' : 'q'}>
               <button class="qbtn" type="button" aria-expanded={String(isFirst)}>
                 {faqEntry.question}
                 <span class="plus">

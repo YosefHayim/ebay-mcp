@@ -1532,9 +1532,9 @@ input:focus-visible {
 .pipe {
   --fly: fly-x-fwd;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.8fr) minmax(0, 1.3fr) 36px minmax(0, 0.9fr) 36px minmax(
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.75fr) minmax(0, 1.2fr) 32px minmax(0, 0.85fr) 32px minmax(
       0,
-      1.7fr
+      2.1fr
     );
   align-items: stretch;
 }
@@ -1609,7 +1609,6 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-height: 340px;
 }
 .pipe .ubub {
   align-self: stretch;
@@ -1930,7 +1929,7 @@ input:focus-visible {
   color: var(--muted);
   opacity: 0.35;
   transition: opacity 0.35s;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 .eline b {
   font-size: 10px;
@@ -1961,6 +1960,14 @@ input:focus-visible {
 }
 .pipe.is-resetting * {
   transition: none;
+}
+@media (min-width: 1081px) {
+  .pipe {
+    align-items: start;
+  }
+  .hop {
+    margin-top: 28px;
+  }
 }
 @media (max-width: 1080px) {
   .pipe {

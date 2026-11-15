@@ -1,3 +1,4 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { SETUP_CLIENT_TABS } from '@site/data/client-list.ts';
 import { BrandIcon } from '@site/icons/brand-icons.tsx';
 import { CopyButton } from '@site/landing/copy-button.tsx';
@@ -30,7 +31,7 @@ export const SetupBuilder = ({ catalog }: SetupBuilderProps) => {
   ];
 
   return (
-    <section id="setup" class="wrap section">
+    <section id={SECTION_ANCHORS.setup} class="wrap section">
       <div class="head reveal">
         <div>
           <h2 class="h2">Build your config, then paste it in.</h2>
@@ -45,9 +46,10 @@ export const SetupBuilder = ({ catalog }: SetupBuilderProps) => {
         <div class="card opts">
           <div>
             <div class="optlbl mono">Client</div>
-            <div class="seg" role="group" aria-label="Client">
+            <fieldset class="seg" aria-label="Client">
               {SETUP_CLIENT_TABS.map((clientTab) => (
                 <button
+                  key={clientTab.clientId}
                   class={
                     clientTab.clientId === DEFAULT_SETUP_CHOICES.clientId
                       ? 'segbtn is-on'
@@ -61,14 +63,15 @@ export const SetupBuilder = ({ catalog }: SetupBuilderProps) => {
                   {clientTab.label}
                 </button>
               ))}
-            </div>
+            </fieldset>
           </div>
 
           <div>
             <div class="optlbl mono">Environment</div>
-            <div class="seg" role="group" aria-label="Environment">
+            <fieldset class="seg" aria-label="Environment">
               {ENVIRONMENT_TABS.map((environmentTab) => (
                 <button
+                  key={environmentTab.environment}
                   class={
                     environmentTab.environment === DEFAULT_SETUP_CHOICES.environment
                       ? 'segbtn is-on'
@@ -83,14 +86,15 @@ export const SetupBuilder = ({ catalog }: SetupBuilderProps) => {
                   {environmentTab.label}
                 </button>
               ))}
-            </div>
+            </fieldset>
           </div>
 
           <div>
             <div class="optlbl mono">Tools</div>
-            <div class="seg" role="group" aria-label="Tools">
+            <fieldset class="seg" aria-label="Tools">
               {toolsTabs.map((toolsTab) => (
                 <button
+                  key={toolsTab.toolsMode}
                   class={
                     toolsTab.toolsMode === DEFAULT_SETUP_CHOICES.toolsMode
                       ? 'segbtn is-on'
@@ -103,7 +107,7 @@ export const SetupBuilder = ({ catalog }: SetupBuilderProps) => {
                   {toolsTab.label}
                 </button>
               ))}
-            </div>
+            </fieldset>
           </div>
 
           <p class="hint" data-tools-hint={true}>

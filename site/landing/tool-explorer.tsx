@@ -1,3 +1,4 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { FamilyIcon } from '@site/icons/family-icons.tsx';
 import {
   renderExplorerEndpoint,
@@ -26,7 +27,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
   const hasExample = firstTool.exampleResponse != null;
 
   return (
-    <section id="tools" class="section">
+    <section id={SECTION_ANCHORS.tools} class="section">
       <div class="block explorer on">
         <div class="wrap">
           <div class="head reveal" style="margin-bottom:0">

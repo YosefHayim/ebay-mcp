@@ -16,7 +16,7 @@ export const FactsRow = ({ catalog }: FactsRowProps) => {
     <section class="wrap section">
       <div class="facts reveal">
         {facts.map((fact) => (
-          <div class="fact">
+          <div key={fact.label} class="fact">
             <div class="v">{fact.figure}</div>
             <div class="l">{fact.label}</div>
           </div>

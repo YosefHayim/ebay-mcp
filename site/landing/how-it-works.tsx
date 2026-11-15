@@ -1,3 +1,4 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { highlightShell } from '@site/shared/code-highlight.ts';
 import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
 
@@ -27,7 +28,7 @@ export const HowItWorks = ({ catalog }: HowItWorksProps) => {
   const envHtml = ENV_LINES.map((envLine) => `<span>${highlightShell(envLine)}\n</span>`).join('');
 
   return (
-    <section id="how" class="wrap section">
+    <section id={SECTION_ANCHORS.how} class="wrap section">
       <div class="head reveal">
         <div>
           <h2 class="h2">From eBay keys to a working assistant in three steps.</h2>
@@ -61,7 +62,7 @@ export const HowItWorks = ({ catalog }: HowItWorksProps) => {
           </p>
           <div class="art famchips">
             {stepFamilies.map((family) => (
-              <span class="famchip">
+              <span key={family.key} class="famchip">
                 {family.key}
                 <span style="opacity:.6">{family.toolCount}</span>
               </span>

@@ -1,3 +1,4 @@
+import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { FamilyIcon } from '@site/icons/family-icons.tsx';
 import { createPickedFamilies } from '@site/shared/picked-families.ts';
 import { DEFAULT_SETUP_CHOICES } from '@site/shared/setup-defaults.ts';
@@ -13,7 +14,7 @@ export const CoverageBoard = ({ catalog }: CoverageBoardProps) => {
   const toolsLineValue = pickedFamilies.orderedKeys.join(',');
 
   return (
-    <section id="coverage" class="wrap section">
+    <section id={SECTION_ANCHORS.coverage} class="wrap section">
       <div class="head reveal">
         <div>
           <h2 class="h2">{catalog.familyCount} tool families. Load only the ones you use.</h2>
@@ -43,6 +44,7 @@ export const CoverageBoard = ({ catalog }: CoverageBoardProps) => {
 
             return (
               <button
+                key={family.key}
                 class={isPicked ? 'tile is-on' : 'tile'}
                 type="button"
                 data-family={family.key}

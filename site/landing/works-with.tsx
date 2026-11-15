@@ -6,7 +6,7 @@ export const WorksWith = () => (
     <span class="lbl">Works with any MCP client, including</span>
     <div class="clients">
       {WORKS_WITH_CLIENTS.map((client) => (
-        <span>
+        <span key={client.name}>
           <BrandIcon brand={client.brand} size={18} />
           {client.name}
         </span>

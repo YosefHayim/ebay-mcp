@@ -37,6 +37,7 @@ export const HeroConsole = () => (
       />
       <span class="send" aria-hidden="true">
         <svg
+          aria-hidden="true"
           width="16"
           height="16"
           viewBox="0 0 24 24"
