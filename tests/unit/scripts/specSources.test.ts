@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { specFileName, specSources } from '@/scripts/specSources.js';
+import { specFileName, specSources } from '../../../scripts/specSources.js';
 
 describe('specFileName', () => {
   it('uses the URL basename when no file name is set', () => {

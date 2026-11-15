@@ -119,7 +119,7 @@
         "src/shared/ebay.ts",
         "src/shared/ebayEnums.ts",
         "src/shared/index.ts",
-        "src/scripts/**",
+        "scripts/**",
         "src/cli/*.ts"
       ],
       "linter": {
@@ -145,7 +145,7 @@
         "src/shared/toolFamilies.ts",
         "src/index.ts",
         "src/serverHttp.ts",
-        "src/scripts/**",
+        "scripts/**",
         "src/cli/*.ts",
         "src/shared/logger.ts",
         "tests/**"

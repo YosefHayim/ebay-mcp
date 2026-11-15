@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Effect, Either } from 'effect';
 import { afterEach, describe, expect, it } from 'vitest';
-import { checkSpecDownload, refreshCachedSpec } from '@/scripts/specDownload.js';
+import { checkSpecDownload, refreshCachedSpec } from '../../../scripts/specDownload.js';
 
 const CACHED_SPEC = '{"openapi":"3.0.0","info":{"title":"cached"}}';
 const FRESH_SPEC = '{"openapi":"3.0.0","info":{"title":"fresh"}}';

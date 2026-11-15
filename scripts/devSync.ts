@@ -20,7 +20,7 @@ import { generatedNamespaceNames, renameGeneratedNamespaces } from './specTypeNa
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PROJECT_ROOT = join(__dirname, '../..');
+const PROJECT_ROOT = join(__dirname, '..');
 /** Local, git-ignored cache of downloaded eBay OpenAPI specs. */
 const SPECS_DIR = join(PROJECT_ROOT, '.cache/ebay-specs');
 const TYPES_DIR = join(PROJECT_ROOT, 'src/ebay-openapi-types');

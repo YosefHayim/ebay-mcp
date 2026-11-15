@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { generatedNamespaceNames, renameGeneratedNamespaces } from '@/scripts/specTypeNames.js';
+import {
+  generatedNamespaceNames,
+  renameGeneratedNamespaces,
+} from '../../../scripts/specTypeNames.js';
 
 const generatedTypes = `export interface paths {
   '/signing_key': {
