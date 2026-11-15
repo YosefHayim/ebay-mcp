@@ -109,6 +109,34 @@
   },
   "overrides": [
     {
+      "includes": ["site/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off",
+            "noExcessiveLinesPerFile": "off"
+          },
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "correctness": {
+            "useUniqueElementIds": "off",
+            "useJsxKeyInIterable": "off"
+          },
+          "a11y": {
+            "useSemanticElements": "off",
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": [
         "src/ebay-apis/**/*Schemas.ts",
         "src/ebay-apis/**/*Tools.ts",

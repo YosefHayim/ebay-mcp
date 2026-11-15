@@ -105,6 +105,12 @@ importers:
       '@vitest/ui':
         specifier: ^4.1.9
         version: 4.1.9(vitest@4.1.12)
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
+      hono:
+        specifier: ^4.13.13
+        version: 4.13.13
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -120,6 +126,9 @@ importers:
       react-dom:
         specifier: 19.2.7
         version: 19.2.7(react@19.2.7)
+      simple-icons:
+        specifier: ^16.38.0
+        version: 16.38.0
       supertest:
         specifier: ^7.2.2
         version: 7.2.2
@@ -1730,6 +1739,10 @@ packages:
 
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
+
+  simple-icons@16.38.0:
+    resolution: {integrity: sha512-B0Wws90eL0Fm65aH35CA8kM+7/Zzgsaytt0DndBx7VFm3+o9HurVIVRQZ1hvqqYYIyNJq7ycn3kQm2v2FhiWSQ==}
+    engines: {node: '>=0.12.18'}
 
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
@@ -3553,6 +3566,8 @@ snapshots:
       side-channel-weakmap: 1.0.2
 
   siginfo@2.0.0: {}
+
+  simple-icons@16.38.0: {}
 
   sirv@3.0.2:
     dependencies:
