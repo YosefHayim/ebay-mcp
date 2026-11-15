@@ -22,6 +22,7 @@
     "sync": "tsx scripts/devSync.ts",
     "diagnose": "node build/cli/diagnostics.js",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/src.tsbuildinfo && tsc -p tsconfig.scripts.json --noEmit && tsc -p site/tsconfig.json --noEmit",
+    "readme:tools": "tsx scripts/buildReadmeToolTable.ts",
     "catalog": "tsx scripts/buildToolCatalog.ts build/tool-catalog.json",
     "typecheck:mcp-apps": "tsc -p src/mcp-apps/tsconfig.json --noEmit",
     "check": "turbo run lint typecheck typecheck:mcp-apps test build --output-logs=errors-only",
