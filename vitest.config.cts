@@ -60,7 +60,7 @@ const vitestConfig = defineConfig({
         'src/index.ts',
         'src/serverHttp.ts',
         // Exclude script files
-        'src/scripts/**',
+        'scripts/**',
         'src/cli/**',
       ],
       include: ['src/**/*.ts'],

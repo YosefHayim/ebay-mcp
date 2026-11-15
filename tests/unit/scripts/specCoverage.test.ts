@@ -3,7 +3,7 @@ import {
   classifyOperation,
   collectImplementedNames,
   normalizeForMatching,
-} from '@/scripts/specCoverage.js';
+} from '../../../scripts/specCoverage.js';
 
 describe('classifyOperation', () => {
   it('reports exact when an API method carries the operationId unchanged', () => {

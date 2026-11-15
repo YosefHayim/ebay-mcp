@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { replaceDanglingSchemaRefs } from '@/scripts/specRefs.js';
+import { replaceDanglingSchemaRefs } from '../../../scripts/specRefs.js';
 
 const spec = {
   openapi: '3.0.0',

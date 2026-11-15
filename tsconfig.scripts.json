@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "declaration": false,
+    "incremental": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsc/scripts.tsbuildinfo"
+  },
+  "include": ["scripts/**/*.ts", "src/**/*"],
+  "exclude": ["node_modules", "build", "tests", "src/mcp-apps", "vitest.config.cts"]
+}

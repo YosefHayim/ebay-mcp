@@ -22,7 +22,7 @@ import type { ViewArchetype } from '@/tool-registry/ui/viewModels.js';
 import { serverLogger } from '@/shared/logger.js';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(scriptsDir, '../..');
+const repoRoot = path.resolve(scriptsDir, '..');
 const mcpAppsDir = path.resolve(repoRoot, 'src', 'mcp-apps');
 const outDir = path.resolve(repoRoot, 'build', 'ui');
 
