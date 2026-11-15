@@ -119,18 +119,11 @@
           "complexity": {
             "noExcessiveLinesPerFunction": "off"
           },
-          "security": {
-            "noDangerouslySetInnerHtml": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["site/build-site.ts"],
-      "linter": {
-        "rules": {
           "suspicious": {
             "noConsole": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
           }
         }
       }
