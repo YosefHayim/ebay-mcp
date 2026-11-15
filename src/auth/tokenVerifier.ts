@@ -10,8 +10,8 @@ import {
   type TokenVerifierErrorReason,
   type TokenVerifierOperation,
 } from '@/auth/tokenVerifierError.js';
-import { getErrorMessage } from '@/utils/errors.js';
-import { describeHttpError, httpRequestEffect, type HttpRequestOptions } from '@/utils/http.js';
+import { getErrorMessage } from '@/shared/errors.js';
+import { describeHttpError, httpRequestEffect, type HttpRequestOptions } from '@/shared/http.js';
 import { Effect } from 'effect';
 import type {
   VerifiedToken,

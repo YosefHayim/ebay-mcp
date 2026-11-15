@@ -109,7 +109,19 @@
   },
   "overrides": [
     {
-      "includes": ["src/schemas/**", "src/tools/categories/**", "src/types/**", "src/scripts/**"],
+      "includes": [
+        "src/ebay-apis/**/*Schemas.ts",
+        "src/ebay-apis/**/*Tools.ts",
+        "src/auth/tokenManagementTools.ts",
+        "src/server/connectorTools.ts",
+        "src/tool-registry/toolCategories.ts",
+        "src/ebay-openapi-types/**",
+        "src/shared/ebay.ts",
+        "src/shared/ebayEnums.ts",
+        "src/shared/index.ts",
+        "src/scripts/**",
+        "src/cli/*.ts"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -126,11 +138,16 @@
     },
     {
       "includes": [
-        "src/config/**",
+        "src/shared/credentialFile.ts",
+        "src/shared/environment.ts",
+        "src/shared/mediaAccess.ts",
+        "src/shared/oauthScopes.ts",
+        "src/shared/toolFamilies.ts",
         "src/index.ts",
         "src/serverHttp.ts",
         "src/scripts/**",
-        "src/utils/logger.ts",
+        "src/cli/*.ts",
+        "src/shared/logger.ts",
         "tests/**"
       ],
       "linter": {
@@ -142,7 +159,12 @@
       }
     },
     {
-      "includes": ["src/types/**"],
+      "includes": [
+        "src/ebay-openapi-types/**",
+        "src/shared/ebay.ts",
+        "src/shared/ebayEnums.ts",
+        "src/shared/index.ts"
+      ],
       "linter": {
         "rules": {
           "style": {

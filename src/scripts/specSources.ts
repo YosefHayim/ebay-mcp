@@ -2,7 +2,7 @@
  * Official eBay OpenAPI specs that `pnpm sync` downloads into the local spec cache.
  *
  * Each spec lands in `.cache/ebay-specs/<folder>/`, and its generated types land in
- * `src/types/<folder>/`, so `folder` must match the existing generated-type layout.
+ * `src/ebay-openapi-types/` (one flat folder, named after the spec file); `folder` only names the cache subfolder.
  */
 
 import { basename } from 'node:path';
@@ -11,7 +11,7 @@ import { basename } from 'node:path';
 export interface SpecSource {
   /** eBay API name shown in sync output. */
   readonly api: string;
-  /** Folder under the spec cache, mirrored under `src/types/`. */
+  /** Folder under the spec cache, kept as-is for the cache; generated types are flat in `src/ebay-openapi-types/`. */
   readonly folder: string;
   /** Official OpenAPI 3 JSON download URL. */
   readonly url: string;
@@ -20,7 +20,7 @@ export interface SpecSource {
 
 export const specFileName = ({ url, fileName }: SpecSource): string => fileName || basename(url);
 
-/** Every spec `pnpm sync` downloads, grouped the same way as `src/types/`. */
+/** Every spec `pnpm sync` downloads, grouped by cache folder. */
 export const specSources: readonly SpecSource[] = [
   {
     api: 'Developer Analytics API',

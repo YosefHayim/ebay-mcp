@@ -13,14 +13,5 @@
     "baseUrl": "."
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "build",
-    "tests",
-    "src/mcp-apps",
-    "vitest.config.cts",
-    "src/types/ebay/sell/marketing-and-promotions/marketing-response-types.ts",
-    "src/types/ebay/sell/marketing-and-promotions/marketing-api-types.ts",
-    "src/types/ebay/sell/order-management/dispute-types.ts"
-  ]
+  "exclude": ["node_modules", "build", "tests", "src/mcp-apps", "vitest.config.cts"]
 }

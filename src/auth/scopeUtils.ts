@@ -9,7 +9,7 @@ import {
   LOGISTICS_SCOPE,
   POST_ORDER_DOCUMENT_SCOPE,
   validateScopes,
-} from '@/config/environment.js';
+} from '@/shared/environment.js';
 
 /** Finances tools that need the optional order-earnings scope. */
 const FINANCES_EARNINGS_TOOLS = [

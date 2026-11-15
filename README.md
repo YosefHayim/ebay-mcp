@@ -465,27 +465,27 @@ Auto-configured by `npm run setup`. Requires [Node.js](https://nodejs.org/en) �
 <details open>
 <summary><strong>379 tools by category (100% Sell API coverage)</strong></summary>
 
-**379 tools**, 100% Sell API coverage, organized by category. Each link points to the tool definitions and handlers in [`src/tools/categories/`](src/tools/categories/):
+**379 tools**, 100% Sell API coverage, organized by category. Each link points to the tool definitions and handlers in the per-family folders under [`src/ebay-apis/`](src/ebay-apis/):
 
 | Category | What you can do |
 | --- | --- |
-| [Connector](src/tools/categories/connector.ts) | ChatGPT connector search/fetch tools over the eBay MCP catalogue |
-| [Account](src/tools/categories/account.ts) | Business, fulfillment, payment, and return policies; programs; subscriptions; sales tax; rate tables, payout settings, combined shipping rules, and user preferences ([`accountV2.ts`](src/tools/categories/accountV2.ts), Account API v2) |
-| [Finances](src/tools/categories/finances.ts) | Payouts, transactions, transfers, seller funds, billing activity, order earnings |
-| [Inventory](src/tools/categories/inventory.ts) | Inventory items, offers, locations, item groups, bulk operations, SKU/location mapping, and local photo/video upload ([`media.ts`](src/tools/categories/media.ts), Media API) |
-| [Feed](src/tools/categories/feed.ts) | Order, inventory, and customer-service-metric feed tasks; schedules and templates; feed file upload/download |
-| [Stores](src/tools/categories/stores.ts) | eBay Store details, store categories, category tasks |
-| [Fulfillment](src/tools/categories/fulfillment.ts) | Orders, shipping, refunds, disputes, payment-dispute evidence |
-| [Logistics](src/tools/categories/logistics.ts) | Shipping quotes, label purchase, shipments, label download (limited release) |
-| [Marketing](src/tools/categories/marketing.ts) | Promoted-listings campaigns, ads, promotions, bidding, bulk operations |
-| [Analytics](src/tools/categories/analytics.ts) | Traffic reports, seller standards, customer-service metrics |
-| [Communication](src/tools/categories/communication.ts) | Buyer–seller messaging, negotiations, notifications, feedback |
-| [Metadata](src/tools/categories/metadata.ts) | Return policies, sales-tax jurisdictions, automotive compatibility, shipping carriers/services/locations, handling times |
-| [Taxonomy](src/tools/categories/taxonomy.ts) | Category trees, item aspects, item conditions, expired categories, bulk aspect export, and charitable organizations ([`charity.ts`](src/tools/categories/charity.ts), Charity API) |
-| [Other](src/tools/categories/other.ts) | Identity, VeRO, translation, and international shipping support APIs |
-| [Trading (legacy XML)](src/tools/categories/trading.ts) | Fixed-price and auction listing create, revise, relist, end |
-| [Developer](src/tools/categories/developer.ts) | Rate limits, signing keys, client registration |
-| [Token Management](src/tools/categories/tokenManagement.ts) | OAuth URL generation and token management |
+| [Connector](src/server/connectorTools.ts) | ChatGPT connector search/fetch tools over the eBay MCP catalogue |
+| [Account](src/ebay-apis/account/accountTools.ts) | Business, fulfillment, payment, and return policies; programs; subscriptions; sales tax; rate tables, payout settings, combined shipping rules, and user preferences ([`accountV2.ts`](src/ebay-apis/account/accountV2Tools.ts), Account API v2) |
+| [Finances](src/ebay-apis/finances/financesTools.ts) | Payouts, transactions, transfers, seller funds, billing activity, order earnings |
+| [Inventory](src/ebay-apis/inventory/inventoryTools.ts) | Inventory items, offers, locations, item groups, bulk operations, SKU/location mapping, and local photo/video upload ([`media.ts`](src/ebay-apis/inventory/mediaTools.ts), Media API) |
+| [Feed](src/ebay-apis/feed/feedTools.ts) | Order, inventory, and customer-service-metric feed tasks; schedules and templates; feed file upload/download |
+| [Stores](src/ebay-apis/stores/storesTools.ts) | eBay Store details, store categories, category tasks |
+| [Fulfillment](src/ebay-apis/fulfillment/fulfillmentTools.ts) | Orders, shipping, refunds, disputes, payment-dispute evidence |
+| [Logistics](src/ebay-apis/logistics/logisticsTools.ts) | Shipping quotes, label purchase, shipments, label download (limited release) |
+| [Marketing](src/ebay-apis/marketing/marketingTools.ts) | Promoted-listings campaigns, ads, promotions, bidding, bulk operations |
+| [Analytics](src/ebay-apis/analytics/analyticsTools.ts) | Traffic reports, seller standards, customer-service metrics |
+| [Communication](src/ebay-apis/communication/communicationTools.ts) | Buyer–seller messaging, negotiations, notifications, feedback |
+| [Metadata](src/ebay-apis/metadata/metadataTools.ts) | Return policies, sales-tax jurisdictions, automotive compatibility, shipping carriers/services/locations, handling times |
+| [Taxonomy](src/ebay-apis/taxonomy/taxonomyTools.ts) | Category trees, item aspects, item conditions, expired categories, bulk aspect export, and charitable organizations ([`charity.ts`](src/ebay-apis/taxonomy/charityTools.ts), Charity API) |
+| [Other](src/ebay-apis/other/otherTools.ts) | Identity, VeRO, translation, and international shipping support APIs |
+| [Trading (legacy XML)](src/ebay-apis/trading/tradingTools.ts) | Fixed-price and auction listing create, revise, relist, end |
+| [Developer](src/ebay-apis/developer/developerTools.ts) | Rate limits, signing keys, client registration |
+| [Token Management](src/auth/tokenManagementTools.ts) | OAuth URL generation and token management |
 
 **Example tools:** `ebay_get_inventory_items`, `ebay_get_offers_by_skus`, `ebay_get_orders`, `ebay_create_offer`, `ebay_get_campaigns`, `ebay_get_oauth_url`.
 

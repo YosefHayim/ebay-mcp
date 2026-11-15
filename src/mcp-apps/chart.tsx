@@ -6,7 +6,7 @@
  */
 
 import type { ReactNode } from 'react';
-import type { ChartSeries, ChartViewModel } from '@/tools/ui/viewModels.js';
+import type { ChartSeries, ChartViewModel } from '@/tool-registry/ui/viewModels.js';
 import { AppShell, EmptyState, mount, useViewModel } from './host.js';
 
 /** Fallback series colours, assigned by index when a series sets no explicit colour. */

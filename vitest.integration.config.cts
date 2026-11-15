@@ -8,8 +8,8 @@ import { defineConfig } from 'vitest/config';
 const vitestIntegrationConfig = defineConfig({
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@tests': path.resolve(__dirname, './tests'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@tests': path.resolve(import.meta.dirname, './tests'),
     },
   },
   test: {

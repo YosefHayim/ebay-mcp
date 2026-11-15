@@ -8,17 +8,17 @@ import {
   type CredentialStore,
   type EbayUserTokenResponse,
 } from '@/auth/credentialSession.js';
-import { getBaseUrl, getDefaultScopes } from '@/config/environment.js';
+import { getBaseUrl, getDefaultScopes } from '@/shared/environment.js';
 import type {
   EbayAppAccessTokenResponse,
   EbayConfig,
   EbayUserToken,
   StoredTokenData,
-} from '@/types/ebay.js';
-import { LocaleEnum } from '@/types/ebayEnums.js';
-import { getErrorMessage } from '@/utils/errors.js';
-import { describeHttpError, httpRequestEffect, type HttpRequestOptions } from '@/utils/http.js';
-import { authLogger } from '@/utils/logger.js';
+} from '@/shared/ebay.js';
+import { LocaleEnum } from '@/shared/ebayEnums.js';
+import { getErrorMessage } from '@/shared/errors.js';
+import { describeHttpError, httpRequestEffect, type HttpRequestOptions } from '@/shared/http.js';
+import { authLogger } from '@/shared/logger.js';
 import { Data, Effect, Either } from 'effect';
 
 /** OAuth operation names reported by {@link EbayOAuthError}. */
@@ -459,7 +459,7 @@ export class EbayOAuthClient {
       this.config = {
         ...this.config,
         accessToken: tokenData.access_token,
-        refreshToken: refreshToken,
+        refreshToken,
       };
 
       return tokenData;

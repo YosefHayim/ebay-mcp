@@ -6,7 +6,7 @@
  * inlines all dynamic imports, which Rollup only permits with a single input.
  * The archetypes are therefore built one at a time (each its own
  * single-page build) into a shared output directory — the first pass clears it,
- * the rest append. The result is exactly what `src/mcp/uiBridge.ts` expects:
+ * the rest append. The result is exactly what `src/server/uiBridge.ts` expects:
  * `build/ui/{table,card,chart,stat}.html`, each with its JS and CSS inlined so the
  * server can serve it verbatim as a `ui://` resource with no sibling requests.
  *
@@ -17,9 +17,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build, type InlineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
-import { uiArchetypes } from '@/tools/ui/archetypes.js';
-import type { ViewArchetype } from '@/tools/ui/viewModels.js';
-import { serverLogger } from '@/utils/logger.js';
+import { uiArchetypes } from '@/tool-registry/ui/archetypes.js';
+import type { ViewArchetype } from '@/tool-registry/ui/viewModels.js';
+import { serverLogger } from '@/shared/logger.js';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptsDir, '../..');
