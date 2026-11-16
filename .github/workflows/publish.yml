@@ -42,6 +42,19 @@ jobs:
         run: pnpm build
       - name: Publish to npm (trusted publishing)
         run: pnpm publish --no-git-checks --access public --provenance
+      - name: Wait until npm serves the new version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          for attempt in $(seq 1 40); do
+            if npm view "ebay-mcp@${VERSION}" version --prefer-online >/dev/null 2>&1; then
+              echo "npm serves ebay-mcp@${VERSION}"
+              exit 0
+            fi
+            echo "Waiting for npm to serve ebay-mcp@${VERSION} (attempt ${attempt}/40)"
+            sleep 15
+          done
+          echo "::error::npm did not serve ebay-mcp@${VERSION} within 10 minutes"
+          exit 1
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
       - name: Install MCP Publisher
@@ -68,4 +81,4 @@ jobs:
         run: |
           ./mcp-publisher login github-oidc
           ./mcp-publisher publish
-    timeout-minutes: 15
+    timeout-minutes: 25
