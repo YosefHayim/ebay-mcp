@@ -1,0 +1,58 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.YosefHayim/ebay-mcp",
+  "title": "eBay Seller Tools",
+  "description": "Community MCP server for the eBay Sell, Commerce and Developer APIs (379 tools).",
+  "repository": {
+    "url": "https://github.com/YosefHayim/ebay-mcp",
+    "source": "github"
+  },
+  "version": "2.0.9",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "ebay-mcp",
+      "version": "2.0.9",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "EBAY_CLIENT_ID",
+          "description": "eBay Developer app client ID",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "EBAY_CLIENT_SECRET",
+          "description": "eBay Developer app client secret",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "EBAY_ENVIRONMENT",
+          "description": "sandbox or production",
+          "isRequired": false,
+          "default": "sandbox",
+          "choices": ["sandbox", "production"],
+          "format": "string"
+        },
+        {
+          "name": "EBAY_REDIRECT_URI",
+          "description": "Redirect URI name (RuName) from the eBay Developer Portal",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "EBAY_USER_REFRESH_TOKEN",
+          "description": "User refresh token for higher rate limits",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}

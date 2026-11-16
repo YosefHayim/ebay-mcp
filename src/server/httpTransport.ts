@@ -286,7 +286,7 @@ export const createHttpMcpApp = async (
   app.use(express.json());
   app.use(helmet({ xPoweredBy: false }));
   app.use(createRequestLogger());
-  app.use('/icons', express.static(join(config.projectRoot, 'public', 'icons')));
+  app.use('/icons', express.static(join(config.projectRoot, 'assets', 'icons')));
 
   app.use(
     createMetadataRouter({
