@@ -36,10 +36,7 @@
           "description": "sandbox or production",
           "isRequired": false,
           "default": "sandbox",
-          "choices": [
-            "sandbox",
-            "production"
-          ],
+          "choices": ["sandbox", "production"],
           "format": "string"
         },
         {
