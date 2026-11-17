@@ -2,7 +2,7 @@
  * Core eBay API types
  */
 
-import type { LocaleEnum } from './ebayEnums.js';
+import type { LocaleEnum } from './ebay-enums.js';
 
 /**
  * Runtime configuration required to authenticate eBay API clients.

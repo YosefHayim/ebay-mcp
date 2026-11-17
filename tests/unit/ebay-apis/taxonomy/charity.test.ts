@@ -1,6 +1,6 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
-import { CharityApi } from '@/ebay-apis/taxonomy/charityApi.js';
-import { invalidInput } from '@tests/helpers/invalidInput.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
+import { CharityApi } from '@/ebay-apis/taxonomy/charity-api.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
 import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

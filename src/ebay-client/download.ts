@@ -2,7 +2,7 @@ import type {
   EbayApiClient,
   EbayRequestConfig,
   EbayResponse,
-} from '@/ebay-client/ebayApiClient.js';
+} from '@/ebay-client/ebay-api-client.js';
 import { EbayApiError } from '@/ebay-client/request.js';
 import { Data, Effect } from 'effect';
 

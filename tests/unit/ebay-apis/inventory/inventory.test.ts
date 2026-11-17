@@ -1,9 +1,9 @@
 import { Effect } from 'effect';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { InventoryApi } from '@/ebay-apis/inventory/inventoryApi.js';
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import { InventoryApi } from '@/ebay-apis/inventory/inventory-api.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 import type { EbayApiError, EndpointInputError } from '@/ebay-client/request.js';
-import { invalidInput } from '@tests/helpers/invalidInput.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
 
 type InventoryFailure = EbayApiError | EndpointInputError;
 

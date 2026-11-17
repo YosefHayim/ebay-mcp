@@ -1,4 +1,4 @@
-import type { EbaySellerApi } from '@/ebay-apis/ebaySellerApi.js';
+import type { EbaySellerApi } from '@/ebay-apis/ebay-seller-api.js';
 import type { z } from 'zod';
 
 /** JSON-schema-like output contract attached to a tool definition. */

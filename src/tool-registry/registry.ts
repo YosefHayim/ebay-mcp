@@ -1,8 +1,8 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { registeredEntries } from '@/tool-registry/toolCategories.js';
+import { registeredEntries } from '@/tool-registry/tool-categories.js';
 import type { ToolDefinition } from '@/tool-registry/types.js';
 import type { ToolHandler } from '@/tool-registry/types.js';
-import type { ViewArchetype, ViewModel } from '@/tool-registry/ui/viewModels.js';
+import type { ViewArchetype, ViewModel } from '@/tool-registry/ui/view-models.js';
 import { Data, Effect } from 'effect';
 
 /** Tagged failure returned when the tool registry cannot resolve a runnable tool. */

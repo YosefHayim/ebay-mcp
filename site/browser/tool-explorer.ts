@@ -13,7 +13,7 @@ import {
   createExplorerToolGroups,
   listAllExplorerTools,
 } from '@site/shared/tool-explorer-model.ts';
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 const CATALOG_NEAR_VIEWPORT_MARGIN = '800px';
 

@@ -1,5 +1,5 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/ebay-client/ebayApiClient.js';
-import { formatZodIssues } from '@/shared/zodIssues.js';
+import type { EbayApiClient, EbayRequestConfig } from '@/ebay-client/ebay-api-client.js';
+import { formatZodIssues } from '@/shared/zod-issues.js';
 import type { z } from 'zod';
 import { Data, Effect } from 'effect';
 

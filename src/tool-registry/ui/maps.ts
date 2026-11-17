@@ -10,7 +10,7 @@
  *
  * Every input type is the exact generated OpenAPI schema the matching handler
  * returns; every output is the archetype view model the React app in `mcp-apps/`
- * renders. Formatting lives in `./mapHelpers.js` so these stay declarative.
+ * renders. Formatting lives in `./map-helpers.js` so these stay declarative.
  */
 
 import {
@@ -20,7 +20,7 @@ import {
   toLabel,
   toNumber,
   truncate,
-} from '@/tool-registry/ui/mapHelpers.js';
+} from '@/tool-registry/ui/map-helpers.js';
 import type {
   CardBadge,
   CardSection,
@@ -31,7 +31,7 @@ import type {
   StatViewModel,
   TableViewModel,
   Tone,
-} from '@/tool-registry/ui/viewModels.js';
+} from '@/tool-registry/ui/view-models.js';
 import type { DeveloperAnalyticsComponents } from '@/ebay-openapi-types/developerAnalyticsV1BetaOas3.js';
 import type { components as AnalyticsSchemas } from '@/ebay-openapi-types/sellAnalyticsV1Oas3.js';
 import type { components as InventorySchemas } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';

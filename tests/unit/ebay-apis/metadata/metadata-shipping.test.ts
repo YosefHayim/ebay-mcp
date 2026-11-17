@@ -1,0 +1,72 @@
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
+import { MetadataApi } from '@/ebay-apis/metadata/metadata-api.js';
+import { MarketplaceId } from '@/shared/ebay-enums.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
+import { Effect } from 'effect';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const SHIPPING = '/sell/metadata/v1/shipping/marketplace';
+const client = { get: vi.fn() };
+// MetadataApi only reaches client.get for the shipping:marketplace methods.
+const api = new MetadataApi(client as unknown as EbayApiClient);
+
+beforeEach(() => {
+  vi.resetAllMocks();
+});
+
+describe('MetadataApi shipping:marketplace methods', () => {
+  it.each([
+    ['getExcludeShippingLocations', 'get_exclude_shipping_locations'],
+    ['getHandlingTimes', 'get_handling_times'],
+    ['getShippingCarriers', 'get_shipping_carriers'],
+    ['getShippingLocations', 'get_shipping_locations'],
+    ['getShippingServices', 'get_shipping_services'],
+  ] as const)('%s GETs the marketplace path and returns eBay data unchanged', async (method, resource) => {
+    const stubShippingMetadata = { [resource]: [{ description: 'eBay value' }] };
+    client.get.mockResolvedValue(stubShippingMetadata);
+
+    const shippingMetadata = await Effect.runPromise(
+      api[method]({ marketplaceId: MarketplaceId.EBAY_US }),
+    );
+
+    expect(shippingMetadata).toBe(stubShippingMetadata);
+    expect(client.get).toHaveBeenCalledWith(`${SHIPPING}/EBAY_US/${resource}`);
+  });
+
+  it('sends Accept-Language only when the caller selects a localized marketplace', async () => {
+    client.get.mockResolvedValue({ shippingServices: [] });
+
+    await Effect.runPromise(
+      api.getShippingServices({ marketplaceId: MarketplaceId.EBAY_CA, acceptLanguage: 'fr-CA' }),
+    );
+
+    expect(client.get).toHaveBeenCalledWith(
+      `${SHIPPING}/EBAY_CA/get_shipping_services`,
+      undefined,
+      { headers: { 'Accept-Language': 'fr-CA' } },
+    );
+  });
+
+  it('rejects an unknown marketplace before any request', async () => {
+    const error = await Effect.runPromise(
+      Effect.flip(api.getShippingCarriers(invalidInput({ marketplaceId: 'EBAY_XX' }))),
+    );
+
+    expect(error._tag).toBe('EndpointInputError');
+    expect(client.get).not.toHaveBeenCalled();
+  });
+
+  it('wraps transport failures in a tagged EbayApiError with the request path', async () => {
+    client.get.mockRejectedValue(new Error('eBay 500'));
+
+    const error = await Effect.runPromise(
+      Effect.flip(api.getHandlingTimes({ marketplaceId: MarketplaceId.EBAY_GB })),
+    );
+
+    expect(error).toMatchObject({
+      _tag: 'EbayApiError',
+      method: 'GET',
+      path: `${SHIPPING}/EBAY_GB/get_handling_times`,
+    });
+  });
+});

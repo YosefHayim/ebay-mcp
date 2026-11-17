@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccountApi } from '@/ebay-apis/account/accountApi.js';
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import { AccountApi } from '@/ebay-apis/account/account-api.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 import type { components } from '@/ebay-openapi-types/sellAccountV1Oas3.js';
 
 type CustomPolicy = components['schemas']['CustomPolicy'];

@@ -29,7 +29,7 @@ import type {
   ToolCallRef,
   ViewArchetype,
   ViewModelByArchetype,
-} from '@/tool-registry/ui/viewModels.js';
+} from '@/tool-registry/ui/view-models.js';
 
 /**
  * Narrows a raw tool result to the view model for `archetype`, or `null` if the

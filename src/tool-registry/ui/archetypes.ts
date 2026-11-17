@@ -1,4 +1,4 @@
-import type { ViewArchetype } from '@/tool-registry/ui/viewModels.js';
+import type { ViewArchetype } from '@/tool-registry/ui/view-models.js';
 
 /**
  * Static description of one reusable UI archetype: the `ui://` resource it is

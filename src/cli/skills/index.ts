@@ -6,7 +6,7 @@ import type {
   SkillTarget,
   WritePlan,
 } from '@/cli/skills/types.js';
-import { buildRegistrySnapshot } from '@/cli/skills/registrySnapshot.js';
+import { buildRegistrySnapshot } from '@/cli/skills/registry-snapshot.js';
 import { buildContributingDoc, buildUsingDoc } from '@/cli/skills/content.js';
 import { renderSkill } from '@/cli/skills/render.js';
 import { resolveTargets } from '@/cli/skills/targets.js';
@@ -14,7 +14,7 @@ import { planWrite } from '@/cli/skills/install.js';
 import type { RegistrySnapshot } from '@/cli/skills/types.js';
 
 export * from '@/cli/skills/types.js';
-export { buildRegistrySnapshot } from '@/cli/skills/registrySnapshot.js';
+export { buildRegistrySnapshot } from '@/cli/skills/registry-snapshot.js';
 export { buildUsingDoc, buildContributingDoc } from '@/cli/skills/content.js';
 export {
   renderSkill,

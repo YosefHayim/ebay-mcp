@@ -14,7 +14,7 @@ import { WorksWith } from '@site/landing/works-with.tsx';
 import { PageShell } from '@site/page/page-shell.tsx';
 import { TopBar } from '@site/page/top-bar.tsx';
 import type { SiteAssets } from '@site/site-assets.ts';
-import type { ToolCatalog } from '../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../scripts/build-tool-catalog.ts';
 
 export const createSiteApp = (catalog: ToolCatalog, siteAssets: SiteAssets) => {
   const siteApp = new Hono();

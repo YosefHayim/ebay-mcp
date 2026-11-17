@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import type { TradingApiClient } from '@/ebay-client/tradingApiClient.js';
-import { TradingApi } from '@/ebay-apis/trading/tradingApi.js';
+import type { TradingApiClient } from '@/ebay-client/trading-api-client.js';
+import { TradingApi } from '@/ebay-apis/trading/trading-api.js';
 import { Effect } from 'effect';
 
 let api: TradingApi;

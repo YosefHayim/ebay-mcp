@@ -1,10 +1,10 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 import {
   fileNameFromDisposition,
   MAX_INLINE_DOWNLOAD_BYTES,
   requestDownloadEffect,
 } from '@/ebay-client/download.js';
-import { formatFileResult } from '@/tool-registry/fileResult.js';
+import { formatFileResult } from '@/tool-registry/file-result.js';
 import { Effect } from 'effect';
 import { describe, expect, it, vi } from 'vitest';
 

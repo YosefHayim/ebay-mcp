@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Effect } from 'effect';
-import { DisputeApi } from '@/ebay-apis/fulfillment/disputeApi.js';
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import { DisputeApi } from '@/ebay-apis/fulfillment/dispute-api.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 
 describe('DisputeApi', () => {
   let disputeApi: DisputeApi;

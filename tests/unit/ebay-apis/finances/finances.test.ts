@@ -1,5 +1,5 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
-import { FinancesApi } from '@/ebay-apis/finances/financesApi.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
+import { FinancesApi } from '@/ebay-apis/finances/finances-api.js';
 import type { EbayApiError, EndpointInputError } from '@/ebay-client/request.js';
 import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

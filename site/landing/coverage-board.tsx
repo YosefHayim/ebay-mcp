@@ -2,7 +2,7 @@ import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { FamilyIcon } from '@site/icons/family-icons.tsx';
 import { createPickedFamilies } from '@site/shared/picked-families.ts';
 import { DEFAULT_SETUP_CHOICES } from '@site/shared/setup-defaults.ts';
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 interface CoverageBoardProps {
   catalog: ToolCatalog;

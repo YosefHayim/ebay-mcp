@@ -22,11 +22,11 @@ import {
   printSuccess,
   printWarning,
   ui,
-} from '@/shared/cliUi.js';
+} from '@/shared/cli-ui.js';
 import { getErrorMessage } from '@/shared/errors.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';
-import { isEntryModule } from '@/shared/entryModule.js';
+import { isEntryModule } from '@/shared/entry-module.js';
 
 /** Parsed command-line options for the skills installer. */
 interface SkillsFlags {

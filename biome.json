@@ -79,6 +79,7 @@
         "useTopLevelRegex": "warn"
       },
       "suspicious": {
+        "noReactSpecificProps": "off",
         "noConsole": "warn",
         "noUnknownAttribute": "off",
         "noUnnecessaryConditions": "warn",
@@ -130,14 +131,14 @@
     },
     {
       "includes": [
-        "src/ebay-apis/**/*Schemas.ts",
-        "src/ebay-apis/**/*Tools.ts",
-        "src/auth/tokenManagementTools.ts",
-        "src/server/connectorTools.ts",
-        "src/tool-registry/toolCategories.ts",
+        "src/ebay-apis/**/*-schemas.ts",
+        "src/ebay-apis/**/*-tools.ts",
+        "src/auth/token-management-tools.ts",
+        "src/server/connector-tools.ts",
+        "src/tool-registry/tool-categories.ts",
         "src/ebay-openapi-types/**",
         "src/shared/ebay.ts",
-        "src/shared/ebayEnums.ts",
+        "src/shared/ebay-enums.ts",
         "src/shared/index.ts",
         "scripts/**",
         "src/cli/*.ts"
@@ -158,13 +159,13 @@
     },
     {
       "includes": [
-        "src/shared/credentialFile.ts",
+        "src/shared/credential-file.ts",
         "src/shared/environment.ts",
-        "src/shared/mediaAccess.ts",
-        "src/shared/oauthScopes.ts",
-        "src/shared/toolFamilies.ts",
+        "src/shared/media-access.ts",
+        "src/shared/oauth-scopes.ts",
+        "src/shared/tool-families.ts",
         "src/index.ts",
-        "src/serverHttp.ts",
+        "src/server-http.ts",
         "scripts/**",
         "src/cli/*.ts",
         "src/shared/logger.ts",
@@ -182,7 +183,7 @@
       "includes": [
         "src/ebay-openapi-types/**",
         "src/shared/ebay.ts",
-        "src/shared/ebayEnums.ts",
+        "src/shared/ebay-enums.ts",
         "src/shared/index.ts"
       ],
       "linter": {

@@ -7,7 +7,7 @@ import {
   isTokenExpired,
   type CredentialStore,
   type EbayUserTokenResponse,
-} from '@/auth/credentialSession.js';
+} from '@/auth/credential-session.js';
 import { getBaseUrl, getDefaultScopes } from '@/shared/environment.js';
 import type {
   EbayAppAccessTokenResponse,
@@ -15,7 +15,7 @@ import type {
   EbayUserToken,
   StoredTokenData,
 } from '@/shared/ebay.js';
-import { LocaleEnum } from '@/shared/ebayEnums.js';
+import { LocaleEnum } from '@/shared/ebay-enums.js';
 import { getErrorMessage } from '@/shared/errors.js';
 import { describeHttpError, httpRequestEffect, type HttpRequestOptions } from '@/shared/http.js';
 import { authLogger } from '@/shared/logger.js';

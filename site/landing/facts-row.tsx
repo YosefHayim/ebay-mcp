@@ -1,4 +1,4 @@
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 interface FactsRowProps {
   catalog: ToolCatalog;

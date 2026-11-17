@@ -1,6 +1,6 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
-import { MetadataApi, compatibilityHeaders } from '@/ebay-apis/metadata/metadataApi.js';
-import { invalidInput } from '@tests/helpers/invalidInput.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
+import { MetadataApi, compatibilityHeaders } from '@/ebay-apis/metadata/metadata-api.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
 import { Effect } from 'effect';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

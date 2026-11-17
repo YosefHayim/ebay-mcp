@@ -1,4 +1,4 @@
-import type { ToolCatalog, ToolCatalogTool } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog, ToolCatalogTool } from '../../scripts/build-tool-catalog.ts';
 import { FEATURED_TOOLS } from '@site/data/featured-tools.ts';
 
 export interface ExplorerField {

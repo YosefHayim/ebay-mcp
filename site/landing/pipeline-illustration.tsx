@@ -2,7 +2,7 @@ import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { BrandIcon } from '@site/icons/brand-icons.tsx';
 import { FamilyIcon } from '@site/icons/family-icons.tsx';
 import { PRICE_CHANGE_ROWS } from '@site/data/price-rows.ts';
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 interface PipelineIllustrationProps {
   catalog: ToolCatalog;

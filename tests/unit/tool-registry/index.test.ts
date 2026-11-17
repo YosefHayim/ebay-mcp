@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Effect } from 'effect';
 import { executeTool, getToolDefinitions } from '@/tool-registry/index.js';
 
-import type { EbaySellerApi } from '@/ebay-apis/ebaySellerApi.js';
+import type { EbaySellerApi } from '@/ebay-apis/ebay-seller-api.js';
 import type { EbayConfig } from '@/shared/ebay.js';
 
 type TextContentToolResult = {

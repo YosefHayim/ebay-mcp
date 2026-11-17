@@ -1,11 +1,11 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 import {
   BATCH_GET_OFFERS_CONCURRENCY,
   MAX_BATCH_GET_OFFERS_SKUS,
   createInventoryOffersMethods,
-} from '@/ebay-apis/inventory/offersApi.js';
+} from '@/ebay-apis/inventory/offers-api.js';
 import type { EbayApiError, EndpointInputError } from '@/ebay-client/request.js';
-import { invalidInput } from '@tests/helpers/invalidInput.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
 import { Effect } from 'effect';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

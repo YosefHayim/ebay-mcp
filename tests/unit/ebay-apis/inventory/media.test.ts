@@ -1,5 +1,5 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
-import { MediaApi, type Video } from '@/ebay-apis/inventory/mediaApi.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
+import { MediaApi, type Video } from '@/ebay-apis/inventory/media-api.js';
 import { Effect, Exit } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

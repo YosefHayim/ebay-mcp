@@ -11,9 +11,9 @@ import {
   CredentialStoreError,
   DotEnvCredentialStore,
   type CredentialStore,
-} from '@/auth/credentialSession.js';
+} from '@/auth/credential-session.js';
 import type { EbayConfig } from '@/shared/ebay.js';
-import { mockOAuthTokenEndpoint, cleanupMocks } from '@tests/helpers/mockHttp.js';
+import { mockOAuthTokenEndpoint, cleanupMocks } from '@tests/helpers/mock-http.js';
 import process from 'node:process';
 import { Effect } from 'effect';
 

@@ -106,7 +106,7 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
   slug: 'ebay-mcp-contributing',
   title: 'Contributing to ebay-mcp',
   description: `Work on the ebay-mcp server itself: ${snapshot.toolCount} tools across eBay's Sell APIs (TypeScript/ESM, Zod tool-input schemas, OpenAPI-generated types). Use when adding or changing eBay tools/endpoints, wiring the registry, or running the project's checks.`,
-  intro: `A local MCP server exposing **${snapshot.toolCount} tools covering 100% of the eBay Sell, Commerce and Developer APIs it tracks** — TypeScript/Node.js (ESM), \`@modelcontextprotocol/sdk\`, Zod tool-input schemas, Effect for typed async errors, OpenAPI-generated types. Entry points: \`src/index.ts\` (STDIO) and \`src/serverHttp.ts\` (HTTP).`,
+  intro: `A local MCP server exposing **${snapshot.toolCount} tools covering 100% of the eBay Sell, Commerce and Developer APIs it tracks** — TypeScript/Node.js (ESM), \`@modelcontextprotocol/sdk\`, Zod tool-input schemas, Effect for typed async errors, OpenAPI-generated types. Entry points: \`src/index.ts\` (STDIO) and \`src/server-http.ts\` (HTTP).`,
   sections: [
     {
       heading: 'Validation (run before a PR)',
@@ -123,15 +123,15 @@ export const buildContributingDoc = (snapshot: RegistrySnapshot): SkillDoc => ({
       body: [
         '| Path | Owns |',
         '| --- | --- |',
-        '| `index.ts` / `serverHttp.ts` | MCP entry points (STDIO / HTTP) |',
-        '| `api/` | eBay API modules (one area per folder), `client/` (REST and Trading XML clients), and the `ebaySellerApi.ts` facade |',
+        '| `index.ts` / `server-http.ts` | MCP entry points (STDIO / HTTP) |',
+        '| `api/` | eBay API modules (one area per folder), `client/` (REST and Trading XML clients), and the `ebay-seller-api.ts` facade |',
         '| `auth/` | OAuth 2.0 flow and token management |',
         '| `config/` | Environment loading, constants, marketplace defaults |',
-        '| `tools/` | Tool wiring — `registry.ts`, `contracts.ts`, `defineTool.ts`, and `categories/` (13 family files that co-locate each tool definition with its handler via `defineTool`) |',
+        '| `tools/` | Tool wiring — `registry.ts`, `contracts.ts`, `define-tool.ts`, and `categories/` (13 family files that co-locate each tool definition with its handler via `defineTool`) |',
         "| `skills/` | Agent-skills generator (this skill's source) |",
         '| `schemas/` | Shared Zod schemas per API family |',
         "| `types/` | TypeScript types — **auto-generated** from OpenAPI specs (don't hand-edit) |",
-        '| `scripts/` | CLI tooling: `setup.ts`, `skills.ts`, `devSync.ts`, `diagnostics.ts` |',
+        '| `scripts/` | CLI tooling: `setup.ts`, `skills.ts`, `dev-sync.ts`, `diagnostics.ts` |',
         '| `utils/` | Shared utilities (logging, http, errors) |',
       ].join('\n'),
     },

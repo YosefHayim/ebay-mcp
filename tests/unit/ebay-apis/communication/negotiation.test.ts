@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NegotiationApi } from '@/ebay-apis/communication/negotiationApi.js';
-import { invalidInput } from '@tests/helpers/invalidInput.js';
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import { NegotiationApi } from '@/ebay-apis/communication/negotiation-api.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 import { Effect } from 'effect';
 
 let client: EbayApiClient;

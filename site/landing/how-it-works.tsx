@@ -1,6 +1,6 @@
 import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { highlightShell } from '@site/shared/code-highlight.ts';
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 interface HowItWorksProps {
   catalog: ToolCatalog;

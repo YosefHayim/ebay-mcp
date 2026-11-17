@@ -18,7 +18,7 @@
  */
 
 import { getErrorMessage } from '@/shared/errors.js';
-import { isRecord } from '@/shared/typeGuards.js';
+import { isRecord } from '@/shared/type-guards.js';
 import { Cause, Data, Effect, Exit, Option } from 'effect';
 
 /** How to decode a successful response body. Defaults to `json`. */

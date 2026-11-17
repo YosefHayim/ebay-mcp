@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Effect } from 'effect';
-import { BrowseApi } from '@/ebay-apis/browse/browseApi.js';
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import { BrowseApi } from '@/ebay-apis/browse/browse-api.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 
 const ERR_LIMIT_MUST_BE_BETWEEN = /limit must be an integer between 1 and 200/;
 const ERR_SORT_MUST_BE_ONE = /sort must be one of/;

@@ -1,12 +1,12 @@
 import { config } from 'dotenv';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { CREDENTIAL_ENV_PATH } from '@/shared/credentialFile.js';
+import { CREDENTIAL_ENV_PATH } from '@/shared/credential-file.js';
 import type { EbayConfig } from '@/shared/ebay.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
-import { getToolGatingConfigError } from '@/shared/toolFamilies.js';
-import { getMediaAccessConfig } from '@/shared/mediaAccess.js';
-import { productionScopes, sandboxScopes } from '@/shared/oauthScopes.js';
+import { getToolGatingConfigError } from '@/shared/tool-families.js';
+import { getMediaAccessConfig } from '@/shared/media-access.js';
+import { productionScopes, sandboxScopes } from '@/shared/oauth-scopes.js';
 import { getVersion } from '@/shared/version.js';
 import { Effect, Either } from 'effect';
 import process from 'node:process';

@@ -37,7 +37,7 @@ import {
   MessageReferenceType,
   FeedbackRating,
   ReportedItemType,
-} from '@/shared/ebayEnums.js';
+} from '@/shared/ebay-enums.js';
 
 /**
  * Reusable Zod schemas for eBay API tool input validation

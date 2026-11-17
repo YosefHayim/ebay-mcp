@@ -1,16 +1,16 @@
 import { McpServer, type RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/ebay-apis/ebaySellerApi.js';
+import { EbaySellerApi } from '@/ebay-apis/ebay-seller-api.js';
 import { getEbayConfig, mcpConfig } from '@/shared/environment.js';
-import { resolveToolGatingMode } from '@/shared/toolFamilies.js';
-import { isReadOnlyModeEnabled, isReadOnlyTool } from '@/server/readOnlyFilter.js';
+import { resolveToolGatingMode } from '@/shared/tool-families.js';
+import { isReadOnlyModeEnabled, isReadOnlyTool } from '@/server/read-only-filter.js';
 import {
   createToolGatingController,
   DYNAMIC_MODE_INSTRUCTIONS,
   registerMetaTools,
   toolNamesInFamilies,
-} from '@/server/toolGating.js';
-import { buildUiToolResult, createUiBridge, type UiBridge } from '@/server/uiBridge.js';
+} from '@/server/tool-gating.js';
+import { buildUiToolResult, createUiBridge, type UiBridge } from '@/server/ui-bridge.js';
 import { getToolEntries, type ToolEntry } from '@/tool-registry/registry.js';
 import { getEbayErrorDetails } from '@/shared/errors.js';
 import { serverLogger, toolLogger } from '@/shared/logger.js';

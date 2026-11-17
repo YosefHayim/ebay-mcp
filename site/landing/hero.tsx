@@ -2,7 +2,7 @@ import { SECTION_ANCHORS } from '@site/page/section-anchors.ts';
 import { CheckIcon } from '@site/landing/check-icon.tsx';
 import { CopyButton } from '@site/landing/copy-button.tsx';
 import { HeroConsole } from '@site/landing/hero-console.tsx';
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 interface HeroProps {
   catalog: ToolCatalog;

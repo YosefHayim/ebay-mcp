@@ -6,7 +6,7 @@ import { highlightJson, highlightShell } from '@site/shared/code-highlight.ts';
 import { createPickedFamilies } from '@site/shared/picked-families.ts';
 import { createSetupConfig, createToolsHint } from '@site/shared/setup-config.ts';
 import { DEFAULT_SETUP_CHOICES } from '@site/shared/setup-defaults.ts';
-import type { ToolCatalog } from '../../scripts/buildToolCatalog.ts';
+import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
 interface SetupBuilderProps {
   catalog: ToolCatalog;

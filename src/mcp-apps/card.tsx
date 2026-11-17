@@ -5,7 +5,7 @@
  */
 
 import type { ReactNode } from 'react';
-import type { CardBadge, CardViewModel } from '@/tool-registry/ui/viewModels.js';
+import type { CardBadge, CardViewModel } from '@/tool-registry/ui/view-models.js';
 import { AppShell, EmptyState, mount, useViewModel } from './host.js';
 
 /** Maps a badge tone to its CSS modifier class. */

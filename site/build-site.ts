@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { toSSG } from 'hono/ssg';
-import { createToolCatalog } from '../scripts/buildToolCatalog.ts';
+import { createToolCatalog } from '../scripts/build-tool-catalog.ts';
 import type { SiteAssets } from './site-assets.ts';
 
 const siteFolder = path.dirname(fileURLToPath(import.meta.url));

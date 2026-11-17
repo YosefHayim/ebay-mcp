@@ -18,5 +18,5 @@
     "moduleDetection": "force",
     "allowImportingTsExtensions": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "viteEnv.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "vite-env.d.ts"]
 }

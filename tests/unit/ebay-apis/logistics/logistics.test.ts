@@ -1,8 +1,8 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import type { EbayApiClient } from '@/ebay-client/ebay-api-client.js';
 import { MAX_INLINE_DOWNLOAD_BYTES } from '@/ebay-client/download.js';
-import { LogisticsApi } from '@/ebay-apis/logistics/logisticsApi.js';
-import { MarketplaceId, WeightUnit } from '@/shared/ebayEnums.js';
-import { invalidInput } from '@tests/helpers/invalidInput.js';
+import { LogisticsApi } from '@/ebay-apis/logistics/logistics-api.js';
+import { MarketplaceId, WeightUnit } from '@/shared/ebay-enums.js';
+import { invalidInput } from '@tests/helpers/invalid-input.js';
 import { Effect } from 'effect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

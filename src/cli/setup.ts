@@ -13,20 +13,20 @@ import { describeHttpError, httpRequest } from '@/shared/http.js';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { getOAuthAuthorizationUrl } from '@/shared/environment.js';
-import { startCallbackServer } from '@/auth/oauthHelper.js';
-import { defineWizard, runWizard } from '@/cli/setupWizard.js';
-import { quoteEnvValue } from '@/shared/envFile.js';
-import { loadExistingConfig } from './setupShared.js';
+import { startCallbackServer } from '@/auth/oauth-helper.js';
+import { defineWizard, runWizard } from '@/cli/setup-wizard.js';
+import { quoteEnvValue } from '@/shared/env-file.js';
+import { loadExistingConfig } from './setup-shared.js';
 import { runSkillsWizard } from './skills.js';
 import prompts from 'prompts';
-import { configureLLMClient, detectLLMClients } from '@/shared/llmClientDetector.js';
-import { runSecurityChecks, displaySecurityResults } from '@/cli/securityChecker.js';
-import { validateSetup, displayRecommendations } from '@/cli/setupValidator.js';
+import { configureLLMClient, detectLLMClients } from '@/shared/llm-client-detector.js';
+import { runSecurityChecks, displaySecurityResults } from '@/cli/security-checker.js';
+import { validateSetup, displayRecommendations } from '@/cli/setup-validator.js';
 import { getErrorMessage } from '@/shared/errors.js';
 import type { EbayTokenCore } from '@/shared/ebay.js';
 import process from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { isEntryModule } from '@/shared/entryModule.js';
+import { isEntryModule } from '@/shared/entry-module.js';
 
 config({ quiet: true });
 

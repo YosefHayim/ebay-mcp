@@ -3,7 +3,7 @@ import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
 import { getLoggingConfig } from '@/shared/environment.js';
-import { redactSecretFields, redactSecrets } from '@/shared/logRedaction.js';
+import { redactSecretFields, redactSecrets } from '@/shared/log-redaction.js';
 
 /**
  * Log directory for eBay MCP Server
