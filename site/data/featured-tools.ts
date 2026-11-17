@@ -1,12 +1,12 @@
-export type FeaturedFieldValues = Record<string, string>;
+type FeaturedFieldValues = Record<string, string>;
 
-export interface FeaturedField {
+interface FeaturedField {
   name: string;
   type: string;
   defaultValue: string;
 }
 
-export interface FeaturedTool {
+interface FeaturedTool {
   toolName: string;
   familyKey: string;
   summary: string;

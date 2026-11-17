@@ -1,7 +1,7 @@
 import type { SetupToolsMode } from '@site/shared/setup-config.ts';
 import { DEFAULT_SETUP_CHOICES } from '@site/shared/setup-defaults.ts';
 
-export interface SetupSelection {
+interface SetupSelection {
   toolsMode: SetupToolsMode;
   pickedFamilyKeys: string[];
 }

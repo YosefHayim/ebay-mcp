@@ -15,7 +15,7 @@ import { setupLogger } from './logger.js';
 /**
  * Detection result for an MCP-capable client configuration location.
  */
-export interface DetectedMCPClient {
+interface DetectedMCPClient {
   /** Stable client key used by setup flags and configuration routing. */
   name: string;
   /** Absolute path to the client configuration file. */
@@ -27,7 +27,7 @@ export interface DetectedMCPClient {
 /**
  * LLM client metadata shown during setup and auto-configuration.
  */
-export interface LLMClient extends DetectedMCPClient {
+interface LLMClient extends DetectedMCPClient {
   /** Human-readable client name shown in setup prompts. */
   displayName: string;
   /** Whether the expected configuration file exists. */
@@ -37,7 +37,7 @@ export interface LLMClient extends DetectedMCPClient {
 /**
  * MCP server command block written into client configuration files.
  */
-export interface MCPServerConfig {
+interface MCPServerConfig {
   /** Executable command used by the client to start the MCP server. */
   command: string;
   /** Arguments passed to the MCP server command. */
@@ -410,7 +410,7 @@ const hasMcpServerConfig = (configPath: string): boolean => {
  * const configured = configureClaudeDesktop(process.cwd());
  * ```
  */
-export const configureClaudeDesktop = (projectRoot: string): boolean => {
+const configureClaudeDesktop = (projectRoot: string): boolean => {
   return runClientConfigurator('Claude Desktop', () => {
     const configPath = getClaudeConfigPath();
     const config = readJSONConfig(configPath);
@@ -437,7 +437,7 @@ export const configureClaudeDesktop = (projectRoot: string): boolean => {
  * const configured = configureCline(process.cwd());
  * ```
  */
-export const configureCline = (projectRoot: string): boolean => {
+const configureCline = (projectRoot: string): boolean => {
   return runClientConfigurator('Cline', () => {
     const configPath = getClineConfigPath();
     const config = readJSONConfig(configPath);
@@ -464,7 +464,7 @@ export const configureCline = (projectRoot: string): boolean => {
  * const configured = configureContinue(process.cwd());
  * ```
  */
-export const configureContinue = (projectRoot: string): boolean => {
+const configureContinue = (projectRoot: string): boolean => {
   return runClientConfigurator('Continue.dev', () => {
     const configPath = getContinueConfigPath();
     const config = readJSONConfig(configPath);
@@ -521,7 +521,7 @@ export const configureContinue = (projectRoot: string): boolean => {
  * const configured = configureZed(process.cwd());
  * ```
  */
-export const configureZed = (projectRoot: string): boolean => {
+const configureZed = (projectRoot: string): boolean => {
   return runClientConfigurator('Zed', () => {
     const configPath = getZedConfigPath();
     const config = readJSONConfig(configPath);
@@ -559,7 +559,7 @@ export const configureZed = (projectRoot: string): boolean => {
  * const configured = configureCursor(process.cwd());
  * ```
  */
-export const configureCursor = (projectRoot: string): boolean => {
+const configureCursor = (projectRoot: string): boolean => {
   return runClientConfigurator('Cursor', () => {
     const configPath = getCursorConfigPath();
     const config = readJSONConfig(configPath);
@@ -586,7 +586,7 @@ export const configureCursor = (projectRoot: string): boolean => {
  * const configured = configureWindsurf(process.cwd());
  * ```
  */
-export const configureWindsurf = (projectRoot: string): boolean => {
+const configureWindsurf = (projectRoot: string): boolean => {
   return runClientConfigurator('Windsurf', () => {
     const configPath = getWindsurfConfigPath();
     const config = readJSONConfig(configPath);
@@ -613,7 +613,7 @@ export const configureWindsurf = (projectRoot: string): boolean => {
  * const configured = configureRooCode(process.cwd());
  * ```
  */
-export const configureRooCode = (projectRoot: string): boolean => {
+const configureRooCode = (projectRoot: string): boolean => {
   return runClientConfigurator('Roo Code', () => {
     const configPath = getRooCodeConfigPath();
     const config = readJSONConfig(configPath);
@@ -642,7 +642,7 @@ export const configureRooCode = (projectRoot: string): boolean => {
  * const configured = configureClaudeCode(process.cwd());
  * ```
  */
-export const configureClaudeCode = (projectRoot: string): boolean => {
+const configureClaudeCode = (projectRoot: string): boolean => {
   return runClientConfigurator('Claude Code CLI', () => {
     const configPath = getClaudeCodeConfigPath();
     const config = readJSONConfig(configPath);
@@ -669,7 +669,7 @@ export const configureClaudeCode = (projectRoot: string): boolean => {
  * const configured = configureAmazonQ(process.cwd());
  * ```
  */
-export const configureAmazonQ = (projectRoot: string): boolean => {
+const configureAmazonQ = (projectRoot: string): boolean => {
   return runClientConfigurator('Amazon Q', () => {
     const configPath = getAmazonQConfigPath();
     const config = readJSONConfig(configPath);

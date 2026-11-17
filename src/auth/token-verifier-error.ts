@@ -32,7 +32,7 @@ export class TokenVerifierError extends Data.TaggedError('TokenVerifierError')<{
 }> {}
 
 /** Fields required to construct a {@link TokenVerifierError}. */
-export interface TokenVerifierErrorInput {
+interface TokenVerifierErrorInput {
   /** Verifier operation that failed. */
   readonly operation: TokenVerifierOperation;
   /** Stable reason for the verifier failure. */

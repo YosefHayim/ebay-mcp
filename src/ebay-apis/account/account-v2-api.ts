@@ -63,28 +63,28 @@ type CombinedShippingRulesOperation =
  *
  * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/rate_table/methods/getRateTable
  */
-export type RateTableDetailsResponse = Schemas['RateTableDetails'];
+type RateTableDetailsResponse = Schemas['RateTableDetails'];
 
 /**
  * Response returned by eBay Account API v2 getPayoutSettings.
  *
  * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/payout_settings/methods/getPayoutSettings
  */
-export type PayoutSettingsResponse = Schemas['PayoutSettingsResponse'];
+type PayoutSettingsResponse = Schemas['PayoutSettingsResponse'];
 
 /**
  * Response returned by eBay Account API v2 getCombinedShippingRules.
  *
  * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/getCombinedShippingRules
  */
-export type CombinedShippingRulesResponse = Schemas['GetCombinedShippingRulesPublicApiResponse'];
+type CombinedShippingRulesResponse = Schemas['GetCombinedShippingRulesPublicApiResponse'];
 
 /**
  * Response returned by eBay Account API v2 getUserPreferences.
  *
  * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/user_preferences/methods/getUserPreferences
  */
-export type UserPreferencesResponse = Schemas['GetUserPreferencesResponse'];
+type UserPreferencesResponse = Schemas['GetUserPreferencesResponse'];
 
 /** Account API v2 - rate tables, payout settings, combined shipping rules, and user preferences. */
 export class AccountV2Api {

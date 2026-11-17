@@ -21,56 +21,56 @@ import { Effect } from 'effect';
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDisputeSummaries
  */
-export type DisputeSummaryResponse = components['schemas']['DisputeSummaryResponse'];
+type DisputeSummaryResponse = components['schemas']['DisputeSummaryResponse'];
 
 /**
  * Response returned by eBay Fulfillment API getPaymentDispute.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDispute
  */
-export type PaymentDispute = components['schemas']['PaymentDispute'];
+type PaymentDispute = components['schemas']['PaymentDispute'];
 
 /**
  * Response returned by eBay Fulfillment API getActivities.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getActivities
  */
-export type PaymentDisputeActivityHistory = components['schemas']['PaymentDisputeActivityHistory'];
+type PaymentDisputeActivityHistory = components['schemas']['PaymentDisputeActivityHistory'];
 
 /**
  * Binary content returned by eBay Fulfillment API fetchEvidenceContent.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/fetchEvidenceContent
  */
-export type FetchEvidenceContentResponse = Buffer;
+type FetchEvidenceContentResponse = Buffer;
 
 /**
  * Request payload accepted by eBay Fulfillment API acceptPaymentDispute.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/acceptPaymentDispute
  */
-export type AcceptPaymentDisputeRequest = components['schemas']['AcceptPaymentDisputeRequest'];
+type AcceptPaymentDisputeRequest = components['schemas']['AcceptPaymentDisputeRequest'];
 
 /**
  * Request payload accepted by eBay Fulfillment API contestPaymentDispute.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/contestPaymentDispute
  */
-export type ContestPaymentDisputeRequest = components['schemas']['ContestPaymentDisputeRequest'];
+type ContestPaymentDisputeRequest = components['schemas']['ContestPaymentDisputeRequest'];
 
 /**
  * Response returned by eBay Fulfillment API uploadEvidenceFile.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/uploadEvidenceFile
  */
-export type FileEvidence = components['schemas']['FileEvidence'];
+type FileEvidence = components['schemas']['FileEvidence'];
 
 /**
  * Request payload accepted by eBay Fulfillment API addEvidence.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
  */
-export type AddEvidencePaymentDisputeRequest =
+type AddEvidencePaymentDisputeRequest =
   components['schemas']['AddEvidencePaymentDisputeRequest'];
 
 /**
@@ -78,7 +78,7 @@ export type AddEvidencePaymentDisputeRequest =
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
  */
-export type AddEvidencePaymentDisputeResponse =
+type AddEvidencePaymentDisputeResponse =
   components['schemas']['AddEvidencePaymentDisputeResponse'];
 
 /**
@@ -86,7 +86,7 @@ export type AddEvidencePaymentDisputeResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/updateEvidence
  */
-export type UpdateEvidencePaymentDisputeRequest =
+type UpdateEvidencePaymentDisputeRequest =
   components['schemas']['UpdateEvidencePaymentDisputeRequest'];
 
 /**
@@ -94,16 +94,16 @@ export type UpdateEvidencePaymentDisputeRequest =
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/updateEvidence
  */
-export type UpdateEvidenceResponse = operations['updateEvidence']['responses'][204]['content'];
+type UpdateEvidenceResponse = operations['updateEvidence']['responses'][204]['content'];
 
 /** Input required to retrieve one payment dispute. */
-export interface GetPaymentDisputeInput {
+interface GetPaymentDisputeInput {
   /** eBay payment dispute identifier from getPaymentDisputeSummaries. */
   readonly paymentDisputeId: string;
 }
 
 /** Input required to download one payment dispute evidence file. */
-export interface FetchEvidenceContentInput {
+interface FetchEvidenceContentInput {
   /** eBay payment dispute identifier that owns the evidence file. */
   readonly paymentDisputeId: string;
   /** Evidence set identifier from getPaymentDispute. */
@@ -113,13 +113,13 @@ export interface FetchEvidenceContentInput {
 }
 
 /** Input required to retrieve payment dispute activity. */
-export interface GetActivitiesInput {
+interface GetActivitiesInput {
   /** eBay payment dispute identifier that owns the activity history. */
   readonly paymentDisputeId: string;
 }
 
 /** Filters accepted by getPaymentDisputeSummaries. */
-export interface GetPaymentDisputeSummariesInput {
+interface GetPaymentDisputeSummariesInput {
   /** eBay order identifier used to find disputes for one order. */
   readonly orderId?: string;
   /** Buyer username used to find disputes opened by one buyer. */
@@ -137,7 +137,7 @@ export interface GetPaymentDisputeSummariesInput {
 }
 
 /** Input accepted by acceptPaymentDispute. */
-export interface AcceptPaymentDisputeInput {
+interface AcceptPaymentDisputeInput {
   /** eBay payment dispute identifier to accept. */
   readonly paymentDisputeId: string;
   /** Optional generated request payload for accepting the dispute. */
@@ -145,7 +145,7 @@ export interface AcceptPaymentDisputeInput {
 }
 
 /** Input accepted by contestPaymentDispute. */
-export interface ContestPaymentDisputeInput {
+interface ContestPaymentDisputeInput {
   /** eBay payment dispute identifier to contest. */
   readonly paymentDisputeId: string;
   /** Optional generated request payload for contesting the dispute. */
@@ -153,10 +153,10 @@ export interface ContestPaymentDisputeInput {
 }
 
 /** Multipart-compatible body accepted by uploadEvidenceFile. */
-export type UploadEvidenceFileBody = ArrayBuffer | Uint8Array | Record<string, unknown>;
+type UploadEvidenceFileBody = ArrayBuffer | Uint8Array | Record<string, unknown>;
 
 /** Input accepted by uploadEvidenceFile. */
-export interface UploadEvidenceFileInput {
+interface UploadEvidenceFileInput {
   /** eBay payment dispute identifier that owns the uploaded file. */
   readonly paymentDisputeId: string;
   /** Binary or multipart-compatible body passed to the request adapter. */
@@ -164,7 +164,7 @@ export interface UploadEvidenceFileInput {
 }
 
 /** Input accepted by addEvidence. */
-export interface AddEvidenceInput {
+interface AddEvidenceInput {
   /** eBay payment dispute identifier receiving the evidence. */
   readonly paymentDisputeId: string;
   /** Generated request payload describing the evidence set to add. */
@@ -172,7 +172,7 @@ export interface AddEvidenceInput {
 }
 
 /** Input accepted by updateEvidence. */
-export interface UpdateEvidenceInput {
+interface UpdateEvidenceInput {
   /** eBay payment dispute identifier whose evidence set is updated. */
   readonly paymentDisputeId: string;
   /** Generated request payload describing the evidence set update. */

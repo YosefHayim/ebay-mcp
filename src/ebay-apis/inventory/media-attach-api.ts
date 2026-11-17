@@ -35,7 +35,7 @@ export interface AttachMediaInput {
 }
 
 /** Per-file outcome of an attach run. */
-export interface MediaUploadOutcome {
+interface MediaUploadOutcome {
   /** Caller-supplied reference. */
   readonly source: string;
   /** Media family. */

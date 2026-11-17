@@ -15,7 +15,7 @@ import type { components } from '@/ebay-openapi-types/commerceMessageV1Oas3.js';
 import { Effect } from 'effect';
 
 /** Query parameters accepted by getConversations. */
-export interface GetConversationsInput {
+interface GetConversationsInput {
   /** Required conversation type such as FROM_EBAY or FROM_MEMBERS. */
   readonly conversationType: string;
   /** Optional conversation status filter. */
@@ -37,7 +37,7 @@ export interface GetConversationsInput {
 }
 
 /** Path and query parameters accepted by getConversation. */
-export interface GetConversationInput {
+interface GetConversationInput {
   /** Conversation identifier in the path. */
   readonly conversationId: string;
   /** Required conversation type such as FROM_EBAY or FROM_MEMBERS. */

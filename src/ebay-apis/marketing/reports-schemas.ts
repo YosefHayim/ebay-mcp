@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { amountSchema, inventoryReferenceSchema } from './marketing-common-schemas.js';
+import { inventoryReferenceSchema } from './marketing-common-schemas.js';
 
 // ============================================================================
 // Reporting Schemas
@@ -14,59 +14,15 @@ import { amountSchema, inventoryReferenceSchema } from './marketing-common-schem
 /**
  * Validates the Marketing API dimension model.
  */
-export const dimensionSchema = z.object({
+const dimensionSchema = z.object({
   dimensionKey: z.string().optional(),
   dimensionValues: z.array(z.string()).optional(),
 });
 
 /**
- * Validates the Marketing API dimension key annotation model.
- */
-export const dimensionKeyAnnotationSchema = z.object({
-  annotationKey: z.string().optional(),
-  value: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API dimension metadata model.
- */
-export const dimensionMetadataSchema = z.object({
-  annotations: z.array(dimensionKeyAnnotationSchema).optional(),
-  dataType: z.string().optional(),
-  dimensionKey: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API metric metadata model.
- */
-export const metricMetadataSchema = z.object({
-  dataType: z.string().optional(),
-  metricKey: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API report metadata model.
- */
-export const reportMetadataSchema = z.object({
-  dimensionMetadata: z.array(dimensionMetadataSchema).optional(),
-  maxNumberOfDimensionsToRequest: z.number().optional(),
-  maxNumberOfMetricsToRequest: z.number().optional(),
-  channel: z.string().optional(),
-  metricMetadata: z.array(metricMetadataSchema).optional(),
-  reportType: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API report metadatas model.
- */
-export const reportMetadatasSchema = z.object({
-  reportMetadata: z.array(reportMetadataSchema).optional(),
-});
-
-/**
  * Validates the Marketing API create report task model.
  */
-export const createReportTaskSchema = z.object({
+const createReportTaskSchema = z.object({
   campaignIds: z.array(z.string()).optional(),
   channels: z.array(z.string()).optional(),
   dateFrom: z.string(),
@@ -79,62 +35,6 @@ export const createReportTaskSchema = z.object({
   metricKeys: z.array(z.string()).optional(),
   reportFormat: z.string().optional(),
   reportType: z.string(),
-});
-
-/**
- * Validates the Marketing API report task model.
- */
-export const reportTaskSchema = z.object({
-  campaignIds: z.array(z.string()).optional(),
-  channels: z.array(z.string()).optional(),
-  dateFrom: z.string().optional(),
-  dateTo: z.string().optional(),
-  dimensions: z.array(dimensionSchema).optional(),
-  fundingModels: z.array(z.string()).optional(),
-  inventoryReferences: z.array(inventoryReferenceSchema).optional(),
-  listingIds: z.array(z.string()).optional(),
-  marketplaceId: z.string().optional(),
-  metricKeys: z.array(z.string()).optional(),
-  reportExpirationDate: z.string().optional(),
-  reportFormat: z.string().optional(),
-  reportHref: z.string().optional(),
-  reportId: z.string().optional(),
-  reportName: z.string().optional(),
-  reportTaskCompletionDate: z.string().optional(),
-  reportTaskCreationDate: z.string().optional(),
-  reportTaskExpectedCompletionDate: z.string().optional(),
-  reportTaskId: z.string().optional(),
-  reportTaskStatus: z.string().optional(),
-  reportTaskStatusMessage: z.string().optional(),
-  reportType: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API report task paged collection model.
- */
-export const reportTaskPagedCollectionSchema = z.object({
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  reportTasks: z.array(reportTaskSchema).optional(),
-});
-
-/**
- * Validates the Marketing API summary report response payload.
- */
-export const summaryReportResponseSchema = z.object({
-  baseSale: amountSchema.optional(),
-  lastUpdated: z.string().optional(),
-  percentageSalesLift: z.string().optional(),
-  promotionHref: z.string().optional(),
-  promotionId: z.string().optional(),
-  promotionReportId: z.string().optional(),
-  promotionSale: amountSchema.optional(),
-  totalDiscount: amountSchema.optional(),
-  totalSale: amountSchema.optional(),
 });
 
 export const getReportInputSchema = z.object({

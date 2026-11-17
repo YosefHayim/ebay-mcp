@@ -1,202 +1,12 @@
 import { z } from 'zod';
 import { ReasonForRefund } from '@/shared/ebay-enums.js';
 
-/**
- * Fulfillment/Order Management API Schemas
- *
- * This file contains Zod schemas for all Order Management and Fulfillment endpoints.
- */
-
-// ============================================================================
-// Common Schemas
-// ============================================================================
-
-const errorSchema = z.object({
-  errorId: z.number().optional(),
-  domain: z.string().optional(),
-  category: z.string().optional(),
-  message: z.string().optional(),
-  longMessage: z.string().optional(),
-  parameters: z
-    .array(
-      z.object({
-        name: z.string().optional(),
-        value: z.string().optional(),
-      }),
-    )
-    .optional(),
-});
-
 const amountSchema = z.object({
   currency: z.string(),
   value: z.string(),
   convertedFromCurrency: z.string().optional(),
   convertedFromValue: z.string().optional(),
   exchangeRate: z.string().optional(),
-});
-
-const addressSchema = z.object({
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  city: z.string().optional(),
-  stateOrProvince: z.string().optional(),
-  postalCode: z.string().optional(),
-  countryCode: z.string().optional(),
-});
-
-// ============================================================================
-// Order Schemas
-// ============================================================================
-
-const buyerSchema = z.object({
-  username: z.string().optional(),
-  taxAddress: addressSchema.optional(),
-  taxIdentifier: z
-    .object({
-      taxpayerId: z.string().optional(),
-      taxIdentifierType: z.string().optional(),
-      issuingCountry: z.string().optional(),
-    })
-    .optional(),
-});
-
-const lineItemSchema = z.object({
-  lineItemId: z.string().optional(),
-  legacyItemId: z.string().optional(),
-  legacyVariationId: z.string().optional(),
-  sku: z.string().optional(),
-  title: z.string().optional(),
-  quantity: z.number().optional(),
-  lineItemCost: amountSchema.optional(),
-  lineItemFulfillmentStatus: z.string().optional(),
-  lineItemFulfillmentInstructions: z
-    .object({
-      guaranteedDelivery: z.boolean().optional(),
-      minEstimatedDeliveryDate: z.string().optional(),
-      maxEstimatedDeliveryDate: z.string().optional(),
-      shipByDate: z.string().optional(),
-    })
-    .optional(),
-  total: amountSchema.optional(),
-  deliveryCost: amountSchema.optional(),
-  taxes: z
-    .array(
-      z.object({
-        taxType: z.string().optional(),
-        amount: amountSchema.optional(),
-      }),
-    )
-    .optional(),
-  itemLocation: addressSchema.optional(),
-  properties: z
-    .object({
-      soldViaAdCampaign: z.boolean().optional(),
-      buyerProtection: z.boolean().optional(),
-    })
-    .optional(),
-  purchaseMarketplaceId: z.string().optional(),
-});
-
-const shippingFulfillmentSchema = z.object({
-  fulfillmentId: z.string().optional(),
-  lineItems: z
-    .array(
-      z.object({
-        lineItemId: z.string().optional(),
-        quantity: z.number().optional(),
-      }),
-    )
-    .optional(),
-  shippedDate: z.string().optional(),
-  shippingCarrierCode: z.string().optional(),
-  trackingNumber: z.string().optional(),
-});
-
-const orderSchema = z.object({
-  orderId: z.string().optional(),
-  legacyOrderId: z.string().optional(),
-  creationDate: z.string().optional(),
-  lastModifiedDate: z.string().optional(),
-  orderFulfillmentStatus: z.string().optional(),
-  orderPaymentStatus: z.string().optional(),
-  sellerId: z.string().optional(),
-  buyer: buyerSchema.optional(),
-  pricingSummary: z
-    .object({
-      priceSubtotal: amountSchema.optional(),
-      deliveryCost: amountSchema.optional(),
-      deliveryDiscount: amountSchema.optional(),
-      tax: amountSchema.optional(),
-      total: amountSchema.optional(),
-    })
-    .optional(),
-  cancelStatus: z
-    .object({
-      cancelState: z.string().optional(),
-      cancelRequests: z
-        .array(
-          z.object({
-            cancelCompletedDate: z.string().optional(),
-            cancelInitiator: z.string().optional(),
-            cancelReason: z.string().optional(),
-            cancelRequestedDate: z.string().optional(),
-            cancelRequestId: z.string().optional(),
-            cancelRequestState: z.string().optional(),
-          }),
-        )
-        .optional(),
-    })
-    .optional(),
-  lineItems: z.array(lineItemSchema).optional(),
-  fulfillmentStartInstructions: z
-    .array(
-      z.object({
-        fulfillmentInstructionsType: z.string().optional(),
-        minEstimatedDeliveryDate: z.string().optional(),
-        maxEstimatedDeliveryDate: z.string().optional(),
-        shipByDate: z.string().optional(),
-        shippingStep: z
-          .object({
-            shipTo: addressSchema.optional(),
-            shipToReferenceId: z.string().optional(),
-            shippingCarrierCode: z.string().optional(),
-            shippingServiceCode: z.string().optional(),
-          })
-          .optional(),
-      }),
-    )
-    .optional(),
-  fulfillmentHrefs: z.array(z.string()).optional(),
-  paymentSummary: z
-    .object({
-      payments: z
-        .array(
-          z.object({
-            paymentDate: z.string().optional(),
-            paymentMethod: z.string().optional(),
-            paymentReferenceId: z.string().optional(),
-            paymentStatus: z.string().optional(),
-            amount: amountSchema.optional(),
-          }),
-        )
-        .optional(),
-      refunds: z
-        .array(
-          z.object({
-            refundDate: z.string().optional(),
-            refundId: z.string().optional(),
-            refundReferenceId: z.string().optional(),
-            refundStatus: z.string().optional(),
-            amount: amountSchema.optional(),
-          }),
-        )
-        .optional(),
-      totalDueSeller: amountSchema.optional(),
-    })
-    .optional(),
-  salesRecordReference: z.string().optional(),
-  totalFeeBasisAmount: amountSchema.optional(),
-  totalMarketplaceFee: amountSchema.optional(),
 });
 
 /**
@@ -217,7 +27,7 @@ export const getOrdersInputSchema = z.object({
  * Shared input for read-only order issue scanners (cancellation / refund helpers).
  * Calls getOrders then filters client-side — no Post-Order API.
  */
-export const scanOrderIssuesInputSchema = z.object({
+const scanOrderIssuesInputSchema = z.object({
   filter: z
     .string()
     .optional()
@@ -239,32 +49,11 @@ export const getCancellationRequestsInputSchema = scanOrderIssuesInputSchema;
 export const getRefundedOrdersInputSchema = scanOrderIssuesInputSchema;
 
 /**
- * Validates the Fulfillment API get orders response payload.
- */
-export const getOrdersOutputSchema = z.object({
-  orders: z.array(orderSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
  * Validates the Fulfillment API get order request payload.
  */
 export const getOrderInputSchema = z.object({
   orderId: z.string().describe('The unique identifier of the order'),
   fieldGroups: z.string().optional().describe('Response field group, e.g. TAX_BREAKDOWN'),
-});
-
-/**
- * Validates the Fulfillment API get order response payload.
- */
-export const getOrderOutputSchema = orderSchema.extend({
-  warnings: z.array(errorSchema).optional(),
 });
 
 // ============================================================================
@@ -292,23 +81,10 @@ export const createShippingFulfillmentInputSchema = z.object({
 });
 
 /**
- * Validates the Fulfillment API create shipping fulfillment response payload.
- */
-export const createShippingFulfillmentOutputSchema = z.object({});
-
-/**
  * Validates the Fulfillment API get shipping fulfillments request payload.
  */
 export const getShippingFulfillmentsInputSchema = z.object({
   orderId: z.string().describe('The unique identifier of the order'),
-});
-
-/**
- * Validates the Fulfillment API get shipping fulfillments response payload.
- */
-export const getShippingFulfillmentsOutputSchema = z.object({
-  fulfillments: z.array(shippingFulfillmentSchema).optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /**
@@ -318,11 +94,6 @@ export const getShippingFulfillmentInputSchema = z.object({
   orderId: z.string().describe('The unique identifier of the order'),
   fulfillmentId: z.string().describe('The unique identifier of the shipping fulfillment'),
 });
-
-/**
- * Validates the Fulfillment API get one shipping fulfillment response payload.
- */
-export const getShippingFulfillmentOutputSchema = shippingFulfillmentSchema;
 
 // ============================================================================
 // Refund Schemas
@@ -352,65 +123,6 @@ export const issueRefundInputSchema = z.object({
       .optional()
       .describe('Order-level refund amount (for partial refunds)'),
   }),
-});
-
-/**
- * Validates the Fulfillment API issue refund response payload.
- */
-export const issueRefundOutputSchema = z.object({
-  refundId: z.string().optional(),
-  refundStatus: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-// ============================================================================
-// Payment Dispute Schemas
-// ============================================================================
-
-const paymentDisputeSchema = z.object({
-  paymentDisputeId: z.string().optional(),
-  orderId: z.string().optional(),
-  openDate: z.string().optional(),
-  respondByDate: z.string().optional(),
-  paymentDisputeStatus: z.string().optional(),
-  reason: z.string().optional(),
-  amount: amountSchema.optional(),
-  buyer: buyerSchema.optional(),
-  lineItems: z.array(lineItemSchema).optional(),
-  evidence: z
-    .array(
-      z.object({
-        evidenceId: z.string().optional(),
-        evidenceType: z.string().optional(),
-        files: z
-          .array(
-            z.object({
-              fileId: z.string().optional(),
-              name: z.string().optional(),
-              uploadedDate: z.string().optional(),
-            }),
-          )
-          .optional(),
-        lineItems: z
-          .array(
-            z.object({
-              lineItemId: z.string().optional(),
-            }),
-          )
-          .optional(),
-      }),
-    )
-    .optional(),
-});
-
-const paymentDisputeSummarySchema = z.object({
-  paymentDisputeId: z.string().optional(),
-  orderId: z.string().optional(),
-  openDate: z.string().optional(),
-  respondByDate: z.string().optional(),
-  paymentDisputeStatus: z.string().optional(),
-  reason: z.string().optional(),
-  amount: amountSchema.optional(),
 });
 
 const paymentDisputeIdSchema = z.string().describe('The unique payment dispute ID');
@@ -486,20 +198,6 @@ export const getPaymentDisputeSummariesInputSchema = z.object({
   paymentDisputeStatus: z.string().optional().describe('Filter by payment dispute status'),
   limit: z.number().optional().describe('Number of disputes to return'),
   offset: z.number().optional().describe('Number of disputes to skip'),
-});
-
-/**
- * Validates the Fulfillment API getPaymentDisputeSummaries response payload.
- */
-export const getPaymentDisputeSummariesOutputSchema = z.object({
-  paymentDisputeSummaries: z.array(paymentDisputeSummarySchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /**

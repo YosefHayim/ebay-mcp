@@ -53,49 +53,49 @@ type UpdateCampaignIdentificationInput = z.infer<typeof updateCampaignIdentifica
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/cloneCampaign
  */
-export type CloneCampaignResponse = MarketingOperationResponse<'cloneCampaign'>;
+type CloneCampaignResponse = MarketingOperationResponse<'cloneCampaign'>;
 
 /**
  * Response returned by eBay Marketing API getCampaigns.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaigns
  */
-export type GetCampaignsResponse = MarketingOperationResponse<'getCampaigns'>;
+type GetCampaignsResponse = MarketingOperationResponse<'getCampaigns'>;
 
 /**
  * Response returned by eBay Marketing API createCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/createCampaign
  */
-export type CreateCampaignResponse = MarketingOperationResponse<'createCampaign'>;
+type CreateCampaignResponse = MarketingOperationResponse<'createCampaign'>;
 
 /**
  * Response returned by eBay Marketing API getCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaign
  */
-export type GetCampaignResponse = MarketingOperationResponse<'getCampaign'>;
+type GetCampaignResponse = MarketingOperationResponse<'getCampaign'>;
 
 /**
  * Response returned by eBay Marketing API deleteCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/deleteCampaign
  */
-export type DeleteCampaignResponse = MarketingOperationResponse<'deleteCampaign'>;
+type DeleteCampaignResponse = MarketingOperationResponse<'deleteCampaign'>;
 
 /**
  * Response returned by eBay Marketing API endCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/endCampaign
  */
-export type EndCampaignResponse = MarketingOperationResponse<'endCampaign'>;
+type EndCampaignResponse = MarketingOperationResponse<'endCampaign'>;
 
 /**
  * Response returned by eBay Marketing API findCampaignByAdReference.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/findCampaignByAdReference
  */
-export type FindCampaignByAdReferenceResponse =
+type FindCampaignByAdReferenceResponse =
   MarketingOperationResponse<'findCampaignByAdReference'>;
 
 /**
@@ -103,70 +103,70 @@ export type FindCampaignByAdReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaignByName
  */
-export type GetCampaignByNameResponse = MarketingOperationResponse<'getCampaignByName'>;
+type GetCampaignByNameResponse = MarketingOperationResponse<'getCampaignByName'>;
 
 /**
  * Response returned by eBay Marketing API pauseCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/pauseCampaign
  */
-export type PauseCampaignResponse = MarketingOperationResponse<'pauseCampaign'>;
+type PauseCampaignResponse = MarketingOperationResponse<'pauseCampaign'>;
 
 /**
  * Response returned by eBay Marketing API resumeCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/resumeCampaign
  */
-export type ResumeCampaignResponse = MarketingOperationResponse<'resumeCampaign'>;
+type ResumeCampaignResponse = MarketingOperationResponse<'resumeCampaign'>;
 
 /**
  * Response returned by eBay Marketing API suggestBudget.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestBudget
  */
-export type SuggestBudgetResponse = MarketingOperationResponse<'suggestBudget'>;
+type SuggestBudgetResponse = MarketingOperationResponse<'suggestBudget'>;
 
 /**
  * Response returned by eBay Marketing API suggestItems.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestItems
  */
-export type SuggestItemsResponse = MarketingOperationResponse<'suggestItems'>;
+type SuggestItemsResponse = MarketingOperationResponse<'suggestItems'>;
 
 /**
  * Response returned by eBay Marketing API suggestMaxCpc.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestMaxCpc
  */
-export type SuggestMaxCpcResponse = MarketingOperationResponse<'suggestMaxCpc'>;
+type SuggestMaxCpcResponse = MarketingOperationResponse<'suggestMaxCpc'>;
 
 /**
  * Response returned by eBay Marketing API updateAdRateStrategy.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateAdRateStrategy
  */
-export type UpdateAdRateStrategyResponse = MarketingOperationResponse<'updateAdRateStrategy'>;
+type UpdateAdRateStrategyResponse = MarketingOperationResponse<'updateAdRateStrategy'>;
 
 /**
  * Response returned by eBay Marketing API updateBiddingStrategy.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateBiddingStrategy
  */
-export type UpdateBiddingStrategyResponse = MarketingOperationResponse<'updateBiddingStrategy'>;
+type UpdateBiddingStrategyResponse = MarketingOperationResponse<'updateBiddingStrategy'>;
 
 /**
  * Response returned by eBay Marketing API updateCampaignBudget.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateCampaignBudget
  */
-export type UpdateCampaignBudgetResponse = MarketingOperationResponse<'updateCampaignBudget'>;
+type UpdateCampaignBudgetResponse = MarketingOperationResponse<'updateCampaignBudget'>;
 
 /**
  * Response returned by eBay Marketing API updateCampaignIdentification.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/updateCampaignIdentification
  */
-export type UpdateCampaignIdentificationResponse =
+type UpdateCampaignIdentificationResponse =
   MarketingOperationResponse<'updateCampaignIdentification'>;
 
 /** Marketing API — campaigns methods closed over a shared client. */

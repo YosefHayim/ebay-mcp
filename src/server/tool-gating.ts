@@ -147,7 +147,7 @@ interface MutationResult {
  * Backed by the per-connection `RegisteredTool` map, so enabling/disabling is
  * naturally isolated to one client session.
  */
-export interface ToolGatingController {
+interface ToolGatingController {
   /** Lists families or lightweight tool rows matching the provided filters. */
   list(args: { family?: string; query?: string; cursor?: string; limit?: number }): unknown;
   /** Enables registered eBay tools by exact tool name. */

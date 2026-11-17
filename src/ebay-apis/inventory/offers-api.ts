@@ -13,13 +13,13 @@ import {
   requireObjectEffect,
   requireStringEffect,
 } from '@/ebay-client/request.js';
-import type { components, operations } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
+import type { components, } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
 import { Effect, Either } from 'effect';
 import { validateOfferFormatEffect } from './offer-format-api.js';
 import { INVENTORY_BASE_PATH } from './inventory-shared-api.js';
 
 /** Input accepted by getOffers. */
-export interface GetOffersInput {
+interface GetOffersInput {
   /** Listing format filter sent as format. */
   readonly format?: string;
   /** Number of offers to return. */
@@ -39,13 +39,13 @@ export const MAX_BATCH_GET_OFFERS_SKUS = 25;
 export const BATCH_GET_OFFERS_CONCURRENCY = 3;
 
 /** Input accepted by getOffersBySkus. Exact duplicate SKUs are queried once. */
-export interface GetOffersBySkusInput {
+interface GetOffersBySkusInput {
   readonly skus: readonly string[];
   readonly format?: string;
   readonly marketplaceId?: string;
 }
 
-export type GetOffersBySkuResult =
+type GetOffersBySkuResult =
   | { readonly sku: string; readonly status: 'success'; readonly response: GetOffersResponse }
   | {
       readonly sku: string;
@@ -54,7 +54,7 @@ export type GetOffersBySkuResult =
     };
 
 /** Aggregate response for a batch offer lookup. */
-export interface GetOffersBySkusResponse {
+interface GetOffersBySkusResponse {
   readonly requestedSkuCount: number;
   readonly uniqueSkuCount: number;
   readonly successCount: number;
@@ -63,19 +63,19 @@ export interface GetOffersBySkusResponse {
 }
 
 /** Input accepted by offer ID endpoints. */
-export interface OfferIdInput {
+interface OfferIdInput {
   /** eBay offer identifier. */
   readonly offerId: string;
 }
 
 /** Input accepted by createOffer. */
-export interface CreateOfferInput {
+interface CreateOfferInput {
   /** Generated EbayOfferDetailsWithKeys body. */
   readonly body: CreateOfferRequest;
 }
 
 /** Input accepted by updateOffer. */
-export interface UpdateOfferInput {
+interface UpdateOfferInput {
   /** eBay offer identifier. */
   readonly offerId: string;
   /** Generated EbayOfferDetailsWithId body. */
@@ -83,31 +83,31 @@ export interface UpdateOfferInput {
 }
 
 /** Input accepted by bulkCreateOffer. */
-export interface BulkCreateOfferInput {
+interface BulkCreateOfferInput {
   /** Generated BulkEbayOfferDetailsWithKeys body. */
   readonly body: BulkCreateOfferRequest;
 }
 
 /** Input accepted by bulkPublishOffer. */
-export interface BulkPublishOfferInput {
+interface BulkPublishOfferInput {
   /** Generated BulkOffer body. */
   readonly body: BulkPublishOfferRequest;
 }
 
 /** Input accepted by getListingFees. */
-export interface GetListingFeesInput {
+interface GetListingFeesInput {
   /** Generated OfferKeysWithId body. */
   readonly body: GetListingFeesRequest;
 }
 
 /** Input accepted by publishOfferByInventoryItemGroup. */
-export interface PublishOfferByInventoryItemGroupInput {
+interface PublishOfferByInventoryItemGroupInput {
   /** Generated PublishByInventoryItemGroupRequest body. */
   readonly body: PublishOfferByInventoryItemGroupRequest;
 }
 
 /** Input accepted by withdrawOfferByInventoryItemGroup. */
-export interface WithdrawOfferByInventoryItemGroupInput {
+interface WithdrawOfferByInventoryItemGroupInput {
   /** Generated WithdrawByInventoryItemGroupRequest body. */
   readonly body: WithdrawOfferByInventoryItemGroupRequest;
 }
@@ -117,14 +117,14 @@ export interface WithdrawOfferByInventoryItemGroupInput {
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkCreateOffer
  */
-export type BulkCreateOfferRequest = components['schemas']['BulkEbayOfferDetailsWithKeys'];
+type BulkCreateOfferRequest = components['schemas']['BulkEbayOfferDetailsWithKeys'];
 
 /**
  * Response returned by bulkCreateOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkCreateOffer
  */
-export type BulkCreateOfferResponse = components['schemas']['BulkOfferResponse'];
+type BulkCreateOfferResponse = components['schemas']['BulkOfferResponse'];
 
 /**
  * Request body accepted by bulkPublishOffer.
@@ -138,49 +138,49 @@ export type BulkPublishOfferRequest = components['schemas']['BulkOffer'];
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkPublishOffer
  */
-export type BulkPublishOfferResponse = components['schemas']['BulkPublishResponse'];
+type BulkPublishOfferResponse = components['schemas']['BulkPublishResponse'];
 
 /**
  * Response returned by getOffers.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/getOffers
  */
-export type GetOffersResponse = components['schemas']['Offers'];
+type GetOffersResponse = components['schemas']['Offers'];
 
 /**
  * Request body accepted by createOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/createOffer
  */
-export type CreateOfferRequest = components['schemas']['EbayOfferDetailsWithKeys'];
+type CreateOfferRequest = components['schemas']['EbayOfferDetailsWithKeys'];
 
 /**
  * Response returned by createOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/createOffer
  */
-export type CreateOfferResponse = components['schemas']['OfferResponse'];
+type CreateOfferResponse = components['schemas']['OfferResponse'];
 
 /**
  * Response returned by getOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/getOffer
  */
-export type GetOfferResponse = components['schemas']['EbayOfferDetailsWithAll'];
+type GetOfferResponse = components['schemas']['EbayOfferDetailsWithAll'];
 
 /**
  * Request body accepted by updateOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/updateOffer
  */
-export type UpdateOfferRequest = components['schemas']['EbayOfferDetailsWithId'];
+type UpdateOfferRequest = components['schemas']['EbayOfferDetailsWithId'];
 
 /**
  * No-content response returned by deleteOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/deleteOffer
  */
-export type DeleteOfferResponse = void;
+type DeleteOfferResponse = void;
 
 /**
  * Request body accepted by getListingFees.
@@ -194,14 +194,14 @@ export type GetListingFeesRequest = components['schemas']['OfferKeysWithId'];
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/getListingFees
  */
-export type GetListingFeesResponse = components['schemas']['FeesSummaryResponse'];
+type GetListingFeesResponse = components['schemas']['FeesSummaryResponse'];
 
 /**
  * Response returned by publishOffer.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/publishOffer
  */
-export type PublishOfferResponse = components['schemas']['PublishResponse'];
+type PublishOfferResponse = components['schemas']['PublishResponse'];
 
 /**
  * Request body accepted by publishOfferByInventoryItemGroup.
@@ -216,7 +216,7 @@ export type PublishOfferByInventoryItemGroupRequest =
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/withdrawOffer
  */
-export type WithdrawOfferResponse = components['schemas']['WithdrawResponse'];
+type WithdrawOfferResponse = components['schemas']['WithdrawResponse'];
 
 /**
  * Request body accepted by withdrawOfferByInventoryItemGroup.
@@ -232,7 +232,7 @@ export type WithdrawOfferByInventoryItemGroupRequest =
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/withdrawOfferByInventoryItemGroup
  */
 // biome-ignore lint/style/useExportsLast: public endpoint types intentionally precede private implementation helpers
-export type WithdrawOfferByInventoryItemGroupResponse = void;
+type WithdrawOfferByInventoryItemGroupResponse = void;
 
 // Keep the shared request implementation private so the existing and batch methods cannot drift.
 const getOffersEffect = (

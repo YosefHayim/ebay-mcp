@@ -184,26 +184,6 @@ export * from '@/ebay-apis/fulfillment/dispute-api.js';
 export * from '@/ebay-apis/fulfillment/fulfillment-api.js';
 export * from '@/ebay-apis/logistics/logistics-api.js';
 export * from '@/ebay-apis/other/edelivery/edelivery-api.js';
-export { BrowseApi } from '@/ebay-apis/browse/browse-api.js';
-export {
-  buildBrowseFilter,
-  requireNoPriceFilterConflict,
-} from '@/ebay-apis/browse/browse-filter.js';
-export {
-  mapItemDetailsResponse,
-  mapItemSummary,
-  mapSearchActiveItemsResponse,
-} from '@/ebay-apis/browse/browse-mappers.js';
-export {
-  BROWSE_SORT_VALUES,
-  type ActiveItemSummary,
-  type BrowseMoney,
-  type BrowseSortValue,
-  type GetItemDetailsInput,
-  type ItemDetails,
-  type SearchActiveItemsInput,
-  type SearchActiveItemsResult,
-} from '@/ebay-apis/browse/browse-types.js';
 export * from '@/ebay-apis/other/identity/identity-api.js';
 export * from '@/ebay-apis/other/translation/translation-api.js';
 export * from '@/ebay-apis/other/vero/vero-api.js';

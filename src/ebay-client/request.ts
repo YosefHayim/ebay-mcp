@@ -9,10 +9,10 @@ import { Data, Effect } from 'effect';
 export type QueryParams = Record<string, string | number>;
 
 /** HTTP methods supported by the shared eBay REST request helpers. */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /** One endpoint-owned query parameter allowed by {@link buildEndpointParams}. */
-export interface EndpointParamSpec {
+interface EndpointParamSpec {
   /** Query-string key expected by eBay, usually snake_case from the OpenAPI spec. */
   readonly wireName: string;
   /** Already-typed local value; undefined and empty strings are omitted. */

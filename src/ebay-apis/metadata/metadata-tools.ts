@@ -339,11 +339,6 @@ export const metadataEntries: ToolEntry[] = [
     name: 'ebay_get_sales_tax_jurisdictions',
     description: 'Get sales tax jurisdictions for a country',
     inputSchema: salesTaxJurisdictionsSchema.shape,
-    outputSchema: {
-      type: 'object',
-      properties: {},
-      description: 'Success response',
-    },
     handler: (api, args) => Effect.runPromise(api.metadata.getSalesTaxJurisdictions(args)),
   }),
 ];

@@ -5,46 +5,27 @@
  */
 
 import { z } from 'zod';
-import { amountSchema, alertSchema } from './marketing-common-schemas.js';
-
-// ============================================================================
-// Campaign Management Schemas
-// ============================================================================
-
-/**
- * Validates the Marketing API budget model.
- */
-export const budgetSchema = z.object({
-  amount: z.string().optional(),
-  currency: z.string().optional(),
-});
+import { amountSchema, } from './marketing-common-schemas.js';
 
 /**
  * Validates the Marketing API budget request model.
  */
-export const budgetRequestSchema = z.object({
+const budgetRequestSchema = z.object({
   amount: z.string().optional(),
   currency: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API campaign budget model.
- */
-export const campaignBudgetSchema = z.object({
-  daily: budgetSchema.optional(),
 });
 
 /**
  * Validates the Marketing API campaign budget request model.
  */
-export const campaignBudgetRequestSchema = z.object({
+const campaignBudgetRequestSchema = z.object({
   daily: budgetRequestSchema.optional(),
 });
 
 /**
  * Validates the Marketing API funding strategy model.
  */
-export const fundingStrategySchema = z.object({
+const fundingStrategySchema = z.object({
   bidPercentage: z.string().optional(),
   fundingModel: z.string().optional(),
 });
@@ -64,34 +45,16 @@ export const selectionRuleSchema = z.object({
 /**
  * Validates the Marketing API campaign criterion model.
  */
-export const campaignCriterionSchema = z.object({
+const campaignCriterionSchema = z.object({
   autoSelectFutureInventory: z.boolean().optional(),
   criterionType: z.string().optional(),
   selectionRules: z.array(selectionRuleSchema).optional(),
 });
 
 /**
- * Validates the Marketing API campaign model.
- */
-export const campaignSchema = z.object({
-  alerts: z.array(alertSchema).optional(),
-  budget: campaignBudgetSchema.optional(),
-  campaignCriterion: campaignCriterionSchema.optional(),
-  campaignId: z.string().optional(),
-  campaignName: z.string().optional(),
-  campaignStatus: z.string().optional(),
-  campaignTargetingType: z.string().optional(),
-  channels: z.array(z.string()).optional(),
-  endDate: z.string().optional(),
-  fundingStrategy: fundingStrategySchema.optional(),
-  marketplaceId: z.string().optional(),
-  startDate: z.string().optional(),
-});
-
-/**
  * Validates the Marketing API create campaign request model.
  */
-export const createCampaignRequestSchema = z.object({
+const createCampaignRequestSchema = z.object({
   campaignCriterion: campaignCriterionSchema.optional(),
   campaignName: z.string(),
   budget: campaignBudgetRequestSchema.optional(),
@@ -105,18 +68,8 @@ export const createCampaignRequestSchema = z.object({
 /**
  * Validates the Marketing API clone campaign request model.
  */
-export const cloneCampaignRequestSchema = z.object({
+const cloneCampaignRequestSchema = z.object({
   campaignName: z.string(),
-  endDate: z.string().optional(),
-  fundingStrategy: fundingStrategySchema.optional(),
-  startDate: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API update campaign request model.
- */
-export const updateCampaignRequestSchema = z.object({
-  campaignName: z.string().optional(),
   endDate: z.string().optional(),
   fundingStrategy: fundingStrategySchema.optional(),
   startDate: z.string().optional(),
@@ -125,14 +78,14 @@ export const updateCampaignRequestSchema = z.object({
 /**
  * Validates the Marketing API update campaign budget request model.
  */
-export const updateCampaignBudgetRequestSchema = z.object({
+const updateCampaignBudgetRequestSchema = z.object({
   budget: campaignBudgetRequestSchema.optional(),
 });
 
 /**
  * Validates the Marketing API update campaign identification request model.
  */
-export const updateCampaignIdentificationRequestSchema = z.object({
+const updateCampaignIdentificationRequestSchema = z.object({
   campaignName: z.string().optional(),
 });
 
@@ -146,7 +99,7 @@ export const updateBidPercentageRequestSchema = z.object({
 /**
  * Validates the Marketing API update bidding strategy request model.
  */
-export const updateBiddingStrategyRequestSchema = z.object({
+const updateBiddingStrategyRequestSchema = z.object({
   bidPercentage: z.string().optional(),
   biddingStrategy: z.string().optional(),
 });
@@ -154,127 +107,16 @@ export const updateBiddingStrategyRequestSchema = z.object({
 /**
  * Validates the Marketing API update adrate strategy request model.
  */
-export const updateAdrateStrategyRequestSchema = z.object({
+const updateAdrateStrategyRequestSchema = z.object({
   adRateStrategy: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API campaign paged collection response payload.
- */
-export const campaignPagedCollectionResponseSchema = z.object({
-  campaigns: z.array(campaignSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-});
-
-/**
- * Validates the Marketing API campaigns model.
- */
-export const campaignsSchema = z.object({
-  campaigns: z.array(campaignSchema).optional(),
-});
-
-// ============================================================================
-// Suggestion Schemas (Bids, Keywords, Budget)
-// ============================================================================
-
-/**
- * Validates the Marketing API proposed bid model.
- */
-export const proposedBidSchema = z.object({
-  amount: amountSchema.optional(),
-  basis: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API suggested bids model.
- */
-export const suggestedBidsSchema = z.object({
-  keywordText: z.string().optional(),
-  matchType: z.string().optional(),
-  proposedBid: proposedBidSchema.optional(),
-});
-
-/**
- * Validates the Marketing API additional info data model.
- */
-export const additionalInfoDataSchema = z.object({
-  key: z.string().optional(),
-  value: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API additional info model.
- */
-export const additionalInfoSchema = z.object({
-  data: z.array(additionalInfoDataSchema).optional(),
-  type: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API suggested keywords model.
- */
-export const suggestedKeywordsSchema = z.object({
-  additionalInfo: z.array(additionalInfoSchema).optional(),
-  keywordText: z.string().optional(),
-  matchType: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API budget recommendation response payload.
- */
-export const budgetRecommendationResponseSchema = z.object({
-  amount: amountSchema.optional(),
-  type: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API suggest budget response payload.
- */
-export const suggestBudgetResponseSchema = z.object({
-  suggestedBudget: z.array(budgetRecommendationResponseSchema).optional(),
-});
-
-/**
- * Validates the Marketing API max CPC model.
- */
-export const maxCpcSchema = z.object({
-  amount: amountSchema.optional(),
 });
 
 /**
  * Validates the Marketing API suggest max CPC request model.
  */
-export const suggestMaxCpcRequestSchema = z.object({
+const suggestMaxCpcRequestSchema = z.object({
   listingIds: z.array(z.string()).optional(),
   marketplaceId: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API suggest max CPC response payload.
- */
-export const suggestMaxCpcResponseSchema = z.object({
-  amount: amountSchema.optional(),
-  marketplaceId: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API bid preference model.
- */
-export const bidPreferenceSchema = z.object({
-  bidPercentage: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API dynamic ad rate preference model.
- */
-export const dynamicAdRatePreferenceSchema = z.object({
-  maxAdRate: z.string().optional(),
-  minAdRate: z.string().optional(),
 });
 
 export const cloneCampaignInputSchema = z.object({

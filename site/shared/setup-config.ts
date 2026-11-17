@@ -10,7 +10,7 @@ export interface SetupChoices {
   pickedFamilyKeys: string[];
 }
 
-export interface SetupConfig {
+interface SetupConfig {
   filePath: string;
   configText: string;
   note: string;

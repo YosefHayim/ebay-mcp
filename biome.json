@@ -50,7 +50,7 @@
         "useNamingConvention": "off",
         "useFilenamingConvention": {
           "level": "warn",
-          "options": { "filenameCases": ["camelCase"] }
+          "options": { "filenameCases": ["kebab-case"] }
         },
         "useImportType": "warn",
         "noMagicNumbers": "off",
@@ -139,7 +139,6 @@
         "src/ebay-openapi-types/**",
         "src/shared/ebay.ts",
         "src/shared/ebay-enums.ts",
-        "src/shared/index.ts",
         "scripts/**",
         "src/cli/*.ts"
       ],
@@ -183,8 +182,7 @@
       "includes": [
         "src/ebay-openapi-types/**",
         "src/shared/ebay.ts",
-        "src/shared/ebay-enums.ts",
-        "src/shared/index.ts"
+        "src/shared/ebay-enums.ts"
       ],
       "linter": {
         "rules": {

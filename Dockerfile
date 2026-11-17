@@ -40,4 +40,4 @@ COPY --from=builder /app/assets ./assets
 EXPOSE 3000
 
 # HTTP transport entrypoint for container deploys
-CMD ["node", "build/serverHttp.js"]
+CMD ["node", "build/server-http.js"]

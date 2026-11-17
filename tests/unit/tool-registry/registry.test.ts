@@ -29,11 +29,9 @@ describe('tool registry', () => {
 
     expect(validation.duplicateContracts).toEqual([]);
     expect(validation.invalidInputSchemaFields).toEqual([]);
-    expect(validation.malformedOutputSchemas).toEqual([]);
     expect(validation.missingDescriptions).toEqual([]);
     expect(validation.missingInputSchemas).toEqual([]);
     expect(contracts).toHaveLength(getToolDefinitions().length);
-    expect(contracts.some((contract) => contract.outputSchema)).toBe(true);
   });
 
   it('executes public handlers added by the registry instead of falling through', async () => {

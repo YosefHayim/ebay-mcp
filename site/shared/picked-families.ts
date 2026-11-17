@@ -1,6 +1,6 @@
 import type { ToolCatalog } from '../../scripts/build-tool-catalog.ts';
 
-export interface PickedFamilies {
+interface PickedFamilies {
   orderedKeys: string[];
   toolTotal: number;
 }

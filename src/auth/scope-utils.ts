@@ -41,7 +41,7 @@ const optionalConsent = (
 /**
  * Result of scope validation
  */
-export interface ScopeValidationResult {
+interface ScopeValidationResult {
   /** True when every provided scope is valid for the environment. */
   isValid: boolean;
   /** Warnings emitted by environment scope validation. */
@@ -55,7 +55,7 @@ export interface ScopeValidationResult {
 /**
  * Comparison between two sets of scopes
  */
-export interface ScopeDifference {
+interface ScopeDifference {
   /** Scopes available in both production and sandbox. */
   inBothEnvironments: string[];
   /** Scopes available only in production. */
@@ -67,7 +67,7 @@ export interface ScopeDifference {
 /**
  * Scope requirement information for a tool
  */
-export interface ScopeRequirement {
+interface ScopeRequirement {
   /** Scopes that can satisfy the tool requirement. */
   requiredScopes: string[];
   /** Helpful extra scopes for related workflow dependencies. */

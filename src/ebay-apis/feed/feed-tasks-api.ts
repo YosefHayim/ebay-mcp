@@ -48,11 +48,11 @@ const feedFileForm = (file: MediaUpload): FormData => {
 };
 
 /** Feed tasks page. @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getTasks */
-export type FeedTaskCollection = components['schemas']['TaskCollection'];
+type FeedTaskCollection = components['schemas']['TaskCollection'];
 /** Feed task status and upload summary. @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getTask */
-export type FeedTask = components['schemas']['Task'];
+type FeedTask = components['schemas']['Task'];
 /** Empty uploadFile acknowledgement. @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/uploadFile */
-export type UploadFeedFileResponse =
+type UploadFeedFileResponse =
   operations['uploadFile']['responses'][200]['content']['application/json'];
 
 /**

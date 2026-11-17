@@ -6,38 +6,8 @@ import {
   PricingVisibility,
   FormatType,
   ListingDuration,
-  LocationType,
-  MerchantLocationStatus,
-  DayOfWeek,
   MarketplaceId,
 } from '@/shared/ebay-enums.js';
-
-/**
- * Inventory Management API Schemas
- *
- * This file contains Zod schemas for all Inventory Management endpoints.
- * Schemas are organized by endpoint and include both input and output validation.
- */
-
-// ============================================================================
-// Common Schemas
-// ============================================================================
-
-const errorSchema = z.object({
-  errorId: z.number().optional(),
-  domain: z.string().optional(),
-  category: z.string().optional(),
-  message: z.string().optional(),
-  longMessage: z.string().optional(),
-  parameters: z
-    .array(
-      z.object({
-        name: z.string().optional(),
-        value: z.string().optional(),
-      }),
-    )
-    .optional(),
-});
 
 const amountSchema = z.object({
   currency: z.string(),
@@ -68,12 +38,6 @@ const availabilitySchema = z.object({
         .optional(),
     })
     .optional(),
-});
-
-const productIdentifierSchema = z.object({
-  epid: z.string().optional(),
-  gtin: z.string().optional(),
-  ktype: z.string().optional(),
 });
 
 const productSchema = z.object({
@@ -129,71 +93,6 @@ export const inventoryItemSchema = z.object({
   locale: z.string().optional(),
 });
 
-/**
- * Validates the Inventory Management API get inventory items request payload.
- */
-export const getInventoryItemsInputSchema = z.object({
-  limit: z.number().optional().describe('Number of items to return per page'),
-  offset: z.number().optional().describe('Number of items to skip for pagination'),
-});
-
-/**
- * Validates the Inventory Management API get inventory items response payload.
- */
-export const getInventoryItemsOutputSchema = z.object({
-  inventoryItems: z
-    .array(
-      z.object({
-        sku: z.string().optional(),
-        locale: z.string().optional(),
-        availability: availabilitySchema.optional(),
-        condition: z.string().optional(),
-        conditionDescription: z.string().optional(),
-        packageWeightAndSize: packageWeightAndSizeSchema.optional(),
-        product: productSchema.optional(),
-      }),
-    )
-    .optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  size: z.number().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
- * Validates the Inventory Management API get inventory item request payload.
- */
-export const getInventoryItemInputSchema = z.object({
-  sku: z.string().describe('The seller-defined SKU value for the inventory item'),
-});
-
-/**
- * Validates the Inventory Management API get inventory item response payload.
- */
-export const getInventoryItemOutputSchema = inventoryItemSchema.extend({
-  sku: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
- * Validates the Inventory Management API create inventory item request payload.
- */
-export const createInventoryItemInputSchema = z.object({
-  sku: z.string().describe('The seller-defined SKU value for the inventory item'),
-  body: inventoryItemSchema,
-});
-
-/**
- * Validates the Inventory Management API create inventory item response payload.
- */
-export const createInventoryItemOutputSchema = z.object({
-  warnings: z.array(errorSchema).optional(),
-});
-
 // ============================================================================
 // Offer Schemas
 // ============================================================================
@@ -228,7 +127,7 @@ const listingPoliciesSchema = z
 /**
  * Validates the Inventory Management API offer pricing container for both listing formats.
  */
-export const pricingSchema = z
+const pricingSchema = z
   .object({
     price: amountSchema
       .optional()
@@ -321,13 +220,6 @@ const offerKeyFields = {
     ),
 };
 
-/** Offer keys as eBay returns them: optional, since unpublished or partial offers can omit them. */
-const offerResponseKeyFields = {
-  sku: z.string().optional(),
-  marketplaceId: z.nativeEnum(MarketplaceId).optional(),
-  format: z.nativeEnum(FormatType).optional(),
-};
-
 /**
  * Validates the Inventory Management API offer model (createOffer / bulkCreateOffer body).
  * Unknown keys pass through so generated fields this schema does not model still reach eBay.
@@ -338,26 +230,6 @@ export const offerSchema = z.object({ ...offerKeyFields, ...offerDetailsFields }
  * Validates the Inventory Management API updateOffer body (offer details without the keys).
  */
 export const updateOfferBodySchema = z.object(offerDetailsFields).passthrough();
-
-/**
- * Validates the Inventory Management API offer response payload. Mirrors the
- * generated `EbayOfferDetailsWithAll`, where every field is optional.
- */
-export const offerResponseSchema = z.object({
-  ...offerResponseKeyFields,
-  ...offerDetailsFields,
-  offerId: z.string().optional(),
-  listing: z
-    .object({
-      listingId: z.string().optional(),
-      listingStatus: z.string().optional(),
-      soldQuantity: z.number().optional(),
-    })
-    .optional(),
-  status: z.string().optional(),
-  statusDuration: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
 
 /**
  * Validates the Inventory Management API get offers request payload.
@@ -371,345 +243,10 @@ export const getOffersInputSchema = z.object({
 });
 
 /**
- * Validates the Inventory Management API get offers response payload.
- */
-export const getOffersOutputSchema = z.object({
-  offers: z.array(offerResponseSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  size: z.number().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/** Validates the aggregate response from the bounded multi-SKU offer lookup. */
-export const getOffersBySkusOutputSchema = z.object({
-  requestedSkuCount: z.number(),
-  uniqueSkuCount: z.number(),
-  successCount: z.number(),
-  failureCount: z.number(),
-  results: z.array(
-    z.union([
-      z.object({
-        sku: z.string(),
-        status: z.enum(['success']),
-        response: getOffersOutputSchema,
-      }),
-      z.object({
-        sku: z.string(),
-        status: z.enum(['failure']),
-        error: z.object({ type: z.string(), message: z.string() }),
-      }),
-    ]),
-  ),
-});
-
-/**
- * Validates the Inventory Management API create offer request payload.
- */
-export const createOfferInputSchema = z.object({
-  body: offerSchema,
-});
-
-/**
- * Validates the Inventory Management API create offer response payload.
- */
-export const createOfferOutputSchema = z.object({
-  offerId: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
- * Validates the Inventory Management API publish offer request payload.
- */
-export const publishOfferInputSchema = z.object({
-  offerId: z.string().describe('The unique identifier of the offer to publish'),
-});
-
-/**
- * Validates the Inventory Management API publish offer response payload.
- */
-export const publishOfferOutputSchema = z.object({
-  listingId: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-// ============================================================================
-// Inventory Location Schemas
-// ============================================================================
-
-const operatingHoursSchema = z.object({
-  dayOfWeekEnum: z.nativeEnum(DayOfWeek).optional(),
-  intervals: z
-    .array(
-      z.object({
-        open: z.string().optional(),
-        close: z.string().optional(),
-      }),
-    )
-    .optional(),
-});
-
-const specialHoursSchema = z.object({
-  date: z.string().optional(),
-  intervals: z
-    .array(
-      z.object({
-        open: z.string().optional(),
-        close: z.string().optional(),
-      }),
-    )
-    .optional(),
-});
-
-const geoCoordinatesSchema = z.object({
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-});
-
-const addressSchema = z.object({
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  city: z.string().optional(),
-  stateOrProvince: z.string().optional(),
-  postalCode: z.string().optional(),
-  country: z.string().optional(),
-});
-
-/**
- * Validates the Inventory Management API location model.
- */
-export const locationSchema = z.object({
-  location: z
-    .object({
-      address: addressSchema.optional(),
-      geoCoordinates: geoCoordinatesSchema.optional(),
-    })
-    .optional(),
-  locationAdditionalInformation: z.string().optional(),
-  locationInstructions: z.string().optional(),
-  locationTypes: z.array(z.nativeEnum(LocationType)).optional(),
-  locationWebUrl: z.string().optional(),
-  merchantLocationStatus: z.nativeEnum(MerchantLocationStatus).optional(),
-  name: z.string().optional(),
-  operatingHours: z.array(operatingHoursSchema).optional(),
-  phone: z.string().optional(),
-  specialHours: z.array(specialHoursSchema).optional(),
-});
-
-/**
- * Validates the Inventory Management API get inventory locations request payload.
- */
-export const getInventoryLocationsInputSchema = z.object({
-  limit: z.number().optional().describe('Number of locations to return'),
-  offset: z.number().optional().describe('Number of locations to skip'),
-});
-
-/**
- * Validates the Inventory Management API get inventory locations response payload.
- */
-export const getInventoryLocationsOutputSchema = z.object({
-  locations: z
-    .array(
-      locationSchema.extend({
-        merchantLocationKey: z.string().optional(),
-      }),
-    )
-    .optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  size: z.number().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
- * Validates the Inventory Management API create inventory location request payload.
- */
-export const createInventoryLocationInputSchema = z.object({
-  merchantLocationKey: z.string().describe('Unique merchant-defined key for the location'),
-  body: locationSchema,
-});
-
-/**
- * Validates the Inventory Management API create inventory location response payload.
- */
-export const createInventoryLocationOutputSchema = z.object({
-  warnings: z.array(errorSchema).optional(),
-});
-
-// ============================================================================
-// Product Compatibility Schemas
-// ============================================================================
-
-const productFamilyPropertiesSchema = z.object({
-  make: z.string().optional(),
-  model: z.string().optional(),
-  year: z.string().optional(),
-  trim: z.string().optional(),
-  engine: z.string().optional(),
-});
-
-const compatibleProductSchema = z.object({
-  productIdentifier: productIdentifierSchema.optional(),
-  productFamilyProperties: productFamilyPropertiesSchema.optional(),
-  notes: z.string().optional(),
-});
-
-/**
- * Validates the Inventory Management API product compatibility model.
- */
-export const productCompatibilitySchema = z.object({
-  compatibleProducts: z.array(compatibleProductSchema).optional(),
-});
-
-/**
- * Validates the Inventory Management API get product compatibility request payload.
- */
-export const getProductCompatibilityInputSchema = z.object({
-  sku: z.string().describe('The SKU of the inventory item'),
-});
-
-/**
- * Validates the Inventory Management API get product compatibility response payload.
- */
-export const getProductCompatibilityOutputSchema = productCompatibilitySchema.extend({
-  warnings: z.array(errorSchema).optional(),
-});
-
-// ============================================================================
-// Inventory Item Group Schemas
-// ============================================================================
-
-const specificationSchema = z.object({
-  name: z.string(),
-  values: z.array(z.string()),
-});
-
-const variesBySchema = z.object({
-  specifications: z.array(specificationSchema).optional(),
-  aspectsImageVariesBy: z.array(z.string()).optional(),
-});
-
-/**
- * Validates the Inventory Management API inventory item group model.
- */
-export const inventoryItemGroupSchema = z.object({
-  aspects: z.record(z.array(z.string())),
-  description: z.string().optional(),
-  imageUrls: z.array(z.string()).optional(),
-  inventoryItemGroupKey: z.string(),
-  subtitle: z.string().optional(),
-  title: z.string(),
-  variantSKUs: z.array(z.string()).optional(),
-  variesBy: variesBySchema.optional(),
-  videoIds: z.array(z.string()).optional(),
-});
-
-/**
- * Validates the Inventory Management API get inventory item group request payload.
- */
-export const getInventoryItemGroupInputSchema = z.object({
-  inventoryItemGroupKey: z.string().describe('The unique identifier for the inventory item group'),
-});
-
-/**
- * Validates the Inventory Management API get inventory item group response payload.
- */
-export const getInventoryItemGroupOutputSchema = inventoryItemGroupSchema.extend({
-  warnings: z.array(errorSchema).optional(),
-});
-
-// ============================================================================
-// Bulk Operation Schemas
-// ============================================================================
-
-/**
- * Validates the Inventory Management API bulk inventory item request model.
- */
-export const bulkInventoryItemRequestSchema = z.object({
-  requests: z.array(
-    z.object({
-      sku: z.string(),
-      product: productSchema.optional(),
-      availability: availabilitySchema.optional(),
-      condition: z.nativeEnum(Condition).optional(),
-      conditionDescription: z.string().optional(),
-    }),
-  ),
-});
-
-/**
- * Validates the Inventory Management API bulk inventory item response payload.
- */
-export const bulkInventoryItemResponseSchema = z.object({
-  responses: z
-    .array(
-      z.object({
-        sku: z.string().optional(),
-        statusCode: z.number().optional(),
-        errors: z.array(errorSchema).optional(),
-        warnings: z.array(errorSchema).optional(),
-      }),
-    )
-    .optional(),
-});
-
-/**
  * Validates the Inventory Management API bulk offer request model.
  */
 export const bulkOfferRequestSchema = z.object({
   requests: z.array(offerSchema),
-});
-
-/**
- * Validates the Inventory Management API bulk offer response payload.
- */
-export const bulkOfferResponseSchema = z.object({
-  responses: z
-    .array(
-      z.object({
-        offerId: z.string().optional(),
-        statusCode: z.number().optional(),
-        errors: z.array(errorSchema).optional(),
-        warnings: z.array(errorSchema).optional(),
-      }),
-    )
-    .optional(),
-});
-
-/**
- * Validates the Inventory Management API bulk publish request model.
- */
-export const bulkPublishRequestSchema = z.object({
-  requests: z.array(
-    z.object({
-      offerId: z.string(),
-    }),
-  ),
-});
-
-/**
- * Validates the Inventory Management API bulk publish response payload.
- */
-export const bulkPublishResponseSchema = z.object({
-  responses: z
-    .array(
-      z.object({
-        offerId: z.string().optional(),
-        listingId: z.string().optional(),
-        statusCode: z.number().optional(),
-        errors: z.array(errorSchema).optional(),
-        warnings: z.array(errorSchema).optional(),
-      }),
-    )
-    .optional(),
 });
 
 // ============================================================================

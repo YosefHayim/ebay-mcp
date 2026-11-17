@@ -105,7 +105,7 @@ const logger = winston.createLogger({
 /**
  * Logger interface for different components
  */
-export interface ComponentLogger {
+interface ComponentLogger {
   /** Logs an error-level message to stderr/file transports. */
   error: (message: string, meta?: Record<string, unknown>) => void;
   /** Logs a warning-level message to stderr/file transports. */
@@ -121,7 +121,7 @@ export interface ComponentLogger {
 }
 
 /** Log file paths exposed for diagnostics. */
-export interface LogPaths {
+interface LogPaths {
   /** Directory that contains all log files. */
   logDir: string;
   /** Error-only log file path. */
@@ -328,56 +328,3 @@ export const getLogPaths = (): LogPaths => ({
  * ```
  */
 export const isFileLoggingEnabled = (): boolean => fileLoggingEnabled;
-
-/**
- * Enable or disable file logging at runtime
- *
- * @param enabled - Whether file logging should be enabled.
- * @returns Nothing; mutates Winston transports when enabling.
- *
- * @example
- * ```ts
- * setFileLogging(true);
- * ```
- */
-export const setFileLogging = (enabled: boolean): void => {
-  if (enabled && !fileLoggingEnabled) {
-    logger.add(
-      new winston.transports.File({
-        filename: join(LOG_DIR, 'error.log'),
-        level: 'error',
-        format: fileFormat,
-        maxsize: 5 * 1024 * 1024,
-        maxFiles: 5,
-        tailable: true,
-      }),
-    );
-    logger.add(
-      new winston.transports.File({
-        filename: join(LOG_DIR, 'combined.log'),
-        format: fileFormat,
-        maxsize: 10 * 1024 * 1024,
-        maxFiles: 5,
-        tailable: true,
-      }),
-    );
-    fileLoggingEnabled = true;
-    logger.info('File logging enabled');
-  }
-};
-
-/**
- * Set log level at runtime
- *
- * @param level - Winston log level name.
- * @returns Nothing; mutates the shared Winston logger level.
- *
- * @example
- * ```ts
- * setLogLevel('debug');
- * ```
- */
-export const setLogLevel = (level: string): void => {
-  logger.level = level;
-  logger.info(`Log level set to: ${level}`);
-};

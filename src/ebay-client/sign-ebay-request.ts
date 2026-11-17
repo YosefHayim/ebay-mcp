@@ -37,7 +37,7 @@ const signBase = (signatureBase: string, key: KeyObject): string => {
 const authorityOf = (url: URL): string => url.host.toLowerCase();
 
 /** A request about to be sent, reduced to what the signature covers. */
-export interface SignableRequest {
+interface SignableRequest {
   /** HTTP method, e.g. `GET`. */
   readonly method: string;
   /** Fully qualified URL eBay receives (query string is ignored by `@path`). */

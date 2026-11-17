@@ -10,33 +10,6 @@ import {
   MarketplaceId,
 } from '@/shared/ebay-enums.js';
 
-/**
- * Account Management API Schemas
- *
- * This file contains Zod schemas for all Account Management endpoints.
- * Schemas are organized by endpoint and include both input and output validation.
- */
-
-// ============================================================================
-// Common/Shared Response Schemas
-// ============================================================================
-
-const errorSchema = z.object({
-  errorId: z.number().optional(),
-  domain: z.string().optional(),
-  category: z.string().optional(),
-  message: z.string().optional(),
-  longMessage: z.string().optional(),
-  parameters: z
-    .array(
-      z.object({
-        name: z.string().optional(),
-        value: z.string().optional(),
-      }),
-    )
-    .optional(),
-});
-
 const timeDurationSchema = z.object({
   unit: z.nativeEnum(TimeDurationUnit).optional(),
   value: z.number().optional(),
@@ -78,26 +51,12 @@ export const getCustomPoliciesInputSchema = z.object({
 /**
  * Validates the Account Management API custom policy model.
  */
-export const customPolicySchema = z.object({
+const customPolicySchema = z.object({
   customPolicyId: z.string().optional(),
   label: z.string().optional(),
   name: z.string().optional(),
   description: z.string().optional(),
   policyType: z.string().optional(),
-});
-
-/**
- * Validates the Account Management API custom policy response payload.
- */
-export const customPolicyResponseSchema = z.object({
-  customPolicies: z.array(customPolicySchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /**
@@ -122,11 +81,6 @@ export const updateCustomPolicyInputSchema = z.object({
   customPolicyId: z.string().describe('The custom policy ID'),
   policy: customPolicySchema.describe('Updated custom policy details'),
 });
-
-/**
- * Validates the Account Management API create custom policy response payload.
- */
-export const createCustomPolicyOutputSchema = customPolicySchema;
 
 // ============================================================================
 // Fulfillment Policy Schemas
@@ -165,7 +119,7 @@ const shippingOptionSchema = z.object({
 /**
  * Validates the Account Management API fulfillment policy model.
  */
-export const fulfillmentPolicySchema = z.object({
+const fulfillmentPolicySchema = z.object({
   name: z.string(),
   marketplaceId: z.nativeEnum(MarketplaceId),
   categoryTypes: z.array(categoryTypeSchema).optional(),
@@ -180,43 +134,10 @@ export const fulfillmentPolicySchema = z.object({
 });
 
 /**
- * Validates the Account Management API fulfillment policy response payload.
- */
-export const fulfillmentPolicyResponseSchema = z.object({
-  fulfillmentPolicyId: z.string().optional(),
-  categoryTypes: z.array(categoryTypeSchema).optional(),
-  description: z.string().optional(),
-  freightShipping: z.boolean().optional(),
-  globalShipping: z.boolean().optional(),
-  handlingTime: timeDurationSchema.optional(),
-  localPickup: z.boolean().optional(),
-  marketplaceId: z.string().optional(),
-  name: z.string().optional(),
-  pickupDropOff: z.boolean().optional(),
-  shippingOptions: z.array(shippingOptionSchema).optional(),
-  shipToLocations: regionSetSchema.optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
  * Validates the Account Management API get fulfillment policies request payload.
  */
 export const getFulfillmentPoliciesInputSchema = z.object({
   marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID (e.g., EBAY_US)'),
-});
-
-/**
- * Validates the Account Management API get fulfillment policies response payload.
- */
-export const getFulfillmentPoliciesOutputSchema = z.object({
-  fulfillmentPolicies: z.array(fulfillmentPolicyResponseSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /**
@@ -248,14 +169,6 @@ export const deleteFulfillmentPolicyInputSchema = z.object({
   fulfillmentPolicyId: z.string().describe('The fulfillment policy ID'),
 });
 
-/**
- * Validates the Account Management API create fulfillment policy response payload.
- */
-export const createFulfillmentPolicyOutputSchema = z.object({
-  fulfillmentPolicyId: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
 // ============================================================================
 // Payment Policy Schemas
 // ============================================================================
@@ -280,7 +193,7 @@ const depositSchema = z.object({
 /**
  * Validates the Account Management API payment policy model.
  */
-export const paymentPolicySchema = z.object({
+const paymentPolicySchema = z.object({
   name: z.string(),
   marketplaceId: z.nativeEnum(MarketplaceId),
   categoryTypes: z.array(categoryTypeSchema).optional(),
@@ -293,41 +206,10 @@ export const paymentPolicySchema = z.object({
 });
 
 /**
- * Validates the Account Management API payment policy response payload.
- */
-export const paymentPolicyResponseSchema = z.object({
-  paymentPolicyId: z.string().optional(),
-  categoryTypes: z.array(categoryTypeSchema).optional(),
-  deposit: depositSchema.optional(),
-  description: z.string().optional(),
-  fullPaymentDueIn: timeDurationSchema.optional(),
-  immediatePay: z.boolean().optional(),
-  marketplaceId: z.string().optional(),
-  name: z.string().optional(),
-  paymentInstructions: z.string().optional(),
-  paymentMethods: z.array(paymentMethodSchema).optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
  * Validates the Account Management API get payment policies request payload.
  */
 export const getPaymentPoliciesInputSchema = z.object({
   marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID'),
-});
-
-/**
- * Validates the Account Management API get payment policies response payload.
- */
-export const getPaymentPoliciesOutputSchema = z.object({
-  paymentPolicies: z.array(paymentPolicyResponseSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /**
@@ -359,14 +241,6 @@ export const deletePaymentPolicyInputSchema = z.object({
   paymentPolicyId: z.string().describe('The payment policy ID'),
 });
 
-/**
- * Validates the Account Management API create payment policy response payload.
- */
-export const createPaymentPolicyOutputSchema = z.object({
-  paymentPolicyId: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
 // ============================================================================
 // Return Policy Schemas
 // ============================================================================
@@ -374,7 +248,7 @@ export const createPaymentPolicyOutputSchema = z.object({
 /**
  * Validates the Account Management API return policy model.
  */
-export const returnPolicySchema = z.object({
+const returnPolicySchema = z.object({
   name: z.string(),
   marketplaceId: z.nativeEnum(MarketplaceId),
   categoryTypes: z.array(categoryTypeSchema).optional(),
@@ -390,52 +264,10 @@ export const returnPolicySchema = z.object({
 });
 
 /**
- * Validates the Account Management API return policy response payload.
- */
-export const returnPolicyResponseSchema = z.object({
-  returnPolicyId: z.string().optional(),
-  categoryTypes: z.array(categoryTypeSchema).optional(),
-  description: z.string().optional(),
-  extendedHolidayReturnsOffered: z.boolean().optional(),
-  internationalOverride: z
-    .object({
-      returnMethod: z.string().optional(),
-      returnPeriod: timeDurationSchema.optional(),
-      returnsAccepted: z.boolean().optional(),
-      returnShippingCostPayer: z.string().optional(),
-    })
-    .optional(),
-  marketplaceId: z.string().optional(),
-  name: z.string().optional(),
-  refundMethod: z.string().optional(),
-  restockingFeePercentage: z.string().optional(), // DEPRECATED
-  returnInstructions: z.string().optional(),
-  returnMethod: z.string().optional(),
-  returnPeriod: timeDurationSchema.optional(),
-  returnsAccepted: z.boolean().optional(),
-  returnShippingCostPayer: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
  * Validates the Account Management API get return policies request payload.
  */
 export const getReturnPoliciesInputSchema = z.object({
   marketplaceId: z.nativeEnum(MarketplaceId).describe('eBay marketplace ID'),
-});
-
-/**
- * Validates the Account Management API get return policies response payload.
- */
-export const getReturnPoliciesOutputSchema = z.object({
-  returnPolicies: z.array(returnPolicyResponseSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /**
@@ -467,14 +299,6 @@ export const deleteReturnPolicyInputSchema = z.object({
   returnPolicyId: z.string().describe('The return policy ID'),
 });
 
-/**
- * Validates the Account Management API create return policy response payload.
- */
-export const createReturnPolicyOutputSchema = z.object({
-  returnPolicyId: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
 // ============================================================================
 // Sales Tax Schemas
 // ============================================================================
@@ -482,18 +306,8 @@ export const createReturnPolicyOutputSchema = z.object({
 /**
  * Validates the Account Management API sales tax base model.
  */
-export const salesTaxBaseSchema = z.object({
+const salesTaxBaseSchema = z.object({
   salesTaxPercentage: z.string(),
-  shippingAndHandlingTaxed: z.boolean().optional(),
-});
-
-/**
- * Validates the Account Management API sales tax model.
- */
-export const salesTaxSchema = z.object({
-  countryCode: z.string().optional(),
-  jurisdictionId: z.string().optional(),
-  salesTaxPercentage: z.string().optional(),
   shippingAndHandlingTaxed: z.boolean().optional(),
 });
 
@@ -505,7 +319,7 @@ export const createOrReplaceSalesTaxInputSchema = z.object({
 });
 
 /** Validates one sales tax row in a bulk create or replace request. */
-export const bulkSalesTaxRequestEntrySchema = z.object({
+const bulkSalesTaxRequestEntrySchema = z.object({
   countryCode: z.string(),
   jurisdictionId: z.string(),
   salesTaxBase: salesTaxBaseSchema,
@@ -530,14 +344,6 @@ export const getSalesTaxesInputSchema = z.object({
   countryCode: z.string().describe('Required: Two-letter ISO 3166-1 country code'),
 });
 
-/**
- * Validates the Account Management API get sales taxes response payload.
- */
-export const getSalesTaxesOutputSchema = z.object({
-  salesTaxes: z.array(salesTaxSchema).optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
 // ============================================================================
 // Program Schemas
 // ============================================================================
@@ -545,7 +351,7 @@ export const getSalesTaxesOutputSchema = z.object({
 /**
  * Validates the Account Management API program request model.
  */
-export const programRequestSchema = z.object({
+const programRequestSchema = z.object({
   programType: z.string(),
 });
 
@@ -561,34 +367,6 @@ export const optOutOfProgramInputSchema = z.object({
 
 /** Validates the Account Management API get opted-in programs request payload. */
 export const getOptedInProgramsInputSchema = z.object({});
-
-/**
- * Validates the Account Management API programs response payload.
- */
-export const programsOutputSchema = z.object({
-  programs: z
-    .array(
-      z.object({
-        programType: z.string().optional(),
-        programStatus: z.string().optional(),
-      }),
-    )
-    .optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-// ============================================================================
-// KYC Schemas
-// ============================================================================
-
-/**
- * Validates the Account Management API KYC response payload.
- */
-export const kycOutputSchema = z.object({
-  kycCheck: z.string().optional(),
-  detailedStatus: z.string().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
 
 /** Validates the Account Management API get KYC request payload. */
 export const getKYCInputSchema = z.object({});
@@ -620,25 +398,6 @@ export const getAdvertisingEligibilityInputSchema = z.object({
     .string()
     .optional()
     .describe('Optional comma-separated list of program types to check eligibility for'),
-});
-
-// ============================================================================
-// Privileges Schemas
-// ============================================================================
-
-/**
- * Validates the Account Management API privileges response payload.
- */
-export const privilegesOutputSchema = z.object({
-  sellingLimit: z
-    .object({
-      amount: amountSchema.optional(),
-      quantity: z.number().optional(),
-    })
-    .optional(),
-  qualifiesForSelling: z.boolean().optional(),
-  sellerRegistrationCompleted: z.boolean().optional(),
-  warnings: z.array(errorSchema).optional(),
 });
 
 /** Validates the Account Management API get privileges request payload. */

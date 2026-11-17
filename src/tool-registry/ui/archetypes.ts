@@ -9,7 +9,7 @@ import type { ViewArchetype } from '@/tool-registry/ui/view-models.js';
  * add the literal to {@link ViewArchetype}, add its view-model shape, and add one
  * entry here — `tsc` then forces a matching React app and `ui.map` everywhere.
  */
-export interface UiArchetypeManifestEntry {
+interface UiArchetypeManifestEntry {
   /**
    * Stable resource identifier. A tool advertises this via `_meta.ui.resourceUri`
    * and the runtime registers the HTML under the same URI, so the host can fetch

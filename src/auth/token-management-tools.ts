@@ -422,11 +422,6 @@ export const tokenManagementEntries: ToolEntry[] = [
     description:
       'Manually refresh the user access token using the stored refresh token. This is useful when you want to proactively refresh an access token before it expires, or when recovering from authentication errors. Requires that user tokens are already set (either via EBAY_USER_REFRESH_TOKEN in .env or via ebay_set_user_tokens_with_expiry). Returns the new access token and expiry time.',
     inputSchema: refreshAccessTokenInputSchema.shape,
-    outputSchema: {
-      type: 'object',
-      properties: {},
-      description: 'Success response',
-    },
     handler: (api) => {
       const authClient = api.getAuthClient().getOAuthClient();
 
@@ -484,12 +479,6 @@ export const tokenManagementEntries: ToolEntry[] = [
       '- "Insufficient permissions": Re-run OAuth flow with additional scopes in ebay_get_oauth_url\n\n' +
       'For scopes and rate limits, see the "Authentication & rate limits" section of the ebay-mcp README.',
     inputSchema: exchangeAuthorizationCodeInputSchema.shape,
-    outputSchema: {
-      type: 'object',
-      properties: {},
-      description:
-        'Token exchange response including access token, refresh token, and expiry times',
-    },
     handler: (api, args) => {
       const { code } = args;
 

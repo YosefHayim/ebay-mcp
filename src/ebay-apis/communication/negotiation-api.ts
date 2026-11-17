@@ -28,13 +28,13 @@ type CreateOffersRequest = components['schemas']['CreateOffersRequest'];
  *
  * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/findEligibleItems
  */
-export type FindEligibleItemsResponse = components['schemas']['PagedEligibleItemCollection'];
+type FindEligibleItemsResponse = components['schemas']['PagedEligibleItemCollection'];
 /**
  * Response returned by eBay Negotiation sendOfferToInterestedBuyers.
  *
  * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/sendOfferToInterestedBuyers
  */
-export type SendOfferToInterestedBuyersResponse =
+type SendOfferToInterestedBuyersResponse =
   components['schemas']['SendOfferToInterestedBuyersCollectionResponse'];
 
 /**

@@ -110,7 +110,7 @@ type SubscriptionResponse = components['schemas']['SubscriptionResponse'];
  *
  * @see https://developer.ebay.com/api-docs/sell/account/resources/custom_policy/methods/getCustomPolicies
  */
-export type GetCustomPoliciesResponse = components['schemas']['CustomPolicyResponse'];
+type GetCustomPoliciesResponse = components['schemas']['CustomPolicyResponse'];
 
 /** Account API client for seller account policies, programs, tax, and eligibility. */
 export class AccountApi {

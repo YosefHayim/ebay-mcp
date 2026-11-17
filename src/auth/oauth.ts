@@ -41,7 +41,7 @@ export class EbayOAuthError extends Data.TaggedError('EbayOAuthError')<{
 }> {}
 
 /** Scope comparison returned by OAuth token status diagnostics. */
-export interface OAuthTokenScopeInfo {
+interface OAuthTokenScopeInfo {
   /** Scopes carried by the current user token. */
   readonly tokenScopes: string[];
   /** Scopes expected for the configured eBay environment. */

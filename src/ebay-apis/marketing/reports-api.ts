@@ -34,21 +34,21 @@ type DeleteReportTaskInput = z.infer<typeof deleteReportTaskInputSchema>;
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report/methods/getReport
  */
-export type GetReportResponse = MarketingOperationResponse<'getReport'>;
+type GetReportResponse = MarketingOperationResponse<'getReport'>;
 
 /**
  * Response returned by eBay Marketing API getReportMetadata.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_metadata/methods/getReportMetadata
  */
-export type GetReportMetadataResponse = MarketingOperationResponse<'getReportMetadata'>;
+type GetReportMetadataResponse = MarketingOperationResponse<'getReportMetadata'>;
 
 /**
  * Response returned by eBay Marketing API getReportMetadataForReportType.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_metadata/methods/getReportMetadataForReportType
  */
-export type GetReportMetadataForReportTypeResponse =
+type GetReportMetadataForReportTypeResponse =
   MarketingOperationResponse<'getReportMetadataForReportType'>;
 
 /**
@@ -56,28 +56,28 @@ export type GetReportMetadataForReportTypeResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/getReportTasks
  */
-export type GetReportTasksResponse = MarketingOperationResponse<'getReportTasks'>;
+type GetReportTasksResponse = MarketingOperationResponse<'getReportTasks'>;
 
 /**
  * Response returned by eBay Marketing API createReportTask.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/createReportTask
  */
-export type CreateReportTaskResponse = MarketingOperationResponse<'createReportTask'>;
+type CreateReportTaskResponse = MarketingOperationResponse<'createReportTask'>;
 
 /**
  * Response returned by eBay Marketing API getReportTask.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/getReportTask
  */
-export type GetReportTaskResponse = MarketingOperationResponse<'getReportTask'>;
+type GetReportTaskResponse = MarketingOperationResponse<'getReportTask'>;
 
 /**
  * Response returned by eBay Marketing API deleteReportTask.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report_task/methods/deleteReportTask
  */
-export type DeleteReportTaskResponse = MarketingOperationResponse<'deleteReportTask'>;
+type DeleteReportTaskResponse = MarketingOperationResponse<'deleteReportTask'>;
 
 /** Marketing API — reports methods closed over a shared client. */
 export const createMarketingReportsMethods = (client: EbayApiClient) => ({

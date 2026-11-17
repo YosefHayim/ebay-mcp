@@ -19,19 +19,19 @@ type MediaResourceMethods = ReturnType<typeof createMediaResourceMethods>;
 type InventoryItemsMethods = ReturnType<typeof createInventoryItemsMethods>;
 
 /** Media API base path; the host is `apim` rather than `api` (see {@link getMediaBaseUrl}). */
-export const MEDIA_BASE_PATH = '/commerce/media/v1_beta';
+const MEDIA_BASE_PATH = '/commerce/media/v1_beta';
 
 /** Timeout for binary uploads, which can be far larger than JSON calls. */
 const UPLOAD_TIMEOUT_MS = 10 * 60_000;
 
 /** How long {@link MediaApi.waitForVideo} waits for eBay processing by default. */
-export const DEFAULT_VIDEO_WAIT_MS = 120_000;
+const DEFAULT_VIDEO_WAIT_MS = 120_000;
 
 /** Interval between video status polls. */
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 
 /** Video statuses eBay treats as final. */
-export const TERMINAL_VIDEO_STATUSES: ReadonlySet<string> = new Set([
+const TERMINAL_VIDEO_STATUSES: ReadonlySet<string> = new Set([
   'LIVE',
   'BLOCKED',
   'PROCESSING_FAILED',
@@ -42,7 +42,7 @@ export const TERMINAL_VIDEO_STATUSES: ReadonlySet<string> = new Set([
  *
  * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/getImage
  */
-export type ImageResponse = components['schemas']['ImageResponse'];
+type ImageResponse = components['schemas']['ImageResponse'];
 
 /**
  * Response returned by getVideo.
@@ -56,7 +56,7 @@ export type Video = components['schemas']['Video'];
  *
  * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/createVideo
  */
-export type CreateVideoRequest = components['schemas']['CreateVideoRequest'];
+type CreateVideoRequest = components['schemas']['CreateVideoRequest'];
 
 /** One file to upload, already read into memory. */
 export interface MediaUpload {
@@ -83,13 +83,13 @@ export interface UploadedImage {
 }
 
 /** Input accepted by getImage. */
-export interface ImageIdInput {
+interface ImageIdInput {
   /** Media API image identifier. */
   readonly imageId: string;
 }
 
 /** Input accepted by createVideo. */
-export interface CreateVideoInput {
+interface CreateVideoInput {
   /** Video title. */
   readonly title: string;
   /** Exact size in bytes of the file that will be uploaded. */
@@ -99,7 +99,7 @@ export interface CreateVideoInput {
 }
 
 /** Input accepted by uploadVideo. */
-export interface UploadVideoInput {
+interface UploadVideoInput {
   /** Video ID returned by createVideo. */
   readonly videoId: string;
   /** File contents; must be exactly `size` bytes long. */
@@ -107,13 +107,13 @@ export interface UploadVideoInput {
 }
 
 /** Input accepted by getVideo. */
-export interface VideoIdInput {
+interface VideoIdInput {
   /** Media API video identifier. */
   readonly videoId: string;
 }
 
 /** Input accepted by waitForVideo. */
-export interface WaitForVideoInput extends VideoIdInput {
+interface WaitForVideoInput extends VideoIdInput {
   /** Longest time to wait before returning the latest status. */
   readonly maxWaitMs?: number;
   /** Delay between status polls. */
@@ -121,7 +121,7 @@ export interface WaitForVideoInput extends VideoIdInput {
 }
 
 /** Input accepted by uploadVideoFile. */
-export interface UploadVideoFileInput {
+interface UploadVideoFileInput {
   /** File to upload. */
   readonly file: MediaUpload;
   /** Video title; defaults to the file name. */
@@ -135,13 +135,13 @@ export interface UploadVideoFileInput {
 }
 
 /** Result of uploading several images in order. */
-export interface UploadImagesResult {
+interface UploadImagesResult {
   /** Uploaded images in input order. */
   readonly images: readonly UploadedImage[];
 }
 
 /** Failure of one upload in a sequence, carrying what already succeeded. */
-export class MediaUploadError extends Data.TaggedError('MediaUploadError')<{
+class MediaUploadError extends Data.TaggedError('MediaUploadError')<{
   /** Reference of the file whose upload failed. */
   readonly source: string;
   /** Zero-based position of the failed file. */

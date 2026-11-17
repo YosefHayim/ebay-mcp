@@ -240,11 +240,6 @@ export const otherEntries: ToolEntry[] = [
     name: 'ebay_create_complaint',
     description: 'Create a complaint for international shipping issues',
     inputSchema: edeliveryBodyInputSchema.shape,
-    outputSchema: {
-      type: 'object',
-      properties: {},
-      description: 'Success response',
-    },
     handler: (api, args) => Effect.runPromise(api.edelivery.createComplaint(args)),
   }),
 ];

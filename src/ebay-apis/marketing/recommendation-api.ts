@@ -14,7 +14,7 @@ import type { components } from '@/ebay-openapi-types/sellRecommendationV1Oas3.j
 import { Effect } from 'effect';
 
 /** Input accepted by findListingRecommendations. */
-export interface FindListingRecommendationsInput {
+interface FindListingRecommendationsInput {
   /** Generated FindListingRecommendationRequest body. Omit it to target all active listings. */
   readonly requestBody?: FindListingRecommendationRequest;
   /** Recommendation filter expression, such as recommendationTypes:{AD}. */
@@ -32,7 +32,7 @@ export interface FindListingRecommendationsInput {
  *
  * @see https://developer.ebay.com/api-docs/sell/recommendation/resources/find/methods/findListingRecommendations
  */
-export type FindListingRecommendationRequest =
+type FindListingRecommendationRequest =
   components['schemas']['FindListingRecommendationRequest'];
 
 /**
@@ -40,7 +40,7 @@ export type FindListingRecommendationRequest =
  *
  * @see https://developer.ebay.com/api-docs/sell/recommendation/resources/find/methods/findListingRecommendations
  */
-export type PagedListingRecommendationCollection =
+type PagedListingRecommendationCollection =
   components['schemas']['PagedListingRecommendationCollection'];
 
 /** Recommendation API - Promoted Listings recommendation discovery. */

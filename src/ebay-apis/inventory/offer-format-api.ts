@@ -15,7 +15,7 @@ const AUCTION_QUANTITY = 1;
  * Offer fields the listing-format rules read. Both create (with keys) and update
  * (without keys) bodies satisfy it; `format` is simply absent on update.
  */
-export type OfferFormatFields = Pick<OfferWithKeys, 'format'> &
+type OfferFormatFields = Pick<OfferWithKeys, 'format'> &
   Pick<
     OfferDetails,
     | 'availableQuantity'

@@ -30,7 +30,7 @@ export interface LocalMediaFile {
 }
 
 /** Tagged failure for a media reference the server refuses to read. */
-export class LocalMediaError extends Data.TaggedError('LocalMediaError')<{
+class LocalMediaError extends Data.TaggedError('LocalMediaError')<{
   /** Reference exactly as the caller supplied it. */
   readonly source: string;
   /** Human-readable reason. */
@@ -41,15 +41,15 @@ export class LocalMediaError extends Data.TaggedError('LocalMediaError')<{
 export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 
 /** Largest video the Media API accepts (from `CreateVideoRequest.size`). */
-export const MAX_VIDEO_BYTES = 157_286_400;
+const MAX_VIDEO_BYTES = 157_286_400;
 
 /** Maximum size of a listing document. */
-export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
 /** Maximum size of a post-order document. */
-export const MAX_POST_ORDER_DOCUMENT_BYTES = 5 * 1024 * 1024;
+const MAX_POST_ORDER_DOCUMENT_BYTES = 5 * 1024 * 1024;
 
 /** URI scheme resolved under `EBAY_MCP_MEDIA_ROOT`. */
-export const MEDIA_URI_PREFIX = 'media://';
+const MEDIA_URI_PREFIX = 'media://';
 
 const IMAGE_MIME_BY_EXTENSION: Readonly<Record<string, string>> = {
   jpg: 'image/jpeg',

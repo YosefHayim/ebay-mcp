@@ -6,83 +6,9 @@ import { createInventoryOffersMethods } from './offers-api.js';
 type InventoryItemsMethods = ReturnType<typeof createInventoryItemsMethods>;
 type InventoryOffersMethods = ReturnType<typeof createInventoryOffersMethods>;
 type InventoryLocationsMethods = ReturnType<typeof createInventoryLocationsMethods>;
-
-export type { InventoryPaginationInput } from './inventory-shared-api.js';
-export type {
-  SkuInput,
-  CreateOrReplaceInventoryItemInput,
-  CreateOrReplaceProductCompatibilityInput,
-  InventoryItemGroupKeyInput,
-  CreateOrReplaceInventoryItemGroupInput,
-  BulkInventoryItemInput,
-  BulkGetInventoryItemInput,
-  BulkUpdatePriceQuantityInput,
-  BulkMigrateListingInput,
-  SkuLocationMappingInput,
-  CreateOrReplaceSkuLocationMappingInput,
-  BulkCreateOrReplaceInventoryItemRequest,
-  BulkCreateOrReplaceInventoryItemResponse,
-  BulkGetInventoryItemRequest,
-  BulkGetInventoryItemResponse,
-  BulkUpdatePriceQuantityRequest,
-  BulkUpdatePriceQuantityResponse,
-  GetInventoryItemResponse,
-  InventoryItem,
-  BaseResponse,
-  DeleteInventoryItemResponse,
-  GetInventoryItemsResponse,
-  ProductCompatibility,
-  DeleteProductCompatibilityResponse,
-  InventoryItemGroup,
-  DeleteInventoryItemGroupResponse,
-  BulkMigrateListingRequest,
-  BulkMigrateListingResponse,
-  LocationMapping,
-  CreateOrReplaceSkuLocationMappingResponse,
-  DeleteSkuLocationMappingResponse,
-} from './items-api.js';
-export type {
-  GetOffersInput,
-  OfferIdInput,
-  CreateOfferInput,
-  UpdateOfferInput,
-  BulkCreateOfferInput,
-  BulkPublishOfferInput,
-  GetListingFeesInput,
-  PublishOfferByInventoryItemGroupInput,
-  WithdrawOfferByInventoryItemGroupInput,
-  BulkCreateOfferRequest,
-  BulkCreateOfferResponse,
-  BulkPublishOfferRequest,
-  BulkPublishOfferResponse,
-  GetOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  GetOfferResponse,
-  UpdateOfferRequest,
-  DeleteOfferResponse,
-  GetListingFeesRequest,
-  GetListingFeesResponse,
-  PublishOfferResponse,
-  PublishOfferByInventoryItemGroupRequest,
-  WithdrawOfferResponse,
-  WithdrawOfferByInventoryItemGroupRequest,
-  WithdrawOfferByInventoryItemGroupResponse,
-} from './offers-api.js';
-export type {
-  MerchantLocationKeyInput,
-  CreateInventoryLocationInput,
-  UpdateInventoryLocationInput,
-  GetInventoryLocationResponse,
-  CreateInventoryLocationRequest,
-  CreateInventoryLocationResponse,
-  DeleteInventoryLocationResponse,
-  DisableInventoryLocationResponse,
-  EnableInventoryLocationResponse,
-  GetInventoryLocationsResponse,
-  UpdateInventoryLocationRequest,
-  UpdateInventoryLocationResponse,
-} from './locations-api.js';
+export type { BulkCreateOrReplaceInventoryItemRequest, BulkGetInventoryItemRequest, BulkUpdatePriceQuantityRequest, InventoryItem, ProductCompatibility, InventoryItemGroup, BulkMigrateListingRequest, LocationMapping } from './items-api.js';
+export type { BulkPublishOfferRequest, GetListingFeesRequest, PublishOfferByInventoryItemGroupRequest, WithdrawOfferByInventoryItemGroupRequest } from './offers-api.js';
+export type { CreateInventoryLocationRequest, UpdateInventoryLocationRequest } from './locations-api.js';
 
 /**
  * Inventory API surface: items, offers, and locations.

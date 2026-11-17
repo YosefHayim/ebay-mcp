@@ -35,7 +35,7 @@ export const createAnalyticsApiHarness = (): AnalyticsApiHarness => {
 };
 
 /** Minimal validation error snapshot used by Analytics API tests. */
-export interface EndpointInputErrorSnapshot {
+interface EndpointInputErrorSnapshot {
   /** Tagged error identifier returned by migrated endpoint validation. */
   readonly _tag: string;
   /** Endpoint input parameter that failed validation. */

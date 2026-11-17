@@ -37,7 +37,7 @@ const isPackageJson = (value: unknown): value is PackageJson => {
  * const pkg = getPackageJson();
  * ```
  */
-export const getPackageJson = (): PackageJson => {
+const getPackageJson = (): PackageJson => {
   if (cachedPackageJson) {
     return cachedPackageJson;
   }
@@ -71,18 +71,6 @@ export const getPackageJson = (): PackageJson => {
  * ```
  */
 export const getVersion = (): string => getPackageJson().version;
-
-/**
- * Returns the package name from package.json.
- *
- * @returns Current package name.
- *
- * @example
- * ```ts
- * const name = getPackageName();
- * ```
- */
-export const getPackageName = (): string => getPackageJson().name;
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 

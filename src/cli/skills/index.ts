@@ -15,7 +15,6 @@ import type { RegistrySnapshot } from '@/cli/skills/types.js';
 
 export * from '@/cli/skills/types.js';
 export { buildRegistrySnapshot } from '@/cli/skills/registry-snapshot.js';
-export { buildUsingDoc, buildContributingDoc } from '@/cli/skills/content.js';
 export {
   renderSkill,
   renderClaudeSkill,
@@ -29,7 +28,7 @@ export {
   detectProvider,
   resolveTargets,
 } from '@/cli/skills/targets.js';
-export { planWrite, applyWrite, type ApplyResult } from '@/cli/skills/install.js';
+export { planWrite, applyWrite } from '@/cli/skills/install.js';
 
 /**
  * Returns the canonical document for a layer with the live registry injected.
@@ -49,7 +48,7 @@ export const buildSkillDoc = (
 ): SkillDoc => (layer === 'using' ? buildUsingDoc(snapshot) : buildContributingDoc(snapshot));
 
 /** Inputs for {@link buildSkillPlans}. */
-export interface BuildPlansOptions {
+interface BuildPlansOptions {
   /** Providers to render skills for. */
   providers: readonly SkillProvider[];
   /** Skill layers to render. */
@@ -65,7 +64,7 @@ export interface BuildPlansOptions {
 }
 
 /** A resolved target paired with its rendered payload, ready to plan/apply. */
-export interface RenderedTarget {
+interface RenderedTarget {
   /** Concrete file/block destination for this rendered payload. */
   target: SkillTarget;
   /** Full file for owned targets; inner block content for managed targets. */
@@ -120,5 +119,5 @@ export const renderSkillTargets = (options: BuildPlansOptions): RenderedTarget[]
  * const plans = buildSkillPlans({ providers: ['codex'], layers: ['using'], scope: 'project' });
  * ```
  */
-export const buildSkillPlans = (options: BuildPlansOptions): WritePlan[] =>
+const buildSkillPlans = (options: BuildPlansOptions): WritePlan[] =>
   renderSkillTargets(options).map((rendered) => planWrite(rendered.target, rendered.payload));

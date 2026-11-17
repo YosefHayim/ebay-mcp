@@ -3,7 +3,7 @@ import { Data, Effect } from 'effect';
 /** Utility functions for date/timestamp conversion and validation. */
 
 /** Tagged failure returned when user-supplied date input cannot be parsed. */
-export class DateConversionError extends Data.TaggedError('DateConversionError')<{
+class DateConversionError extends Data.TaggedError('DateConversionError')<{
   /** Original date value supplied by the caller. */
   readonly input: string | Date | number;
   /** Human-readable parse failure. */
@@ -97,24 +97,6 @@ export const convertToTimestamp = (
 };
 
 /**
- * Calculate expiry timestamp from duration in seconds
- * Useful for eBay token responses which provide expires_in in seconds
- *
- * @param expiresInSeconds - Duration in seconds (e.g., 7200 for 2 hours)
- * @param fromTimestamp - Optional base timestamp (defaults to now)
- * @returns Expiry timestamp in milliseconds
- *
- * @example
- * ```ts
- * const expiry = calculateExpiry(7200, Date.UTC(2026, 0, 1));
- * ```
- */
-export const calculateExpiry = (expiresInSeconds: number, fromTimestamp?: number): number => {
-  const baseTime = fromTimestamp ?? Date.now();
-  return baseTime + expiresInSeconds * 1000;
-};
-
-/**
  * Check if a timestamp is expired
  *
  * @param expiryTimestamp - Expiry timestamp in milliseconds
@@ -126,7 +108,7 @@ export const calculateExpiry = (expiresInSeconds: number, fromTimestamp?: number
  * const expired = isExpired(Date.now() - 1, 0);
  * ```
  */
-export const isExpired = (expiryTimestamp: number, bufferSeconds = 60): boolean => {
+const isExpired = (expiryTimestamp: number, bufferSeconds = 60): boolean => {
   const now = Date.now();
   const buffer = bufferSeconds * 1000;
   return now + buffer >= expiryTimestamp;
@@ -143,7 +125,7 @@ export const isExpired = (expiryTimestamp: number, bufferSeconds = 60): boolean 
  * const remaining = getTimeRemaining(Date.now() + 120_000);
  * ```
  */
-export const getTimeRemaining = (expiryTimestamp: number): string => {
+const getTimeRemaining = (expiryTimestamp: number): string => {
   const now = Date.now();
   const diff = expiryTimestamp - now;
 
@@ -181,7 +163,7 @@ export const getTimeRemaining = (expiryTimestamp: number): string => {
  * @param refreshTokenExpiry - Refresh token expiry timestamp
  * @returns Validation result with warnings and recommendations
  */
-export interface TokenExpiryValidation {
+interface TokenExpiryValidation {
   /** True when both access and refresh tokens are still valid. */
   valid: boolean;
   /** Access-token expiry bucket. */

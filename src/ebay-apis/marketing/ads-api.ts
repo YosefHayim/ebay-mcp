@@ -95,7 +95,7 @@ type UpdateNegativeKeywordInput = z.infer<typeof updateNegativeKeywordInputSchem
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkCreateAdsByInventoryReference
  */
-export type BulkCreateAdsByInventoryReferenceResponse =
+type BulkCreateAdsByInventoryReferenceResponse =
   MarketingOperationResponse<'bulkCreateAdsByInventoryReference'>;
 
 /**
@@ -103,7 +103,7 @@ export type BulkCreateAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkCreateAdsByListingId
  */
-export type BulkCreateAdsByListingIdResponse =
+type BulkCreateAdsByListingIdResponse =
   MarketingOperationResponse<'bulkCreateAdsByListingId'>;
 
 /**
@@ -111,7 +111,7 @@ export type BulkCreateAdsByListingIdResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkDeleteAdsByInventoryReference
  */
-export type BulkDeleteAdsByInventoryReferenceResponse =
+type BulkDeleteAdsByInventoryReferenceResponse =
   MarketingOperationResponse<'bulkDeleteAdsByInventoryReference'>;
 
 /**
@@ -119,7 +119,7 @@ export type BulkDeleteAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkDeleteAdsByListingId
  */
-export type BulkDeleteAdsByListingIdResponse =
+type BulkDeleteAdsByListingIdResponse =
   MarketingOperationResponse<'bulkDeleteAdsByListingId'>;
 
 /**
@@ -127,7 +127,7 @@ export type BulkDeleteAdsByListingIdResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkUpdateAdsBidByInventoryReference
  */
-export type BulkUpdateAdsBidByInventoryReferenceResponse =
+type BulkUpdateAdsBidByInventoryReferenceResponse =
   MarketingOperationResponse<'bulkUpdateAdsBidByInventoryReference'>;
 
 /**
@@ -135,7 +135,7 @@ export type BulkUpdateAdsBidByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkUpdateAdsBidByListingId
  */
-export type BulkUpdateAdsBidByListingIdResponse =
+type BulkUpdateAdsBidByListingIdResponse =
   MarketingOperationResponse<'bulkUpdateAdsBidByListingId'>;
 
 /**
@@ -143,14 +143,14 @@ export type BulkUpdateAdsBidByListingIdResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkUpdateAdsStatus
  */
-export type BulkUpdateAdsStatusResponse = MarketingOperationResponse<'bulkUpdateAdsStatus'>;
+type BulkUpdateAdsStatusResponse = MarketingOperationResponse<'bulkUpdateAdsStatus'>;
 
 /**
  * Response returned by eBay Marketing API bulkUpdateAdsStatusByListingId.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkUpdateAdsStatusByListingId
  */
-export type BulkUpdateAdsStatusByListingIdResponse =
+type BulkUpdateAdsStatusByListingIdResponse =
   MarketingOperationResponse<'bulkUpdateAdsStatusByListingId'>;
 
 /**
@@ -158,21 +158,21 @@ export type BulkUpdateAdsStatusByListingIdResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/getAds
  */
-export type GetAdsResponse = MarketingOperationResponse<'getAds'>;
+type GetAdsResponse = MarketingOperationResponse<'getAds'>;
 
 /**
  * Response returned by eBay Marketing API createAdByListingId.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/createAdByListingId
  */
-export type CreateAdByListingIdResponse = MarketingOperationResponse<'createAdByListingId'>;
+type CreateAdByListingIdResponse = MarketingOperationResponse<'createAdByListingId'>;
 
 /**
  * Response returned by eBay Marketing API createAdsByInventoryReference.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/createAdsByInventoryReference
  */
-export type CreateAdsByInventoryReferenceResponse =
+type CreateAdsByInventoryReferenceResponse =
   MarketingOperationResponse<'createAdsByInventoryReference'>;
 
 /**
@@ -180,21 +180,21 @@ export type CreateAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/getAd
  */
-export type GetAdResponse = MarketingOperationResponse<'getAd'>;
+type GetAdResponse = MarketingOperationResponse<'getAd'>;
 
 /**
  * Response returned by eBay Marketing API deleteAd.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/deleteAd
  */
-export type DeleteAdResponse = MarketingOperationResponse<'deleteAd'>;
+type DeleteAdResponse = MarketingOperationResponse<'deleteAd'>;
 
 /**
  * Response returned by eBay Marketing API deleteAdsByInventoryReference.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/deleteAdsByInventoryReference
  */
-export type DeleteAdsByInventoryReferenceResponse =
+type DeleteAdsByInventoryReferenceResponse =
   MarketingOperationResponse<'deleteAdsByInventoryReference'>;
 
 /**
@@ -202,7 +202,7 @@ export type DeleteAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/getAdsByInventoryReference
  */
-export type GetAdsByInventoryReferenceResponse =
+type GetAdsByInventoryReferenceResponse =
   MarketingOperationResponse<'getAdsByInventoryReference'>;
 
 /**
@@ -210,98 +210,98 @@ export type GetAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/updateBid
  */
-export type UpdateBidResponse = MarketingOperationResponse<'updateBid'>;
+type UpdateBidResponse = MarketingOperationResponse<'updateBid'>;
 
 /**
  * Response returned by eBay Marketing API getAdGroups.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/getAdGroups
  */
-export type GetAdGroupsResponse = MarketingOperationResponse<'getAdGroups'>;
+type GetAdGroupsResponse = MarketingOperationResponse<'getAdGroups'>;
 
 /**
  * Response returned by eBay Marketing API createAdGroup.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/createAdGroup
  */
-export type CreateAdGroupResponse = MarketingOperationResponse<'createAdGroup'>;
+type CreateAdGroupResponse = MarketingOperationResponse<'createAdGroup'>;
 
 /**
  * Response returned by eBay Marketing API getAdGroup.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/getAdGroup
  */
-export type GetAdGroupResponse = MarketingOperationResponse<'getAdGroup'>;
+type GetAdGroupResponse = MarketingOperationResponse<'getAdGroup'>;
 
 /**
  * Response returned by eBay Marketing API updateAdGroup.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/updateAdGroup
  */
-export type UpdateAdGroupResponse = MarketingOperationResponse<'updateAdGroup'>;
+type UpdateAdGroupResponse = MarketingOperationResponse<'updateAdGroup'>;
 
 /**
  * Response returned by eBay Marketing API suggestBids.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/suggestBids
  */
-export type SuggestBidsResponse = MarketingOperationResponse<'suggestBids'>;
+type SuggestBidsResponse = MarketingOperationResponse<'suggestBids'>;
 
 /**
  * Response returned by eBay Marketing API suggestKeywords.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/suggestKeywords
  */
-export type SuggestKeywordsResponse = MarketingOperationResponse<'suggestKeywords'>;
+type SuggestKeywordsResponse = MarketingOperationResponse<'suggestKeywords'>;
 
 /**
  * Response returned by eBay Marketing API bulkCreateKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/bulkCreateKeyword
  */
-export type BulkCreateKeywordResponse = MarketingOperationResponse<'bulkCreateKeyword'>;
+type BulkCreateKeywordResponse = MarketingOperationResponse<'bulkCreateKeyword'>;
 
 /**
  * Response returned by eBay Marketing API bulkUpdateKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/bulkUpdateKeyword
  */
-export type BulkUpdateKeywordResponse = MarketingOperationResponse<'bulkUpdateKeyword'>;
+type BulkUpdateKeywordResponse = MarketingOperationResponse<'bulkUpdateKeyword'>;
 
 /**
  * Response returned by eBay Marketing API getKeywords.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/getKeywords
  */
-export type GetKeywordsResponse = MarketingOperationResponse<'getKeywords'>;
+type GetKeywordsResponse = MarketingOperationResponse<'getKeywords'>;
 
 /**
  * Response returned by eBay Marketing API createKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/createKeyword
  */
-export type CreateKeywordResponse = MarketingOperationResponse<'createKeyword'>;
+type CreateKeywordResponse = MarketingOperationResponse<'createKeyword'>;
 
 /**
  * Response returned by eBay Marketing API getKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/getKeyword
  */
-export type GetKeywordResponse = MarketingOperationResponse<'getKeyword'>;
+type GetKeywordResponse = MarketingOperationResponse<'getKeyword'>;
 
 /**
  * Response returned by eBay Marketing API updateKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/updateKeyword
  */
-export type UpdateKeywordResponse = MarketingOperationResponse<'updateKeyword'>;
+type UpdateKeywordResponse = MarketingOperationResponse<'updateKeyword'>;
 
 /**
  * Response returned by eBay Marketing API bulkCreateNegativeKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/bulkCreateNegativeKeyword
  */
-export type BulkCreateNegativeKeywordResponse =
+type BulkCreateNegativeKeywordResponse =
   MarketingOperationResponse<'bulkCreateNegativeKeyword'>;
 
 /**
@@ -309,7 +309,7 @@ export type BulkCreateNegativeKeywordResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/bulkUpdateNegativeKeyword
  */
-export type BulkUpdateNegativeKeywordResponse =
+type BulkUpdateNegativeKeywordResponse =
   MarketingOperationResponse<'bulkUpdateNegativeKeyword'>;
 
 /**
@@ -317,28 +317,28 @@ export type BulkUpdateNegativeKeywordResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/getNegativeKeywords
  */
-export type GetNegativeKeywordsResponse = MarketingOperationResponse<'getNegativeKeywords'>;
+type GetNegativeKeywordsResponse = MarketingOperationResponse<'getNegativeKeywords'>;
 
 /**
  * Response returned by eBay Marketing API createNegativeKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/createNegativeKeyword
  */
-export type CreateNegativeKeywordResponse = MarketingOperationResponse<'createNegativeKeyword'>;
+type CreateNegativeKeywordResponse = MarketingOperationResponse<'createNegativeKeyword'>;
 
 /**
  * Response returned by eBay Marketing API getNegativeKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/getNegativeKeyword
  */
-export type GetNegativeKeywordResponse = MarketingOperationResponse<'getNegativeKeyword'>;
+type GetNegativeKeywordResponse = MarketingOperationResponse<'getNegativeKeyword'>;
 
 /**
  * Response returned by eBay Marketing API updateNegativeKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/updateNegativeKeyword
  */
-export type UpdateNegativeKeywordResponse = MarketingOperationResponse<'updateNegativeKeyword'>;
+type UpdateNegativeKeywordResponse = MarketingOperationResponse<'updateNegativeKeyword'>;
 
 /** Marketing API — ads methods closed over a shared client. */
 export const createMarketingAdsMethods = (client: EbayApiClient) => ({

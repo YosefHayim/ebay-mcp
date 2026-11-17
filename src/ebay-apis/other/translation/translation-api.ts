@@ -13,14 +13,14 @@ import { Effect } from 'effect';
  *
  * @see https://developer.ebay.com/api-docs/commerce/translation/resources/translate/methods/translate
  */
-export type TranslateInput = components['schemas']['TranslateRequest'];
+type TranslateInput = components['schemas']['TranslateRequest'];
 
 /**
  * Response returned by translate.
  *
  * @see https://developer.ebay.com/api-docs/commerce/translation/resources/translate/methods/translate
  */
-export type TranslateResponse = components['schemas']['TranslateResponse'];
+type TranslateResponse = components['schemas']['TranslateResponse'];
 
 /** Translation API - listing title and description translation. */
 export class TranslationApi {

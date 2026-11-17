@@ -10,7 +10,7 @@ import type { ProtectedResourceMetadata, OAuthServerMetadata } from './oauth-typ
 /**
  * Inputs for the MCP OAuth protected-resource metadata endpoints.
  */
-export interface MetadataConfig {
+interface MetadataConfig {
   /**
    * Resource server URL (e.g., "http://localhost:3000")
    */

@@ -16,13 +16,13 @@ import { Effect } from 'effect';
 import { INVENTORY_BASE_PATH, type InventoryPaginationInput } from './inventory-shared-api.js';
 
 /** Input accepted by inventory location ID endpoints. */
-export interface MerchantLocationKeyInput {
+interface MerchantLocationKeyInput {
   /** Seller-defined merchant location key. */
   readonly merchantLocationKey: string;
 }
 
 /** Input accepted by createInventoryLocation. */
-export interface CreateInventoryLocationInput {
+interface CreateInventoryLocationInput {
   /** Seller-defined merchant location key. */
   readonly merchantLocationKey: string;
   /** Generated InventoryLocationFull body. */
@@ -30,7 +30,7 @@ export interface CreateInventoryLocationInput {
 }
 
 /** Input accepted by updateInventoryLocation. */
-export interface UpdateInventoryLocationInput {
+interface UpdateInventoryLocationInput {
   /** Seller-defined merchant location key. */
   readonly merchantLocationKey: string;
   /** Generated InventoryLocation body. */
@@ -42,7 +42,7 @@ export interface UpdateInventoryLocationInput {
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/getInventoryLocation
  */
-export type GetInventoryLocationResponse = components['schemas']['InventoryLocationResponse'];
+type GetInventoryLocationResponse = components['schemas']['InventoryLocationResponse'];
 
 /**
  * Request body accepted by createInventoryLocation.
@@ -56,21 +56,21 @@ export type CreateInventoryLocationRequest = components['schemas']['InventoryLoc
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/createInventoryLocation
  */
-export type CreateInventoryLocationResponse = void;
+type CreateInventoryLocationResponse = void;
 
 /**
  * No-content response returned by deleteInventoryLocation.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/deleteInventoryLocation
  */
-export type DeleteInventoryLocationResponse = void;
+type DeleteInventoryLocationResponse = void;
 
 /**
  * Response returned by disableInventoryLocation.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/disableInventoryLocation
  */
-export type DisableInventoryLocationResponse =
+type DisableInventoryLocationResponse =
   operations['disableInventoryLocation']['responses'][200]['content']['application/json'];
 
 /**
@@ -78,7 +78,7 @@ export type DisableInventoryLocationResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/enableInventoryLocation
  */
-export type EnableInventoryLocationResponse =
+type EnableInventoryLocationResponse =
   operations['enableInventoryLocation']['responses'][200]['content']['application/json'];
 
 /**
@@ -86,7 +86,7 @@ export type EnableInventoryLocationResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/getInventoryLocations
  */
-export type GetInventoryLocationsResponse = components['schemas']['LocationResponse'];
+type GetInventoryLocationsResponse = components['schemas']['LocationResponse'];
 
 /**
  * Request body accepted by updateInventoryLocation.
@@ -100,7 +100,7 @@ export type UpdateInventoryLocationRequest = components['schemas']['InventoryLoc
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/updateInventoryLocation
  */
-export type UpdateInventoryLocationResponse = void;
+type UpdateInventoryLocationResponse = void;
 
 /** Inventory API — locations methods closed over a shared client. */
 export const createInventoryLocationsMethods = (client: EbayApiClient) => ({

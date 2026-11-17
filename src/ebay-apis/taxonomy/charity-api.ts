@@ -26,24 +26,24 @@ const charityRequestConfig = (marketplaceId: string): EbayRequestConfig => ({
 });
 
 /** Charity organization ID and marketplace accepted by getCharityOrg. */
-export type GetCharityOrgInput = z.infer<typeof getCharityOrgInputSchema>;
+type GetCharityOrgInput = z.infer<typeof getCharityOrgInputSchema>;
 
 /** Marketplace, search criteria (q or registrationIds), and paging accepted by getCharityOrgs. */
-export type GetCharityOrgsInput = z.infer<typeof getCharityOrgsInputSchema>;
+type GetCharityOrgsInput = z.infer<typeof getCharityOrgsInputSchema>;
 
 /**
  * Response returned by getCharityOrg.
  *
  * @see https://developer.ebay.com/api-docs/commerce/charity/resources/charity_org/methods/getCharityOrg
  */
-export type CharityOrgResponse = components['schemas']['CharityOrg'];
+type CharityOrgResponse = components['schemas']['CharityOrg'];
 
 /**
  * Response returned by getCharityOrgs.
  *
  * @see https://developer.ebay.com/api-docs/commerce/charity/resources/charity_org/methods/getCharityOrgs
  */
-export type CharitySearchResponse = components['schemas']['CharitySearchResponse'];
+type CharitySearchResponse = components['schemas']['CharitySearchResponse'];
 
 /** Charity API - charitable organizations supported by eBay for Charity. */
 export class CharityApi {

@@ -46,14 +46,14 @@ const marketplaceConfig = (marketplaceId: string | undefined): EbayRequestConfig
  *
  * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipping_quote/methods/getShippingQuote
  */
-export type ShippingQuoteResponse = components['schemas']['ShippingQuote'];
+type ShippingQuoteResponse = components['schemas']['ShippingQuote'];
 
 /**
  * Shipment returned by createFromShippingQuote, getShipment, and cancelShipment.
  *
  * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/getShipment
  */
-export type ShipmentResponse = components['schemas']['Shipment'];
+type ShipmentResponse = components['schemas']['Shipment'];
 
 /**
  * Logistics API - shipping quotes, shipments, and shipping labels (limited release; needs the

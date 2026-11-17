@@ -21,10 +21,10 @@ const writeConfigDiagnostic = (message: string): void => {
 };
 
 /** Supported eBay API environment key. */
-export type EbayEnvironment = 'production' | 'sandbox';
+type EbayEnvironment = 'production' | 'sandbox';
 
 /** Result returned when validating requested OAuth scopes. */
-export interface ScopeValidationResult {
+interface ScopeValidationResult {
   /** Non-fatal warnings for scopes outside the selected environment. */
   warnings: string[];
   /** Requested scopes preserved for the authorization request. */
@@ -32,7 +32,7 @@ export interface ScopeValidationResult {
 }
 
 /** Startup environment validation result. */
-export interface EnvironmentValidationResult {
+interface EnvironmentValidationResult {
   /** Whether startup can continue. */
   isValid: boolean;
   /** Non-fatal configuration warnings. */
@@ -44,7 +44,7 @@ export interface EnvironmentValidationResult {
 }
 
 /** Logger settings parsed from environment variables at process startup. */
-export interface LoggingConfig {
+interface LoggingConfig {
   /** Winston-compatible log level name. */
   logLevel: string;
   /** Whether file transports should be enabled in addition to stderr. */
@@ -52,7 +52,7 @@ export interface LoggingConfig {
 }
 
 /** Runtime UI feature gate parsed from environment variables. */
-export interface UiRuntimeConfig {
+interface UiRuntimeConfig {
   /** Whether MCP Apps UI resources may be advertised when the client supports them. */
   enabled: boolean;
 }
@@ -490,7 +490,7 @@ const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]', '0.0.0
  *
  * @see https://github.com/YosefHayim/ebay-mcp/issues/122
  */
-export interface ProxyAuthConfig {
+interface ProxyAuthConfig {
   /** Normalized base-URL override (trailing slash stripped), or undefined when unset. */
   apiBaseUrl?: string;
   /** Whether all eBay auth headers and token acquisition should be skipped. */

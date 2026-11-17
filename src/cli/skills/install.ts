@@ -71,7 +71,7 @@ export const planWrite = (target: SkillTarget, renderedContent: string): WritePl
 };
 
 /** Outcome of applying a {@link WritePlan}. */
-export interface ApplyResult {
+interface ApplyResult {
   /** File or block target that was applied. */
   target: SkillTarget;
   /** The planned action (see {@link WritePlan}). */

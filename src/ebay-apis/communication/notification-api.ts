@@ -74,57 +74,57 @@ type CreateSubscriptionFilterRequest = Pick<CreateSubscriptionFilterInput, 'filt
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/config/methods/getConfig
  */
-export type GetNotificationConfigResponse = components['schemas']['Config'];
+type GetNotificationConfigResponse = components['schemas']['Config'];
 /**
  * Destination search response returned by eBay getDestinations.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestinations
  */
-export type GetNotificationDestinationsResponse =
+type GetNotificationDestinationsResponse =
   components['schemas']['DestinationSearchResponse'];
 /**
  * Destination response returned by eBay getDestination.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestination
  */
-export type GetNotificationDestinationResponse = components['schemas']['Destination'];
+type GetNotificationDestinationResponse = components['schemas']['Destination'];
 /**
  * Public key response returned by eBay getPublicKey.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/public_key/methods/getPublicKey
  */
-export type GetNotificationPublicKeyResponse = components['schemas']['PublicKey'];
+type GetNotificationPublicKeyResponse = components['schemas']['PublicKey'];
 /**
  * Subscription search response returned by eBay getSubscriptions.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptions
  */
-export type GetNotificationSubscriptionsResponse =
+type GetNotificationSubscriptionsResponse =
   components['schemas']['SubscriptionSearchResponse'];
 /**
  * Subscription response returned by eBay getSubscription.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscription
  */
-export type GetNotificationSubscriptionResponse = components['schemas']['Subscription'];
+type GetNotificationSubscriptionResponse = components['schemas']['Subscription'];
 /**
  * Subscription filter response returned by eBay getSubscriptionFilter.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptionFilter
  */
-export type GetNotificationSubscriptionFilterResponse = components['schemas']['SubscriptionFilter'];
+type GetNotificationSubscriptionFilterResponse = components['schemas']['SubscriptionFilter'];
 /**
  * Topic response returned by eBay getTopic.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/topic/methods/getTopic
  */
-export type GetNotificationTopicResponse = components['schemas']['Topic'];
+type GetNotificationTopicResponse = components['schemas']['Topic'];
 /**
  * Topic search response returned by eBay getTopics.
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/topic/methods/getTopics
  */
-export type GetNotificationTopicsResponse = components['schemas']['TopicSearchResponse'];
+type GetNotificationTopicsResponse = components['schemas']['TopicSearchResponse'];
 
 /**
  * Notification API - Event notifications and subscriptions

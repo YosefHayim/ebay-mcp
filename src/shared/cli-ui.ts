@@ -56,21 +56,6 @@ export const printWarning = (message: string): void => {
 };
 
 /**
- * Prints a red error line.
- *
- * @param message - Message to print after the status icon.
- * @returns Nothing; writes to stdout for interactive CLI flows.
- *
- * @example
- * ```ts
- * printError('Setup failed');
- * ```
- */
-export const printError = (message: string): void => {
-  writeCliLine(`  ${ui.error('✗')} ${message}`);
-};
-
-/**
  * Prints a cyan info line.
  *
  * @param message - Message to print after the status icon.

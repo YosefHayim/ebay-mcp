@@ -1,6 +1,6 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { EbaySellerApi } from '@/ebay-apis/ebay-seller-api.js';
-import type { OutputArgs, ToolAnnotations } from '@/tool-registry/types.js';
+import type { ToolAnnotations } from '@/tool-registry/types.js';
 import type { ResolvedToolUi, ToolEntry } from '@/tool-registry/registry.js';
 import type { ToolHandler } from '@/tool-registry/types.js';
 import { uiArchetypes } from '@/tool-registry/ui/archetypes.js';
@@ -16,7 +16,7 @@ import { Data } from 'effect';
 import { z } from 'zod';
 
 /** Tagged failure thrown when tool arguments do not match the tool's input schema. */
-export class ToolInputError extends Data.TaggedError('ToolInputError')<{
+class ToolInputError extends Data.TaggedError('ToolInputError')<{
   /** Tool whose arguments failed validation. */
   readonly toolName: string;
   /** Human-readable list of the failed fields. */
@@ -36,7 +36,7 @@ export class ToolInputError extends Data.TaggedError('ToolInputError')<{
  *
  * @typeParam Result - The handler's awaited return type, supplied by {@link ToolSpec}.
  */
-export type ToolUiSpec<Result> =
+type ToolUiSpec<Result> =
   | { archetype: 'table'; map: (handlerOutput: Result) => TableViewModel }
   | { archetype: 'card'; map: (handlerOutput: Result) => CardViewModel }
   | { archetype: 'chart'; map: (handlerOutput: Result) => ChartViewModel }
@@ -57,13 +57,12 @@ export type ToolUiSpec<Result> =
  * {@link ToolUiSpec} can be type-checked against the exact data the handler
  * produces. Tools that do not opt into UI never name it.
  */
-export interface ToolSpec<Shape extends z.ZodRawShape, Result = unknown> {
+interface ToolSpec<Shape extends z.ZodRawShape, Result = unknown> {
   name: string;
   description: string;
   /** Zod raw shape; doubles as the MCP wire schema and handler arg types. */
   inputSchema: Shape;
   title?: string;
-  outputSchema?: OutputArgs;
   annotations?: ToolAnnotations;
   /** Opaque MCP metadata (e.g. connector category/version) passed through verbatim. */
   _meta?: Record<string, unknown>;
@@ -104,7 +103,6 @@ function toDefinition<Shape extends z.ZodRawShape, Result>(
     description: spec.description,
     inputSchema: spec.inputSchema,
     title: spec.title,
-    outputSchema: spec.outputSchema,
     annotations: spec.annotations,
     _meta: spec._meta,
   };
@@ -151,53 +149,6 @@ export const defineTool = <Shape extends z.ZodRawShape, Result>(
     }
     return spec.handler(api, parsedArgs.data);
   };
-
-  const formatResult = spec.formatResult;
-  return {
-    definition: toDefinition(spec),
-    handler,
-    ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
-    // Registry erases the result/argument types; defineTool checks their relationship here.
-    formatResult: formatResult
-      ? (handlerOutput, args) =>
-          formatResult(handlerOutput as Awaited<Result>, args as z.infer<z.ZodObject<Shape>>)
-      : undefined,
-  };
-};
-
-/**
- * Like {@link defineTool}, but invokes the handler with the raw transport
- * arguments WITHOUT re-validating them against `inputSchema`.
- *
- * Use this for tools whose handler performs its own validation against a
- * dedicated schema, and whose advertised `inputSchema` intentionally differs
- * from that internal schema. The communication tools are the motivating case:
- * each handler re-parses its arguments with a `@/ebay-apis/communication` schema
- * (the real call contract), while the advertised input schema describes a
- * different, client-facing shape. Re-parsing against the advertised schema here
- * would strip or reject fields the handler's own schema needs.
- *
- * `args` is typed from the shape for handler ergonomics, but the values are not
- * validated by this factory — the handler is responsible for that.
- *
- * @param spec - Tool definition, advertised input schema, raw handler, and optional UI projection.
- * @returns A registry entry whose handler receives raw transport args.
- *
- * @example
- * ```ts
- * const entry = rawTool({
- *   name: 'ebay_send_message',
- *   description: 'Send a member message',
- *   inputSchema: advertisedMessageShape,
- *   handler: (api, args) => api.message.sendMessage(args),
- * });
- * ```
- */
-export const rawTool = <Shape extends z.ZodRawShape, Result>(
-  spec: ToolSpec<Shape, Result>,
-): ToolEntry => {
-  const handler: ToolHandler = (api, args) =>
-    spec.handler(api, args as z.infer<z.ZodObject<Shape>>);
 
   const formatResult = spec.formatResult;
   return {

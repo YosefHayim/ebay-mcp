@@ -7,22 +7,6 @@ type FeedTaskMethods = ReturnType<typeof createFeedTaskMethods>;
 type FeedReportTaskMethods = ReturnType<typeof createFeedReportTaskMethods>;
 type FeedScheduleMethods = ReturnType<typeof createFeedScheduleMethods>;
 
-export type {
-  OrderTaskCollection,
-  OrderTask,
-  InventoryTaskCollection,
-  InventoryTask,
-  CustomerServiceMetricTaskCollection,
-  ServiceMetricsTask,
-} from './feed-report-tasks-api.js';
-export type {
-  UserScheduleCollection,
-  UserScheduleResponse,
-  ScheduleTemplateCollection,
-  ScheduleTemplateResponse,
-} from './feed-schedules-api.js';
-export type { FeedTaskCollection, FeedTask, UploadFeedFileResponse } from './feed-tasks-api.js';
-
 /**
  * Feed API - asynchronous order, inventory, and customer service metric feed tasks and
  * schedules. Every member is the eBay operation of the same name; the endpoints live in

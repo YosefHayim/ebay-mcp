@@ -7,7 +7,7 @@ import {
   createToolCallRequest,
 } from '@site/shared/tool-explorer-model.ts';
 
-export const EXPLORER_SHOWN_FIELD_LIMIT = 10;
+const EXPLORER_SHOWN_FIELD_LIMIT = 10;
 const LIST_SUMMARY_LENGTH = 64;
 const FIELD_HINT_LENGTH = 140;
 
@@ -19,7 +19,7 @@ const shortenText = (fullText: string, maxLength: number): string => {
 };
 
 /** The fields shown as inputs: required ones first, capped so a huge schema stays usable. */
-export const listShownFields = (tool: ExplorerTool) =>
+const listShownFields = (tool: ExplorerTool) =>
   [...tool.fields]
     .sort((firstField, secondField) => Number(secondField.required) - Number(firstField.required))
     .slice(0, EXPLORER_SHOWN_FIELD_LIMIT);

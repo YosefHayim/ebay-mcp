@@ -29,7 +29,7 @@ export class EbayClientRequestError extends Data.TaggedError('EbayClientRequestE
 }> {}
 
 /** Fields required to construct an {@link EbayClientRequestError}. */
-export interface EbayClientRequestErrorInput {
+interface EbayClientRequestErrorInput {
   /** Request failure category used by tests and endpoint wrappers. */
   readonly kind: EbayClientRequestErrorKind;
   /** HTTP method used by the failed request. */

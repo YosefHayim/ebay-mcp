@@ -15,7 +15,7 @@ import type { components } from '@/ebay-openapi-types/commerceFeedbackV1BetaOas3
 import { Effect } from 'effect';
 
 /** Query parameters accepted by getItemsAwaitingFeedback. */
-export interface GetAwaitingFeedbackInput {
+interface GetAwaitingFeedbackInput {
   /** Optional OpenAPI filter expression. */
   readonly filter?: string;
   /** Optional page size. */
@@ -27,7 +27,7 @@ export interface GetAwaitingFeedbackInput {
 }
 
 /** Query parameters accepted by getFeedback. */
-export interface GetFeedbackInput {
+interface GetFeedbackInput {
   /** eBay user ID whose feedback is being retrieved. */
   readonly userId: string;
   /** Feedback direction, such as FEEDBACK_RECEIVED or FEEDBACK_SENT. */
@@ -51,7 +51,7 @@ export interface GetFeedbackInput {
 }
 
 /** Query parameters accepted by getFeedbackRatingSummary. */
-export interface GetFeedbackRatingSummaryInput {
+interface GetFeedbackRatingSummaryInput {
   /** eBay user ID whose feedback summary is being retrieved. */
   readonly userId: string;
   /** Required rating summary filter, including ratingType. */

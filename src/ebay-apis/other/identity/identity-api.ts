@@ -5,14 +5,14 @@ import type { components } from '@/ebay-openapi-types/commerceIdentityV1Oas3.js'
 import { Effect } from 'effect';
 
 /** Input accepted by Identity API getUser. */
-export type GetUserInput = Record<string, never>;
+type GetUserInput = Record<string, never>;
 
 /**
  * Response returned by getUser.
  *
  * @see https://developer.ebay.com/api-docs/commerce/identity/resources/user/methods/getUser
  */
-export type UserResponse = components['schemas']['UserResponse'];
+type UserResponse = components['schemas']['UserResponse'];
 
 /** Identity API - user identity verification through the apiz host. */
 export class IdentityApi {

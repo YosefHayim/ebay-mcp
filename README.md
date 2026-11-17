@@ -179,7 +179,7 @@ On hosts that support [MCP Apps](https://modelcontextprotocol.io), 15 core read 
 
 ## Run over HTTP
 
-The Docker image starts the HTTP server (`node build/serverHttp.js`) on port 3000. Set `MCP_AUTH_TOKEN` to require a static Bearer token. Set `MCP_CORS_ORIGINS` to allow browser origins other than loopback. See the [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml).
+The Docker image starts the HTTP server (`node build/server-http.js`) on port 3000. Set `MCP_AUTH_TOKEN` to require a static Bearer token. Set `MCP_CORS_ORIGINS` to allow browser origins other than loopback. See the [Dockerfile](Dockerfile).
 
 ## Safety and scope
 

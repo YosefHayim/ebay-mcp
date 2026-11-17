@@ -19,13 +19,13 @@ import type {
 import { Effect } from 'effect';
 
 /** Input accepted by getAddressPreferences. */
-export type GetAddressPreferencesInput = Record<string, never>;
+type GetAddressPreferencesInput = Record<string, never>;
 
 /** Input accepted by getConsignPreferences. */
-export type GetConsignPreferencesInput = Record<string, never>;
+type GetConsignPreferencesInput = Record<string, never>;
 
 /** Input accepted by getActualCosts. */
-export interface GetActualCostsInput {
+interface GetActualCostsInput {
   /** Tracking numbers sent as tracking_numbers. */
   readonly trackingNumbers?: string;
   /** UTC transaction start time sent as trans_begin_time. */
@@ -35,7 +35,7 @@ export interface GetActualCostsInput {
 }
 
 /** Input accepted by paginated eDelivery metadata endpoints. */
-export interface EDeliveryPaginationInput {
+interface EDeliveryPaginationInput {
   /** Number of results to return. */
   readonly limit?: number;
   /** Number of results to skip. */
@@ -43,73 +43,73 @@ export interface EDeliveryPaginationInput {
 }
 
 /** Input accepted by createAddressPreference. */
-export interface CreateAddressPreferenceInput {
+interface CreateAddressPreferenceInput {
   /** Generated CreateAddressPreferenceRequest body. */
   readonly body: CreateAddressPreferenceRequest;
 }
 
 /** Input accepted by createConsignPreference. */
-export interface CreateConsignPreferenceInput {
+interface CreateConsignPreferenceInput {
   /** Generated CreateConsignPreferenceRequest body. */
   readonly body: CreateConsignPreferenceRequest;
 }
 
 /** Input accepted by bundle ID endpoints. */
-export interface BundleIdInput {
+interface BundleIdInput {
   /** eDelivery bundle identifier. */
   readonly bundleId: string;
 }
 
 /** Input accepted by createBundle. */
-export interface CreateBundleInput {
+interface CreateBundleInput {
   /** Generated CreateBundleRequest body. */
   readonly body: CreateBundleRequest;
 }
 
 /** Input accepted by createComplaint. */
-export interface CreateComplaintInput {
+interface CreateComplaintInput {
   /** Generated AddComplaintRequest body. */
   readonly body: CreateComplaintRequest;
 }
 
 /** Input accepted by package ID endpoints. */
-export interface PackageIdInput {
+interface PackageIdInput {
   /** eDelivery package identifier. */
   readonly packageId: string;
 }
 
 /** Input accepted by createPackage. */
-export interface CreatePackageInput {
+interface CreatePackageInput {
   /** Generated AddPackageRequest body. */
   readonly body: CreatePackageRequest;
 }
 
 /** Input accepted by getPackagesByLineItemID. */
-export interface GetPackagesByLineItemIDInput {
+interface GetPackagesByLineItemIDInput {
   /** Fulfillment order line item identifier sent as order_line_item_id. */
   readonly orderLineItemId: string;
 }
 
 /** Input accepted by bulkCancelPackages. */
-export interface BulkCancelPackagesInput {
+interface BulkCancelPackagesInput {
   /** Generated CancelPackagesRequest body. */
   readonly body: BulkCancelPackagesRequest;
 }
 
 /** Input accepted by bulkConfirmPackages. */
-export interface BulkConfirmPackagesInput {
+interface BulkConfirmPackagesInput {
   /** Generated ConfirmPackagesRequest body. */
   readonly body: BulkConfirmPackagesRequest;
 }
 
 /** Input accepted by bulkDeletePackages. */
-export interface BulkDeletePackagesInput {
+interface BulkDeletePackagesInput {
   /** Generated DeletePackagesRequest body. */
   readonly body: BulkDeletePackagesRequest;
 }
 
 /** Input accepted by getLabels. */
-export interface GetLabelsInput {
+interface GetLabelsInput {
   /** Page size preference sent as page_size. */
   readonly pageSize?: string;
   /** Print preferences sent as print_preference. */
@@ -119,13 +119,13 @@ export interface GetLabelsInput {
 }
 
 /** Input accepted by getHandoverSheet. */
-export interface GetHandoverSheetInput {
+interface GetHandoverSheetInput {
   /** Tracking numbers sent as tracking_numbers. */
   readonly trackingNumbers: string;
 }
 
 /** Input accepted by getTracking. */
-export interface GetTrackingInput {
+interface GetTrackingInput {
   /** Tracking number sent as tracking_number. */
   readonly trackingNumber: string;
 }
@@ -135,14 +135,14 @@ export interface GetTrackingInput {
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/actual_costs/methods/getActualCosts
  */
-export type GetActualCostsResponse = components['schemas']['GetActualCostResponses'];
+type GetActualCostsResponse = components['schemas']['GetActualCostResponses'];
 
 /**
  * Response returned by getAddressPreferences.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/address_preference/methods/getAddressPreferences
  */
-export type GetAddressPreferencesResponse =
+type GetAddressPreferencesResponse =
   components['schemas']['GetAddressPreferenceListResponses'];
 
 /**
@@ -150,7 +150,7 @@ export type GetAddressPreferencesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/address_preference/methods/createAddressPreference
  */
-export type CreateAddressPreferenceRequest =
+type CreateAddressPreferenceRequest =
   components['schemas']['CreateAddressPreferenceRequest'];
 
 /**
@@ -158,7 +158,7 @@ export type CreateAddressPreferenceRequest =
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/address_preference/methods/createAddressPreference
  */
-export type CreateAddressPreferenceResponse =
+type CreateAddressPreferenceResponse =
   components['schemas']['CreateAddressPreferenceResponses'];
 
 /**
@@ -166,7 +166,7 @@ export type CreateAddressPreferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/consign_preference/methods/getConsignPreferences
  */
-export type GetConsignPreferencesResponse =
+type GetConsignPreferencesResponse =
   components['schemas']['GetConsignPreferenceListResponses'];
 
 /**
@@ -174,7 +174,7 @@ export type GetConsignPreferencesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/consign_preference/methods/createConsignPreference
  */
-export type CreateConsignPreferenceRequest =
+type CreateConsignPreferenceRequest =
   components['schemas']['CreateConsignPreferenceRequest'];
 
 /**
@@ -182,7 +182,7 @@ export type CreateConsignPreferenceRequest =
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/consign_preference/methods/createConsignPreference
  */
-export type CreateConsignPreferenceResponse =
+type CreateConsignPreferenceResponse =
   components['schemas']['CreateConsignPreferenceResponses'];
 
 /**
@@ -190,196 +190,196 @@ export type CreateConsignPreferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/agents/methods/getAgents
  */
-export type GetAgentsResponse = components['schemas']['GetAgentListResponses'];
+type GetAgentsResponse = components['schemas']['GetAgentListResponses'];
 
 /**
  * Response returned by getBatteryQualifications.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/battery_qualifications/methods/getBatteryQualifications
  */
-export type GetBatteryQualificationsResponse = components['schemas']['GetBatteryQualListResponses'];
+type GetBatteryQualificationsResponse = components['schemas']['GetBatteryQualListResponses'];
 
 /**
  * Response returned by getDropoffSites.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/dropoff_sites/methods/getDropoffSites
  */
-export type GetDropoffSitesResponse = components['schemas']['GetDropoffSiteListResponses'];
+type GetDropoffSitesResponse = components['schemas']['GetDropoffSiteListResponses'];
 
 /**
  * Response returned by getServices.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/services/methods/getServices
  */
-export type GetServicesResponse = components['schemas']['GetServiceListResponses'];
+type GetServicesResponse = components['schemas']['GetServiceListResponses'];
 
 /**
  * Request body accepted by createBundle.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/bundle/methods/createBundle
  */
-export type CreateBundleRequest = components['schemas']['CreateBundleRequest'];
+type CreateBundleRequest = components['schemas']['CreateBundleRequest'];
 
 /**
  * Response returned by createBundle.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/bundle/methods/createBundle
  */
-export type CreateBundleResponse = components['schemas']['CreateBundleResponse'];
+type CreateBundleResponse = components['schemas']['CreateBundleResponse'];
 
 /**
  * Response returned by getBundle.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/bundle/methods/getBundle
  */
-export type GetBundleResponse = components['schemas']['BundleDetailResponse'];
+type GetBundleResponse = components['schemas']['BundleDetailResponse'];
 
 /**
  * No-content response returned by cancelBundle.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/bundle/methods/cancelBundle
  */
-export type CancelBundleResponse = void;
+type CancelBundleResponse = void;
 
 /**
  * Response returned by getBundleLabel.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/bundle/methods/getBundleLabel
  */
-export type GetBundleLabelResponse = components['schemas']['BundleLabelResponse'];
+type GetBundleLabelResponse = components['schemas']['BundleLabelResponse'];
 
 /**
  * Request body accepted by createPackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/createPackage
  */
-export type CreatePackageRequest = components['schemas']['AddPackageRequest'];
+type CreatePackageRequest = components['schemas']['AddPackageRequest'];
 
 /**
  * Response returned by createPackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/createPackage
  */
-export type CreatePackageResponse = components['schemas']['AddPackageResponses'];
+type CreatePackageResponse = components['schemas']['AddPackageResponses'];
 
 /**
  * Response returned by getPackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/getPackage
  */
-export type GetPackageResponse = components['schemas']['GetPackageDetailResponses'];
+type GetPackageResponse = components['schemas']['GetPackageDetailResponses'];
 
 /**
  * No-content response returned by deletePackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/deletePackage
  */
-export type DeletePackageResponse = void;
+type DeletePackageResponse = void;
 
 /**
  * Response returned by getPackagesByLineItemID.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/getPackagesByLineItemID
  */
-export type GetPackagesByLineItemIDResponse = components['schemas']['GetItemPackageIdResponses'];
+type GetPackagesByLineItemIDResponse = components['schemas']['GetItemPackageIdResponses'];
 
 /**
  * No-content response returned by cancelPackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/cancelPackage
  */
-export type CancelPackageResponse = void;
+type CancelPackageResponse = void;
 
 /**
  * Response returned by clonePackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/clonePackage
  */
-export type ClonePackageResponse = components['schemas']['ClonePackageResponses'];
+type ClonePackageResponse = components['schemas']['ClonePackageResponses'];
 
 /**
  * No-content response returned by confirmPackage.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/confirmPackage
  */
-export type ConfirmPackageResponse = void;
+type ConfirmPackageResponse = void;
 
 /**
  * Request body accepted by bulkCancelPackages.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/bulkCancelPackages
  */
-export type BulkCancelPackagesRequest = components['schemas']['CancelPackagesRequest'];
+type BulkCancelPackagesRequest = components['schemas']['CancelPackagesRequest'];
 
 /**
  * Response returned by bulkCancelPackages.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/bulkCancelPackages
  */
-export type BulkCancelPackagesResponse = components['schemas']['CancelPackagesResponses'];
+type BulkCancelPackagesResponse = components['schemas']['CancelPackagesResponses'];
 
 /**
  * Request body accepted by bulkConfirmPackages.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/bulkConfirmPackages
  */
-export type BulkConfirmPackagesRequest = components['schemas']['ConfirmPackagesRequest'];
+type BulkConfirmPackagesRequest = components['schemas']['ConfirmPackagesRequest'];
 
 /**
  * Response returned by bulkConfirmPackages.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/bulkConfirmPackages
  */
-export type BulkConfirmPackagesResponse = components['schemas']['ConfirmPackagesResponses'];
+type BulkConfirmPackagesResponse = components['schemas']['ConfirmPackagesResponses'];
 
 /**
  * Request body accepted by bulkDeletePackages.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/bulkDeletePackages
  */
-export type BulkDeletePackagesRequest = components['schemas']['DeletePackagesRequest'];
+type BulkDeletePackagesRequest = components['schemas']['DeletePackagesRequest'];
 
 /**
  * Response returned by bulkDeletePackages.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/package/methods/bulkDeletePackages
  */
-export type BulkDeletePackagesResponse = components['schemas']['DeletePackagesResponses'];
+type BulkDeletePackagesResponse = components['schemas']['DeletePackagesResponses'];
 
 /**
  * Response returned by getLabels.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/labels/methods/getLabels
  */
-export type GetLabelsResponse = components['schemas']['GetLabelListResponses'];
+type GetLabelsResponse = components['schemas']['GetLabelListResponses'];
 
 /**
  * Response returned by getHandoverSheet.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/handover_sheet/methods/getHandoverSheet
  */
-export type GetHandoverSheetResponse = components['schemas']['GetHandoverSheetResponses'];
+type GetHandoverSheetResponse = components['schemas']['GetHandoverSheetResponses'];
 
 /**
  * Response returned by getTracking.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/tracking/methods/getTracking
  */
-export type GetTrackingResponse = components['schemas']['GetTrackingDetailResponses'];
+type GetTrackingResponse = components['schemas']['GetTrackingDetailResponses'];
 
 /**
  * Request body accepted by createComplaint.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/complaint/methods/createComplaint
  */
-export type CreateComplaintRequest = components['schemas']['AddComplaintRequest'];
+type CreateComplaintRequest = components['schemas']['AddComplaintRequest'];
 
 /**
  * Response returned by createComplaint.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/complaint/methods/createComplaint
  */
-export type CreateComplaintResponse =
+type CreateComplaintResponse =
   operations['createComplaint']['responses'][201]['content']['application/json'];
 
 /** eDelivery International Shipping API endpoints. */

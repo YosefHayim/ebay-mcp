@@ -25,13 +25,6 @@ export const connectorEntries: ToolEntry[] = [
     description: 'Search for eBay inventory items',
     inputSchema: connectorSearchInputSchema.shape,
     title: 'Search',
-    outputSchema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        data: { type: 'object' },
-      },
-    },
     annotations: {
       title: 'Search',
       readOnlyHint: true,
@@ -114,13 +107,6 @@ export const connectorEntries: ToolEntry[] = [
     description: 'Fetch a specific eBay inventory item by SKU',
     inputSchema: connectorFetchInputSchema.shape,
     title: 'Fetch',
-    outputSchema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        data: { type: 'object' },
-      },
-    },
     annotations: {
       title: 'Fetch',
       readOnlyHint: true,

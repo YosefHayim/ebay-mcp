@@ -16,7 +16,7 @@ import { createMetadataShippingMethods } from './metadata-shipping-api.js';
 type MetadataShippingMethods = ReturnType<typeof createMetadataShippingMethods>;
 
 /** Input accepted by marketplace-scoped Metadata policy endpoints. */
-export interface MetadataMarketplaceInput {
+interface MetadataMarketplaceInput {
   /** eBay marketplace identifier, such as EBAY_US. */
   readonly marketplaceId: string;
   /** Optional OpenAPI filter expression, usually categoryIds:{...}. */
@@ -24,13 +24,13 @@ export interface MetadataMarketplaceInput {
 }
 
 /** Input accepted by marketplace-scoped Metadata endpoints with no filter. */
-export interface MetadataMarketplaceOnlyInput {
+interface MetadataMarketplaceOnlyInput {
   /** eBay marketplace identifier, such as EBAY_US. */
   readonly marketplaceId: string;
 }
 
 /** Input accepted by Metadata getCompatibilitiesBySpecification. */
-export interface GetMetadataCompatibilitiesBySpecificationInput {
+interface GetMetadataCompatibilitiesBySpecificationInput {
   /** Marketplace header required by compatibility metadata endpoints. */
   readonly marketplaceId: string;
   /** Generated SpecificationRequest body. */
@@ -38,7 +38,7 @@ export interface GetMetadataCompatibilitiesBySpecificationInput {
 }
 
 /** Input accepted by Metadata getCompatibilityPropertyNames. */
-export interface GetMetadataCompatibilityPropertyNamesInput {
+interface GetMetadataCompatibilityPropertyNamesInput {
   /** Marketplace header required by compatibility metadata endpoints. */
   readonly marketplaceId: string;
   /** Generated PropertyNamesRequest body. */
@@ -46,7 +46,7 @@ export interface GetMetadataCompatibilityPropertyNamesInput {
 }
 
 /** Input accepted by Metadata getCompatibilityPropertyValues. */
-export interface GetMetadataCompatibilityPropertyValuesInput {
+interface GetMetadataCompatibilityPropertyValuesInput {
   /** Marketplace header required by compatibility metadata endpoints. */
   readonly marketplaceId: string;
   /** Generated PropertyValuesRequest body. */
@@ -54,7 +54,7 @@ export interface GetMetadataCompatibilityPropertyValuesInput {
 }
 
 /** Input accepted by Metadata getMultiCompatibilityPropertyValues. */
-export interface GetMetadataMultiCompatibilityPropertyValuesInput {
+interface GetMetadataMultiCompatibilityPropertyValuesInput {
   /** Marketplace header required by compatibility metadata endpoints. */
   readonly marketplaceId: string;
   /** Generated MultiCompatibilityPropertyValuesRequest body. */
@@ -62,7 +62,7 @@ export interface GetMetadataMultiCompatibilityPropertyValuesInput {
 }
 
 /** Input accepted by Metadata getProductCompatibilities. */
-export interface GetMetadataProductCompatibilitiesInput {
+interface GetMetadataProductCompatibilitiesInput {
   /** Marketplace header required by compatibility metadata endpoints. */
   readonly marketplaceId: string;
   /** Generated ProductRequest body. */
@@ -70,7 +70,7 @@ export interface GetMetadataProductCompatibilitiesInput {
 }
 
 /** Input accepted by Metadata getSalesTaxJurisdictions. */
-export interface GetMetadataSalesTaxJurisdictionsInput {
+interface GetMetadataSalesTaxJurisdictionsInput {
   /** Two-letter ISO country code, currently US or CA for eBay sales-tax tables. */
   readonly countryCode: string;
 }
@@ -80,7 +80,7 @@ export interface GetMetadataSalesTaxJurisdictionsInput {
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getAutomotivePartsCompatibilityPolicies
  */
-export type AutomotivePartsCompatibilityPoliciesResponse =
+type AutomotivePartsCompatibilityPoliciesResponse =
   components['schemas']['AutomotivePartsCompatibilityPolicyResponse'];
 
 /**
@@ -88,14 +88,14 @@ export type AutomotivePartsCompatibilityPoliciesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getCategoryPolicies
  */
-export type CategoryPoliciesResponse = components['schemas']['CategoryPolicyResponse'];
+type CategoryPoliciesResponse = components['schemas']['CategoryPolicyResponse'];
 
 /**
  * Response returned by getExtendedProducerResponsibilityPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getExtendedProducerResponsibilityPolicies
  */
-export type ExtendedProducerResponsibilityPoliciesResponse =
+type ExtendedProducerResponsibilityPoliciesResponse =
   components['schemas']['ExtendedProducerResponsibilityPolicyResponse'];
 
 /**
@@ -103,7 +103,7 @@ export type ExtendedProducerResponsibilityPoliciesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getHazardousMaterialsLabels
  */
-export type HazardousMaterialsLabelsResponse =
+type HazardousMaterialsLabelsResponse =
   components['schemas']['HazardousMaterialDetailsResponse'];
 
 /**
@@ -111,14 +111,14 @@ export type HazardousMaterialsLabelsResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getItemConditionPolicies
  */
-export type ItemConditionPoliciesResponse = components['schemas']['ItemConditionPolicyResponse'];
+type ItemConditionPoliciesResponse = components['schemas']['ItemConditionPolicyResponse'];
 
 /**
  * Response returned by getListingStructurePolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getListingStructurePolicies
  */
-export type ListingStructurePoliciesResponse =
+type ListingStructurePoliciesResponse =
   components['schemas']['ListingStructurePolicyResponse'];
 
 /**
@@ -126,7 +126,7 @@ export type ListingStructurePoliciesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getNegotiatedPricePolicies
  */
-export type NegotiatedPricePoliciesResponse =
+type NegotiatedPricePoliciesResponse =
   components['schemas']['NegotiatedPricePolicyResponse'];
 
 /**
@@ -134,63 +134,63 @@ export type NegotiatedPricePoliciesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getProductSafetyLabels
  */
-export type ProductSafetyLabelsResponse = components['schemas']['ProductSafetyLabelsResponse'];
+type ProductSafetyLabelsResponse = components['schemas']['ProductSafetyLabelsResponse'];
 
 /**
  * Response returned by getRegulatoryPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getRegulatoryPolicies
  */
-export type RegulatoryPoliciesResponse = components['schemas']['RegulatoryPolicyResponse'];
+type RegulatoryPoliciesResponse = components['schemas']['RegulatoryPolicyResponse'];
 
 /**
  * Response returned by getReturnPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getReturnPolicies
  */
-export type ReturnPoliciesMetadataResponse = components['schemas']['ReturnPolicyResponse'];
+type ReturnPoliciesMetadataResponse = components['schemas']['ReturnPolicyResponse'];
 
 /**
  * Response returned by getClassifiedAdPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getClassifiedAdPolicies
  */
-export type ClassifiedAdPoliciesResponse = components['schemas']['ClassifiedAdPolicyResponse'];
+type ClassifiedAdPoliciesResponse = components['schemas']['ClassifiedAdPolicyResponse'];
 
 /**
  * Response returned by getCurrencies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getCurrencies
  */
-export type GetCurrenciesResponse = components['schemas']['GetCurrenciesResponse'];
+type GetCurrenciesResponse = components['schemas']['GetCurrenciesResponse'];
 
 /**
  * Response returned by getListingTypePolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getListingTypePolicies
  */
-export type ListingTypePoliciesResponse = components['schemas']['ListingTypePoliciesResponse'];
+type ListingTypePoliciesResponse = components['schemas']['ListingTypePoliciesResponse'];
 
 /**
  * Response returned by getMotorsListingPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getMotorsListingPolicies
  */
-export type MotorsListingPoliciesResponse = components['schemas']['MotorsListingPoliciesResponse'];
+type MotorsListingPoliciesResponse = components['schemas']['MotorsListingPoliciesResponse'];
 
 /**
  * Response returned by getShippingPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getShippingPolicies
  */
-export type ShippingPoliciesMetadataResponse = components['schemas']['ShippingPoliciesResponse'];
+type ShippingPoliciesMetadataResponse = components['schemas']['ShippingPoliciesResponse'];
 
 /**
  * Response returned by getSiteVisibilityPolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getSiteVisibilityPolicies
  */
-export type SiteVisibilityPoliciesResponse =
+type SiteVisibilityPoliciesResponse =
   components['schemas']['SiteVisibilityPoliciesResponse'];
 
 /**
@@ -198,28 +198,28 @@ export type SiteVisibilityPoliciesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/compatibilities/methods/getCompatibilitiesBySpecification
  */
-export type SpecificationResponse = components['schemas']['SpecificationResponse'];
+type SpecificationResponse = components['schemas']['SpecificationResponse'];
 
 /**
  * Response returned by getCompatibilityPropertyNames.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/compatibilities/methods/getCompatibilityPropertyNames
  */
-export type PropertyNamesResponse = components['schemas']['PropertyNamesResponse'];
+type PropertyNamesResponse = components['schemas']['PropertyNamesResponse'];
 
 /**
  * Response returned by getCompatibilityPropertyValues.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/compatibilities/methods/getCompatibilityPropertyValues
  */
-export type PropertyValuesResponse = components['schemas']['PropertyValuesResponse'];
+type PropertyValuesResponse = components['schemas']['PropertyValuesResponse'];
 
 /**
  * Response returned by getMultiCompatibilityPropertyValues.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/compatibilities/methods/getMultiCompatibilityPropertyValues
  */
-export type MultiCompatibilityPropertyValuesResponse =
+type MultiCompatibilityPropertyValuesResponse =
   components['schemas']['MultiCompatibilityPropertyValuesResponse'];
 
 /**
@@ -227,14 +227,14 @@ export type MultiCompatibilityPropertyValuesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/compatibilities/methods/getProductCompatibilities
  */
-export type ProductResponse = components['schemas']['ProductResponse'];
+type ProductResponse = components['schemas']['ProductResponse'];
 
 /**
  * Response returned by getSalesTaxJurisdictions.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/country/methods/getSalesTaxJurisdictions
  */
-export type SalesTaxJurisdictionsResponse = components['schemas']['SalesTaxJurisdictions'];
+type SalesTaxJurisdictionsResponse = components['schemas']['SalesTaxJurisdictions'];
 
 /** Generated request body for getCompatibilitiesBySpecification. */
 type SpecificationRequest = components['schemas']['SpecificationRequest'];

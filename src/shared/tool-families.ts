@@ -39,9 +39,6 @@ export const TOOL_FAMILY_KEYS = [
   'trading',
 ] as const;
 
-/** A valid tool-family key. */
-export type ToolFamilyKey = (typeof TOOL_FAMILY_KEYS)[number];
-
 const FAMILY_KEY_SET: ReadonlySet<string> = new Set(TOOL_FAMILY_KEYS);
 
 /**
@@ -58,7 +55,7 @@ const FAMILY_KEY_SET: ReadonlySet<string> = new Set(TOOL_FAMILY_KEYS);
  * {@link getToolGatingConfigError} validates them. Typing it as the narrowed key
  * would advertise a guarantee the value does not yet hold.
  */
-export type ToolGatingMode =
+type ToolGatingMode =
   | { kind: 'all' }
   | { kind: 'dynamic' }
   | { kind: 'static'; families: string[] };

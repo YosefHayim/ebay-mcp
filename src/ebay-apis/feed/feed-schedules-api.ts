@@ -33,13 +33,13 @@ type CreateUserScheduleRequest = components['schemas']['CreateUserScheduleReques
 type UpdateUserScheduleRequest = components['schemas']['UpdateUserScheduleRequest'];
 
 /** Schedules page for a feed type. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedules */
-export type UserScheduleCollection = components['schemas']['UserScheduleCollection'];
+type UserScheduleCollection = components['schemas']['UserScheduleCollection'];
 /** One schedule. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedule */
-export type UserScheduleResponse = components['schemas']['UserScheduleResponse'];
+type UserScheduleResponse = components['schemas']['UserScheduleResponse'];
 /** Schedule templates page. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplates */
-export type ScheduleTemplateCollection = components['schemas']['ScheduleTemplateCollection'];
+type ScheduleTemplateCollection = components['schemas']['ScheduleTemplateCollection'];
 /** One schedule template. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplate */
-export type ScheduleTemplateResponse = components['schemas']['ScheduleTemplateResponse'];
+type ScheduleTemplateResponse = components['schemas']['ScheduleTemplateResponse'];
 
 /**
  * Creates the Feed API `schedule` resource endpoints: recurring report schedules, their

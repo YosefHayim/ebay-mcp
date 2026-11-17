@@ -8,7 +8,7 @@ const wrap = (tokenClass: string, text: string): string =>
   `<span class="${tokenClass}">${escapeHtml(text)}</span>`;
 
 /** One line of JSON as colored HTML. */
-export const highlightJsonLine = (line: string): string => {
+const highlightJsonLine = (line: string): string => {
   let html = '';
   let lastEnd = 0;
   for (const match of line.matchAll(JSON_TOKEN)) {
@@ -28,7 +28,7 @@ export const highlightJsonLine = (line: string): string => {
 };
 
 /** One line of a shell snippet as colored HTML. */
-export const highlightShellLine = (line: string): string => {
+const highlightShellLine = (line: string): string => {
   if (line.startsWith('#')) return wrap('tk-c', line);
   const assignment = SHELL_ASSIGNMENT.exec(line);
   if (assignment) {

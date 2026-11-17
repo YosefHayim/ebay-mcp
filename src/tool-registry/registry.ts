@@ -6,7 +6,7 @@ import type { ViewArchetype, ViewModel } from '@/tool-registry/ui/view-models.js
 import { Data, Effect } from 'effect';
 
 /** Tagged failure returned when the tool registry cannot resolve a runnable tool. */
-export class ToolRegistryError extends Data.TaggedError('ToolRegistryError')<{
+class ToolRegistryError extends Data.TaggedError('ToolRegistryError')<{
   /** Human-readable registry failure message. */
   readonly message: string;
   /** Tool name involved in the failure, when a single lookup failed. */
@@ -42,7 +42,7 @@ export interface ToolEntry {
 }
 
 /** Validation report for duplicate definitions and definition-handler mismatches. */
-export interface ToolRegistryValidation {
+interface ToolRegistryValidation {
   duplicateToolNames: string[];
   missingHandlers: string[];
   orphanHandlers: string[];
@@ -160,7 +160,7 @@ export const getToolDefinitions = (): ToolDefinition[] =>
  * const handler = getToolHandler('ebay_get_custom_policies');
  * ```
  */
-export const getToolHandler = (toolName: string): ToolHandler | undefined =>
+const getToolHandler = (toolName: string): ToolHandler | undefined =>
   handlerByName[toolName];
 
 /**

@@ -32,18 +32,18 @@ type CreateInventoryTaskRequest = components['schemas']['CreateInventoryTaskRequ
 type CreateServiceMetricsTaskRequest = components['schemas']['CreateServiceMetricsTaskRequest'];
 
 /** Order report tasks page. @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/getOrderTasks */
-export type OrderTaskCollection = components['schemas']['OrderTaskCollection'];
+type OrderTaskCollection = components['schemas']['OrderTaskCollection'];
 /** Order report task. @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/getOrderTask */
-export type OrderTask = components['schemas']['OrderTask'];
+type OrderTask = components['schemas']['OrderTask'];
 /** Inventory report tasks page. @see https://developer.ebay.com/api-docs/sell/feed/resources/inventory_task/methods/getInventoryTasks */
-export type InventoryTaskCollection = components['schemas']['InventoryTaskCollection'];
+type InventoryTaskCollection = components['schemas']['InventoryTaskCollection'];
 /** Inventory report task. @see https://developer.ebay.com/api-docs/sell/feed/resources/inventory_task/methods/getInventoryTask */
-export type InventoryTask = components['schemas']['InventoryTask'];
+type InventoryTask = components['schemas']['InventoryTask'];
 /** Customer service metric tasks page. @see https://developer.ebay.com/api-docs/sell/feed/resources/customer_service_metric_task/methods/getCustomerServiceMetricTasks */
-export type CustomerServiceMetricTaskCollection =
+type CustomerServiceMetricTaskCollection =
   components['schemas']['CustomerServiceMetricTaskCollection'];
 /** Customer service metric task. @see https://developer.ebay.com/api-docs/sell/feed/resources/customer_service_metric_task/methods/getCustomerServiceMetricTask */
-export type ServiceMetricsTask = components['schemas']['ServiceMetricsTask'];
+type ServiceMetricsTask = components['schemas']['ServiceMetricsTask'];
 
 /**
  * Creates the Feed API report-task endpoints that take filter criteria: order reports

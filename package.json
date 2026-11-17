@@ -24,7 +24,6 @@
     "diagnose": "node build/cli/diagnostics.js",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/src.tsbuildinfo && tsc -p tsconfig.scripts.json --noEmit && tsc -p site/tsconfig.json --noEmit",
     "readme:tools": "tsx scripts/build-readme-tool-table.ts",
-    "catalog": "tsx scripts/build-tool-catalog.ts build/tool-catalog.json",
     "typecheck:mcp-apps": "tsc -p src/mcp-apps/tsconfig.json --noEmit",
     "check": "turbo run lint typecheck typecheck:mcp-apps test build --output-logs=errors-only",
     "check:ci": "biome ci .",
@@ -52,7 +51,7 @@
   "license": "MIT",
   "files": [
     "build/index.js",
-    "build/serverHttp.js",
+    "build/server-http.js",
     "build/auth/**/*.js",
     "build/cli/**/*.js",
     "build/ebay-apis/**/*.js",
@@ -62,7 +61,7 @@
     "build/tool-registry/**/*.js",
     "build/ui/*.html",
     "build/index.d.ts",
-    "build/serverHttp.d.ts",
+    "build/server-http.d.ts",
     "assets/icons/*.png",
     "README.md"
   ],

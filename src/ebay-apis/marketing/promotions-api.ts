@@ -70,7 +70,7 @@ type GetEmailReportInput = z.infer<typeof getEmailReportInputSchema>;
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/createItemPriceMarkdownPromotion
  */
-export type CreateItemPriceMarkdownPromotionResponse =
+type CreateItemPriceMarkdownPromotionResponse =
   MarketingOperationResponse<'createItemPriceMarkdownPromotion'>;
 
 /**
@@ -78,7 +78,7 @@ export type CreateItemPriceMarkdownPromotionResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/getItemPriceMarkdownPromotion
  */
-export type GetItemPriceMarkdownPromotionResponse =
+type GetItemPriceMarkdownPromotionResponse =
   MarketingOperationResponse<'getItemPriceMarkdownPromotion'>;
 
 /**
@@ -86,7 +86,7 @@ export type GetItemPriceMarkdownPromotionResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/updateItemPriceMarkdownPromotion
  */
-export type UpdateItemPriceMarkdownPromotionResponse =
+type UpdateItemPriceMarkdownPromotionResponse =
   MarketingOperationResponse<'updateItemPriceMarkdownPromotion'>;
 
 /**
@@ -94,7 +94,7 @@ export type UpdateItemPriceMarkdownPromotionResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_price_markdown/methods/deleteItemPriceMarkdownPromotion
  */
-export type DeleteItemPriceMarkdownPromotionResponse =
+type DeleteItemPriceMarkdownPromotionResponse =
   MarketingOperationResponse<'deleteItemPriceMarkdownPromotion'>;
 
 /**
@@ -102,70 +102,70 @@ export type DeleteItemPriceMarkdownPromotionResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/createItemPromotion
  */
-export type CreateItemPromotionResponse = MarketingOperationResponse<'createItemPromotion'>;
+type CreateItemPromotionResponse = MarketingOperationResponse<'createItemPromotion'>;
 
 /**
  * Response returned by eBay Marketing API getItemPromotion.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/getItemPromotion
  */
-export type GetItemPromotionResponse = MarketingOperationResponse<'getItemPromotion'>;
+type GetItemPromotionResponse = MarketingOperationResponse<'getItemPromotion'>;
 
 /**
  * Response returned by eBay Marketing API updateItemPromotion.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/updateItemPromotion
  */
-export type UpdateItemPromotionResponse = MarketingOperationResponse<'updateItemPromotion'>;
+type UpdateItemPromotionResponse = MarketingOperationResponse<'updateItemPromotion'>;
 
 /**
  * Response returned by eBay Marketing API deleteItemPromotion.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/item_promotion/methods/deleteItemPromotion
  */
-export type DeleteItemPromotionResponse = MarketingOperationResponse<'deleteItemPromotion'>;
+type DeleteItemPromotionResponse = MarketingOperationResponse<'deleteItemPromotion'>;
 
 /**
  * Response returned by eBay Marketing API getListingSet.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/getListingSet
  */
-export type GetListingSetResponse = MarketingOperationResponse<'getListingSet'>;
+type GetListingSetResponse = MarketingOperationResponse<'getListingSet'>;
 
 /**
  * Response returned by eBay Marketing API getPromotions.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/getPromotions
  */
-export type GetPromotionsResponse = MarketingOperationResponse<'getPromotions'>;
+type GetPromotionsResponse = MarketingOperationResponse<'getPromotions'>;
 
 /**
  * Response returned by eBay Marketing API pausePromotion.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/pausePromotion
  */
-export type PausePromotionResponse = MarketingOperationResponse<'pausePromotion'>;
+type PausePromotionResponse = MarketingOperationResponse<'pausePromotion'>;
 
 /**
  * Response returned by eBay Marketing API resumePromotion.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion/methods/resumePromotion
  */
-export type ResumePromotionResponse = MarketingOperationResponse<'resumePromotion'>;
+type ResumePromotionResponse = MarketingOperationResponse<'resumePromotion'>;
 
 /**
  * Response returned by eBay Marketing API getPromotionReports.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion_report/methods/getPromotionReports
  */
-export type GetPromotionReportsResponse = MarketingOperationResponse<'getPromotionReports'>;
+type GetPromotionReportsResponse = MarketingOperationResponse<'getPromotionReports'>;
 
 /**
  * Response returned by eBay Marketing API getPromotionSummaryReport.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion_summary_report/methods/getPromotionSummaryReport
  */
-export type GetPromotionSummaryReportResponse =
+type GetPromotionSummaryReportResponse =
   MarketingOperationResponse<'getPromotionSummaryReport'>;
 
 /**
@@ -173,56 +173,56 @@ export type GetPromotionSummaryReportResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailCampaigns
  */
-export type GetEmailCampaignsResponse = MarketingOperationResponse<'getEmailCampaigns'>;
+type GetEmailCampaignsResponse = MarketingOperationResponse<'getEmailCampaigns'>;
 
 /**
  * Response returned by eBay Marketing API createEmailCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/createEmailCampaign
  */
-export type CreateEmailCampaignResponse = MarketingOperationResponse<'createEmailCampaign'>;
+type CreateEmailCampaignResponse = MarketingOperationResponse<'createEmailCampaign'>;
 
 /**
  * Response returned by eBay Marketing API getEmailCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailCampaign
  */
-export type GetEmailCampaignResponse = MarketingOperationResponse<'getEmailCampaign'>;
+type GetEmailCampaignResponse = MarketingOperationResponse<'getEmailCampaign'>;
 
 /**
  * Response returned by eBay Marketing API updateEmailCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/updateEmailCampaign
  */
-export type UpdateEmailCampaignResponse = MarketingOperationResponse<'updateEmailCampaign'>;
+type UpdateEmailCampaignResponse = MarketingOperationResponse<'updateEmailCampaign'>;
 
 /**
  * Response returned by eBay Marketing API deleteEmailCampaign.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/deleteEmailCampaign
  */
-export type DeleteEmailCampaignResponse = MarketingOperationResponse<'deleteEmailCampaign'>;
+type DeleteEmailCampaignResponse = MarketingOperationResponse<'deleteEmailCampaign'>;
 
 /**
  * Response returned by eBay Marketing API getAudiences.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getAudiences
  */
-export type GetAudiencesResponse = MarketingOperationResponse<'getAudiences'>;
+type GetAudiencesResponse = MarketingOperationResponse<'getAudiences'>;
 
 /**
  * Response returned by eBay Marketing API getEmailPreview.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailPreview
  */
-export type GetEmailPreviewResponse = MarketingOperationResponse<'getEmailPreview'>;
+type GetEmailPreviewResponse = MarketingOperationResponse<'getEmailPreview'>;
 
 /**
  * Response returned by eBay Marketing API getEmailReport.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getEmailReport
  */
-export type GetEmailReportResponse = MarketingOperationResponse<'getEmailReport'>;
+type GetEmailReportResponse = MarketingOperationResponse<'getEmailReport'>;
 
 /** Marketing API — promotions methods closed over a shared client. */
 export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({

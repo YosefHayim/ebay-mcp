@@ -65,31 +65,31 @@ const startCategoryTask = (
  *
  * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStore
  */
-export type GetStoreResponse = components['schemas']['GetStoreResponseType'];
+type GetStoreResponse = components['schemas']['GetStoreResponseType'];
 
 /**
  * Response returned by getStoreCategories.
  *
  * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreCategories
  */
-export type GetStoreCategoriesResponse = components['schemas']['GetStoreCategoriesResponseType'];
+type GetStoreCategoriesResponse = components['schemas']['GetStoreCategoriesResponseType'];
 
 /**
  * Response returned by getStoreTask.
  *
  * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreTask
  */
-export type GetStoreTaskResponse = components['schemas']['GetStoreTaskResponseType'];
+type GetStoreTaskResponse = components['schemas']['GetStoreTaskResponseType'];
 
 /**
  * Response returned by getStoreTasks.
  *
  * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreTasks
  */
-export type GetStoreTasksResponse = components['schemas']['GetStoreTasksResponseType'];
+type GetStoreTasksResponse = components['schemas']['GetStoreTasksResponseType'];
 
 /** Store task started by an asynchronous category change; poll it with getStoreTask. */
-export interface StoreCategoryTask {
+interface StoreCategoryTask {
   /** Store task ID decoded from the `Location` header, accepted by getStoreTask. */
   readonly taskId: string;
   /** getStoreTask URI exactly as eBay returned it in the `Location` header. */

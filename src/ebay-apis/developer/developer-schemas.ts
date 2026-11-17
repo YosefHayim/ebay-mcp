@@ -29,7 +29,7 @@ export const getRateLimitsInputSchema = z.object({
 export const getUserRateLimitsInputSchema = getRateLimitsInputSchema;
 
 /** Generated client-registration request fields accepted by eBay. */
-export const clientSettingsSchema = z.object({
+const clientSettingsSchema = z.object({
   client_name: z.string().optional().describe('User-friendly name for the application'),
   contacts: z.array(z.string()).optional().describe('Contact email addresses for the registrant'),
   policy_uri: z.string().optional().describe('HTTPS URL to the application privacy policy'),
@@ -50,7 +50,7 @@ export const registerClientInputSchema = z.object({
 export const getSigningKeysInputSchema = z.object({});
 
 /** Generated create-signing-key request body accepted by eBay. */
-export const createSigningKeyRequestSchema = z.object({
+const createSigningKeyRequestSchema = z.object({
   signingKeyCipher: z
     .string()
     .optional()
@@ -65,61 +65,4 @@ export const createSigningKeyInputSchema = z.object({
 /** Input accepted by Developer Key Management API getSigningKey. */
 export const getSigningKeyInputSchema = z.object({
   signingKeyId: z.string().describe('System-generated eBay signing key identifier'),
-});
-
-const rateSchema = z.object({
-  count: z.number().int().optional(),
-  limit: z.number().int().optional(),
-  remaining: z.number().int().optional(),
-  reset: z.string().optional(),
-  timeWindow: z.number().int().optional(),
-});
-
-const resourceSchema = z.object({
-  name: z.string().optional(),
-  rates: z.array(rateSchema).optional(),
-});
-
-const rateLimitSchema = z.object({
-  apiContext: z.string().optional(),
-  apiName: z.string().optional(),
-  apiVersion: z.string().optional(),
-  resources: z.array(resourceSchema).optional(),
-});
-
-/** Response returned by Developer Analytics rate-limit endpoints. */
-export const rateLimitsResponseSchema = z.object({
-  rateLimits: z.array(rateLimitSchema).optional(),
-});
-
-/** Response returned by Developer Client Registration API registerClient. */
-export const clientDetailsSchema = z.object({
-  client_id: z.string().optional(),
-  client_id_issued_at: z.number().int().optional(),
-  client_name: z.string().optional(),
-  client_secret: z.string().optional(),
-  client_secret_expires_at: z.number().int().optional(),
-  contacts: z.array(z.string()).optional(),
-  grant_types: z.array(z.string()).optional(),
-  policy_uri: z.string().optional(),
-  redirect_uris: z.array(z.string()).optional(),
-  scope: z.string().optional(),
-  software_id: z.string().optional(),
-  software_statement: z.string().optional(),
-});
-
-/** Response returned by Developer Key Management signing-key endpoints. */
-export const signingKeySchema = z.object({
-  creationTime: z.number().int().optional(),
-  expirationTime: z.number().int().optional(),
-  jwe: z.string().optional(),
-  privateKey: z.string().optional(),
-  publicKey: z.string().optional(),
-  signingKeyCipher: z.string().optional(),
-  signingKeyId: z.string().optional(),
-});
-
-/** Response returned by Developer Key Management API getSigningKeys. */
-export const querySigningKeysResponseSchema = z.object({
-  signingKeys: z.array(signingKeySchema).optional(),
 });

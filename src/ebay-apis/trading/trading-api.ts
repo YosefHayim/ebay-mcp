@@ -54,7 +54,7 @@ const asRecordArray = (rawField: unknown): Record<string, unknown>[] => {
  *
  * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/index.html
  */
-export type TradingRecordResponse = Record<string, unknown>;
+type TradingRecordResponse = Record<string, unknown>;
 
 /**
  * High-level wrapper for seller listing operations backed by eBay Trading API calls.

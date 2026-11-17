@@ -24,7 +24,7 @@ export const getErrorMessage = (error: unknown, fallback = 'Unknown error'): str
   error instanceof Error ? error.message : fallback;
 
 /** Structured eBay failure data recovered from an Effect error cause chain. */
-export interface EbayErrorDetails {
+interface EbayErrorDetails {
   /** Most actionable human-readable failure message available. */
   readonly message: string;
   /** HTTP status returned by eBay, when the request reached eBay. */

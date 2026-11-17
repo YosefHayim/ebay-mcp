@@ -12,18 +12,18 @@ import {
   requireObjectEffect,
   requireStringEffect,
 } from '@/ebay-client/request.js';
-import type { components, operations } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
+import type { components, } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
 import { Effect } from 'effect';
 import { INVENTORY_BASE_PATH, type InventoryPaginationInput } from './inventory-shared-api.js';
 
 /** Input accepted by inventory item SKU endpoints. */
-export interface SkuInput {
+interface SkuInput {
   /** Seller-defined SKU value. */
   readonly sku: string;
 }
 
 /** Input accepted by createOrReplaceInventoryItem. */
-export interface CreateOrReplaceInventoryItemInput {
+interface CreateOrReplaceInventoryItemInput {
   /** Seller-defined SKU value. */
   readonly sku: string;
   /** Generated InventoryItem body. */
@@ -37,7 +37,7 @@ export interface CreateOrReplaceInventoryItemInput {
 }
 
 /** Input accepted by product compatibility write endpoints. */
-export interface CreateOrReplaceProductCompatibilityInput {
+interface CreateOrReplaceProductCompatibilityInput {
   /** Seller-defined SKU value. */
   readonly sku: string;
   /** Generated Compatibility body. */
@@ -45,13 +45,13 @@ export interface CreateOrReplaceProductCompatibilityInput {
 }
 
 /** Input accepted by inventory item group ID endpoints. */
-export interface InventoryItemGroupKeyInput {
+interface InventoryItemGroupKeyInput {
   /** Seller-defined inventory item group key. */
   readonly inventoryItemGroupKey: string;
 }
 
 /** Input accepted by createOrReplaceInventoryItemGroup. */
-export interface CreateOrReplaceInventoryItemGroupInput {
+interface CreateOrReplaceInventoryItemGroupInput {
   /** Seller-defined inventory item group key. */
   readonly inventoryItemGroupKey: string;
   /** Generated InventoryItemGroup body. */
@@ -59,31 +59,31 @@ export interface CreateOrReplaceInventoryItemGroupInput {
 }
 
 /** Input accepted by bulk inventory item endpoints. */
-export interface BulkInventoryItemInput {
+interface BulkInventoryItemInput {
   /** Generated bulk inventory item body. */
   readonly body: BulkCreateOrReplaceInventoryItemRequest;
 }
 
 /** Input accepted by bulk get inventory item. */
-export interface BulkGetInventoryItemInput {
+interface BulkGetInventoryItemInput {
   /** Generated bulk get inventory item body. */
   readonly body: BulkGetInventoryItemRequest;
 }
 
 /** Input accepted by bulk price and quantity updates. */
-export interface BulkUpdatePriceQuantityInput {
+interface BulkUpdatePriceQuantityInput {
   /** Generated bulk price and quantity body. */
   readonly body: BulkUpdatePriceQuantityRequest;
 }
 
 /** Input accepted by bulk listing migration. */
-export interface BulkMigrateListingInput {
+interface BulkMigrateListingInput {
   /** Generated bulk migrate listing body. */
   readonly body: BulkMigrateListingRequest;
 }
 
 /** Input accepted by listing SKU location mapping ID endpoints. */
-export interface SkuLocationMappingInput {
+interface SkuLocationMappingInput {
   /** eBay listing ID that owns the SKU. */
   readonly listingId: string;
   /** Seller-defined SKU value inside the listing. */
@@ -91,7 +91,7 @@ export interface SkuLocationMappingInput {
 }
 
 /** Input accepted by createOrReplaceSkuLocationMapping. */
-export interface CreateOrReplaceSkuLocationMappingInput extends SkuLocationMappingInput {
+interface CreateOrReplaceSkuLocationMappingInput extends SkuLocationMappingInput {
   /** Generated LocationMapping body. */
   readonly body: LocationMapping;
 }
@@ -108,7 +108,7 @@ export type BulkCreateOrReplaceInventoryItemRequest = components['schemas']['Bul
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkCreateOrReplaceInventoryItem
  */
-export type BulkCreateOrReplaceInventoryItemResponse =
+type BulkCreateOrReplaceInventoryItemResponse =
   components['schemas']['BulkInventoryItemResponse'];
 
 /**
@@ -123,7 +123,7 @@ export type BulkGetInventoryItemRequest = components['schemas']['BulkGetInventor
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkGetInventoryItem
  */
-export type BulkGetInventoryItemResponse = components['schemas']['BulkGetInventoryItemResponse'];
+type BulkGetInventoryItemResponse = components['schemas']['BulkGetInventoryItemResponse'];
 
 /**
  * Request body accepted by bulkUpdatePriceQuantity.
@@ -137,14 +137,14 @@ export type BulkUpdatePriceQuantityRequest = components['schemas']['BulkPriceQua
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkUpdatePriceQuantity
  */
-export type BulkUpdatePriceQuantityResponse = components['schemas']['BulkPriceQuantityResponse'];
+type BulkUpdatePriceQuantityResponse = components['schemas']['BulkPriceQuantityResponse'];
 
 /**
  * Response returned by getInventoryItem.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/getInventoryItem
  */
-export type GetInventoryItemResponse = components['schemas']['InventoryItemWithSkuLocaleGroupid'];
+type GetInventoryItemResponse = components['schemas']['InventoryItemWithSkuLocaleGroupid'];
 
 /**
  * Request body accepted by createOrReplaceInventoryItem.
@@ -158,21 +158,21 @@ export type InventoryItem = components['schemas']['InventoryItem'];
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/createOrReplaceInventoryItem
  */
-export type BaseResponse = components['schemas']['BaseResponse'];
+type BaseResponse = components['schemas']['BaseResponse'];
 
 /**
  * No-content response returned by deleteInventoryItem.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/deleteInventoryItem
  */
-export type DeleteInventoryItemResponse = void;
+type DeleteInventoryItemResponse = void;
 
 /**
  * Response returned by getInventoryItems.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/getInventoryItems
  */
-export type GetInventoryItemsResponse = components['schemas']['InventoryItems'];
+type GetInventoryItemsResponse = components['schemas']['InventoryItems'];
 
 /**
  * Generated compatibility body and response used by product compatibility endpoints.
@@ -186,7 +186,7 @@ export type ProductCompatibility = components['schemas']['Compatibility'];
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/product_compatibility/methods/deleteProductCompatibility
  */
-export type DeleteProductCompatibilityResponse = void;
+type DeleteProductCompatibilityResponse = void;
 
 /**
  * Generated inventory item group body and response.
@@ -200,7 +200,7 @@ export type InventoryItemGroup = components['schemas']['InventoryItemGroup'];
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item_group/methods/deleteInventoryItemGroup
  */
-export type DeleteInventoryItemGroupResponse = void;
+type DeleteInventoryItemGroupResponse = void;
 
 /**
  * Request body accepted by bulkMigrateListing.
@@ -214,7 +214,7 @@ export type BulkMigrateListingRequest = components['schemas']['BulkMigrateListin
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkMigrateListing
  */
-export type BulkMigrateListingResponse = components['schemas']['BulkMigrateListingResponse'];
+type BulkMigrateListingResponse = components['schemas']['BulkMigrateListingResponse'];
 
 /**
  * Generated location mapping body and response.
@@ -228,14 +228,14 @@ export type LocationMapping = components['schemas']['LocationMapping'];
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/listing/methods/createOrReplaceSkuLocationMapping
  */
-export type CreateOrReplaceSkuLocationMappingResponse = void;
+type CreateOrReplaceSkuLocationMappingResponse = void;
 
 /**
  * No-content response returned by deleteSkuLocationMapping.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/listing/methods/deleteSkuLocationMapping
  */
-export type DeleteSkuLocationMappingResponse = void;
+type DeleteSkuLocationMappingResponse = void;
 
 /** Inventory API — items methods closed over a shared client. */
 export const createInventoryItemsMethods = (client: EbayApiClient) => ({

@@ -1,4 +1,4 @@
-export interface PriceChangeRow {
+interface PriceChangeRow {
   title: string;
   oldPrice: string;
   newPrice: string;

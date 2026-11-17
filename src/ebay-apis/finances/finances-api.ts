@@ -59,77 +59,77 @@ const filterQuery = (filter: string | undefined): QueryParams | undefined =>
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarnings
  */
-export type OrderEarningsResponse = components['schemas']['OrderEarnings'];
+type OrderEarningsResponse = components['schemas']['OrderEarnings'];
 
 /**
  * Response returned by getOrderEarningsById.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsById
  */
-export type OrderEarningResponse = components['schemas']['OrderEarning'];
+type OrderEarningResponse = components['schemas']['OrderEarning'];
 
 /**
  * Response returned by getOrderEarningsSummary.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsSummary
  */
-export type OrderEarningsSummaryResponse = components['schemas']['OrderEarningsSummary'];
+type OrderEarningsSummaryResponse = components['schemas']['OrderEarningsSummary'];
 
 /**
  * Response returned by getPayout.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayout
  */
-export type PayoutResponse = components['schemas']['Payout'];
+type PayoutResponse = components['schemas']['Payout'];
 
 /**
  * Response returned by getPayouts; eBay may answer 204 with no body when nothing matches.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayouts
  */
-export type PayoutsResponse = components['schemas']['Payouts'];
+type PayoutsResponse = components['schemas']['Payouts'];
 
 /**
  * Response returned by getPayoutSummary.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayoutSummary
  */
-export type PayoutSummaryResponse = components['schemas']['PayoutSummaryResponse'];
+type PayoutSummaryResponse = components['schemas']['PayoutSummaryResponse'];
 
 /**
  * Response returned by getSellerFundsSummary; eBay answers 204 with no body when no funds are pending.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/seller_funds_summary/methods/getSellerFundsSummary
  */
-export type SellerFundsSummaryResponse = components['schemas']['SellerFundsSummaryResponse'];
+type SellerFundsSummaryResponse = components['schemas']['SellerFundsSummaryResponse'];
 
 /**
  * Response returned by getTransactions; eBay answers 204 with no body when nothing matches.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactions
  */
-export type TransactionsResponse = components['schemas']['Transactions'];
+type TransactionsResponse = components['schemas']['Transactions'];
 
 /**
  * Response returned by getTransactionSummary.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactionSummary
  */
-export type TransactionSummaryResponse = components['schemas']['TransactionSummaryResponse'];
+type TransactionSummaryResponse = components['schemas']['TransactionSummaryResponse'];
 
 /**
  * Response returned by getTransfer.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/transfer/methods/getTransfer
  */
-export type TransferResponse = components['schemas']['Transfer'];
+type TransferResponse = components['schemas']['Transfer'];
 
 /**
  * Response returned by getBillingActivities.
  *
  * @see https://developer.ebay.com/api-docs/sell/finances/resources/billing_activity/methods/getBillingActivities
  */
-export type BillingActivityResponse = components['schemas']['BillingActivityResponse'];
+type BillingActivityResponse = components['schemas']['BillingActivityResponse'];
 
 /**
  * Finances API - payouts, transactions, transfers, seller funds, billing activity, and order

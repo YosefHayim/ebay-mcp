@@ -40,7 +40,7 @@ export type ShippingFulfillmentDetails = components['schemas']['ShippingFulfillm
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/createShippingFulfillment
  */
-export type CreateShippingFulfillmentResponse =
+type CreateShippingFulfillmentResponse =
   operations['createShippingFulfillment']['responses'][201]['content']['application/json'];
 
 /**
@@ -73,7 +73,7 @@ export type IssueRefundRequest = components['schemas']['IssueRefundRequest'];
 export type Refund = components['schemas']['Refund'];
 
 /** Filters and pagination accepted by getOrders. */
-export interface GetOrdersInput {
+interface GetOrdersInput {
   /** Response field group requested from eBay, such as TAX_BREAKDOWN. */
   readonly fieldGroups?: string;
   /** eBay filter expression used to narrow returned orders. */
@@ -87,7 +87,7 @@ export interface GetOrdersInput {
 }
 
 /** Input required to retrieve one order. */
-export interface GetOrderInput {
+interface GetOrderInput {
   /** eBay order identifier from getOrders. */
   readonly orderId: string;
   /** Response field group requested from eBay, such as TAX_BREAKDOWN. */
@@ -95,7 +95,7 @@ export interface GetOrderInput {
 }
 
 /** Input accepted by createShippingFulfillment. */
-export interface CreateShippingFulfillmentInput {
+interface CreateShippingFulfillmentInput {
   /** eBay order identifier receiving the shipping fulfillment. */
   readonly orderId: string;
   /** Generated request payload describing the shipment. */
@@ -103,13 +103,13 @@ export interface CreateShippingFulfillmentInput {
 }
 
 /** Input required to retrieve all shipping fulfillments for one order. */
-export interface GetShippingFulfillmentsInput {
+interface GetShippingFulfillmentsInput {
   /** eBay order identifier whose shipping fulfillments are requested. */
   readonly orderId: string;
 }
 
 /** Input required to retrieve one shipping fulfillment. */
-export interface GetShippingFulfillmentInput {
+interface GetShippingFulfillmentInput {
   /** eBay order identifier that owns the shipping fulfillment. */
   readonly orderId: string;
   /** eBay shipping fulfillment identifier to retrieve. */
@@ -117,7 +117,7 @@ export interface GetShippingFulfillmentInput {
 }
 
 /** Input accepted by issueRefund. */
-export interface IssueRefundInput {
+interface IssueRefundInput {
   /** eBay order identifier receiving the refund. */
   readonly orderId: string;
   /** Generated request payload describing the refund. */

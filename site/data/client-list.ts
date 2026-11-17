@@ -1,6 +1,6 @@
 import type { BrandName } from '@site/icons/brand-icons.tsx';
 
-export interface ClientEntry {
+interface ClientEntry {
   name: string;
   brand: BrandName;
 }
@@ -20,7 +20,7 @@ export const WORKS_WITH_CLIENTS: ClientEntry[] = [
 
 export type SetupClientId = 'desktop' | 'code' | 'cursor' | 'cline' | 'vscode';
 
-export interface SetupClientTab {
+interface SetupClientTab {
   clientId: SetupClientId;
   label: string;
   brand: BrandName;

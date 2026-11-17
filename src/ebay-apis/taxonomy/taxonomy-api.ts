@@ -25,22 +25,22 @@ import { Effect } from 'effect';
 const ITEM_ASPECTS_DOWNLOAD: EbayRequestConfig = { timeoutMs: 120_000 };
 
 /** Category tree identifier accepted by fetchItemAspects and getExpiredCategories. */
-export type CategoryTreeIdInput = z.infer<typeof categoryTreeIdInputSchema>;
+type CategoryTreeIdInput = z.infer<typeof categoryTreeIdInputSchema>;
 
 /** Input accepted by getDefaultCategoryTreeId. */
-export interface GetDefaultCategoryTreeIdInput {
+interface GetDefaultCategoryTreeIdInput {
   /** eBay marketplace identifier, such as EBAY_US. */
   readonly marketplaceId: string;
 }
 
 /** Input accepted by getCategoryTree. */
-export interface GetCategoryTreeInput {
+interface GetCategoryTreeInput {
   /** Category tree identifier returned by getDefaultCategoryTreeId. */
   readonly categoryTreeId: string;
 }
 
 /** Input accepted by getCategorySubtree. */
-export interface GetCategorySubtreeInput {
+interface GetCategorySubtreeInput {
   /** Category tree identifier returned by getDefaultCategoryTreeId. */
   readonly categoryTreeId: string;
   /** Category identifier that anchors the requested subtree. */
@@ -48,7 +48,7 @@ export interface GetCategorySubtreeInput {
 }
 
 /** Input accepted by getCategorySuggestions. */
-export interface GetCategorySuggestionsInput {
+interface GetCategorySuggestionsInput {
   /** Category tree identifier returned by getDefaultCategoryTreeId. */
   readonly categoryTreeId: string;
   /** Search text used by eBay to suggest matching categories. */
@@ -56,7 +56,7 @@ export interface GetCategorySuggestionsInput {
 }
 
 /** Input accepted by getItemAspectsForCategory. */
-export interface GetItemAspectsForCategoryInput {
+interface GetItemAspectsForCategoryInput {
   /** Category tree identifier returned by getDefaultCategoryTreeId. */
   readonly categoryTreeId: string;
   /** Category identifier whose item aspects should be returned. */
@@ -64,7 +64,7 @@ export interface GetItemAspectsForCategoryInput {
 }
 
 /** Input accepted by getCompatibilityProperties. */
-export interface GetCompatibilityPropertiesInput {
+interface GetCompatibilityPropertiesInput {
   /** Category tree identifier returned by getDefaultCategoryTreeId. */
   readonly categoryTreeId: string;
   /** Compatibility-enabled category identifier. */
@@ -72,7 +72,7 @@ export interface GetCompatibilityPropertiesInput {
 }
 
 /** Input accepted by getCompatibilityPropertyValues. */
-export interface GetCompatibilityPropertyValuesInput {
+interface GetCompatibilityPropertyValuesInput {
   /** Category tree identifier returned by getDefaultCategoryTreeId. */
   readonly categoryTreeId: string;
   /** Compatibility-enabled category identifier. */
@@ -87,7 +87,7 @@ export interface GetCompatibilityPropertyValuesInput {
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getDefaultCategoryTreeId
  */
-export type GetDefaultCategoryTreeIdResponse =
+type GetDefaultCategoryTreeIdResponse =
   | components['schemas']['BaseCategoryTree']
   | undefined;
 
@@ -96,14 +96,14 @@ export type GetDefaultCategoryTreeIdResponse =
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategoryTree
  */
-export type GetCategoryTreeResponse = components['schemas']['CategoryTree'];
+type GetCategoryTreeResponse = components['schemas']['CategoryTree'];
 
 /**
  * Response returned by eBay Taxonomy API getCategorySubtree.
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySubtree
  */
-export type GetCategorySubtreeResponse = components['schemas']['CategorySubtree'];
+type GetCategorySubtreeResponse = components['schemas']['CategorySubtree'];
 
 /**
  * Response returned by eBay Taxonomy API getCategorySuggestions; `undefined` when eBay answers HTTP 204
@@ -111,7 +111,7 @@ export type GetCategorySubtreeResponse = components['schemas']['CategorySubtree'
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions
  */
-export type GetCategorySuggestionsResponse =
+type GetCategorySuggestionsResponse =
   | components['schemas']['CategorySuggestionResponse']
   | undefined;
 
@@ -121,7 +121,7 @@ export type GetCategorySuggestionsResponse =
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getItemAspectsForCategory
  */
-export type GetItemAspectsForCategoryResponse = components['schemas']['AspectMetadata'] | undefined;
+type GetItemAspectsForCategoryResponse = components['schemas']['AspectMetadata'] | undefined;
 
 /**
  * Response returned by eBay Taxonomy API getCompatibilityProperties; `undefined` when eBay answers HTTP 204
@@ -129,7 +129,7 @@ export type GetItemAspectsForCategoryResponse = components['schemas']['AspectMet
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityProperties
  */
-export type GetCompatibilityPropertiesResponse =
+type GetCompatibilityPropertiesResponse =
   | components['schemas']['GetCompatibilityMetadataResponse']
   | undefined;
 
@@ -139,7 +139,7 @@ export type GetCompatibilityPropertiesResponse =
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityPropertyValues
  */
-export type GetCompatibilityPropertyValuesResponse =
+type GetCompatibilityPropertyValuesResponse =
   | components['schemas']['GetCompatibilityPropertyValuesResponse']
   | undefined;
 
@@ -149,7 +149,7 @@ export type GetCompatibilityPropertyValuesResponse =
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getExpiredCategories
  */
-export type GetExpiredCategoriesResponse = components['schemas']['ExpiredCategories'] | undefined;
+type GetExpiredCategoriesResponse = components['schemas']['ExpiredCategories'] | undefined;
 
 /**
  * Taxonomy API - category trees, category suggestions, item aspects, expired-category

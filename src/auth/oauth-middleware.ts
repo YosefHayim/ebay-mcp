@@ -12,7 +12,7 @@ import { Effect, Either } from 'effect';
 /**
  * Extended Express Request with verified token
  */
-export interface AuthenticatedRequest extends Request {
+interface AuthenticatedRequest extends Request {
   /** Verified bearer token attached after authentication succeeds. */
   auth?: VerifiedToken;
 }
@@ -20,7 +20,7 @@ export interface AuthenticatedRequest extends Request {
 /**
  * Configuration for MCP Bearer-token authentication middleware.
  */
-export interface BearerAuthMiddlewareConfig {
+interface BearerAuthMiddlewareConfig {
   /**
    * Token verifier instance
    */

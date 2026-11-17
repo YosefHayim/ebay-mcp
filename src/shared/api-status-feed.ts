@@ -13,7 +13,7 @@ const RSS_URL = 'https://developer.ebay.com/rss/api-status';
 /**
  * Parsed eBay API status feed entry exposed to MCP tools.
  */
-export interface ApiStatusItem {
+interface ApiStatusItem {
   /** Feed item title. */
   title: string;
   /** Short plain-text summary. */
@@ -75,7 +75,7 @@ interface RssRoot {
 /**
  * Filters and pagination options for the eBay API status feed.
  */
-export interface GetApiStatusFeedOptions {
+interface GetApiStatusFeedOptions {
   /** Maximum number of items to return. */
   limit?: number;
   /** Optional status filter. */
@@ -85,7 +85,7 @@ export interface GetApiStatusFeedOptions {
 }
 
 /** Parsed API status feed response returned to tools and docs sync. */
-export interface ApiStatusFeedResult {
+interface ApiStatusFeedResult {
   /** Filtered feed items. */
   items: ApiStatusItem[];
   /** Recoverable fetch or parse error, when available. */

@@ -21,7 +21,7 @@ type ToolArgs = Record<string, unknown>;
 /**
  * Optional dependencies and metadata for constructing the eBay MCP runtime.
  */
-export interface EbayMcpRuntimeOptions {
+interface EbayMcpRuntimeOptions {
   /** Optional prebuilt API facade, mainly for tests. */
   api?: EbaySellerApi;
   /** Optional MCP implementation metadata advertised during initialize. */

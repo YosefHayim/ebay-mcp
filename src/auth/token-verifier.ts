@@ -25,7 +25,7 @@ export type { TokenVerifierError } from '@/auth/token-verifier-error.js';
 /**
  * OAuth issuer and audience settings used to validate MCP access tokens.
  */
-export interface TokenVerifierConfig {
+interface TokenVerifierConfig {
   /**
    * OAuth authorization server metadata URL or metadata object
    */

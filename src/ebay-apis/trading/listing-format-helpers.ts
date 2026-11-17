@@ -12,7 +12,7 @@ const TRADING_GTC_DURATION = 'GTC';
 const SELL_TO_HIGH_BIDDER_REASON = 'SellToHighBidder';
 
 /** Trading listing operations whose XML call name depends on the listing format. */
-export type TradingListingOperation = 'create' | 'revise' | 'end' | 'relist';
+type TradingListingOperation = 'create' | 'revise' | 'end' | 'relist';
 
 /** Trading API call names per listing operation and format. */
 const TRADING_CALL_NAMES: Record<TradingListingOperation, Record<FormatType, string>> = {
@@ -156,7 +156,7 @@ const auctionPriceViolation = (
 };
 
 /** Inputs to the Trading listing-format rules. */
-export interface TradingListingFormatCheck {
+interface TradingListingFormatCheck {
   /** Raw Trading `Item` fields supplied by the caller. */
   readonly item: TradingItemFields;
   /** Listing format the caller selected. */

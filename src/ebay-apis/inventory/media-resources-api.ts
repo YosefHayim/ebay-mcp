@@ -23,9 +23,9 @@ type DocumentIdInput = z.infer<typeof documentIdInputSchema>;
 type PostOrderMetadata = z.infer<typeof postOrderDocumentMetadataSchema>;
 
 /** Created listing document. @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocument */
-export type CreateDocumentResponse = components['schemas']['CreateDocumentResponse'];
+type CreateDocumentResponse = components['schemas']['CreateDocumentResponse'];
 /** Listing document status and metadata. @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/getDocument */
-export type DocumentResponse = components['schemas']['DocumentResponse'];
+type DocumentResponse = components['schemas']['DocumentResponse'];
 
 const uploadForm = (file: MediaUpload): FormData => {
   const form = new FormData();

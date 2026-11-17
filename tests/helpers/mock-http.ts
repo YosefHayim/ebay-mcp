@@ -134,7 +134,7 @@ export const cleanupMocks = (): void => {
  * enableMocks();
  * ```
  */
-export const enableMocks = (): void => {
+const enableMocks = (): void => {
   if (!nock.isActive()) {
     nock.activate();
   }
@@ -152,7 +152,7 @@ export const enableMocks = (): void => {
  * disableMocks();
  * ```
  */
-export const disableMocks = (): void => {
+const disableMocks = (): void => {
   nock.restore();
   nock.enableNetConnect();
 };

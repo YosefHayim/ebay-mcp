@@ -28,21 +28,21 @@ type GetCustomerServiceMetricInput = z.infer<typeof getCustomerServiceMetricInpu
  *
  * @see https://developer.ebay.com/api-docs/sell/analytics/resources/traffic_report/methods/getTrafficReport
  */
-export type GetTrafficReportResponse = components['schemas']['Report'];
+type GetTrafficReportResponse = components['schemas']['Report'];
 
 /**
  * Seller standards profile response returned by eBay Analytics getSellerStandardsProfile.
  *
  * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/getSellerStandardsProfile
  */
-export type GetSellerStandardsProfileResponse = components['schemas']['StandardsProfile'];
+type GetSellerStandardsProfileResponse = components['schemas']['StandardsProfile'];
 
 /**
  * Seller standards profile collection returned by eBay Analytics findSellerStandardsProfiles.
  *
  * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/findSellerStandardsProfiles
  */
-export type FindSellerStandardsProfilesResponse =
+type FindSellerStandardsProfilesResponse =
   components['schemas']['FindSellerStandardsProfilesResponse'];
 
 /**
@@ -50,7 +50,7 @@ export type FindSellerStandardsProfilesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/analytics/resources/customer_service_metric/methods/getCustomerServiceMetric
  */
-export type GetCustomerServiceMetricResponse =
+type GetCustomerServiceMetricResponse =
   components['schemas']['GetCustomerServiceMetricResponse'];
 
 /**

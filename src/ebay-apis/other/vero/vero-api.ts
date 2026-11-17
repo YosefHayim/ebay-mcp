@@ -35,35 +35,35 @@ type GetVeroReasonCodesInput = z.infer<typeof getVeroReasonCodesInputSchema>;
  *
  * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_report/methods/createVeroReport
  */
-export type CreateVeroReportResponse = components['schemas']['VeroReportItemsResponse'];
+type CreateVeroReportResponse = components['schemas']['VeroReportItemsResponse'];
 
 /**
  * Response returned by getVeroReport.
  *
  * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_report/methods/getVeroReport
  */
-export type VeroReportResponse = components['schemas']['ReportStatusResponse'];
+type VeroReportResponse = components['schemas']['ReportStatusResponse'];
 
 /**
  * Response returned by getVeroReportItems.
  *
  * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_report_items/methods/getVeroReportItems
  */
-export type VeroReportItemsResponse = components['schemas']['VeroReportStatusResponse'];
+type VeroReportItemsResponse = components['schemas']['VeroReportStatusResponse'];
 
 /**
  * Response returned by getVeroReasonCode.
  *
  * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_reason_code/methods/getVeroReasonCode
  */
-export type VeroReasonCodeResponse = components['schemas']['VeroReasonCodeResponse'];
+type VeroReasonCodeResponse = components['schemas']['VeroReasonCodeResponse'];
 
 /**
  * Response returned by getVeroReasonCodes.
  *
  * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_reason_code/methods/getVeroReasonCodes
  */
-export type VeroReasonCodesResponse = components['schemas']['VeroReasonCodeDetailResponse'];
+type VeroReasonCodesResponse = components['schemas']['VeroReasonCodeDetailResponse'];
 
 /** VeRO API - Verified Rights Owner reporting and reason-code metadata. */
 export class VeroApi {

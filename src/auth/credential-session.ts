@@ -8,17 +8,17 @@ import { Data, Effect } from 'effect';
 /**
  * Default lifetime for stored eBay user access tokens when eBay omits an expiry.
  */
-export const DEFAULT_USER_ACCESS_TOKEN_TTL_SECONDS = 7200;
+const DEFAULT_USER_ACCESS_TOKEN_TTL_SECONDS = 7200;
 
 /**
  * Default lifetime for stored eBay user refresh tokens when eBay omits an expiry.
  */
-export const DEFAULT_USER_REFRESH_TOKEN_TTL_SECONDS = 18 * 30 * 24 * 60 * 60;
+const DEFAULT_USER_REFRESH_TOKEN_TTL_SECONDS = 18 * 30 * 24 * 60 * 60;
 
 /**
  * Safety buffer removed from app-token expiry to avoid using near-expired tokens.
  */
-export const APP_ACCESS_TOKEN_EXPIRY_BUFFER_SECONDS = 60;
+const APP_ACCESS_TOKEN_EXPIRY_BUFFER_SECONDS = 60;
 
 /**
  * eBay user-token response shape with the required access token fields enforced.
@@ -175,7 +175,7 @@ export const maskToken = (token: string): string => {
  * createExpiryTimestamp(7200, Date.UTC(2026, 0, 1));
  * ```
  */
-export const createExpiryTimestamp = (expiresInSeconds: number, now = Date.now()): number =>
+const createExpiryTimestamp = (expiresInSeconds: number, now = Date.now()): number =>
   now + expiresInSeconds * 1000;
 
 /**
@@ -242,7 +242,7 @@ export const isTokenExpired = (expiry: number | null | undefined, now = Date.now
 /**
  * Inputs for constructing the stored credential snapshot after user auth.
  */
-export interface CreateStoredUserTokensInput {
+interface CreateStoredUserTokensInput {
   /** Fresh user access token value. */
   accessToken: string;
   /** Optional precomputed access-token expiry timestamp. */
@@ -297,7 +297,7 @@ export const createStoredUserTokens = (input: CreateStoredUserTokensInput): Stor
 /**
  * Inputs for merging a fresh eBay token response with any existing stored tokens.
  */
-export interface CreateStoredUserTokensFromResponseInput {
+interface CreateStoredUserTokensFromResponseInput {
   /** eBay app configuration persisted alongside token values. */
   config: EbayConfig;
   /** Optional app access token already cached in the environment. */
@@ -357,7 +357,7 @@ const tokenExpiry = (expiry: number | null | undefined) => {
 /**
  * Inputs used to render redacted credential and token status details.
  */
-export interface CredentialDisplayInput {
+interface CredentialDisplayInput {
   /** Cached app access token value, when available. */
   appAccessToken: string | null | undefined;
   /** Cached app-token expiry timestamp, when available. */

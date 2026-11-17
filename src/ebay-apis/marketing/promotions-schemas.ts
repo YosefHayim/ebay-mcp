@@ -6,7 +6,6 @@
 
 import { z } from 'zod';
 import {
-  errorSchema,
   amountSchema,
   marketingInventoryItemSchema,
 } from './marketing-common-schemas.js';
@@ -20,7 +19,7 @@ import { selectionRuleSchema } from './campaigns-schemas.js';
 /**
  * Validates the Marketing API discount benefit model.
  */
-export const discountBenefitSchema = z.object({
+const discountBenefitSchema = z.object({
   amountOffItem: amountSchema.optional(),
   amountOffOrder: amountSchema.optional(),
   percentageOffItem: z.string().optional(),
@@ -30,7 +29,7 @@ export const discountBenefitSchema = z.object({
 /**
  * Validates the Marketing API price range model.
  */
-export const priceRangeSchema = z.object({
+const priceRangeSchema = z.object({
   maxPrice: amountSchema.optional(),
   minPrice: amountSchema.optional(),
 });
@@ -38,7 +37,7 @@ export const priceRangeSchema = z.object({
 /**
  * Validates the Marketing API discount specification model.
  */
-export const discountSpecificationSchema = z.object({
+const discountSpecificationSchema = z.object({
   forEachAmount: amountSchema.optional(),
   forEachQuantity: z.number().optional(),
   minAmount: amountSchema.optional(),
@@ -49,7 +48,7 @@ export const discountSpecificationSchema = z.object({
 /**
  * Validates the Marketing API discount rule model.
  */
-export const discountRuleSchema = z.object({
+const discountRuleSchema = z.object({
   discountBenefit: discountBenefitSchema.optional(),
   discountSpecification: discountSpecificationSchema.optional(),
   ruleOrder: z.number().optional(),
@@ -58,7 +57,7 @@ export const discountRuleSchema = z.object({
 /**
  * Validates the Marketing API inventory criterion model.
  */
-export const inventoryCriterionSchema = z.object({
+const inventoryCriterionSchema = z.object({
   inventoryCriterionType: z.string().optional(),
   inventoryItems: z.array(marketingInventoryItemSchema).optional(),
   listingIds: z.array(z.string()).optional(),
@@ -76,7 +75,7 @@ export const inventoryCriterionSchema = z.object({
 /**
  * Validates the Marketing API coupon configuration model.
  */
-export const couponConfigurationSchema = z.object({
+const couponConfigurationSchema = z.object({
   couponCode: z.string().optional(),
   couponType: z.string().optional(),
   maxCouponRedemptionPerUser: z.number().optional(),
@@ -85,7 +84,7 @@ export const couponConfigurationSchema = z.object({
 /**
  * Validates the Marketing API item promotion model.
  */
-export const itemPromotionSchema = z.object({
+const itemPromotionSchema = z.object({
   applyDiscountToSingleItemOnly: z.boolean().optional(),
   budget: amountSchema.optional(),
   couponConfiguration: couponConfigurationSchema.optional(),
@@ -96,27 +95,6 @@ export const itemPromotionSchema = z.object({
   marketplaceId: z.string().optional(),
   name: z.string().optional(),
   priority: z.string().optional(),
-  promotionImageUrl: z.string().optional(),
-  promotionStatus: z.string().optional(),
-  promotionType: z.string().optional(),
-  startDate: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API item promotion response payload.
- */
-export const itemPromotionResponseSchema = z.object({
-  applyDiscountToSingleItemOnly: z.boolean().optional(),
-  budget: amountSchema.optional(),
-  couponConfiguration: couponConfigurationSchema.optional(),
-  description: z.string().optional(),
-  discountRules: z.array(discountRuleSchema).optional(),
-  endDate: z.string().optional(),
-  inventoryCriterion: inventoryCriterionSchema.optional(),
-  marketplaceId: z.string().optional(),
-  name: z.string().optional(),
-  priority: z.string().optional(),
-  promotionId: z.string().optional(),
   promotionImageUrl: z.string().optional(),
   promotionStatus: z.string().optional(),
   promotionType: z.string().optional(),
@@ -126,7 +104,7 @@ export const itemPromotionResponseSchema = z.object({
 /**
  * Validates the Marketing API selected inventory discount model.
  */
-export const selectedInventoryDiscountSchema = z.object({
+const selectedInventoryDiscountSchema = z.object({
   discountBenefit: discountBenefitSchema.optional(),
   discountId: z.string().optional(),
   inventoryCriterion: inventoryCriterionSchema.optional(),
@@ -134,123 +112,9 @@ export const selectedInventoryDiscountSchema = z.object({
 });
 
 /**
- * Validates the Marketing API item markdown status model.
- */
-export const itemMarkdownStatusSchema = z.object({
-  listingPromotionStatus: z.string().optional(),
-  timestamp: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API listing detail model.
- */
-export const listingDetailSchema = z.object({
-  currentPrice: amountSchema.optional(),
-  freeShipping: z.boolean().optional(),
-  inventoryReferenceId: z.string().optional(),
-  inventoryReferenceType: z.string().optional(),
-  listingCategoryId: z.string().optional(),
-  listingCondition: z.string().optional(),
-  listingConditionId: z.string().optional(),
-  listingId: z.string().optional(),
-  listingPromotionStatuses: z.array(itemMarkdownStatusSchema).optional(),
-  quantity: z.number().optional(),
-  storeCategoryId: z.string().optional(),
-  title: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API items paged collection model.
- */
-export const itemsPagedCollectionSchema = z.object({
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  listings: z.array(listingDetailSchema).optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-  warnings: z.array(errorSchema).optional(),
-});
-
-/**
- * Validates the Marketing API promotions paged collection model.
- */
-export const promotionsPagedCollectionSchema = z.object({
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  promotions: z.array(itemPromotionResponseSchema).optional(),
-  total: z.number().optional(),
-});
-
-/**
- * Validates the Marketing API promotion detail model.
- */
-export const promotionDetailSchema = z.object({
-  description: z.string().optional(),
-  endDate: z.string().optional(),
-  marketplaceId: z.string().optional(),
-  name: z.string().optional(),
-  priority: z.string().optional(),
-  promotionId: z.string().optional(),
-  promotionImageUrl: z.string().optional(),
-  promotionStatus: z.string().optional(),
-  promotionType: z.string().optional(),
-  startDate: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API promotion report detail model.
- */
-export const promotionReportDetailSchema = z.object({
-  averageItemDiscount: amountSchema.optional(),
-  averageItemRevenue: amountSchema.optional(),
-  averageOrderDiscount: amountSchema.optional(),
-  averageOrderRevenue: amountSchema.optional(),
-  averageOrderSize: z.string().optional(),
-  baseSale: amountSchema.optional(),
-  clicksToPromotion: z.number().optional(),
-  impressionsToPromotion: z.number().optional(),
-  numberOfItemsSoldInPromotion: z.number().optional(),
-  numberOfOrdersWithPromotion: z.number().optional(),
-  percentageSalesLift: z.string().optional(),
-  promotionHref: z.string().optional(),
-  promotionId: z.string().optional(),
-  promotionReportId: z.string().optional(),
-  promotionSale: amountSchema.optional(),
-  totalDiscount: amountSchema.optional(),
-  totalSale: amountSchema.optional(),
-});
-
-/**
- * Validates the Marketing API promotions report paged collection model.
- */
-export const promotionsReportPagedCollectionSchema = z.object({
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  promotionReports: z.array(promotionReportDetailSchema).optional(),
-  total: z.number().optional(),
-});
-
-// Item Price Markdown Schemas
-/**
- * Validates the Marketing API item basis model.
- */
-export const itemBasisSchema = z.object({
-  itemIds: z.array(z.string()).optional(),
-  priceRange: priceRangeSchema.optional(),
-});
-
-/**
  * Validates the Marketing API item price markdown model.
  */
-export const itemPriceMarkdownSchema = z.object({
+const itemPriceMarkdownSchema = z.object({
   applyFreeShipping: z.boolean().optional(),
   autoSelectFutureInventory: z.boolean().optional(),
   blockPriceIncreaseInItemRevision: z.boolean().optional(),
@@ -272,33 +136,16 @@ export const itemPriceMarkdownSchema = z.object({
 /**
  * Validates the Marketing API campaign audience model.
  */
-export const campaignAudienceSchema = z.object({
+const campaignAudienceSchema = z.object({
   audienceType: z.string().optional(),
   code: z.string().optional(),
   name: z.string().optional(),
 });
 
 /**
- * Validates the Marketing API campaign DTO model.
- */
-export const campaignDTOSchema = z.object({
-  audiences: z.array(campaignAudienceSchema).optional(),
-  creationDate: z.string().optional(),
-  emailCampaignId: z.string().optional(),
-  emailCampaignStatus: z.string().optional(),
-  emailCampaignType: z.string().optional(),
-  marketplaceId: z.string().optional(),
-  modificationDate: z.string().optional(),
-  scheduleDate: z.string().optional(),
-  scheduleDateType: z.string().optional(),
-  sentDate: z.string().optional(),
-  subject: z.string().optional(),
-});
-
-/**
  * Validates the Marketing API create email campaign request model.
  */
-export const createEmailCampaignRequestSchema = z.object({
+const createEmailCampaignRequestSchema = z.object({
   audiences: z.array(campaignAudienceSchema).optional(),
   emailCampaignType: z.string(),
   itemIds: z.array(z.string()).optional(),
@@ -308,88 +155,12 @@ export const createEmailCampaignRequestSchema = z.object({
   subject: z.string().optional(),
 });
 
-/**
- * Validates the Marketing API create email campaign response payload.
- */
-export const createEmailCampaignResponseSchema = z.object({
-  emailCampaignId: z.string().optional(),
-  href: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API update email campaign response payload.
- */
-export const updateEmailCampaignResponseSchema = z.object({
-  emailCampaignId: z.string().optional(),
-  href: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API delete email campaign response payload.
- */
-export const deleteEmailCampaignResponseSchema = z.object({
-  emailCampaignId: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API get email campaign response payload.
- */
-export const getEmailCampaignResponseSchema = z.object({
-  emailCampaign: campaignDTOSchema.optional(),
-});
-
-/**
- * Validates the Marketing API get email campaigns response payload.
- */
-export const getEmailCampaignsResponseSchema = z.object({
-  emailCampaigns: z.array(campaignDTOSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-});
-
-/**
- * Validates the Marketing API get email campaign audiences response payload.
- */
-export const getEmailCampaignAudiencesResponseSchema = z.object({
-  audiences: z.array(campaignAudienceSchema).optional(),
-  href: z.string().optional(),
-  limit: z.number().optional(),
-  next: z.string().optional(),
-  offset: z.number().optional(),
-  prev: z.string().optional(),
-  total: z.number().optional(),
-});
-
-/**
- * Validates the Marketing API get email preview response payload.
- */
-export const getEmailPreviewResponseSchema = z.object({
-  emailPreviewHtml: z.string().optional(),
-});
-
-/**
- * Validates the Marketing API get email report response payload.
- */
-export const getEmailReportResponseSchema = z.object({
-  clickRate: z.string().optional(),
-  numberOfClicks: z.number().optional(),
-  numberOfOpens: z.number().optional(),
-  numberOfRecipients: z.number().optional(),
-  numberOfUnsubscribes: z.number().optional(),
-  openRate: z.string().optional(),
-  unsubscribeRate: z.string().optional(),
-});
-
 // ============================================================================
 // Email Campaign Request Schemas
 // ============================================================================
 
 /** Validates the Marketing API update email campaign request model. */
-export const updateEmailCampaignRequestSchema = z.object({
+const updateEmailCampaignRequestSchema = z.object({
   audienceCodes: z.array(z.string()).optional(),
   categoryId: z.string().optional(),
   categoryType: z.string().optional(),

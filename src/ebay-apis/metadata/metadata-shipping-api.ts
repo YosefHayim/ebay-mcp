@@ -13,14 +13,14 @@ import { Effect } from 'effect';
 const SHIPPING_MARKETPLACE_PATH = '/sell/metadata/v1/shipping/marketplace';
 
 /** Marketplace and optional Accept-Language accepted by every Metadata shipping method. */
-export type ShippingMetadataInput = z.infer<typeof shippingMetadataInputSchema>;
+type ShippingMetadataInput = z.infer<typeof shippingMetadataInputSchema>;
 
 /**
  * Response returned by getExcludeShippingLocations.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getExcludeShippingLocations
  */
-export type ExcludeShippingLocationsResponse =
+type ExcludeShippingLocationsResponse =
   components['schemas']['ShippingExcludeLocationResponse'];
 
 /**
@@ -28,28 +28,28 @@ export type ExcludeShippingLocationsResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getHandlingTimes
  */
-export type HandlingTimesResponse = components['schemas']['ShippingHandlingTimeResponse'];
+type HandlingTimesResponse = components['schemas']['ShippingHandlingTimeResponse'];
 
 /**
  * Response returned by getShippingCarriers.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingCarriers
  */
-export type ShippingCarriersResponse = components['schemas']['ShippingCarrierResponse'];
+type ShippingCarriersResponse = components['schemas']['ShippingCarrierResponse'];
 
 /**
  * Response returned by getShippingLocations.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingLocations
  */
-export type ShippingLocationsResponse = components['schemas']['ShippingLocationResponse'];
+type ShippingLocationsResponse = components['schemas']['ShippingLocationResponse'];
 
 /**
  * Response returned by getShippingServices.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices
  */
-export type ShippingServicesResponse = components['schemas']['ShippingServiceResponse'];
+type ShippingServicesResponse = components['schemas']['ShippingServiceResponse'];
 
 /**
  * Creates the Metadata API `shipping:marketplace` endpoint methods composed into MetadataApi.

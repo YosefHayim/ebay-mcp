@@ -28,7 +28,7 @@ import { tradingEntries } from '../ebay-apis/trading/trading-tools.js';
  * the skills generator's live family index. `key` is the stable identifier;
  * `title` is a short human label.
  */
-export interface ToolCategory {
+interface ToolCategory {
   key: string;
   title: string;
   entries: ToolEntry[];

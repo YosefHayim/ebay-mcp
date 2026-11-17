@@ -53,7 +53,7 @@ const marketplaceId = z
   );
 
 /** ShippingQuoteRequest body for createShippingQuote. */
-export const shippingQuoteRequestSchema = z.object({
+const shippingQuoteRequestSchema = z.object({
   orders: z
     .array(
       z.object({
@@ -91,7 +91,7 @@ export const shippingQuoteRequestSchema = z.object({
 });
 
 /** CreateShipmentFromQuoteRequest body for createFromShippingQuote. */
-export const createShipmentFromQuoteRequestSchema = z.object({
+const createShipmentFromQuoteRequestSchema = z.object({
   shippingQuoteId: nonempty.describe('Shipping quote ID returned by ebay_create_shipping_quote'),
   rateId: nonempty.describe('rates[].rateId of the chosen rate within that shipping quote'),
   additionalOptions: z
