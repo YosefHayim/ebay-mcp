@@ -179,11 +179,7 @@
       }
     },
     {
-      "includes": [
-        "src/ebay-openapi-types/**",
-        "src/shared/ebay.ts",
-        "src/shared/ebay-enums.ts"
-      ],
+      "includes": ["src/ebay-openapi-types/**", "src/shared/ebay.ts", "src/shared/ebay-enums.ts"],
       "linter": {
         "rules": {
           "style": {
