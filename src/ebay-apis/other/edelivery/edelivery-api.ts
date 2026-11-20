@@ -142,48 +142,42 @@ type GetActualCostsResponse = components['schemas']['GetActualCostResponses'];
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/address_preference/methods/getAddressPreferences
  */
-type GetAddressPreferencesResponse =
-  components['schemas']['GetAddressPreferenceListResponses'];
+type GetAddressPreferencesResponse = components['schemas']['GetAddressPreferenceListResponses'];
 
 /**
  * Request body accepted by createAddressPreference.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/address_preference/methods/createAddressPreference
  */
-type CreateAddressPreferenceRequest =
-  components['schemas']['CreateAddressPreferenceRequest'];
+type CreateAddressPreferenceRequest = components['schemas']['CreateAddressPreferenceRequest'];
 
 /**
  * Response returned by createAddressPreference.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/address_preference/methods/createAddressPreference
  */
-type CreateAddressPreferenceResponse =
-  components['schemas']['CreateAddressPreferenceResponses'];
+type CreateAddressPreferenceResponse = components['schemas']['CreateAddressPreferenceResponses'];
 
 /**
  * Response returned by getConsignPreferences.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/consign_preference/methods/getConsignPreferences
  */
-type GetConsignPreferencesResponse =
-  components['schemas']['GetConsignPreferenceListResponses'];
+type GetConsignPreferencesResponse = components['schemas']['GetConsignPreferenceListResponses'];
 
 /**
  * Request body accepted by createConsignPreference.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/consign_preference/methods/createConsignPreference
  */
-type CreateConsignPreferenceRequest =
-  components['schemas']['CreateConsignPreferenceRequest'];
+type CreateConsignPreferenceRequest = components['schemas']['CreateConsignPreferenceRequest'];
 
 /**
  * Response returned by createConsignPreference.
  *
  * @see https://developer.ebay.com/api-docs/sell/edelivery_international_shipping/resources/consign_preference/methods/createConsignPreference
  */
-type CreateConsignPreferenceResponse =
-  components['schemas']['CreateConsignPreferenceResponses'];
+type CreateConsignPreferenceResponse = components['schemas']['CreateConsignPreferenceResponses'];
 
 /**
  * Response returned by getAgents.

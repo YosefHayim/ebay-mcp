@@ -50,8 +50,7 @@ type FindSellerStandardsProfilesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/analytics/resources/customer_service_metric/methods/getCustomerServiceMetric
  */
-type GetCustomerServiceMetricResponse =
-  components['schemas']['GetCustomerServiceMetricResponse'];
+type GetCustomerServiceMetricResponse = components['schemas']['GetCustomerServiceMetricResponse'];
 
 /**
  * Analytics API - Sales and traffic analytics

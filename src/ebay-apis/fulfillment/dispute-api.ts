@@ -70,16 +70,14 @@ type FileEvidence = components['schemas']['FileEvidence'];
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
  */
-type AddEvidencePaymentDisputeRequest =
-  components['schemas']['AddEvidencePaymentDisputeRequest'];
+type AddEvidencePaymentDisputeRequest = components['schemas']['AddEvidencePaymentDisputeRequest'];
 
 /**
  * Response returned by eBay Fulfillment API addEvidence.
  *
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
  */
-type AddEvidencePaymentDisputeResponse =
-  components['schemas']['AddEvidencePaymentDisputeResponse'];
+type AddEvidencePaymentDisputeResponse = components['schemas']['AddEvidencePaymentDisputeResponse'];
 
 /**
  * Request payload accepted by eBay Fulfillment API updateEvidence.

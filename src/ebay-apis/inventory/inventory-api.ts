@@ -6,9 +6,26 @@ import { createInventoryOffersMethods } from './offers-api.js';
 type InventoryItemsMethods = ReturnType<typeof createInventoryItemsMethods>;
 type InventoryOffersMethods = ReturnType<typeof createInventoryOffersMethods>;
 type InventoryLocationsMethods = ReturnType<typeof createInventoryLocationsMethods>;
-export type { BulkCreateOrReplaceInventoryItemRequest, BulkGetInventoryItemRequest, BulkUpdatePriceQuantityRequest, InventoryItem, ProductCompatibility, InventoryItemGroup, BulkMigrateListingRequest, LocationMapping } from './items-api.js';
-export type { BulkPublishOfferRequest, GetListingFeesRequest, PublishOfferByInventoryItemGroupRequest, WithdrawOfferByInventoryItemGroupRequest } from './offers-api.js';
-export type { CreateInventoryLocationRequest, UpdateInventoryLocationRequest } from './locations-api.js';
+export type {
+  BulkCreateOrReplaceInventoryItemRequest,
+  BulkGetInventoryItemRequest,
+  BulkUpdatePriceQuantityRequest,
+  InventoryItem,
+  ProductCompatibility,
+  InventoryItemGroup,
+  BulkMigrateListingRequest,
+  LocationMapping,
+} from './items-api.js';
+export type {
+  BulkPublishOfferRequest,
+  GetListingFeesRequest,
+  PublishOfferByInventoryItemGroupRequest,
+  WithdrawOfferByInventoryItemGroupRequest,
+} from './offers-api.js';
+export type {
+  CreateInventoryLocationRequest,
+  UpdateInventoryLocationRequest,
+} from './locations-api.js';
 
 /**
  * Inventory API surface: items, offers, and locations.

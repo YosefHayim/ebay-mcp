@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { amountSchema, } from './marketing-common-schemas.js';
+import { amountSchema } from './marketing-common-schemas.js';
 
 /**
  * Validates the Marketing API budget request model.

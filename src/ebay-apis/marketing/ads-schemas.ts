@@ -5,9 +5,7 @@
  */
 
 import { z } from 'zod';
-import {
-  amountSchema,
-} from './marketing-common-schemas.js';
+import { amountSchema } from './marketing-common-schemas.js';
 
 import { updateBidPercentageRequestSchema } from './campaigns-schemas.js';
 

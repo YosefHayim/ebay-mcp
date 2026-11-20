@@ -87,9 +87,7 @@ interface GetCompatibilityPropertyValuesInput {
  *
  * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getDefaultCategoryTreeId
  */
-type GetDefaultCategoryTreeIdResponse =
-  | components['schemas']['BaseCategoryTree']
-  | undefined;
+type GetDefaultCategoryTreeIdResponse = components['schemas']['BaseCategoryTree'] | undefined;
 
 /**
  * Response returned by eBay Taxonomy API getCategoryTree.

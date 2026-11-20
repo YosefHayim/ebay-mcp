@@ -103,8 +103,7 @@ type BulkCreateAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkCreateAdsByListingId
  */
-type BulkCreateAdsByListingIdResponse =
-  MarketingOperationResponse<'bulkCreateAdsByListingId'>;
+type BulkCreateAdsByListingIdResponse = MarketingOperationResponse<'bulkCreateAdsByListingId'>;
 
 /**
  * Response returned by eBay Marketing API bulkDeleteAdsByInventoryReference.
@@ -119,8 +118,7 @@ type BulkDeleteAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/bulkDeleteAdsByListingId
  */
-type BulkDeleteAdsByListingIdResponse =
-  MarketingOperationResponse<'bulkDeleteAdsByListingId'>;
+type BulkDeleteAdsByListingIdResponse = MarketingOperationResponse<'bulkDeleteAdsByListingId'>;
 
 /**
  * Response returned by eBay Marketing API bulkUpdateAdsBidByInventoryReference.
@@ -202,8 +200,7 @@ type DeleteAdsByInventoryReferenceResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/getAdsByInventoryReference
  */
-type GetAdsByInventoryReferenceResponse =
-  MarketingOperationResponse<'getAdsByInventoryReference'>;
+type GetAdsByInventoryReferenceResponse = MarketingOperationResponse<'getAdsByInventoryReference'>;
 
 /**
  * Response returned by eBay Marketing API updateBid.
@@ -301,16 +298,14 @@ type UpdateKeywordResponse = MarketingOperationResponse<'updateKeyword'>;
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/bulkCreateNegativeKeyword
  */
-type BulkCreateNegativeKeywordResponse =
-  MarketingOperationResponse<'bulkCreateNegativeKeyword'>;
+type BulkCreateNegativeKeywordResponse = MarketingOperationResponse<'bulkCreateNegativeKeyword'>;
 
 /**
  * Response returned by eBay Marketing API bulkUpdateNegativeKeyword.
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/negative_keyword/methods/bulkUpdateNegativeKeyword
  */
-type BulkUpdateNegativeKeywordResponse =
-  MarketingOperationResponse<'bulkUpdateNegativeKeyword'>;
+type BulkUpdateNegativeKeywordResponse = MarketingOperationResponse<'bulkUpdateNegativeKeyword'>;
 
 /**
  * Response returned by eBay Marketing API getNegativeKeywords.

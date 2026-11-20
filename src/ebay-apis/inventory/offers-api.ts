@@ -13,7 +13,7 @@ import {
   requireObjectEffect,
   requireStringEffect,
 } from '@/ebay-client/request.js';
-import type { components, } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
+import type { components } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
 import { Effect, Either } from 'effect';
 import { validateOfferFormatEffect } from './offer-format-api.js';
 import { INVENTORY_BASE_PATH } from './inventory-shared-api.js';

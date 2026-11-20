@@ -86,7 +86,6 @@ export const validateToolContracts = (
     if (!contract.description.trim()) {
       missingDescriptions.push(contract.name);
     }
-
   }
 
   return {

@@ -20,8 +20,7 @@ type ShippingMetadataInput = z.infer<typeof shippingMetadataInputSchema>;
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getExcludeShippingLocations
  */
-type ExcludeShippingLocationsResponse =
-  components['schemas']['ShippingExcludeLocationResponse'];
+type ExcludeShippingLocationsResponse = components['schemas']['ShippingExcludeLocationResponse'];
 
 /**
  * Response returned by getHandlingTimes.

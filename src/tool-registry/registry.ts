@@ -160,8 +160,7 @@ export const getToolDefinitions = (): ToolDefinition[] =>
  * const handler = getToolHandler('ebay_get_custom_policies');
  * ```
  */
-const getToolHandler = (toolName: string): ToolHandler | undefined =>
-  handlerByName[toolName];
+const getToolHandler = (toolName: string): ToolHandler | undefined => handlerByName[toolName];
 
 /**
  * Executes a registered tool handler and rejects when the tool name is unknown.

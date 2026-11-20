@@ -32,8 +32,7 @@ interface FindListingRecommendationsInput {
  *
  * @see https://developer.ebay.com/api-docs/sell/recommendation/resources/find/methods/findListingRecommendations
  */
-type FindListingRecommendationRequest =
-  components['schemas']['FindListingRecommendationRequest'];
+type FindListingRecommendationRequest = components['schemas']['FindListingRecommendationRequest'];
 
 /**
  * Response returned by findListingRecommendations.

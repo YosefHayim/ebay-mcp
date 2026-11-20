@@ -95,8 +95,7 @@ type EndCampaignResponse = MarketingOperationResponse<'endCampaign'>;
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/findCampaignByAdReference
  */
-type FindCampaignByAdReferenceResponse =
-  MarketingOperationResponse<'findCampaignByAdReference'>;
+type FindCampaignByAdReferenceResponse = MarketingOperationResponse<'findCampaignByAdReference'>;
 
 /**
  * Response returned by eBay Marketing API getCampaignByName.

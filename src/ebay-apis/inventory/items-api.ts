@@ -12,7 +12,7 @@ import {
   requireObjectEffect,
   requireStringEffect,
 } from '@/ebay-client/request.js';
-import type { components, } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
+import type { components } from '@/ebay-openapi-types/sellInventoryV1Oas3.js';
 import { Effect } from 'effect';
 import { INVENTORY_BASE_PATH, type InventoryPaginationInput } from './inventory-shared-api.js';
 
@@ -108,8 +108,7 @@ export type BulkCreateOrReplaceInventoryItemRequest = components['schemas']['Bul
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkCreateOrReplaceInventoryItem
  */
-type BulkCreateOrReplaceInventoryItemResponse =
-  components['schemas']['BulkInventoryItemResponse'];
+type BulkCreateOrReplaceInventoryItemResponse = components['schemas']['BulkInventoryItemResponse'];
 
 /**
  * Request body accepted by bulkGetInventoryItem.

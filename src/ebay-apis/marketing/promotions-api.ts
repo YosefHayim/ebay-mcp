@@ -165,8 +165,7 @@ type GetPromotionReportsResponse = MarketingOperationResponse<'getPromotionRepor
  *
  * @see https://developer.ebay.com/api-docs/sell/marketing/resources/promotion_summary_report/methods/getPromotionSummaryReport
  */
-type GetPromotionSummaryReportResponse =
-  MarketingOperationResponse<'getPromotionSummaryReport'>;
+type GetPromotionSummaryReportResponse = MarketingOperationResponse<'getPromotionSummaryReport'>;
 
 /**
  * Response returned by eBay Marketing API getEmailCampaigns.

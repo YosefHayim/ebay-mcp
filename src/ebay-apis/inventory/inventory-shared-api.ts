@@ -1,5 +1,3 @@
-
-
 export const INVENTORY_BASE_PATH = '/sell/inventory/v1';
 
 /** Input accepted by getInventoryItems and getInventoryLocations. */

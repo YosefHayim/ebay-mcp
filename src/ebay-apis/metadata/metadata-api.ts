@@ -103,8 +103,7 @@ type ExtendedProducerResponsibilityPoliciesResponse =
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getHazardousMaterialsLabels
  */
-type HazardousMaterialsLabelsResponse =
-  components['schemas']['HazardousMaterialDetailsResponse'];
+type HazardousMaterialsLabelsResponse = components['schemas']['HazardousMaterialDetailsResponse'];
 
 /**
  * Response returned by getItemConditionPolicies.
@@ -118,16 +117,14 @@ type ItemConditionPoliciesResponse = components['schemas']['ItemConditionPolicyR
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getListingStructurePolicies
  */
-type ListingStructurePoliciesResponse =
-  components['schemas']['ListingStructurePolicyResponse'];
+type ListingStructurePoliciesResponse = components['schemas']['ListingStructurePolicyResponse'];
 
 /**
  * Response returned by getNegotiatedPricePolicies.
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getNegotiatedPricePolicies
  */
-type NegotiatedPricePoliciesResponse =
-  components['schemas']['NegotiatedPricePolicyResponse'];
+type NegotiatedPricePoliciesResponse = components['schemas']['NegotiatedPricePolicyResponse'];
 
 /**
  * Response returned by getProductSafetyLabels.
@@ -190,8 +187,7 @@ type ShippingPoliciesMetadataResponse = components['schemas']['ShippingPoliciesR
  *
  * @see https://developer.ebay.com/api-docs/sell/metadata/resources/marketplace/methods/getSiteVisibilityPolicies
  */
-type SiteVisibilityPoliciesResponse =
-  components['schemas']['SiteVisibilityPoliciesResponse'];
+type SiteVisibilityPoliciesResponse = components['schemas']['SiteVisibilityPoliciesResponse'];
 
 /**
  * Response returned by getCompatibilitiesBySpecification.

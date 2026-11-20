@@ -5,10 +5,7 @@
  */
 
 import { z } from 'zod';
-import {
-  amountSchema,
-  marketingInventoryItemSchema,
-} from './marketing-common-schemas.js';
+import { amountSchema, marketingInventoryItemSchema } from './marketing-common-schemas.js';
 
 import { selectionRuleSchema } from './campaigns-schemas.js';
 

@@ -1,4 +1,3 @@
-
 import { Effect } from 'effect';
 import { defineTool } from '@/tool-registry/define-tool.js';
 import { mapRateLimitsToStat, mapUserRateLimitsToStat } from '@/tool-registry/ui/maps.js';

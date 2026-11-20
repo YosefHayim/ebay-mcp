@@ -80,8 +80,7 @@ type GetNotificationConfigResponse = components['schemas']['Config'];
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestinations
  */
-type GetNotificationDestinationsResponse =
-  components['schemas']['DestinationSearchResponse'];
+type GetNotificationDestinationsResponse = components['schemas']['DestinationSearchResponse'];
 /**
  * Destination response returned by eBay getDestination.
  *
@@ -99,8 +98,7 @@ type GetNotificationPublicKeyResponse = components['schemas']['PublicKey'];
  *
  * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptions
  */
-type GetNotificationSubscriptionsResponse =
-  components['schemas']['SubscriptionSearchResponse'];
+type GetNotificationSubscriptionsResponse = components['schemas']['SubscriptionSearchResponse'];
 /**
  * Subscription response returned by eBay getSubscription.
  *

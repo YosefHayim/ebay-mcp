@@ -1,4 +1,3 @@
-
 import { defineTool } from '@/tool-registry/define-tool.js';
 import type { ToolEntry } from '@/tool-registry/registry.js';
 import {
