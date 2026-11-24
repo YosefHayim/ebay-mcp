@@ -12,7 +12,7 @@
   <a href="https://www.npmjs.com/package/ebay-mcp"><img src="https://img.shields.io/npm/v/ebay-mcp?logo=npm&color=cb3837" alt="npm version" /></a>
   <a href="https://www.npmjs.com/package/ebay-mcp"><img src="https://img.shields.io/npm/dm/ebay-mcp?logo=npm&color=cb3837" alt="npm downloads per month" /></a>
   <a href="https://github.com/YosefHayim/ebay-mcp/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/YosefHayim/ebay-mcp/ci.yml?branch=main&logo=github&label=CI" alt="CI status" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/npm/l/ebay-mcp?color=blue" alt="MIT license" /></a>
+  <img src="https://img.shields.io/npm/l/ebay-mcp?color=blue" alt="MIT license" />
   <img src="https://img.shields.io/badge/tools-379-8957e5?logo=ebay&logoColor=white" alt="379 eBay API tools" />
 </p>
 
@@ -187,7 +187,7 @@ The Docker image starts the HTTP server (`node build/serverHttp.js`) on port 300
 - Use `EBAY_READ_ONLY=true` or a short `EBAY_MCP_TOOLS` list to limit what the assistant can do.
 - Your credentials stay on your machine and go only to eBay.
 - You must follow the [eBay API License Agreement](https://developer.ebay.com/join/api-license-agreement) and the [data-handling requirements](https://developer.ebay.com/api-docs/static/data-handling-update.html), and stay within rate limits.
-- The software is provided "as is" without warranty. See [LICENSE](LICENSE).
+- The software is provided "as is" without warranty.
 
 ## Troubleshooting
 
@@ -223,7 +223,7 @@ pnpm readme:tools         # regenerate the tool family table
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT.
 
 eBay is a trademark of eBay Inc. This project is not affiliated with or endorsed by eBay Inc.
 
