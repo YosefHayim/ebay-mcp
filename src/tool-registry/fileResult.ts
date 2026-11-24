@@ -1,5 +1,5 @@
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import type { DownloadedFile } from '@/ebay-client/download.js';
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { DownloadedFile } from "@/ebay-client/download.js";
 
 /**
  * Formats a downloaded eBay file as MCP content: a one-line summary plus the bytes as an
@@ -17,21 +17,25 @@ import type { DownloadedFile } from '@/ebay-client/download.js';
  * ```
  */
 export const formatFileResult = (
-  file: DownloadedFile,
-  uri: string,
-  label: string,
+	file: DownloadedFile,
+	uri: string,
+	label: string,
 ): CallToolResult => {
-  const name = file.fileName ? ` ${file.fileName}` : '';
-  return {
-    content: [
-      {
-        type: 'text',
-        text: `${label}${name} (${file.contentType}, ${file.bytes.length} bytes)`,
-      },
-      {
-        type: 'resource',
-        resource: { uri, mimeType: file.contentType, blob: file.bytes.toString('base64') },
-      },
-    ],
-  };
+	const name = file.fileName ? ` ${file.fileName}` : "";
+	return {
+		content: [
+			{
+				type: "text",
+				text: `${label}${name} (${file.contentType}, ${file.bytes.length} bytes)`,
+			},
+			{
+				type: "resource",
+				resource: {
+					uri,
+					mimeType: file.contentType,
+					blob: file.bytes.toString("base64"),
+				},
+			},
+		],
+	};
 };

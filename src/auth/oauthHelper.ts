@@ -2,25 +2,25 @@
  * OAuth Helper - Assists with eBay OAuth token acquisition
  */
 
-import chalk from 'chalk';
-import { createServer, type Server } from 'http';
-import type { EbayConfig } from '@/shared/ebay.js';
-import { getOAuthAuthorizationUrl } from '@/shared/environment.js';
-import { writeCliLine } from '@/shared/cliOutput.js';
+import chalk from "chalk";
+import { createServer, type Server } from "http";
+import { writeCliLine } from "@/shared/cliOutput.js";
+import type { EbayConfig } from "@/shared/ebay.js";
+import { getOAuthAuthorizationUrl } from "@/shared/environment.js";
 
 /**
  * Result captured from the local OAuth callback endpoint. Exactly one of `code`
  * (success) or `error` (failure / timeout / CSRF) is populated.
  */
 export interface OAuthCallbackResult {
-  /** Authorization code eBay appended to the redirect, when successful. */
-  code?: string;
-  /** Opaque CSRF value echoed back by eBay, when a `state` was sent. */
-  state?: string;
-  /** Error code: an eBay `error`, `'timeout'`, or `'invalid_state'`. */
-  error?: string;
-  /** Human-readable detail for {@link OAuthCallbackResult.error}. */
-  errorDescription?: string;
+	/** Authorization code eBay appended to the redirect, when successful. */
+	code?: string;
+	/** Opaque CSRF value echoed back by eBay, when a `state` was sent. */
+	state?: string;
+	/** Error code: an eBay `error`, `'timeout'`, or `'invalid_state'`. */
+	error?: string;
+	/** Human-readable detail for {@link OAuthCallbackResult.error}. */
+	errorDescription?: string;
 }
 
 /**
@@ -28,20 +28,20 @@ export interface OAuthCallbackResult {
  * can focus on port and timeout when they do not need callback validation.
  */
 export interface CallbackServerOptions {
-  /** Loopback path eBay redirects to. Defaults to `/oauth/callback`. */
-  path?: string;
-  /**
-   * Opaque value sent as the OAuth `state`. When provided, a callback whose
-   * `state` does not match is rejected as `invalid_state` (CSRF defense).
-   */
-  expectedState?: string;
+	/** Loopback path eBay redirects to. Defaults to `/oauth/callback`. */
+	path?: string;
+	/**
+	 * Opaque value sent as the OAuth `state`. When provided, a callback whose
+	 * `state` does not match is rejected as `invalid_state` (CSRF defense).
+	 */
+	expectedState?: string;
 }
 
 /**
  * Generate terminal hyperlink (if supported)
  */
 const hyperlink = (text: string, url: string): string =>
-  `\u001B]8;;${url}\u0007${text}\u001B]8;;\u0007`;
+	`\u001B]8;;${url}\u0007${text}\u001B]8;;\u0007`;
 
 /**
  * Generates an eBay OAuth authorization URL.
@@ -57,11 +57,12 @@ const hyperlink = (text: string, url: string): string =>
  * ```
  */
 export const generateAuthUrl = (
-  clientId: string,
-  redirectUri: string,
-  environment: 'sandbox' | 'production',
-  scopes?: string[],
-): string => getOAuthAuthorizationUrl(clientId, redirectUri, environment, scopes);
+	clientId: string,
+	redirectUri: string,
+	environment: "sandbox" | "production",
+	scopes?: string[],
+): string =>
+	getOAuthAuthorizationUrl(clientId, redirectUri, environment, scopes);
 
 /**
  * Escape a string for safe interpolation into HTML text/attribute context.
@@ -73,12 +74,12 @@ export const generateAuthUrl = (
  * legible.
  */
 const escapeHtml = (text: string): string =>
-  text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+	text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 
 /**
  * Render the small HTML page the user lands on after eBay redirects back.
@@ -88,26 +89,30 @@ const escapeHtml = (text: string): string =>
  *   potentially attacker-controlled (eBay's `error_description`), so it is
  *   HTML-escaped before interpolation.
  */
-const renderCallbackPage = (success: boolean, detail = ''): string => {
-  const gradient = success
-    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-  const headingColor = success ? '#4CAF50' : '#f44336';
-  const icon = success ? '✅' : '❌';
-  const heading = success ? 'Authorization Successful!' : 'Authorization Failed';
-  const message = success
-    ? `<p>You have successfully authorized the eBay MCP server.</p>
+const renderCallbackPage = (success: boolean, detail = ""): string => {
+	const gradient = success
+		? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+		: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+	const headingColor = success ? "#4CAF50" : "#f44336";
+	const icon = success ? "✅" : "❌";
+	const heading = success
+		? "Authorization Successful!"
+		: "Authorization Failed";
+	const message = success
+		? `<p>You have successfully authorized the eBay MCP server.</p>
         <p>You can close this window and return to your terminal.</p>`
-    : `<p>There was an error during authorization.</p>
+		: `<p>There was an error during authorization.</p>
         <div class="detail">${escapeHtml(detail)}</div>
         <p>Please return to your terminal and try again.</p>`;
-  const autoClose = success ? '' : '<script>setTimeout(() => window.close(), 5000);</script>';
+	const autoClose = success
+		? ""
+		: "<script>setTimeout(() => window.close(), 5000);</script>";
 
-  return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>eBay MCP — ${success ? 'Authorized' : 'Authorization Failed'}</title>
+    <title>eBay MCP — ${success ? "Authorized" : "Authorization Failed"}</title>
     <style>
       body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: ${gradient}; }
       .container { background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); text-align: center; max-width: 500px; }
@@ -149,87 +154,91 @@ const renderCallbackPage = (success: boolean, detail = ''): string => {
  * ```
  */
 export const startCallbackServer = async (
-  port = 3000,
-  timeoutMs = 300_000,
-  options: CallbackServerOptions = {},
+	port = 3000,
+	timeoutMs = 300_000,
+	options: CallbackServerOptions = {},
 ): Promise<{ server: Server; codePromise: Promise<OAuthCallbackResult> }> => {
-  const callbackPath = options.path ?? '/oauth/callback';
-  const { expectedState } = options;
+	const callbackPath = options.path ?? "/oauth/callback";
+	const { expectedState } = options;
 
-  return await new Promise((onServerReady, onServerError) => {
-    let timer: NodeJS.Timeout | undefined;
-    let settled = false;
-    let settle: (outcome: OAuthCallbackResult) => void;
+	return await new Promise((onServerReady, onServerError) => {
+		let timer: NodeJS.Timeout | undefined;
+		let settled = false;
+		let settle: (outcome: OAuthCallbackResult) => void;
 
-    const codePromise = new Promise<OAuthCallbackResult>((resolveCode) => {
-      settle = (outcome) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        resolveCode(outcome);
-      };
-    });
+		const codePromise = new Promise<OAuthCallbackResult>((resolveCode) => {
+			settle = (outcome) => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(timer);
+				resolveCode(outcome);
+			};
+		});
 
-    const server = createServer((request, response) => {
-      const url = new URL(request.url ?? '/', `http://localhost:${port}`);
-      if (url.pathname !== callbackPath) {
-        response.writeHead(404);
-        response.end('Not Found');
-        return;
-      }
+		const server = createServer((request, response) => {
+			const url = new URL(request.url ?? "/", `http://localhost:${port}`);
+			if (url.pathname !== callbackPath) {
+				response.writeHead(404);
+				response.end("Not Found");
+				return;
+			}
 
-      const code = url.searchParams.get('code') ?? undefined;
-      const state = url.searchParams.get('state') ?? undefined;
-      const error = url.searchParams.get('error') ?? undefined;
-      const errorDescription = url.searchParams.get('error_description') ?? undefined;
+			const code = url.searchParams.get("code") ?? undefined;
+			const state = url.searchParams.get("state") ?? undefined;
+			const error = url.searchParams.get("error") ?? undefined;
+			const errorDescription =
+				url.searchParams.get("error_description") ?? undefined;
 
-      if (expectedState && state !== expectedState) {
-        response.writeHead(400, { 'Content-Type': 'text/html' });
-        response.end(
-          renderCallbackPage(false, 'State mismatch — the request may have been tampered with.'),
-        );
-        settle({
-          error: 'invalid_state',
-          errorDescription: 'State parameter mismatch — possible CSRF.',
-        });
-        return;
-      }
-      if (code) {
-        response.writeHead(200, { 'Content-Type': 'text/html' });
-        response.end(renderCallbackPage(true));
-        settle({ code, state });
-        return;
-      }
-      if (error) {
-        response.writeHead(400, { 'Content-Type': 'text/html' });
-        response.end(renderCallbackPage(false, errorDescription ?? error));
-        settle({ error, errorDescription });
-        return;
-      }
+			if (expectedState && state !== expectedState) {
+				response.writeHead(400, { "Content-Type": "text/html" });
+				response.end(
+					renderCallbackPage(
+						false,
+						"State mismatch — the request may have been tampered with.",
+					),
+				);
+				settle({
+					error: "invalid_state",
+					errorDescription: "State parameter mismatch — possible CSRF.",
+				});
+				return;
+			}
+			if (code) {
+				response.writeHead(200, { "Content-Type": "text/html" });
+				response.end(renderCallbackPage(true));
+				settle({ code, state });
+				return;
+			}
+			if (error) {
+				response.writeHead(400, { "Content-Type": "text/html" });
+				response.end(renderCallbackPage(false, errorDescription ?? error));
+				settle({ error, errorDescription });
+				return;
+			}
 
-      response.writeHead(400);
-      response.end('Missing authorization code');
-    });
+			response.writeHead(400);
+			response.end("Missing authorization code");
+		});
 
-    server.on('error', (serverError) => {
-      clearTimeout(timer);
-      onServerError(serverError);
-    });
+		server.on("error", (serverError) => {
+			clearTimeout(timer);
+			onServerError(serverError);
+		});
 
-    server.listen(port, () => {
-      timer = setTimeout(
-        () =>
-          settle({
-            error: 'timeout',
-            errorDescription: 'OAuth callback timeout - no response received',
-          }),
-        timeoutMs,
-      );
-      // Don't let the timeout alone keep the process alive; the listening server does.
-      timer.unref();
-      onServerReady({ server, codePromise });
-    });
-  });
+		server.listen(port, () => {
+			timer = setTimeout(
+				() =>
+					settle({
+						error: "timeout",
+						errorDescription: "OAuth callback timeout - no response received",
+					}),
+				timeoutMs,
+			);
+			// Don't let the timeout alone keep the process alive; the listening server does.
+			timer.unref();
+			onServerReady({ server, codePromise });
+		});
+	});
 };
 
 /**
@@ -244,64 +253,77 @@ export const startCallbackServer = async (
  * ```
  */
 export const interactiveOAuthFlow = async (
-  config: EbayConfig,
-  scopes?: string[],
+	config: EbayConfig,
+	scopes?: string[],
 ): Promise<string | null> => {
-  writeCliLine(chalk.bold.cyan('\n🔐 Interactive OAuth Flow\n'));
+	writeCliLine(chalk.bold.cyan("\n🔐 Interactive OAuth Flow\n"));
 
-  // Check if redirect URI is localhost
-  const redirectUri = config.redirectUri || 'http://localhost:3000/oauth/callback';
-  const isLocalhost = redirectUri.includes('localhost') || redirectUri.includes('127.0.0.1');
+	// Check if redirect URI is localhost
+	const redirectUri =
+		config.redirectUri || "http://localhost:3000/oauth/callback";
+	const isLocalhost =
+		redirectUri.includes("localhost") || redirectUri.includes("127.0.0.1");
 
-  if (!isLocalhost) {
-    writeCliLine(
-      chalk.yellow(
-        '⚠️  Your redirect URI is not localhost. Interactive flow requires localhost callback.\n',
-      ),
-    );
-    return null;
-  }
+	if (!isLocalhost) {
+		writeCliLine(
+			chalk.yellow(
+				"⚠️  Your redirect URI is not localhost. Interactive flow requires localhost callback.\n",
+			),
+		);
+		return null;
+	}
 
-  // Extract port from redirect URI
-  const portMatch = /:(\d+)/.exec(redirectUri);
-  const port = portMatch ? Number.parseInt(portMatch[1], 10) : 3000;
+	// Extract port from redirect URI
+	const portMatch = /:(\d+)/.exec(redirectUri);
+	const port = portMatch ? Number.parseInt(portMatch[1], 10) : 3000;
 
-  // Start callback server
-  writeCliLine(chalk.cyan('Starting local OAuth callback server...\n'));
-  const { server, codePromise } = await startCallbackServer(port);
+	// Start callback server
+	writeCliLine(chalk.cyan("Starting local OAuth callback server...\n"));
+	const { server, codePromise } = await startCallbackServer(port);
 
-  // Generate auth URL
-  const authUrl = generateAuthUrl(config.clientId, redirectUri, config.environment, scopes);
+	// Generate auth URL
+	const authUrl = generateAuthUrl(
+		config.clientId,
+		redirectUri,
+		config.environment,
+		scopes,
+	);
 
-  writeCliLine(chalk.bold.white('📋 Step 1: Authorize the Application\n'));
-  writeCliLine(chalk.gray('Open this URL in your browser:\n'));
+	writeCliLine(chalk.bold.white("📋 Step 1: Authorize the Application\n"));
+	writeCliLine(chalk.gray("Open this URL in your browser:\n"));
 
-  writeCliLine(chalk.blue.underline(hyperlink(authUrl.substring(0, 20) + '...', authUrl)));
-  writeCliLine('');
+	writeCliLine(
+		chalk.blue.underline(hyperlink(authUrl.substring(0, 20) + "...", authUrl)),
+	);
+	writeCliLine("");
 
-  writeCliLine(chalk.gray('Waiting for authorization...'));
-  writeCliLine(chalk.gray('(This window will update automatically after you authorize)\n'));
+	writeCliLine(chalk.gray("Waiting for authorization..."));
+	writeCliLine(
+		chalk.gray("(This window will update automatically after you authorize)\n"),
+	);
 
-  // Wait for callback
-  const callback = await codePromise;
+	// Wait for callback
+	const callback = await codePromise;
 
-  // Close server
-  server.close();
+	// Close server
+	server.close();
 
-  if (callback.error) {
-    writeCliLine(
-      chalk.red(`\n✗ Authorization failed: ${callback.errorDescription || callback.error}\n`),
-    );
-    return null;
-  }
+	if (callback.error) {
+		writeCliLine(
+			chalk.red(
+				`\n✗ Authorization failed: ${callback.errorDescription || callback.error}\n`,
+			),
+		);
+		return null;
+	}
 
-  if (callback.code) {
-    writeCliLine(chalk.green('\n✓ Authorization successful!\n'));
-    return callback.code;
-  }
+	if (callback.code) {
+		writeCliLine(chalk.green("\n✓ Authorization successful!\n"));
+		return callback.code;
+	}
 
-  writeCliLine(chalk.yellow('\n⚠️  No authorization code received.\n'));
-  return null;
+	writeCliLine(chalk.yellow("\n⚠️  No authorization code received.\n"));
+	return null;
 };
 
 /**
@@ -318,33 +340,45 @@ export const interactiveOAuthFlow = async (
  * ```
  */
 export const displayManualOAuthInstructions = (
-  clientId: string,
-  redirectUri: string,
-  environment: 'sandbox' | 'production',
-  scopes?: string[],
+	clientId: string,
+	redirectUri: string,
+	environment: "sandbox" | "production",
+	scopes?: string[],
 ): void => {
-  const authUrl = generateAuthUrl(clientId, redirectUri, environment, scopes);
+	const authUrl = generateAuthUrl(clientId, redirectUri, environment, scopes);
 
-  writeCliLine(chalk.bold.cyan('\n📖 Manual OAuth Token Acquisition Guide\n'));
-  writeCliLine(chalk.white('Step 1: Generate Authorization URL\n'));
-  writeCliLine(chalk.gray('Copy this URL and open it in your browser:\n'));
-  writeCliLine(chalk.blue.underline(authUrl));
-  writeCliLine('');
+	writeCliLine(chalk.bold.cyan("\n📖 Manual OAuth Token Acquisition Guide\n"));
+	writeCliLine(chalk.white("Step 1: Generate Authorization URL\n"));
+	writeCliLine(chalk.gray("Copy this URL and open it in your browser:\n"));
+	writeCliLine(chalk.blue.underline(authUrl));
+	writeCliLine("");
 
-  writeCliLine(chalk.white('\nStep 2: Authorize the Application\n'));
-  writeCliLine(chalk.gray('  • Log in to your eBay account'));
-  writeCliLine(chalk.gray('  • Review the permissions requested'));
-  writeCliLine(chalk.gray('  • Click "Agree" to authorize\n'));
+	writeCliLine(chalk.white("\nStep 2: Authorize the Application\n"));
+	writeCliLine(chalk.gray("  • Log in to your eBay account"));
+	writeCliLine(chalk.gray("  • Review the permissions requested"));
+	writeCliLine(chalk.gray('  • Click "Agree" to authorize\n'));
 
-  writeCliLine(chalk.white('Step 3: Get the Authorization Code\n'));
-  writeCliLine(chalk.gray('  • After authorization, you will be redirected to your redirect URI'));
-  writeCliLine(chalk.gray('  • The URL will contain a "code" parameter'));
-  writeCliLine(chalk.gray('  • Example: https://your-redirect-uri?code=v^1.1#i^1...\n'));
+	writeCliLine(chalk.white("Step 3: Get the Authorization Code\n"));
+	writeCliLine(
+		chalk.gray(
+			"  • After authorization, you will be redirected to your redirect URI",
+		),
+	);
+	writeCliLine(chalk.gray('  • The URL will contain a "code" parameter'));
+	writeCliLine(
+		chalk.gray("  • Example: https://your-redirect-uri?code=v^1.1#i^1...\n"),
+	);
 
-  writeCliLine(chalk.white('Step 4: Exchange Code for Tokens\n'));
-  writeCliLine(chalk.gray('  • Use the code to get your refresh token'));
-  writeCliLine(chalk.gray('  • This can be done through the MCP tool: ebay_exchange_auth_code'));
-  writeCliLine(chalk.gray('  • Or paste the code in the setup wizard when prompted\n'));
+	writeCliLine(chalk.white("Step 4: Exchange Code for Tokens\n"));
+	writeCliLine(chalk.gray("  • Use the code to get your refresh token"));
+	writeCliLine(
+		chalk.gray(
+			"  • This can be done through the MCP tool: ebay_exchange_auth_code",
+		),
+	);
+	writeCliLine(
+		chalk.gray("  • Or paste the code in the setup wizard when prompted\n"),
+	);
 };
 
 /**
@@ -357,15 +391,15 @@ export const displayManualOAuthInstructions = (
  * ```
  */
 export const getRuNameHelp = (): string => `
-${chalk.bold.cyan('What is a RuName (Redirect URI)?')}
+${chalk.bold.cyan("What is a RuName (Redirect URI)?")}
 
 A RuName (Redirect URL name) is a unique identifier for your OAuth redirect URI.
 It's required for eBay's OAuth flow to know where to send users after authorization.
 
-${chalk.bold.white('How to create a RuName:')}
+${chalk.bold.white("How to create a RuName:")}
 
 1. Go to eBay Developer Portal:
-   ${chalk.blue.underline('https://developer.ebay.com/my/keys')}
+   ${chalk.blue.underline("https://developer.ebay.com/my/keys")}
 
 2. Select your application
 
@@ -374,17 +408,17 @@ ${chalk.bold.white('How to create a RuName:')}
 4. Click "Add RuName"
 
 5. Enter your redirect URI:
-   ${chalk.gray('For local development: http://localhost:3000/oauth/callback')}
-   ${chalk.gray('For production: https://your-domain.com/oauth/callback')}
+   ${chalk.gray("For local development: http://localhost:3000/oauth/callback")}
+   ${chalk.gray("For production: https://your-domain.com/oauth/callback")}
 
 6. Copy the generated RuName and use it in your configuration
 
-${chalk.bold.white('Common RuName formats:')}
+${chalk.bold.white("Common RuName formats:")}
 
-  ${chalk.gray('• For localhost:')} YourCompany-YourApp-LocalTest-RuName
-  ${chalk.gray('• For production:')} YourCompany-YourApp-Production-RuName
+  ${chalk.gray("• For localhost:")} YourCompany-YourApp-LocalTest-RuName
+  ${chalk.gray("• For production:")} YourCompany-YourApp-Production-RuName
 
-${chalk.yellow('Note:')} The RuName is NOT the same as the redirect URI itself.
+${chalk.yellow("Note:")} The RuName is NOT the same as the redirect URI itself.
 It's a reference name that eBay associates with your redirect URI.
 `;
 
@@ -398,40 +432,54 @@ It's a reference name that eBay associates with your redirect URI.
  * ```
  */
 export const displayFirstTimeDeveloperGuide = (): void => {
-  writeCliLine(chalk.bold.cyan('\n🆕 First-Time eBay Developer Guide\n'));
-  writeCliLine(chalk.white("Welcome! Here's how to get started:\n"));
+	writeCliLine(chalk.bold.cyan("\n🆕 First-Time eBay Developer Guide\n"));
+	writeCliLine(chalk.white("Welcome! Here's how to get started:\n"));
 
-  writeCliLine(chalk.bold.yellow('Step 1: Create eBay Developer Account\n'));
-  writeCliLine(chalk.gray('  1. Visit: ') + chalk.blue.underline('https://developer.ebay.com/'));
-  writeCliLine(chalk.gray('  2. Click "Register" or "Join"'));
-  writeCliLine(chalk.gray('  3. Complete the registration form'));
-  writeCliLine(chalk.gray('  4. Verify your email address\n'));
+	writeCliLine(chalk.bold.yellow("Step 1: Create eBay Developer Account\n"));
+	writeCliLine(
+		chalk.gray("  1. Visit: ") +
+			chalk.blue.underline("https://developer.ebay.com/"),
+	);
+	writeCliLine(chalk.gray('  2. Click "Register" or "Join"'));
+	writeCliLine(chalk.gray("  3. Complete the registration form"));
+	writeCliLine(chalk.gray("  4. Verify your email address\n"));
 
-  writeCliLine(chalk.bold.yellow('Step 2: Create an Application\n'));
-  writeCliLine(
-    chalk.gray('  1. Go to: ') + chalk.blue.underline('https://developer.ebay.com/my/keys'),
-  );
-  writeCliLine(chalk.gray('  2. Click "Create Application"'));
-  writeCliLine(chalk.gray('  3. Fill in application details (name, description)'));
-  writeCliLine(chalk.gray('  4. Choose Sandbox environment to start\n'));
+	writeCliLine(chalk.bold.yellow("Step 2: Create an Application\n"));
+	writeCliLine(
+		chalk.gray("  1. Go to: ") +
+			chalk.blue.underline("https://developer.ebay.com/my/keys"),
+	);
+	writeCliLine(chalk.gray('  2. Click "Create Application"'));
+	writeCliLine(
+		chalk.gray("  3. Fill in application details (name, description)"),
+	);
+	writeCliLine(chalk.gray("  4. Choose Sandbox environment to start\n"));
 
-  writeCliLine(chalk.bold.yellow('Step 3: Get Your Credentials\n'));
-  writeCliLine(chalk.gray('  After creating the app, you will see:'));
-  writeCliLine(chalk.gray('  • App ID (Client ID) - Copy this'));
-  writeCliLine(chalk.gray('  • Cert ID (Client Secret) - Copy this'));
-  writeCliLine(chalk.gray('  • These are needed for the setup wizard\n'));
+	writeCliLine(chalk.bold.yellow("Step 3: Get Your Credentials\n"));
+	writeCliLine(chalk.gray("  After creating the app, you will see:"));
+	writeCliLine(chalk.gray("  • App ID (Client ID) - Copy this"));
+	writeCliLine(chalk.gray("  • Cert ID (Client Secret) - Copy this"));
+	writeCliLine(chalk.gray("  • These are needed for the setup wizard\n"));
 
-  writeCliLine(chalk.bold.yellow('Step 4: Create RuName (Redirect URI)\n'));
-  writeCliLine(chalk.gray('  1. In your application settings'));
-  writeCliLine(chalk.gray('  2. Navigate to "User Tokens" section'));
-  writeCliLine(chalk.gray('  3. Click "Add RuName"'));
-  writeCliLine(chalk.gray('  4. Enter: http://localhost:3000/oauth/callback'));
-  writeCliLine(chalk.gray('  5. Save and copy the generated RuName\n'));
+	writeCliLine(chalk.bold.yellow("Step 4: Create RuName (Redirect URI)\n"));
+	writeCliLine(chalk.gray("  1. In your application settings"));
+	writeCliLine(chalk.gray('  2. Navigate to "User Tokens" section'));
+	writeCliLine(chalk.gray('  3. Click "Add RuName"'));
+	writeCliLine(chalk.gray("  4. Enter: http://localhost:3000/oauth/callback"));
+	writeCliLine(chalk.gray("  5. Save and copy the generated RuName\n"));
 
-  writeCliLine(chalk.bold.yellow('Step 5: Get User Token\n'));
-  writeCliLine(chalk.gray('  Option A: Use this setup wizard (recommended)'));
-  writeCliLine(chalk.gray('  Option B: Manual OAuth flow through eBay Developer Portal\n'));
+	writeCliLine(chalk.bold.yellow("Step 5: Get User Token\n"));
+	writeCliLine(chalk.gray("  Option A: Use this setup wizard (recommended)"));
+	writeCliLine(
+		chalk.gray("  Option B: Manual OAuth flow through eBay Developer Portal\n"),
+	);
 
-  writeCliLine(chalk.green.bold("✅ Once you have these, you're ready to continue!\n"));
-  writeCliLine(chalk.gray('Press Enter to continue when you have your credentials ready...'));
+	writeCliLine(
+		chalk.green.bold("✅ Once you have these, you're ready to continue!\n"),
+	);
+	writeCliLine(
+		chalk.gray(
+			"Press Enter to continue when you have your credentials ready...",
+		),
+	);
 };

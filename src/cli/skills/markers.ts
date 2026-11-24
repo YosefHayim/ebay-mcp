@@ -1,4 +1,4 @@
-import type { SkillLayer } from '@/cli/skills/types.js';
+import type { SkillLayer } from "@/cli/skills/types.js";
 
 /**
  * HTML-comment markers that tag generated content as ours. Both owned files
@@ -22,7 +22,7 @@ import type { SkillLayer } from '@/cli/skills/types.js';
  * ```
  */
 export const ownershipMarker = (layer: SkillLayer): string =>
-  `<!-- ebay-mcp:skill:${layer} (generated — re-run \`ebay-mcp skills\` to update) -->`;
+	`<!-- ebay-mcp:skill:${layer} (generated — re-run \`ebay-mcp skills\` to update) -->`;
 
 /**
  * Builds the opening delimiter of a managed block inside a shared file.
@@ -35,7 +35,8 @@ export const ownershipMarker = (layer: SkillLayer): string =>
  * const start = blockStart('contributing');
  * ```
  */
-export const blockStart = (layer: SkillLayer): string => `<!-- ebay-mcp:skill:${layer}:start -->`;
+export const blockStart = (layer: SkillLayer): string =>
+	`<!-- ebay-mcp:skill:${layer}:start -->`;
 
 /**
  * Builds the closing delimiter of a managed block inside a shared file.
@@ -48,7 +49,8 @@ export const blockStart = (layer: SkillLayer): string => `<!-- ebay-mcp:skill:${
  * const end = blockEnd('contributing');
  * ```
  */
-export const blockEnd = (layer: SkillLayer): string => `<!-- ebay-mcp:skill:${layer}:end -->`;
+export const blockEnd = (layer: SkillLayer): string =>
+	`<!-- ebay-mcp:skill:${layer}:end -->`;
 
 /**
  * Checks whether file contents already contain generated content for this layer.
@@ -63,5 +65,5 @@ export const blockEnd = (layer: SkillLayer): string => `<!-- ebay-mcp:skill:${la
  * ```
  */
 export const isOwnedByUs = (contents: string, layer: SkillLayer): boolean => {
-  return contents.includes(`ebay-mcp:skill:${layer}`); // matches ownership marker or block delimiters
+	return contents.includes(`ebay-mcp:skill:${layer}`); // matches ownership marker or block delimiters
 };

@@ -1,16 +1,18 @@
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { registeredEntries } from '@/tool-registry/toolCategories.js';
-import type { ToolDefinition } from '@/tool-registry/types.js';
-import type { ToolHandler } from '@/tool-registry/types.js';
-import type { ViewArchetype, ViewModel } from '@/tool-registry/ui/viewModels.js';
-import { Data, Effect } from 'effect';
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { Data, Effect } from "effect";
+import { registeredEntries } from "@/tool-registry/toolCategories.js";
+import type { ToolDefinition, ToolHandler } from "@/tool-registry/types.js";
+import type {
+	ViewArchetype,
+	ViewModel,
+} from "@/tool-registry/ui/viewModels.js";
 
 /** Tagged failure returned when the tool registry cannot resolve a runnable tool. */
-export class ToolRegistryError extends Data.TaggedError('ToolRegistryError')<{
-  /** Human-readable registry failure message. */
-  readonly message: string;
-  /** Tool name involved in the failure, when a single lookup failed. */
-  readonly toolName?: string;
+export class ToolRegistryError extends Data.TaggedError("ToolRegistryError")<{
+	/** Human-readable registry failure message. */
+	readonly message: string;
+	/** Tool name involved in the failure, when a single lookup failed. */
+	readonly toolName?: string;
 }> {}
 
 /**
@@ -26,31 +28,34 @@ export class ToolRegistryError extends Data.TaggedError('ToolRegistryError')<{
  * and advertise the view) and `map` (to project results into `structuredContent`).
  */
 export interface ResolvedToolUi {
-  archetype: ViewArchetype;
-  resourceUri: string;
-  map: (handlerOutput: unknown) => ViewModel;
+	archetype: ViewArchetype;
+	resourceUri: string;
+	map: (handlerOutput: unknown) => ViewModel;
 }
 
 /** Runtime registry entry pairing a public tool definition with its executable handler. */
 export interface ToolEntry {
-  definition: ToolDefinition;
-  handler: ToolHandler;
-  /** Optional formatting of endpoint data into protocol content. */
-  formatResult?: (handlerOutput: unknown, args: Record<string, unknown>) => CallToolResult;
-  /** Present only for tools that render an interactive view; consumed by the runtime seam. */
-  ui?: ResolvedToolUi;
+	definition: ToolDefinition;
+	handler: ToolHandler;
+	/** Optional formatting of endpoint data into protocol content. */
+	formatResult?: (
+		handlerOutput: unknown,
+		args: Record<string, unknown>,
+	) => CallToolResult;
+	/** Present only for tools that render an interactive view; consumed by the runtime seam. */
+	ui?: ResolvedToolUi;
 }
 
 /** Validation report for duplicate definitions and definition-handler mismatches. */
 export interface ToolRegistryValidation {
-  duplicateToolNames: string[];
-  missingHandlers: string[];
-  orphanHandlers: string[];
+	duplicateToolNames: string[];
+	missingHandlers: string[];
+	orphanHandlers: string[];
 }
 
 /** Handler lookup keyed by registered public tool name. */
 const handlerByName: Record<string, ToolHandler> = Object.fromEntries(
-  registeredEntries.map((entry) => [entry.definition.name, entry.handler]),
+	registeredEntries.map((entry) => [entry.definition.name, entry.handler]),
 );
 
 let cachedEntries: ToolEntry[] | undefined;
@@ -69,51 +74,55 @@ let cachedEntries: ToolEntry[] | undefined;
  * ```
  */
 export const validateToolRegistry = (
-  definitions: ToolDefinition[] = registeredEntries.map((entry) => entry.definition),
-  handlers: Record<string, ToolHandler> = handlerByName,
+	definitions: ToolDefinition[] = registeredEntries.map(
+		(entry) => entry.definition,
+	),
+	handlers: Record<string, ToolHandler> = handlerByName,
 ): ToolRegistryValidation => {
-  const seenNames = new Set<string>();
-  const duplicateNames = new Set<string>();
+	const seenNames = new Set<string>();
+	const duplicateNames = new Set<string>();
 
-  for (const definition of definitions) {
-    if (seenNames.has(definition.name)) {
-      duplicateNames.add(definition.name);
-    }
-    seenNames.add(definition.name);
-  }
+	for (const definition of definitions) {
+		if (seenNames.has(definition.name)) {
+			duplicateNames.add(definition.name);
+		}
+		seenNames.add(definition.name);
+	}
 
-  const handlerNames = new Set(Object.keys(handlers));
+	const handlerNames = new Set(Object.keys(handlers));
 
-  return {
-    duplicateToolNames: [...duplicateNames].sort(),
-    missingHandlers: definitions
-      .map((definition) => definition.name)
-      .filter((name) => !handlerNames.has(name))
-      .sort(),
-    orphanHandlers: [...handlerNames].filter((name) => !seenNames.has(name)).sort(),
-  };
+	return {
+		duplicateToolNames: [...duplicateNames].sort(),
+		missingHandlers: definitions
+			.map((definition) => definition.name)
+			.filter((name) => !handlerNames.has(name))
+			.sort(),
+		orphanHandlers: [...handlerNames]
+			.filter((name) => !seenNames.has(name))
+			.sort(),
+	};
 };
 
 const validateRunnableRegistry = (): Effect.Effect<void, ToolRegistryError> => {
-  const validation = validateToolRegistry();
-  const failures = [
-    validation.duplicateToolNames.length > 0
-      ? `duplicate tool definitions: ${validation.duplicateToolNames.join(', ')}`
-      : undefined,
-    validation.missingHandlers.length > 0
-      ? `missing handlers: ${validation.missingHandlers.join(', ')}`
-      : undefined,
-  ].filter(Boolean);
+	const validation = validateToolRegistry();
+	const failures = [
+		validation.duplicateToolNames.length > 0
+			? `duplicate tool definitions: ${validation.duplicateToolNames.join(", ")}`
+			: undefined,
+		validation.missingHandlers.length > 0
+			? `missing handlers: ${validation.missingHandlers.join(", ")}`
+			: undefined,
+	].filter(Boolean);
 
-  if (failures.length > 0) {
-    return Effect.fail(
-      new ToolRegistryError({
-        message: `Invalid tool registry: ${failures.join('; ')}`,
-      }),
-    );
-  }
+	if (failures.length > 0) {
+		return Effect.fail(
+			new ToolRegistryError({
+				message: `Invalid tool registry: ${failures.join("; ")}`,
+			}),
+		);
+	}
 
-  return Effect.void;
+	return Effect.void;
 };
 
 /**
@@ -127,13 +136,13 @@ const validateRunnableRegistry = (): Effect.Effect<void, ToolRegistryError> => {
  * ```
  */
 export const getToolEntries = (): ToolEntry[] => {
-  if (cachedEntries) {
-    return cachedEntries;
-  }
+	if (cachedEntries) {
+		return cachedEntries;
+	}
 
-  Effect.runSync(validateRunnableRegistry());
-  cachedEntries = registeredEntries;
-  return cachedEntries;
+	Effect.runSync(validateRunnableRegistry());
+	cachedEntries = registeredEntries;
+	return cachedEntries;
 };
 
 /**
@@ -147,7 +156,7 @@ export const getToolEntries = (): ToolEntry[] => {
  * ```
  */
 export const getToolDefinitions = (): ToolDefinition[] =>
-  getToolEntries().map((entry) => entry.definition);
+	getToolEntries().map((entry) => entry.definition);
 
 /**
  * Looks up the handler registered for a tool name, if one exists.
@@ -161,7 +170,7 @@ export const getToolDefinitions = (): ToolDefinition[] =>
  * ```
  */
 export const getToolHandler = (toolName: string): ToolHandler | undefined =>
-  handlerByName[toolName];
+	handlerByName[toolName];
 
 /**
  * Executes a registered tool handler and rejects when the tool name is unknown.
@@ -177,25 +186,25 @@ export const getToolHandler = (toolName: string): ToolHandler | undefined =>
  * ```
  */
 export const executeTool = async (
-  api: Parameters<ToolHandler>[0],
-  toolName: string,
-  args: Parameters<ToolHandler>[1],
+	api: Parameters<ToolHandler>[0],
+	toolName: string,
+	args: Parameters<ToolHandler>[1],
 ): Promise<unknown> =>
-  Effect.runPromise(
-    Effect.gen(function* () {
-      const handler = getToolHandler(toolName);
-      if (!handler) {
-        return yield* Effect.fail(
-          new ToolRegistryError({
-            message: `Unknown tool: ${toolName}`,
-            toolName,
-          }),
-        );
-      }
+	Effect.runPromise(
+		Effect.gen(function* () {
+			const handler = getToolHandler(toolName);
+			if (!handler) {
+				return yield* Effect.fail(
+					new ToolRegistryError({
+						message: `Unknown tool: ${toolName}`,
+						toolName,
+					}),
+				);
+			}
 
-      return yield* Effect.tryPromise({
-        try: async () => handler(api, args),
-        catch: (error) => error,
-      });
-    }),
-  );
+			return yield* Effect.tryPromise({
+				try: async () => handler(api, args),
+				catch: (error) => error,
+			});
+		}),
+	);

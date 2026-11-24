@@ -1,4 +1,4 @@
-import type { Order } from '@/ebay-apis/fulfillment/fulfillmentApi.js';
+import type { Order } from "@/ebay-apis/fulfillment/fulfillmentApi.js";
 
 /**
  * Return true when an order has a cancellation request (or completed cancel).
@@ -15,13 +15,13 @@ import type { Order } from '@/ebay-apis/fulfillment/fulfillmentApi.js';
  * ```
  */
 export const hasCancellationRequest = (order: Order): boolean => {
-  const cancelState = order.cancelStatus?.cancelState;
-  if (cancelState !== undefined && cancelState !== 'NONE_REQUESTED') {
-    return true;
-  }
+	const cancelState = order.cancelStatus?.cancelState;
+	if (cancelState !== undefined && cancelState !== "NONE_REQUESTED") {
+		return true;
+	}
 
-  const requests = order.cancelStatus?.cancelRequests;
-  return Array.isArray(requests) && requests.length > 0;
+	const requests = order.cancelStatus?.cancelRequests;
+	return Array.isArray(requests) && requests.length > 0;
 };
 
 /**
@@ -36,8 +36,8 @@ export const hasCancellationRequest = (order: Order): boolean => {
  * ```
  */
 export const hasOrderRefunds = (order: Order): boolean => {
-  const refunds = order.paymentSummary?.refunds;
-  return Array.isArray(refunds) && refunds.length > 0;
+	const refunds = order.paymentSummary?.refunds;
+	return Array.isArray(refunds) && refunds.length > 0;
 };
 
 /**
@@ -51,8 +51,9 @@ export const hasOrderRefunds = (order: Order): boolean => {
  * const matches = filterOrdersWithCancellationRequests(result.orders ?? []);
  * ```
  */
-export const filterOrdersWithCancellationRequests = (orders: readonly Order[]): Order[] =>
-  orders.filter(hasCancellationRequest);
+export const filterOrdersWithCancellationRequests = (
+	orders: readonly Order[],
+): Order[] => orders.filter(hasCancellationRequest);
 
 /**
  * Filter orders that have recorded refunds.
@@ -66,4 +67,4 @@ export const filterOrdersWithCancellationRequests = (orders: readonly Order[]): 
  * ```
  */
 export const filterRefundedOrders = (orders: readonly Order[]): Order[] =>
-  orders.filter(hasOrderRefunds);
+	orders.filter(hasOrderRefunds);

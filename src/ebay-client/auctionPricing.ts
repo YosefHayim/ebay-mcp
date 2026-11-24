@@ -17,7 +17,7 @@ const MARGIN_DENOMINATOR = 10;
 export const BUY_IT_NOW_MIN_RATIO = MARGIN_NUMERATOR / MARGIN_DENOMINATOR;
 
 /** Human-readable form of {@link BUY_IT_NOW_MIN_RATIO} for error messages. */
-export const BUY_IT_NOW_MARGIN_LABEL = '30%';
+export const BUY_IT_NOW_MARGIN_LABEL = "30%";
 
 const toCents = (amount: number): number => Math.round(amount * 100);
 
@@ -33,7 +33,7 @@ const toCents = (amount: number): number => Math.round(amount * 100);
  * @returns Required Buy It Now price in whole cents.
  */
 const requiredBuyItNowCents = (startPrice: number): number =>
-  Math.ceil((toCents(startPrice) * MARGIN_NUMERATOR) / MARGIN_DENOMINATOR);
+	Math.ceil((toCents(startPrice) * MARGIN_NUMERATOR) / MARGIN_DENOMINATOR);
 
 /**
  * Checks eBay's Buy It Now margin: the price must be at least 30% above the opening bid.
@@ -49,5 +49,7 @@ const requiredBuyItNowCents = (startPrice: number): number =>
  * meetsBuyItNowMargin(10, 12.99); // false
  * ```
  */
-export const meetsBuyItNowMargin = (startPrice: number, buyItNowPrice: number): boolean =>
-  toCents(buyItNowPrice) >= requiredBuyItNowCents(startPrice);
+export const meetsBuyItNowMargin = (
+	startPrice: number,
+	buyItNowPrice: number,
+): boolean => toCents(buyItNowPrice) >= requiredBuyItNowCents(startPrice);

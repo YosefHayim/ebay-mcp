@@ -5,9 +5,15 @@
  * with an opaque 400, so a caller learns which parameter was wrong and why.
  */
 
-import { EndpointInputError, optionalStringEffect } from '@/ebay-client/request.js';
-import { BROWSE_SORT_VALUES, type BrowseSortValue } from '@/ebay-apis/browse/browseTypes.js';
-import { Effect } from 'effect';
+import { Effect } from "effect";
+import {
+	BROWSE_SORT_VALUES,
+	type BrowseSortValue,
+} from "@/ebay-apis/browse/browseTypes.js";
+import {
+	EndpointInputError,
+	optionalStringEffect,
+} from "@/ebay-client/request.js";
 
 /** Hard upper bound for the Browse search `limit` parameter. */
 const MAX_LIMIT = 200;
@@ -31,21 +37,21 @@ const MAX_OFFSET = 10_000;
  * @returns The same value when valid, or a tagged input error.
  */
 const requireIntegerInRange = (
-  value: number,
-  parameter: string,
-  min: number,
-  max: number,
+	value: number,
+	parameter: string,
+	min: number,
+	max: number,
 ): Effect.Effect<number, EndpointInputError> => {
-  if (!Number.isInteger(value) || value < min || value > max) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter,
-        message: `${parameter} must be an integer between ${min} and ${max}`,
-      }),
-    );
-  }
+	if (!Number.isInteger(value) || value < min || value > max) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter,
+				message: `${parameter} must be an integer between ${min} and ${max}`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value);
+	return Effect.succeed(value);
 };
 
 /**
@@ -63,17 +69,17 @@ const requireIntegerInRange = (
  * @returns A tagged input error when the bound is not finite, else undefined.
  */
 const nonFinitePriceError = (
-  priceBound: number | undefined,
-  parameter: string,
+	priceBound: number | undefined,
+	parameter: string,
 ): EndpointInputError | undefined => {
-  if (priceBound === undefined || Number.isFinite(priceBound)) {
-    return;
-  }
+	if (priceBound === undefined || Number.isFinite(priceBound)) {
+		return;
+	}
 
-  return new EndpointInputError({
-    parameter,
-    message: `${parameter} must be a finite number; got ${priceBound}`,
-  });
+	return new EndpointInputError({
+		parameter,
+		message: `${parameter} must be a finite number; got ${priceBound}`,
+	});
 };
 
 /** Default page size when limit is omitted. */
@@ -87,23 +93,26 @@ export const DEFAULT_LIMIT = 20;
  * @returns The array (or undefined) when valid, or a tagged input error.
  */
 export const optionalStringArrayEffect = (
-  value: unknown,
-  parameter: string,
+	value: unknown,
+	parameter: string,
 ): Effect.Effect<readonly string[] | undefined, EndpointInputError> => {
-  if (value === undefined) {
-    return Effect.succeed(undefined);
-  }
+	if (value === undefined) {
+		return Effect.succeed(undefined);
+	}
 
-  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || !entry)) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter,
-        message: `${parameter} must be an array of non-empty strings`,
-      }),
-    );
-  }
+	if (
+		!Array.isArray(value) ||
+		value.some((entry) => typeof entry !== "string" || !entry)
+	) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter,
+				message: `${parameter} must be an array of non-empty strings`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value as readonly string[]);
+	return Effect.succeed(value as readonly string[]);
 };
 
 /**
@@ -125,26 +134,26 @@ export const optionalStringArrayEffect = (
  * ```
  */
 export const optionalNonBlankStringEffect = (
-  value: unknown,
-  parameter: string,
+	value: unknown,
+	parameter: string,
 ): Effect.Effect<string | undefined, EndpointInputError> =>
-  Effect.flatMap(optionalStringEffect(value, parameter), (text) => {
-    if (text === undefined) {
-      return Effect.succeed(undefined);
-    }
+	Effect.flatMap(optionalStringEffect(value, parameter), (text) => {
+		if (text === undefined) {
+			return Effect.succeed(undefined);
+		}
 
-    const trimmed = text.trim();
-    if (!trimmed) {
-      return Effect.fail(
-        new EndpointInputError({
-          parameter,
-          message: `${parameter} must be a non-empty string when provided`,
-        }),
-      );
-    }
+		const trimmed = text.trim();
+		if (!trimmed) {
+			return Effect.fail(
+				new EndpointInputError({
+					parameter,
+					message: `${parameter} must be a non-empty string when provided`,
+				}),
+			);
+		}
 
-    return Effect.succeed(trimmed);
-  });
+		return Effect.succeed(trimmed);
+	});
 
 /**
  * Validate offset is a whole number inside Browse's supported range.
@@ -154,23 +163,26 @@ export const optionalNonBlankStringEffect = (
  * @returns The same value when in range, or a tagged input error.
  */
 export const requireOffsetInRange = (
-  offset: number,
-  limit: number,
+	offset: number,
+	limit: number,
 ): Effect.Effect<number, EndpointInputError> =>
-  Effect.flatMap(requireIntegerInRange(offset, 'offset', 0, MAX_OFFSET), (validated) => {
-    // Browse rejects an offset that is not a whole number of pages (error 12515)
-    // with an opaque 400, so the page arithmetic is enforced here instead.
-    if (validated % limit !== 0) {
-      return Effect.fail(
-        new EndpointInputError({
-          parameter: 'offset',
-          message: `offset must be zero or a multiple of limit (${limit}); got ${validated}`,
-        }),
-      );
-    }
+	Effect.flatMap(
+		requireIntegerInRange(offset, "offset", 0, MAX_OFFSET),
+		(validated) => {
+			// Browse rejects an offset that is not a whole number of pages (error 12515)
+			// with an opaque 400, so the page arithmetic is enforced here instead.
+			if (validated % limit !== 0) {
+				return Effect.fail(
+					new EndpointInputError({
+						parameter: "offset",
+						message: `offset must be zero or a multiple of limit (${limit}); got ${validated}`,
+					}),
+				);
+			}
 
-    return Effect.succeed(validated);
-  });
+			return Effect.succeed(validated);
+		},
+	);
 
 /**
  * Reject a price window whose bounds are not finite, or are inverted.
@@ -185,25 +197,26 @@ export const requireOffsetInRange = (
  * @returns Unit when the window is coherent, or a tagged input error.
  */
 export const requireCoherentPriceRange = (
-  priceMin: number | undefined,
-  priceMax: number | undefined,
+	priceMin: number | undefined,
+	priceMax: number | undefined,
 ): Effect.Effect<void, EndpointInputError> => {
-  const nonFinite =
-    nonFinitePriceError(priceMin, 'priceMin') ?? nonFinitePriceError(priceMax, 'priceMax');
-  if (nonFinite) {
-    return Effect.fail(nonFinite);
-  }
+	const nonFinite =
+		nonFinitePriceError(priceMin, "priceMin") ??
+		nonFinitePriceError(priceMax, "priceMax");
+	if (nonFinite) {
+		return Effect.fail(nonFinite);
+	}
 
-  if (priceMin !== undefined && priceMax !== undefined && priceMin > priceMax) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: 'priceMin',
-        message: `priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
-      }),
-    );
-  }
+	if (priceMin !== undefined && priceMax !== undefined && priceMin > priceMax) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: "priceMin",
+				message: `priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
+			}),
+		);
+	}
 
-  return Effect.succeed(undefined);
+	return Effect.succeed(undefined);
 };
 
 /**
@@ -212,8 +225,10 @@ export const requireCoherentPriceRange = (
  * @param limit - Page size already validated as a number > 0.
  * @returns The same value when in range, or a tagged input error.
  */
-export const requireLimitInRange = (limit: number): Effect.Effect<number, EndpointInputError> =>
-  requireIntegerInRange(limit, 'limit', 1, MAX_LIMIT);
+export const requireLimitInRange = (
+	limit: number,
+): Effect.Effect<number, EndpointInputError> =>
+	requireIntegerInRange(limit, "limit", 1, MAX_LIMIT);
 
 /**
  * Validate sort is one of the supported Browse sort orders when provided.
@@ -222,20 +237,20 @@ export const requireLimitInRange = (limit: number): Effect.Effect<number, Endpoi
  * @returns The validated sort value (or undefined), or a tagged input error.
  */
 export const requireSupportedSort = (
-  sort: string | undefined,
+	sort: string | undefined,
 ): Effect.Effect<BrowseSortValue | undefined, EndpointInputError> => {
-  if (sort === undefined) {
-    return Effect.succeed(undefined);
-  }
+	if (sort === undefined) {
+		return Effect.succeed(undefined);
+	}
 
-  if (!(BROWSE_SORT_VALUES as readonly string[]).includes(sort)) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: 'sort',
-        message: `sort must be one of: ${BROWSE_SORT_VALUES.join(', ')}`,
-      }),
-    );
-  }
+	if (!(BROWSE_SORT_VALUES as readonly string[]).includes(sort)) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: "sort",
+				message: `sort must be one of: ${BROWSE_SORT_VALUES.join(", ")}`,
+			}),
+		);
+	}
 
-  return Effect.succeed(sort as BrowseSortValue);
+	return Effect.succeed(sort as BrowseSortValue);
 };

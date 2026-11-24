@@ -1,30 +1,30 @@
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import updateNotifier from 'update-notifier';
-import { Effect, Either } from 'effect';
+import { Effect, Either } from "effect";
+import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import updateNotifier from "update-notifier";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PACKAGE_JSON_PATH = join(__dirname, '../../package.json');
+const PACKAGE_JSON_PATH = join(__dirname, "../../package.json");
 
 interface PackageJson {
-  name: string;
-  version: string;
-  [key: string]: unknown;
+	name: string;
+	version: string;
+	[key: string]: unknown;
 }
 
 let cachedPackageJson: PackageJson | null = null;
 
 const isPackageJson = (value: unknown): value is PackageJson => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
+	if (typeof value !== "object" || value === null) {
+		return false;
+	}
 
-  return (
-    typeof Reflect.get(value, 'name') === 'string' &&
-    typeof Reflect.get(value, 'version') === 'string'
-  );
+	return (
+		typeof Reflect.get(value, "name") === "string" &&
+		typeof Reflect.get(value, "version") === "string"
+	);
 };
 
 /**
@@ -38,26 +38,27 @@ const isPackageJson = (value: unknown): value is PackageJson => {
  * ```
  */
 export const getPackageJson = (): PackageJson => {
-  if (cachedPackageJson) {
-    return cachedPackageJson;
-  }
+	if (cachedPackageJson) {
+		return cachedPackageJson;
+	}
 
-  const loaded = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: () => JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf-8')) as unknown,
-        catch: (error) => error,
-      }),
-    ),
-  );
+	const loaded = Effect.runSync(
+		Effect.either(
+			Effect.try({
+				try: () =>
+					JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf-8")) as unknown,
+				catch: (error) => error,
+			}),
+		),
+	);
 
-  if (Either.isRight(loaded) && isPackageJson(loaded.right)) {
-    cachedPackageJson = loaded.right;
-    return cachedPackageJson;
-  }
+	if (Either.isRight(loaded) && isPackageJson(loaded.right)) {
+		cachedPackageJson = loaded.right;
+		return cachedPackageJson;
+	}
 
-  cachedPackageJson = { name: 'ebay-mcp', version: '0.0.0' };
-  return cachedPackageJson;
+	cachedPackageJson = { name: "ebay-mcp", version: "0.0.0" };
+	return cachedPackageJson;
 };
 
 /**
@@ -107,18 +108,18 @@ const ONE_DAY_MS = 1000 * 60 * 60 * 24;
  * ```
  */
 export const checkForUpdates = (options: { defer?: boolean } = {}): void => {
-  const pkg = getPackageJson();
+	const pkg = getPackageJson();
 
-  const notifier = updateNotifier({
-    pkg,
-    updateCheckInterval: ONE_DAY_MS,
-    shouldNotifyInNpmScript: true,
-  });
+	const notifier = updateNotifier({
+		pkg,
+		updateCheckInterval: ONE_DAY_MS,
+		shouldNotifyInNpmScript: true,
+	});
 
-  notifier.notify({
-    isGlobal: true,
-    defer: options.defer ?? false,
-  });
+	notifier.notify({
+		isGlobal: true,
+		defer: options.defer ?? false,
+	});
 };
 
 /**
@@ -141,19 +142,19 @@ export const checkForUpdates = (options: { defer?: boolean } = {}): void => {
  * ```
  */
 export const getCachedUpdateNotice = (): string | undefined => {
-  const pkg = getPackageJson();
+	const pkg = getPackageJson();
 
-  const notifier = updateNotifier({
-    pkg,
-    updateCheckInterval: ONE_DAY_MS,
-  });
+	const notifier = updateNotifier({
+		pkg,
+		updateCheckInterval: ONE_DAY_MS,
+	});
 
-  const { update } = notifier;
-  if (!update || update.latest === pkg.version) {
-    return;
-  }
+	const { update } = notifier;
+	if (!update || update.latest === pkg.version) {
+		return;
+	}
 
-  return `Update available ${pkg.version} → ${update.latest} — run \`npm i -g ${pkg.name}\` to update`;
+	return `Update available ${pkg.version} → ${update.latest} — run \`npm i -g ${pkg.name}\` to update`;
 };
 
 /**
@@ -167,22 +168,22 @@ export const getCachedUpdateNotice = (): string | undefined => {
  * ```
  */
 export const getUpdateInfo = async (): Promise<
-  { current: string; latest: string; name: string } | undefined
+	{ current: string; latest: string; name: string } | undefined
 > => {
-  const pkg = getPackageJson();
+	const pkg = getPackageJson();
 
-  const notifier = updateNotifier({
-    pkg,
-    updateCheckInterval: 0,
-  });
+	const notifier = updateNotifier({
+		pkg,
+		updateCheckInterval: 0,
+	});
 
-  await notifier.fetchInfo();
+	await notifier.fetchInfo();
 
-  if (notifier.update && notifier.update.latest !== pkg.version) {
-    return {
-      current: pkg.version,
-      latest: notifier.update.latest,
-      name: pkg.name,
-    };
-  }
+	if (notifier.update && notifier.update.latest !== pkg.version) {
+		return {
+			current: pkg.version,
+			latest: notifier.update.latest,
+			name: pkg.name,
+		};
+	}
 };

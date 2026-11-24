@@ -1,197 +1,35 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": ["**"]
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "trailingCommas": "all",
-      "semicolons": "always"
-    }
-  },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "useSortedKeys": "off",
-        "useSortedPackageJson": "off",
-        "useSortedAttributes": "off",
-        "organizeImports": "off"
-      }
-    }
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "preset": "all",
-      "nursery": {
-        "useSortedClasses": "warn"
-      },
-      "style": {
-        "noDefaultExport": "warn",
-        "noJsxLiterals": "off",
-        "useComponentExportOnlyModules": "off",
-        "noTernary": "off",
-        "noNestedTernary": "warn",
-        "useNamingConvention": "off",
-        "useFilenamingConvention": {
-          "level": "warn",
-          "options": { "filenameCases": ["camelCase"] }
-        },
-        "useImportType": "warn",
-        "noMagicNumbers": "off",
-        "noCommonJs": "off",
-        "useExportsLast": "warn",
-        "noIncrementDecrement": "off",
-        "noProcessEnv": "warn",
-        "noExcessiveLinesPerFile": {
-          "level": "warn",
-          "options": { "maxLines": 300 }
-        }
-      },
-      "correctness": {
-        "noNodejsModules": "off",
-        "noUndeclaredDependencies": "warn",
-        "noUndeclaredVariables": "warn",
-        "noUnresolvedImports": "off",
-        "useImportExtensions": "off",
-        "useQwikValidLexicalScope": "off",
-        "useHookAtTopLevel": "off"
-      },
-      "performance": {
-        "useSolidForComponent": "off",
-        "noJsxPropsBind": "warn",
-        "noAwaitInLoops": "warn",
-        "useTopLevelRegex": "warn"
-      },
-      "suspicious": {
-        "noConsole": "warn",
-        "noUnknownAttribute": "off",
-        "noUnnecessaryConditions": "warn",
-        "noControlCharactersInRegex": "off",
-        "noNonNullAssertedOptionalChain": "warn",
-        "noAssignInExpressions": "off",
-        "noReturnAssign": "off",
-        "noArrayIndexKey": "warn",
-        "useIterableCallbackReturn": "warn"
-      },
-      "security": {
-        "noSecrets": "off"
-      },
-      "complexity": {
-        "noExcessiveCognitiveComplexity": "warn",
-        "noExcessiveLinesPerFunction": {
-          "level": "warn",
-          "options": { "maxLines": 60 }
-        },
-        "noVoid": "off"
-      }
-    },
-    "domains": {
-      "react": "all",
-      "test": "all",
-      "project": "all"
-    }
-  },
-  "overrides": [
-    {
-      "includes": ["site/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "useFilenamingConvention": "off",
-            "noExcessiveLinesPerFile": "off"
-          },
-          "complexity": {
-            "noExcessiveLinesPerFunction": "off"
-          },
-          "suspicious": {
-            "noConsole": "off"
-          },
-          "security": {
-            "noDangerouslySetInnerHtml": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": [
-        "src/ebay-apis/**/*Schemas.ts",
-        "src/ebay-apis/**/*Tools.ts",
-        "src/auth/tokenManagementTools.ts",
-        "src/server/connectorTools.ts",
-        "src/tool-registry/toolCategories.ts",
-        "src/ebay-openapi-types/**",
-        "src/shared/ebay.ts",
-        "src/shared/ebayEnums.ts",
-        "src/shared/index.ts",
-        "scripts/**",
-        "src/cli/*.ts"
-      ],
-      "linter": {
-        "rules": {
-          "style": {
-            "noExcessiveLinesPerFile": "off"
-          },
-          "complexity": {
-            "noExcessiveLinesPerFunction": "off"
-          },
-          "suspicious": {
-            "noConsole": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": [
-        "src/shared/credentialFile.ts",
-        "src/shared/environment.ts",
-        "src/shared/mediaAccess.ts",
-        "src/shared/oauthScopes.ts",
-        "src/shared/toolFamilies.ts",
-        "src/index.ts",
-        "src/serverHttp.ts",
-        "scripts/**",
-        "src/cli/*.ts",
-        "src/shared/logger.ts",
-        "tests/**"
-      ],
-      "linter": {
-        "rules": {
-          "style": {
-            "noProcessEnv": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": [
-        "src/ebay-openapi-types/**",
-        "src/shared/ebay.ts",
-        "src/shared/ebayEnums.ts",
-        "src/shared/index.ts"
-      ],
-      "linter": {
-        "rules": {
-          "style": {
-            "useFilenamingConvention": "off"
-          }
-        }
-      }
-    }
-  ]
+	"$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": false
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 80
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended"
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
 }

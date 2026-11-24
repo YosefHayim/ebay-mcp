@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 
 /**
  * Load existing key/value config from the project .env file.
@@ -19,21 +19,23 @@ import dotenv from 'dotenv';
  * const config = loadExistingConfig(process.cwd());
  * ```
  */
-export const loadExistingConfig = (projectRoot: string): Record<string, string> => {
-  const envPath = join(projectRoot, '.env');
-  if (!existsSync(envPath)) {
-    return {};
-  }
+export const loadExistingConfig = (
+	projectRoot: string,
+): Record<string, string> => {
+	const envPath = join(projectRoot, ".env");
+	if (!existsSync(envPath)) {
+		return {};
+	}
 
-  const parsed = dotenv.parse(readFileSync(envPath, 'utf-8'));
-  const envConfig: Record<string, string> = {};
-  for (const [key, envValue] of Object.entries(parsed)) {
-    if (envValue && !envValue.includes('_here')) {
-      envConfig[key] = envValue;
-    }
-  }
+	const parsed = dotenv.parse(readFileSync(envPath, "utf-8"));
+	const envConfig: Record<string, string> = {};
+	for (const [key, envValue] of Object.entries(parsed)) {
+		if (envValue && !envValue.includes("_here")) {
+			envConfig[key] = envValue;
+		}
+	}
 
-  return envConfig;
+	return envConfig;
 };
 
 /**
@@ -47,5 +49,7 @@ export const loadExistingConfig = (projectRoot: string): Record<string, string> 
  * const environment = readEnvironment(config.EBAY_ENVIRONMENT);
  * ```
  */
-export const readEnvironment = (environmentName?: string): 'sandbox' | 'production' =>
-  environmentName === 'production' ? 'production' : 'sandbox';
+export const readEnvironment = (
+	environmentName?: string,
+): "sandbox" | "production" =>
+	environmentName === "production" ? "production" : "sandbox";

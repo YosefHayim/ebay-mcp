@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from "fs";
 
 /**
  * Parse a dotenv-style KEY=VALUE file into a simple map.
@@ -12,38 +12,38 @@ import { existsSync, readFileSync } from 'fs';
  * ```
  */
 export const parseEnvFile = (filePath: string): Record<string, string> => {
-  const env: Record<string, string> = {};
+	const env: Record<string, string> = {};
 
-  if (!existsSync(filePath)) {
-    return env;
-  }
+	if (!existsSync(filePath)) {
+		return env;
+	}
 
-  const content = readFileSync(filePath, 'utf-8');
-  const lines = content.split('\n');
+	const content = readFileSync(filePath, "utf-8");
+	const lines = content.split("\n");
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) {
-      continue;
-    }
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (!trimmed || trimmed.startsWith("#")) {
+			continue;
+		}
 
-    const match = /^([^=]+)=(.*)$/.exec(trimmed);
-    if (!match) {
-      continue;
-    }
+		const match = /^([^=]+)=(.*)$/.exec(trimmed);
+		if (!match) {
+			continue;
+		}
 
-    const key = match[1].trim();
-    let envValue = match[2].trim();
+		const key = match[1].trim();
+		let envValue = match[2].trim();
 
-    if (
-      (envValue.startsWith('"') && envValue.endsWith('"')) ||
-      (envValue.startsWith("'") && envValue.endsWith("'"))
-    ) {
-      envValue = envValue.slice(1, -1);
-    }
+		if (
+			(envValue.startsWith('"') && envValue.endsWith('"')) ||
+			(envValue.startsWith("'") && envValue.endsWith("'"))
+		) {
+			envValue = envValue.slice(1, -1);
+		}
 
-    env[key] = envValue;
-  }
+		env[key] = envValue;
+	}
 
-  return env;
+	return env;
 };

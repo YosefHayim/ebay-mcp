@@ -2,28 +2,28 @@
  * Security Checker - Pre-flight security and environment checks
  */
 
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import { execSync } from 'child_process';
-import chalk from 'chalk';
-import { Effect, Either } from 'effect';
-import process from 'node:process';
-import { writeCliLine } from '@/shared/cliOutput.js';
+import process from "node:process";
+import chalk from "chalk";
+import { execSync } from "child_process";
+import { Effect, Either } from "effect";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
+import { writeCliLine } from "@/shared/cliOutput.js";
 
 /**
  * Outcome of a pre-flight security or environment check.
  */
 export interface SecurityCheckResult {
-  /** Human-readable check name printed in diagnostics output. */
-  check: string;
-  /** Whether the check passed. */
-  passed: boolean;
-  /** User-facing result message. */
-  message: string;
-  /** Severity used to decide whether setup should continue. */
-  severity: 'critical' | 'warning' | 'info';
-  /** Optional remediation text shown when the check fails. */
-  fix?: string;
+	/** Human-readable check name printed in diagnostics output. */
+	check: string;
+	/** Whether the check passed. */
+	passed: boolean;
+	/** User-facing result message. */
+	message: string;
+	/** Severity used to decide whether setup should continue. */
+	severity: "critical" | "warning" | "info";
+	/** Optional remediation text shown when the check fails. */
+	fix?: string;
 }
 
 /**
@@ -36,25 +36,28 @@ export interface SecurityCheckResult {
  * ```
  */
 export const checkNodeVersion = (): SecurityCheckResult => {
-  const requiredVersion = 18;
-  const currentVersion = Number.parseInt(process.version.slice(1).split('.')[0], 10);
+	const requiredVersion = 18;
+	const currentVersion = Number.parseInt(
+		process.version.slice(1).split(".")[0],
+		10,
+	);
 
-  if (currentVersion >= requiredVersion) {
-    return {
-      check: 'Node.js Version',
-      passed: true,
-      message: `Node.js ${process.version} meets requirements (>= ${requiredVersion})`,
-      severity: 'info',
-    };
-  }
+	if (currentVersion >= requiredVersion) {
+		return {
+			check: "Node.js Version",
+			passed: true,
+			message: `Node.js ${process.version} meets requirements (>= ${requiredVersion})`,
+			severity: "info",
+		};
+	}
 
-  return {
-    check: 'Node.js Version',
-    passed: false,
-    message: `Node.js ${process.version} is below required version ${requiredVersion}`,
-    severity: 'critical',
-    fix: `Install Node.js ${requiredVersion} or higher from https://nodejs.org/`,
-  };
+	return {
+		check: "Node.js Version",
+		passed: false,
+		message: `Node.js ${process.version} is below required version ${requiredVersion}`,
+		severity: "critical",
+		fix: `Install Node.js ${requiredVersion} or higher from https://nodejs.org/`,
+	};
 };
 
 /**
@@ -68,40 +71,42 @@ export const checkNodeVersion = (): SecurityCheckResult => {
  * ```
  */
 export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
-  const gitignorePath = join(projectRoot, '.gitignore');
+	const gitignorePath = join(projectRoot, ".gitignore");
 
-  if (!existsSync(gitignorePath)) {
-    return {
-      check: '.gitignore Security',
-      passed: false,
-      message: 'No .gitignore file found',
-      severity: 'warning',
-      fix: 'Create a .gitignore file and add .env to it',
-    };
-  }
+	if (!existsSync(gitignorePath)) {
+		return {
+			check: ".gitignore Security",
+			passed: false,
+			message: "No .gitignore file found",
+			severity: "warning",
+			fix: "Create a .gitignore file and add .env to it",
+		};
+	}
 
-  const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
-  const hasEnv = gitignoreContent.split('\n').some((line) => {
-    const trimmed = line.trim();
-    return trimmed === '.env' || trimmed === '*.env' || trimmed.startsWith('.env');
-  });
+	const gitignoreContent = readFileSync(gitignorePath, "utf-8");
+	const hasEnv = gitignoreContent.split("\n").some((line) => {
+		const trimmed = line.trim();
+		return (
+			trimmed === ".env" || trimmed === "*.env" || trimmed.startsWith(".env")
+		);
+	});
 
-  if (hasEnv) {
-    return {
-      check: '.gitignore Security',
-      passed: true,
-      message: '.env files are properly ignored by git',
-      severity: 'info',
-    };
-  }
+	if (hasEnv) {
+		return {
+			check: ".gitignore Security",
+			passed: true,
+			message: ".env files are properly ignored by git",
+			severity: "info",
+		};
+	}
 
-  return {
-    check: '.gitignore Security',
-    passed: false,
-    message: '.env is not in .gitignore - credentials could be committed!',
-    severity: 'critical',
-    fix: 'Add ".env" to your .gitignore file immediately',
-  };
+	return {
+		check: ".gitignore Security",
+		passed: false,
+		message: ".env is not in .gitignore - credentials could be committed!",
+		severity: "critical",
+		fix: 'Add ".env" to your .gitignore file immediately',
+	};
 };
 
 /**
@@ -113,58 +118,59 @@ export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
  * const connectivityCheck = await checkNetworkConnectivity();
  * ```
  */
-export const checkNetworkConnectivity = async (): Promise<SecurityCheckResult> => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+export const checkNetworkConnectivity =
+	async (): Promise<SecurityCheckResult> => {
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 5000);
 
-  const reached = await Effect.runPromise(
-    Effect.either(
-      Effect.tryPromise({
-        try: () =>
-          fetch('https://api.ebay.com/health', {
-            signal: controller.signal,
-          }),
-        catch: (error) => error,
-      }).pipe(
-        Effect.ensuring(
-          Effect.sync(() => {
-            clearTimeout(timeout);
-          }),
-        ),
-      ),
-    ),
-  );
+		const reached = await Effect.runPromise(
+			Effect.either(
+				Effect.tryPromise({
+					try: () =>
+						fetch("https://api.ebay.com/health", {
+							signal: controller.signal,
+						}),
+					catch: (error) => error,
+				}).pipe(
+					Effect.ensuring(
+						Effect.sync(() => {
+							clearTimeout(timeout);
+						}),
+					),
+				),
+			),
+		);
 
-  if (Either.isLeft(reached)) {
-    return {
-      check: 'Network Connectivity',
-      passed: false,
-      message: 'Cannot reach eBay API servers',
-      severity: 'critical',
-      fix: 'Check your internet connection, proxy settings, and firewall',
-    };
-  }
+		if (Either.isLeft(reached)) {
+			return {
+				check: "Network Connectivity",
+				passed: false,
+				message: "Cannot reach eBay API servers",
+				severity: "critical",
+				fix: "Check your internet connection, proxy settings, and firewall",
+			};
+		}
 
-  const healthResponse = reached.right;
+		const healthResponse = reached.right;
 
-  if (healthResponse.ok || healthResponse.status === 404) {
-    // 404 is fine, means we can reach eBay servers
-    return {
-      check: 'Network Connectivity',
-      passed: true,
-      message: 'Successfully connected to eBay API servers',
-      severity: 'info',
-    };
-  }
+		if (healthResponse.ok || healthResponse.status === 404) {
+			// 404 is fine, means we can reach eBay servers
+			return {
+				check: "Network Connectivity",
+				passed: true,
+				message: "Successfully connected to eBay API servers",
+				severity: "info",
+			};
+		}
 
-  return {
-    check: 'Network Connectivity',
-    passed: false,
-    message: `Unexpected response from eBay API: ${healthResponse.status}`,
-    severity: 'warning',
-    fix: 'Check your internet connection and firewall settings',
-  };
-};
+		return {
+			check: "Network Connectivity",
+			passed: false,
+			message: `Unexpected response from eBay API: ${healthResponse.status}`,
+			severity: "warning",
+			fix: "Check your internet connection and firewall settings",
+		};
+	};
 
 /**
  * Checks whether the compiled server entrypoint exists.
@@ -177,24 +183,24 @@ export const checkNetworkConnectivity = async (): Promise<SecurityCheckResult> =
  * ```
  */
 export const checkProjectBuild = (projectRoot: string): SecurityCheckResult => {
-  const buildPath = join(projectRoot, 'build', 'index.js');
+	const buildPath = join(projectRoot, "build", "index.js");
 
-  if (existsSync(buildPath)) {
-    return {
-      check: 'Project Build',
-      passed: true,
-      message: 'Project is built and ready',
-      severity: 'info',
-    };
-  }
+	if (existsSync(buildPath)) {
+		return {
+			check: "Project Build",
+			passed: true,
+			message: "Project is built and ready",
+			severity: "info",
+		};
+	}
 
-  return {
-    check: 'Project Build',
-    passed: false,
-    message: 'Project has not been built yet',
-    severity: 'warning',
-    fix: 'Run "npm run build" to build the project',
-  };
+	return {
+		check: "Project Build",
+		passed: false,
+		message: "Project has not been built yet",
+		severity: "warning",
+		fix: 'Run "npm run build" to build the project',
+	};
 };
 
 /**
@@ -208,24 +214,24 @@ export const checkProjectBuild = (projectRoot: string): SecurityCheckResult => {
  * ```
  */
 export const checkDependencies = (projectRoot: string): SecurityCheckResult => {
-  const nodeModulesPath = join(projectRoot, 'node_modules');
+	const nodeModulesPath = join(projectRoot, "node_modules");
 
-  if (existsSync(nodeModulesPath)) {
-    return {
-      check: 'Dependencies',
-      passed: true,
-      message: 'Dependencies are installed',
-      severity: 'info',
-    };
-  }
+	if (existsSync(nodeModulesPath)) {
+		return {
+			check: "Dependencies",
+			passed: true,
+			message: "Dependencies are installed",
+			severity: "info",
+		};
+	}
 
-  return {
-    check: 'Project Dependencies',
-    passed: false,
-    message: 'Dependencies not installed',
-    severity: 'critical',
-    fix: 'Run "npm install" to install dependencies',
-  };
+	return {
+		check: "Project Dependencies",
+		passed: false,
+		message: "Dependencies not installed",
+		severity: "critical",
+		fix: 'Run "npm install" to install dependencies',
+	};
 };
 
 /**
@@ -239,65 +245,65 @@ export const checkDependencies = (projectRoot: string): SecurityCheckResult => {
  * ```
  */
 export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
-  const gitPath = join(projectRoot, '.git');
-  const envPath = join(projectRoot, '.env');
+	const gitPath = join(projectRoot, ".git");
+	const envPath = join(projectRoot, ".env");
 
-  if (!existsSync(gitPath)) {
-    return {
-      check: 'Git Repository',
-      passed: true,
-      message: 'Not a git repository (no tracking risk)',
-      severity: 'info',
-    };
-  }
+	if (!existsSync(gitPath)) {
+		return {
+			check: "Git Repository",
+			passed: true,
+			message: "Not a git repository (no tracking risk)",
+			severity: "info",
+		};
+	}
 
-  if (!existsSync(envPath)) {
-    return {
-      check: 'Git Tracking',
-      passed: true,
-      message: '.env file does not exist yet',
-      severity: 'info',
-    };
-  }
+	if (!existsSync(envPath)) {
+		return {
+			check: "Git Tracking",
+			passed: true,
+			message: ".env file does not exist yet",
+			severity: "info",
+		};
+	}
 
-  const tracked = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: () =>
-          execSync('git ls-files .env', {
-            cwd: projectRoot,
-            encoding: 'utf-8',
-          }).trim(),
-        catch: (error) => error,
-      }),
-    ),
-  );
+	const tracked = Effect.runSync(
+		Effect.either(
+			Effect.try({
+				try: () =>
+					execSync("git ls-files .env", {
+						cwd: projectRoot,
+						encoding: "utf-8",
+					}).trim(),
+				catch: (error) => error,
+			}),
+		),
+	);
 
-  if (Either.isLeft(tracked)) {
-    return {
-      check: 'Git Tracking',
-      passed: true,
-      message: 'Unable to check git tracking (likely not tracked)',
-      severity: 'info',
-    };
-  }
+	if (Either.isLeft(tracked)) {
+		return {
+			check: "Git Tracking",
+			passed: true,
+			message: "Unable to check git tracking (likely not tracked)",
+			severity: "info",
+		};
+	}
 
-  if (tracked.right === '') {
-    return {
-      check: 'Git Tracking',
-      passed: true,
-      message: '.env is not tracked by git',
-      severity: 'info',
-    };
-  }
+	if (tracked.right === "") {
+		return {
+			check: "Git Tracking",
+			passed: true,
+			message: ".env is not tracked by git",
+			severity: "info",
+		};
+	}
 
-  return {
-    check: 'Git Tracking',
-    passed: false,
-    message: '.env is tracked by git - SECURITY RISK!',
-    severity: 'critical',
-    fix: 'Run: git rm --cached .env && git commit -m "Remove .env from tracking"',
-  };
+	return {
+		check: "Git Tracking",
+		passed: false,
+		message: ".env is tracked by git - SECURITY RISK!",
+		severity: "critical",
+		fix: 'Run: git rm --cached .env && git commit -m "Remove .env from tracking"',
+	};
 };
 
 /**
@@ -310,20 +316,22 @@ export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
  * const results = await runSecurityChecks(process.cwd());
  * ```
  */
-export const runSecurityChecks = async (projectRoot: string): Promise<SecurityCheckResult[]> => {
-  const results: SecurityCheckResult[] = [];
+export const runSecurityChecks = async (
+	projectRoot: string,
+): Promise<SecurityCheckResult[]> => {
+	const results: SecurityCheckResult[] = [];
 
-  // Synchronous checks
-  results.push(checkNodeVersion());
-  results.push(checkGitignore(projectRoot));
-  results.push(checkProjectBuild(projectRoot));
-  results.push(checkDependencies(projectRoot));
-  results.push(checkGitTracking(projectRoot));
+	// Synchronous checks
+	results.push(checkNodeVersion());
+	results.push(checkGitignore(projectRoot));
+	results.push(checkProjectBuild(projectRoot));
+	results.push(checkDependencies(projectRoot));
+	results.push(checkGitTracking(projectRoot));
 
-  // Asynchronous checks
-  results.push(await checkNetworkConnectivity());
+	// Asynchronous checks
+	results.push(await checkNetworkConnectivity());
 
-  return results;
+	return results;
 };
 
 /**
@@ -336,47 +344,51 @@ export const runSecurityChecks = async (projectRoot: string): Promise<SecurityCh
  * displaySecurityResults(results);
  * ```
  */
-export const displaySecurityResults = (results: SecurityCheckResult[]): void => {
-  writeCliLine(chalk.bold.cyan('\n🔒 Security & Environment Checks\n'));
+export const displaySecurityResults = (
+	results: SecurityCheckResult[],
+): void => {
+	writeCliLine(chalk.bold.cyan("\n🔒 Security & Environment Checks\n"));
 
-  for (const checkResult of results) {
-    const icon = checkResult.passed ? chalk.green('✓') : chalk.red('✗');
-    let severity = chalk.gray('[INFO]');
-    if (checkResult.severity === 'critical') {
-      severity = chalk.red('[CRITICAL]');
-    } else if (checkResult.severity === 'warning') {
-      severity = chalk.yellow('[WARNING]');
-    }
+	for (const checkResult of results) {
+		const icon = checkResult.passed ? chalk.green("✓") : chalk.red("✗");
+		let severity = chalk.gray("[INFO]");
+		if (checkResult.severity === "critical") {
+			severity = chalk.red("[CRITICAL]");
+		} else if (checkResult.severity === "warning") {
+			severity = chalk.yellow("[WARNING]");
+		}
 
-    writeCliLine(`${icon} ${chalk.bold(checkResult.check)}: ${severity}`);
-    writeCliLine(`  ${chalk.gray(checkResult.message)}`);
+		writeCliLine(`${icon} ${chalk.bold(checkResult.check)}: ${severity}`);
+		writeCliLine(`  ${chalk.gray(checkResult.message)}`);
 
-    if (checkResult.fix) {
-      writeCliLine(`  ${chalk.yellow('→ Fix:')} ${checkResult.fix}`);
-    }
-    writeCliLine('');
-  }
+		if (checkResult.fix) {
+			writeCliLine(`  ${chalk.yellow("→ Fix:")} ${checkResult.fix}`);
+		}
+		writeCliLine("");
+	}
 
-  const critical = results.filter(
-    (checkResult) => !checkResult.passed && checkResult.severity === 'critical',
-  );
-  const warnings = results.filter(
-    (checkResult) => !checkResult.passed && checkResult.severity === 'warning',
-  );
+	const critical = results.filter(
+		(checkResult) => !checkResult.passed && checkResult.severity === "critical",
+	);
+	const warnings = results.filter(
+		(checkResult) => !checkResult.passed && checkResult.severity === "warning",
+	);
 
-  if (critical.length > 0) {
-    writeCliLine(
-      chalk.red.bold(
-        `⚠️  ${critical.length} critical issue(s) found. Please fix before continuing.\n`,
-      ),
-    );
-  } else if (warnings.length > 0) {
-    writeCliLine(
-      chalk.yellow.bold(`⚠️  ${warnings.length} warning(s) found. Recommended to fix.\n`),
-    );
-  } else {
-    writeCliLine(chalk.green.bold('✅ All security checks passed!\n'));
-  }
+	if (critical.length > 0) {
+		writeCliLine(
+			chalk.red.bold(
+				`⚠️  ${critical.length} critical issue(s) found. Please fix before continuing.\n`,
+			),
+		);
+	} else if (warnings.length > 0) {
+		writeCliLine(
+			chalk.yellow.bold(
+				`⚠️  ${warnings.length} warning(s) found. Recommended to fix.\n`,
+			),
+		);
+	} else {
+		writeCliLine(chalk.green.bold("✅ All security checks passed!\n"));
+	}
 };
 
 /**
@@ -390,4 +402,4 @@ export const displaySecurityResults = (results: SecurityCheckResult[]): void => 
  * ```
  */
 export const hasCriticalFailures = (results: SecurityCheckResult[]): boolean =>
-  results.some((check) => !check.passed && check.severity === 'critical');
+	results.some((check) => !check.passed && check.severity === "critical");

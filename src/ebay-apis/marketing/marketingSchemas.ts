@@ -7,8 +7,8 @@
  * Slices: common, campaigns, ads, reports, promotions.
  */
 
-export * from './marketingCommonSchemas.js';
-export * from './campaignsSchemas.js';
-export * from './adsSchemas.js';
-export * from './reportsSchemas.js';
-export * from './promotionsSchemas.js';
+export * from "./adsSchemas.js";
+export * from "./campaignsSchemas.js";
+export * from "./marketingCommonSchemas.js";
+export * from "./promotionsSchemas.js";
+export * from "./reportsSchemas.js";

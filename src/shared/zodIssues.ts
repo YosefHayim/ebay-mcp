@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from "zod";
 
 /**
  * Formats Zod validation issues as one readable line for tool and endpoint errors.
@@ -12,8 +12,10 @@ import type { z } from 'zod';
  * ```
  */
 export const formatZodIssues = (error: z.ZodError): string =>
-  error.issues
-    .map((issue) =>
-      issue.path.length > 0 ? `${issue.path.join('.')}: ${issue.message}` : issue.message,
-    )
-    .join('; ');
+	error.issues
+		.map((issue) =>
+			issue.path.length > 0
+				? `${issue.path.join(".")}: ${issue.message}`
+				: issue.message,
+		)
+		.join("; ");

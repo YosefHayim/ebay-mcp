@@ -19,7 +19,7 @@
  */
 
 /** The fixed set of reusable UI archetypes a tool may render into. */
-export type ViewArchetype = 'table' | 'card' | 'chart' | 'stat';
+export type ViewArchetype = "table" | "card" | "chart" | "stat";
 
 /**
  * A reference to a non-destructive server tool call the UI can trigger on the
@@ -28,9 +28,9 @@ export type ViewArchetype = 'table' | 'card' | 'chart' | 'stat';
  * mutating calls. `label` is shown on the control that triggers it.
  */
 export interface ToolCallRef {
-  tool: string;
-  arguments: Record<string, unknown>;
-  label?: string;
+	tool: string;
+	arguments: Record<string, unknown>;
+	label?: string;
 }
 
 /** A single value rendered in a table cell. Mapping functions pre-format these. */
@@ -38,9 +38,9 @@ export type CellValue = string | number | null;
 
 /** Column header + how its cells align. `key` indexes into each row's `cells`. */
 export interface TableColumn {
-  key: string;
-  label: string;
-  align?: 'left' | 'right';
+	key: string;
+	label: string;
+	align?: "left" | "right";
 }
 
 /**
@@ -48,9 +48,9 @@ export interface TableColumn {
  * makes the row clickable and runs a read-only tool call (e.g. order → detail).
  */
 export interface TableRow {
-  id: string;
-  cells: Record<string, CellValue>;
-  drill?: ToolCallRef;
+	id: string;
+	cells: Record<string, CellValue>;
+	drill?: ToolCallRef;
 }
 
 /**
@@ -59,35 +59,35 @@ export interface TableRow {
  * whose rows can drill into a detail view.
  */
 export interface TableViewModel {
-  archetype: 'table';
-  title?: string;
-  columns: TableColumn[];
-  rows: TableRow[];
-  /** When present, renders a "Load more" control that runs this read-only call. */
-  loadMore?: ToolCallRef;
-  /** Small contextual line under the table (e.g. "showing 25 of 240"). */
-  footnote?: string;
+	archetype: "table";
+	title?: string;
+	columns: TableColumn[];
+	rows: TableRow[];
+	/** When present, renders a "Load more" control that runs this read-only call. */
+	loadMore?: ToolCallRef;
+	/** Small contextual line under the table (e.g. "showing 25 of 240"). */
+	footnote?: string;
 }
 
 /** Semantic colour scale shared by status pills (cards) and stat tiles. */
-export type Tone = 'neutral' | 'success' | 'warning' | 'danger';
+export type Tone = "neutral" | "success" | "warning" | "danger";
 
 /** Coloured status pill, e.g. an order's fulfillment state. */
 export interface CardBadge {
-  label: string;
-  tone?: Tone;
+	label: string;
+	tone?: Tone;
 }
 
 /** A labelled key/value shown inside a card section. */
 export interface CardField {
-  label: string;
-  value: CellValue;
+	label: string;
+	value: CellValue;
 }
 
 /** A titled group of fields within a detail card. */
 export interface CardSection {
-  heading?: string;
-  fields: CardField[];
+	heading?: string;
+	fields: CardField[];
 }
 
 /**
@@ -95,24 +95,24 @@ export interface CardSection {
  * standards profile). Renders a header with badges plus grouped field sections.
  */
 export interface CardViewModel {
-  archetype: 'card';
-  title?: string;
-  subtitle?: string;
-  badges?: CardBadge[];
-  sections: CardSection[];
+	archetype: "card";
+	title?: string;
+	subtitle?: string;
+	badges?: CardBadge[];
+	sections: CardSection[];
 }
 
 /** One plotted point. `x` is a category/time label; `y` is the numeric value. */
 export interface ChartPoint {
-  x: string;
-  y: number;
+	x: string;
+	y: number;
 }
 
 /** A named line/bar series with its points and an optional explicit colour. */
 export interface ChartSeries {
-  name: string;
-  points: ChartPoint[];
-  color?: string;
+	name: string;
+	points: ChartPoint[];
+	color?: string;
 }
 
 /**
@@ -120,24 +120,24 @@ export interface ChartSeries {
  * Rendered as inline SVG so the chart archetype stays dependency-free.
  */
 export interface ChartViewModel {
-  archetype: 'chart';
-  title?: string;
-  kind: 'line' | 'bar';
-  xLabel?: string;
-  yLabel?: string;
-  series: ChartSeries[];
+	archetype: "chart";
+	title?: string;
+	kind: "line" | "bar";
+	xLabel?: string;
+	yLabel?: string;
+	series: ChartSeries[];
 }
 
 /** A single headline metric rendered as a tile in a {@link StatViewModel}. */
 export interface StatTile {
-  /** What the metric measures (e.g. an API resource name). */
-  label: string;
-  /** The headline figure, pre-formatted for display. */
-  value: CellValue;
-  /** Optional secondary line under the value (e.g. `"of 5,000"`). */
-  sub?: string;
-  /** Optional tone so a tile can signal health (e.g. remaining quota). */
-  tone?: Tone;
+	/** What the metric measures (e.g. an API resource name). */
+	label: string;
+	/** The headline figure, pre-formatted for display. */
+	value: CellValue;
+	/** Optional secondary line under the value (e.g. `"of 5,000"`). */
+	sub?: string;
+	/** Optional tone so a tile can signal health (e.g. remaining quota). */
+	tone?: Tone;
 }
 
 /**
@@ -146,11 +146,11 @@ export interface StatTile {
  * that matter" — where a table is too heavy and a chart has nothing to plot.
  */
 export interface StatViewModel {
-  archetype: 'stat';
-  title?: string;
-  tiles: StatTile[];
-  /** Small contextual line under the grid. */
-  footnote?: string;
+	archetype: "stat";
+	title?: string;
+	tiles: StatTile[];
+	/** Small contextual line under the grid. */
+	footnote?: string;
 }
 
 /**
@@ -158,12 +158,16 @@ export interface StatViewModel {
  * discriminated union over {@link ViewArchetype}; each member is consumed by the
  * matching React app in `mcp-apps/`.
  */
-export type ViewModel = TableViewModel | CardViewModel | ChartViewModel | StatViewModel;
+export type ViewModel =
+	| TableViewModel
+	| CardViewModel
+	| ChartViewModel
+	| StatViewModel;
 
 /** Maps an archetype literal to its concrete view-model type. */
 export interface ViewModelByArchetype {
-  table: TableViewModel;
-  card: CardViewModel;
-  chart: ChartViewModel;
-  stat: StatViewModel;
+	table: TableViewModel;
+	card: CardViewModel;
+	chart: ChartViewModel;
+	stat: StatViewModel;
 }

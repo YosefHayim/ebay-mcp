@@ -1,124 +1,128 @@
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
-import { createMarketingAdsMethods } from './adsApi.js';
-import { createMarketingCampaignsMethods } from './campaignsApi.js';
-import { createMarketingPromotionsMethods } from './promotionsApi.js';
-import { createMarketingReportsMethods } from './reportsApi.js';
+import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
+import { createMarketingAdsMethods } from "./adsApi.js";
+import { createMarketingCampaignsMethods } from "./campaignsApi.js";
+import { createMarketingPromotionsMethods } from "./promotionsApi.js";
+import { createMarketingReportsMethods } from "./reportsApi.js";
 
 type MarketingAdsMethods = ReturnType<typeof createMarketingAdsMethods>;
-type MarketingCampaignsMethods = ReturnType<typeof createMarketingCampaignsMethods>;
-type MarketingPromotionsMethods = ReturnType<typeof createMarketingPromotionsMethods>;
+type MarketingCampaignsMethods = ReturnType<
+	typeof createMarketingCampaignsMethods
+>;
+type MarketingPromotionsMethods = ReturnType<
+	typeof createMarketingPromotionsMethods
+>;
 type MarketingReportsMethods = ReturnType<typeof createMarketingReportsMethods>;
 
 export type {
-  BulkCreateAdsByInventoryReferenceResponse,
-  BulkCreateAdsByListingIdResponse,
-  BulkDeleteAdsByInventoryReferenceResponse,
-  BulkDeleteAdsByListingIdResponse,
-  BulkUpdateAdsBidByInventoryReferenceResponse,
-  BulkUpdateAdsBidByListingIdResponse,
-  BulkUpdateAdsStatusResponse,
-  BulkUpdateAdsStatusByListingIdResponse,
-  GetAdsResponse,
-  CreateAdByListingIdResponse,
-  CreateAdsByInventoryReferenceResponse,
-  GetAdResponse,
-  DeleteAdResponse,
-  DeleteAdsByInventoryReferenceResponse,
-  GetAdsByInventoryReferenceResponse,
-  UpdateBidResponse,
-  GetAdGroupsResponse,
-  CreateAdGroupResponse,
-  GetAdGroupResponse,
-  UpdateAdGroupResponse,
-  SuggestBidsResponse,
-  SuggestKeywordsResponse,
-  BulkCreateKeywordResponse,
-  BulkUpdateKeywordResponse,
-  GetKeywordsResponse,
-  CreateKeywordResponse,
-  GetKeywordResponse,
-  UpdateKeywordResponse,
-  BulkCreateNegativeKeywordResponse,
-  BulkUpdateNegativeKeywordResponse,
-  GetNegativeKeywordsResponse,
-  CreateNegativeKeywordResponse,
-  GetNegativeKeywordResponse,
-  UpdateNegativeKeywordResponse,
-} from './adsApi.js';
+	BulkCreateAdsByInventoryReferenceResponse,
+	BulkCreateAdsByListingIdResponse,
+	BulkCreateKeywordResponse,
+	BulkCreateNegativeKeywordResponse,
+	BulkDeleteAdsByInventoryReferenceResponse,
+	BulkDeleteAdsByListingIdResponse,
+	BulkUpdateAdsBidByInventoryReferenceResponse,
+	BulkUpdateAdsBidByListingIdResponse,
+	BulkUpdateAdsStatusByListingIdResponse,
+	BulkUpdateAdsStatusResponse,
+	BulkUpdateKeywordResponse,
+	BulkUpdateNegativeKeywordResponse,
+	CreateAdByListingIdResponse,
+	CreateAdGroupResponse,
+	CreateAdsByInventoryReferenceResponse,
+	CreateKeywordResponse,
+	CreateNegativeKeywordResponse,
+	DeleteAdResponse,
+	DeleteAdsByInventoryReferenceResponse,
+	GetAdGroupResponse,
+	GetAdGroupsResponse,
+	GetAdResponse,
+	GetAdsByInventoryReferenceResponse,
+	GetAdsResponse,
+	GetKeywordResponse,
+	GetKeywordsResponse,
+	GetNegativeKeywordResponse,
+	GetNegativeKeywordsResponse,
+	SuggestBidsResponse,
+	SuggestKeywordsResponse,
+	UpdateAdGroupResponse,
+	UpdateBidResponse,
+	UpdateKeywordResponse,
+	UpdateNegativeKeywordResponse,
+} from "./adsApi.js";
 export type {
-  CloneCampaignResponse,
-  GetCampaignsResponse,
-  CreateCampaignResponse,
-  GetCampaignResponse,
-  DeleteCampaignResponse,
-  EndCampaignResponse,
-  FindCampaignByAdReferenceResponse,
-  GetCampaignByNameResponse,
-  PauseCampaignResponse,
-  ResumeCampaignResponse,
-  SuggestBudgetResponse,
-  SuggestItemsResponse,
-  SuggestMaxCpcResponse,
-  UpdateAdRateStrategyResponse,
-  UpdateBiddingStrategyResponse,
-  UpdateCampaignBudgetResponse,
-  UpdateCampaignIdentificationResponse,
-} from './campaignsApi.js';
+	CloneCampaignResponse,
+	CreateCampaignResponse,
+	DeleteCampaignResponse,
+	EndCampaignResponse,
+	FindCampaignByAdReferenceResponse,
+	GetCampaignByNameResponse,
+	GetCampaignResponse,
+	GetCampaignsResponse,
+	PauseCampaignResponse,
+	ResumeCampaignResponse,
+	SuggestBudgetResponse,
+	SuggestItemsResponse,
+	SuggestMaxCpcResponse,
+	UpdateAdRateStrategyResponse,
+	UpdateBiddingStrategyResponse,
+	UpdateCampaignBudgetResponse,
+	UpdateCampaignIdentificationResponse,
+} from "./campaignsApi.js";
 export type {
-  GetReportResponse,
-  GetReportMetadataResponse,
-  GetReportMetadataForReportTypeResponse,
-  GetReportTasksResponse,
-  CreateReportTaskResponse,
-  GetReportTaskResponse,
-  DeleteReportTaskResponse,
-} from './reportsApi.js';
+	CreateEmailCampaignResponse,
+	CreateItemPriceMarkdownPromotionResponse,
+	CreateItemPromotionResponse,
+	DeleteEmailCampaignResponse,
+	DeleteItemPriceMarkdownPromotionResponse,
+	DeleteItemPromotionResponse,
+	GetAudiencesResponse,
+	GetEmailCampaignResponse,
+	GetEmailCampaignsResponse,
+	GetEmailPreviewResponse,
+	GetEmailReportResponse,
+	GetItemPriceMarkdownPromotionResponse,
+	GetItemPromotionResponse,
+	GetListingSetResponse,
+	GetPromotionReportsResponse,
+	GetPromotionSummaryReportResponse,
+	GetPromotionsResponse,
+	PausePromotionResponse,
+	ResumePromotionResponse,
+	UpdateEmailCampaignResponse,
+	UpdateItemPriceMarkdownPromotionResponse,
+	UpdateItemPromotionResponse,
+} from "./promotionsApi.js";
 export type {
-  CreateItemPriceMarkdownPromotionResponse,
-  GetItemPriceMarkdownPromotionResponse,
-  UpdateItemPriceMarkdownPromotionResponse,
-  DeleteItemPriceMarkdownPromotionResponse,
-  CreateItemPromotionResponse,
-  GetItemPromotionResponse,
-  UpdateItemPromotionResponse,
-  DeleteItemPromotionResponse,
-  GetListingSetResponse,
-  GetPromotionsResponse,
-  PausePromotionResponse,
-  ResumePromotionResponse,
-  GetPromotionReportsResponse,
-  GetPromotionSummaryReportResponse,
-  GetEmailCampaignsResponse,
-  CreateEmailCampaignResponse,
-  GetEmailCampaignResponse,
-  UpdateEmailCampaignResponse,
-  DeleteEmailCampaignResponse,
-  GetAudiencesResponse,
-  GetEmailPreviewResponse,
-  GetEmailReportResponse,
-} from './promotionsApi.js';
+	CreateReportTaskResponse,
+	DeleteReportTaskResponse,
+	GetReportMetadataForReportTypeResponse,
+	GetReportMetadataResponse,
+	GetReportResponse,
+	GetReportTaskResponse,
+	GetReportTasksResponse,
+} from "./reportsApi.js";
 
 /**
  * Marketing API surface: campaigns, ads, promotions, reports, and email campaigns.
  * Implementation is split by subdomain; `new MarketingApi(client)` keeps stable method names.
  */
 export interface MarketingApi
-  extends MarketingAdsMethods,
-    MarketingCampaignsMethods,
-    MarketingPromotionsMethods,
-    MarketingReportsMethods {}
+	extends MarketingAdsMethods,
+		MarketingCampaignsMethods,
+		MarketingPromotionsMethods,
+		MarketingReportsMethods {}
 
 /**
  * Composes Marketing subdomain method maps onto one facade instance.
  */
 export class MarketingApi {
-  public constructor(client: EbayApiClient) {
-    Object.assign(
-      this,
-      createMarketingAdsMethods(client),
-      createMarketingCampaignsMethods(client),
-      createMarketingPromotionsMethods(client),
-      createMarketingReportsMethods(client),
-    );
-  }
+	public constructor(client: EbayApiClient) {
+		Object.assign(
+			this,
+			createMarketingAdsMethods(client),
+			createMarketingCampaignsMethods(client),
+			createMarketingPromotionsMethods(client),
+			createMarketingReportsMethods(client),
+		);
+	}
 }

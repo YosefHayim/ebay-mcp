@@ -1,21 +1,23 @@
-import { Data, Effect } from 'effect';
+import { Data, Effect } from "effect";
 
 /** Utility functions for date/timestamp conversion and validation. */
 
 /** Tagged failure returned when user-supplied date input cannot be parsed. */
-export class DateConversionError extends Data.TaggedError('DateConversionError')<{
-  /** Original date value supplied by the caller. */
-  readonly input: string | Date | number;
-  /** Human-readable parse failure. */
-  readonly message: string;
+export class DateConversionError extends Data.TaggedError(
+	"DateConversionError",
+)<{
+	/** Original date value supplied by the caller. */
+	readonly input: string | Date | number;
+	/** Human-readable parse failure. */
+	readonly message: string;
 }> {}
 
 /** Return a tagged date-conversion failure for invalid user input. */
 const invalidDateInput = (
-  input: string | Date | number,
-  message: string,
+	input: string | Date | number,
+	message: string,
 ): Effect.Effect<never, DateConversionError> =>
-  Effect.fail(new DateConversionError({ input, message }));
+	Effect.fail(new DateConversionError({ input, message }));
 
 /**
  * Convert a date string or Date object to Unix timestamp (milliseconds).
@@ -36,64 +38,68 @@ const invalidDateInput = (
  * ```
  */
 export const convertToTimestamp = (
-  dateInput: string | Date | number,
+	dateInput: string | Date | number,
 ): Effect.Effect<number, DateConversionError> => {
-  // If already a number, handle as timestamp
-  if (typeof dateInput === 'number') {
-    // If appears to be seconds (less than year 2100 in milliseconds)
-    if (dateInput < 4_102_444_800_000) {
-      // Could be seconds, check if reasonable
-      const now = Date.now();
-      const asSeconds = dateInput * 1000;
+	// If already a number, handle as timestamp
+	if (typeof dateInput === "number") {
+		// If appears to be seconds (less than year 2100 in milliseconds)
+		if (dateInput < 4_102_444_800_000) {
+			// Could be seconds, check if reasonable
+			const now = Date.now();
+			const asSeconds = dateInput * 1000;
 
-      // If multiplying by 1000 gives reasonable future date, it's seconds
-      if (asSeconds > now - 100 * 365 * 24 * 60 * 60 * 1000) {
-        return Effect.succeed(Math.floor(asSeconds));
-      }
-    }
+			// If multiplying by 1000 gives reasonable future date, it's seconds
+			if (asSeconds > now - 100 * 365 * 24 * 60 * 60 * 1000) {
+				return Effect.succeed(Math.floor(asSeconds));
+			}
+		}
 
-    // Already milliseconds
-    return Effect.succeed(Math.floor(dateInput));
-  }
+		// Already milliseconds
+		return Effect.succeed(Math.floor(dateInput));
+	}
 
-  // If Date object
-  if (dateInput instanceof Date) {
-    const timestamp = dateInput.getTime();
-    if (Number.isNaN(timestamp)) {
-      return invalidDateInput(dateInput, 'Invalid Date object');
-    }
-    return Effect.succeed(timestamp);
-  }
+	// If Date object
+	if (dateInput instanceof Date) {
+		const timestamp = dateInput.getTime();
+		if (Number.isNaN(timestamp)) {
+			return invalidDateInput(dateInput, "Invalid Date object");
+		}
+		return Effect.succeed(timestamp);
+	}
 
-  // If string, try parsing
-  if (typeof dateInput === 'string') {
-    // Handle relative time: "in X hours/minutes/seconds"
-    const relativeMatch = /^in\s+(\d+)\s+(hours?|minutes?|seconds?|days?)$/i.exec(dateInput);
-    if (relativeMatch) {
-      const amount = Number.parseInt(relativeMatch[1], 10);
-      const unit = relativeMatch[2].toLowerCase();
+	// If string, try parsing
+	if (typeof dateInput === "string") {
+		// Handle relative time: "in X hours/minutes/seconds"
+		const relativeMatch =
+			/^in\s+(\d+)\s+(hours?|minutes?|seconds?|days?)$/i.exec(dateInput);
+		if (relativeMatch) {
+			const amount = Number.parseInt(relativeMatch[1], 10);
+			const unit = relativeMatch[2].toLowerCase();
 
-      let multiplier = 1000; // Default to seconds
-      if (unit.startsWith('minute')) multiplier = 60 * 1000;
-      else if (unit.startsWith('hour')) multiplier = 60 * 60 * 1000;
-      else if (unit.startsWith('day')) multiplier = 24 * 60 * 60 * 1000;
+			let multiplier = 1000; // Default to seconds
+			if (unit.startsWith("minute")) multiplier = 60 * 1000;
+			else if (unit.startsWith("hour")) multiplier = 60 * 60 * 1000;
+			else if (unit.startsWith("day")) multiplier = 24 * 60 * 60 * 1000;
 
-      return Effect.succeed(Date.now() + amount * multiplier);
-    }
+			return Effect.succeed(Date.now() + amount * multiplier);
+		}
 
-    // Try parsing as ISO date or other standard format
-    const parsed = Date.parse(dateInput);
-    if (Number.isNaN(parsed)) {
-      return invalidDateInput(
-        dateInput,
-        `Invalid date format: ${dateInput}. Supported formats: ISO 8601, Unix timestamp, or relative time (e.g., "in 2 hours")`,
-      );
-    }
+		// Try parsing as ISO date or other standard format
+		const parsed = Date.parse(dateInput);
+		if (Number.isNaN(parsed)) {
+			return invalidDateInput(
+				dateInput,
+				`Invalid date format: ${dateInput}. Supported formats: ISO 8601, Unix timestamp, or relative time (e.g., "in 2 hours")`,
+			);
+		}
 
-    return Effect.succeed(parsed);
-  }
+		return Effect.succeed(parsed);
+	}
 
-  return invalidDateInput(dateInput, `Unsupported date input type: ${typeof dateInput}`);
+	return invalidDateInput(
+		dateInput,
+		`Unsupported date input type: ${typeof dateInput}`,
+	);
 };
 
 /**
@@ -109,9 +115,12 @@ export const convertToTimestamp = (
  * const expiry = calculateExpiry(7200, Date.UTC(2026, 0, 1));
  * ```
  */
-export const calculateExpiry = (expiresInSeconds: number, fromTimestamp?: number): number => {
-  const baseTime = fromTimestamp ?? Date.now();
-  return baseTime + expiresInSeconds * 1000;
+export const calculateExpiry = (
+	expiresInSeconds: number,
+	fromTimestamp?: number,
+): number => {
+	const baseTime = fromTimestamp ?? Date.now();
+	return baseTime + expiresInSeconds * 1000;
 };
 
 /**
@@ -126,10 +135,13 @@ export const calculateExpiry = (expiresInSeconds: number, fromTimestamp?: number
  * const expired = isExpired(Date.now() - 1, 0);
  * ```
  */
-export const isExpired = (expiryTimestamp: number, bufferSeconds = 60): boolean => {
-  const now = Date.now();
-  const buffer = bufferSeconds * 1000;
-  return now + buffer >= expiryTimestamp;
+export const isExpired = (
+	expiryTimestamp: number,
+	bufferSeconds = 60,
+): boolean => {
+	const now = Date.now();
+	const buffer = bufferSeconds * 1000;
+	return now + buffer >= expiryTimestamp;
 };
 
 /**
@@ -144,34 +156,34 @@ export const isExpired = (expiryTimestamp: number, bufferSeconds = 60): boolean 
  * ```
  */
 export const getTimeRemaining = (expiryTimestamp: number): string => {
-  const now = Date.now();
-  const diff = expiryTimestamp - now;
+	const now = Date.now();
+	const diff = expiryTimestamp - now;
 
-  if (diff <= 0) {
-    return 'Expired';
-  }
+	if (diff <= 0) {
+		return "Expired";
+	}
 
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
+	const seconds = Math.floor(diff / 1000);
+	const minutes = Math.floor(seconds / 60);
+	const hours = Math.floor(minutes / 60);
+	const days = Math.floor(hours / 24);
 
-  if (days > 0) {
-    const remainingHours = hours % 24;
-    return `${days} day${days > 1 ? 's' : ''}${remainingHours > 0 ? ` ${remainingHours} hour${remainingHours > 1 ? 's' : ''}` : ''}`;
-  }
+	if (days > 0) {
+		const remainingHours = hours % 24;
+		return `${days} day${days > 1 ? "s" : ""}${remainingHours > 0 ? ` ${remainingHours} hour${remainingHours > 1 ? "s" : ""}` : ""}`;
+	}
 
-  if (hours > 0) {
-    const remainingMinutes = minutes % 60;
-    return `${hours} hour${hours > 1 ? 's' : ''}${remainingMinutes > 0 ? ` ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}` : ''}`;
-  }
+	if (hours > 0) {
+		const remainingMinutes = minutes % 60;
+		return `${hours} hour${hours > 1 ? "s" : ""}${remainingMinutes > 0 ? ` ${remainingMinutes} minute${remainingMinutes > 1 ? "s" : ""}` : ""}`;
+	}
 
-  if (minutes > 0) {
-    const remainingSeconds = seconds % 60;
-    return `${minutes} minute${minutes > 1 ? 's' : ''}${remainingSeconds > 0 ? ` ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}` : ''}`;
-  }
+	if (minutes > 0) {
+		const remainingSeconds = seconds % 60;
+		return `${minutes} minute${minutes > 1 ? "s" : ""}${remainingSeconds > 0 ? ` ${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""}` : ""}`;
+	}
 
-  return `${seconds} second${seconds > 1 ? 's' : ''}`;
+	return `${seconds} second${seconds > 1 ? "s" : ""}`;
 };
 
 /**
@@ -182,20 +194,20 @@ export const getTimeRemaining = (expiryTimestamp: number): string => {
  * @returns Validation result with warnings and recommendations
  */
 export interface TokenExpiryValidation {
-  /** True when both access and refresh tokens are still valid. */
-  valid: boolean;
-  /** Access-token expiry bucket. */
-  accessTokenStatus: 'valid' | 'expiring-soon' | 'expired';
-  /** Refresh-token expiry bucket. */
-  refreshTokenStatus: 'valid' | 'expiring-soon' | 'expired';
-  /** Human-readable access-token time remaining. */
-  accessTokenRemaining: string;
-  /** Human-readable refresh-token time remaining. */
-  refreshTokenRemaining: string;
-  /** User-facing warnings for expired or soon-expiring tokens. */
-  warnings: string[];
-  /** User-facing remediation steps for expired or soon-expiring tokens. */
-  recommendations: string[];
+	/** True when both access and refresh tokens are still valid. */
+	valid: boolean;
+	/** Access-token expiry bucket. */
+	accessTokenStatus: "valid" | "expiring-soon" | "expired";
+	/** Refresh-token expiry bucket. */
+	refreshTokenStatus: "valid" | "expiring-soon" | "expired";
+	/** Human-readable access-token time remaining. */
+	accessTokenRemaining: string;
+	/** Human-readable refresh-token time remaining. */
+	refreshTokenRemaining: string;
+	/** User-facing warnings for expired or soon-expiring tokens. */
+	warnings: string[];
+	/** User-facing remediation steps for expired or soon-expiring tokens. */
+	recommendations: string[];
 }
 
 /**
@@ -211,48 +223,54 @@ export interface TokenExpiryValidation {
  * ```
  */
 export const validateTokenExpiry = (
-  accessTokenExpiry: number,
-  refreshTokenExpiry: number,
+	accessTokenExpiry: number,
+	refreshTokenExpiry: number,
 ): TokenExpiryValidation => {
-  const warnings: string[] = [];
-  const recommendations: string[] = [];
+	const warnings: string[] = [];
+	const recommendations: string[] = [];
 
-  const accessExpired = isExpired(accessTokenExpiry, 0);
-  const accessExpiringSoon = isExpired(accessTokenExpiry, 300); // 5 minutes
-  const refreshExpired = isExpired(refreshTokenExpiry, 0);
-  const refreshExpiringSoon = isExpired(refreshTokenExpiry, 86_400); // 1 day
+	const accessExpired = isExpired(accessTokenExpiry, 0);
+	const accessExpiringSoon = isExpired(accessTokenExpiry, 300); // 5 minutes
+	const refreshExpired = isExpired(refreshTokenExpiry, 0);
+	const refreshExpiringSoon = isExpired(refreshTokenExpiry, 86_400); // 1 day
 
-  let accessTokenStatus: 'valid' | 'expiring-soon' | 'expired' = 'valid';
-  let refreshTokenStatus: 'valid' | 'expiring-soon' | 'expired' = 'valid';
+	let accessTokenStatus: "valid" | "expiring-soon" | "expired" = "valid";
+	let refreshTokenStatus: "valid" | "expiring-soon" | "expired" = "valid";
 
-  if (accessExpired) {
-    accessTokenStatus = 'expired';
-    warnings.push('Access token has expired');
-    if (!refreshExpired) {
-      recommendations.push('Use the refresh token to obtain a new access token');
-    }
-  } else if (accessExpiringSoon) {
-    accessTokenStatus = 'expiring-soon';
-    warnings.push('Access token will expire soon');
-  }
+	if (accessExpired) {
+		accessTokenStatus = "expired";
+		warnings.push("Access token has expired");
+		if (!refreshExpired) {
+			recommendations.push(
+				"Use the refresh token to obtain a new access token",
+			);
+		}
+	} else if (accessExpiringSoon) {
+		accessTokenStatus = "expiring-soon";
+		warnings.push("Access token will expire soon");
+	}
 
-  if (refreshExpired) {
-    refreshTokenStatus = 'expired';
-    warnings.push('Refresh token has expired');
-    recommendations.push('User needs to re-authorize the application to get new tokens');
-  } else if (refreshExpiringSoon) {
-    refreshTokenStatus = 'expiring-soon';
-    warnings.push('Refresh token will expire soon (within 24 hours)');
-    recommendations.push('Consider prompting user to re-authorize before refresh token expires');
-  }
+	if (refreshExpired) {
+		refreshTokenStatus = "expired";
+		warnings.push("Refresh token has expired");
+		recommendations.push(
+			"User needs to re-authorize the application to get new tokens",
+		);
+	} else if (refreshExpiringSoon) {
+		refreshTokenStatus = "expiring-soon";
+		warnings.push("Refresh token will expire soon (within 24 hours)");
+		recommendations.push(
+			"Consider prompting user to re-authorize before refresh token expires",
+		);
+	}
 
-  return {
-    valid: !(accessExpired || refreshExpired),
-    accessTokenStatus,
-    refreshTokenStatus,
-    accessTokenRemaining: getTimeRemaining(accessTokenExpiry),
-    refreshTokenRemaining: getTimeRemaining(refreshTokenExpiry),
-    warnings,
-    recommendations,
-  };
+	return {
+		valid: !(accessExpired || refreshExpired),
+		accessTokenStatus,
+		refreshTokenStatus,
+		accessTokenRemaining: getTimeRemaining(accessTokenExpiry),
+		refreshTokenRemaining: getTimeRemaining(refreshTokenExpiry),
+		warnings,
+		recommendations,
+	};
 };

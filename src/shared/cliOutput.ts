@@ -1,4 +1,4 @@
-import process from 'node:process';
+import process from "node:process";
 
 /**
  * Writes one line to stdout for interactive CLI-only flows.
@@ -11,6 +11,6 @@ import process from 'node:process';
  * writeCliLine('Setup complete');
  * ```
  */
-export const writeCliLine = (message = ''): void => {
-  process.stdout.write(`${message}\n`);
+export const writeCliLine = (message = ""): void => {
+	process.stdout.write(`${message}\n`);
 };

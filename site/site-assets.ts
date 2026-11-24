@@ -1,5 +1,5 @@
 export interface SiteAssets {
-  scriptFile: string;
-  stylesFile: string;
-  catalogFile: string;
+	scriptFile: string;
+	stylesFile: string;
+	catalogFile: string;
 }

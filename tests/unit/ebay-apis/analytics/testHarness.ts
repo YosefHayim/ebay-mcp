@@ -1,13 +1,13 @@
-import { vi } from 'vitest';
-import { AnalyticsApi } from '@/ebay-apis/analytics/analyticsApi.js';
-import type { EbayApiClient } from '@/ebay-client/ebayApiClient.js';
+import { vi } from "vitest";
+import { AnalyticsApi } from "@/ebay-apis/analytics/analyticsApi.js";
+import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 
 /** Analytics API test harness with the API instance and mocked eBay client. */
 export interface AnalyticsApiHarness {
-  /** Analytics API under test. */
-  readonly api: AnalyticsApi;
-  /** Mocked eBay client used to assert request path and params. */
-  readonly client: EbayApiClient;
+	/** Analytics API under test. */
+	readonly api: AnalyticsApi;
+	/** Mocked eBay client used to assert request path and params. */
+	readonly client: EbayApiClient;
 }
 
 /**
@@ -21,25 +21,25 @@ export interface AnalyticsApiHarness {
  * ```
  */
 export const createAnalyticsApiHarness = (): AnalyticsApiHarness => {
-  const client = {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  } as unknown as EbayApiClient;
+	const client = {
+		get: vi.fn(),
+		post: vi.fn(),
+		put: vi.fn(),
+		delete: vi.fn(),
+	} as unknown as EbayApiClient;
 
-  return {
-    api: new AnalyticsApi(client),
-    client,
-  };
+	return {
+		api: new AnalyticsApi(client),
+		client,
+	};
 };
 
 /** Minimal validation error snapshot used by Analytics API tests. */
 export interface EndpointInputErrorSnapshot {
-  /** Tagged error identifier returned by migrated endpoint validation. */
-  readonly _tag: string;
-  /** Endpoint input parameter that failed validation. */
-  readonly parameter?: string;
+	/** Tagged error identifier returned by migrated endpoint validation. */
+	readonly _tag: string;
+	/** Endpoint input parameter that failed validation. */
+	readonly parameter?: string;
 }
 
 /**
@@ -57,8 +57,8 @@ export interface EndpointInputErrorSnapshot {
  * ```
  */
 export const readEndpointInputError = (
-  error: EndpointInputErrorSnapshot,
+	error: EndpointInputErrorSnapshot,
 ): EndpointInputErrorSnapshot => ({
-  _tag: error._tag,
-  parameter: error.parameter,
+	_tag: error._tag,
+	parameter: error.parameter,
 });

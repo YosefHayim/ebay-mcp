@@ -1,5 +1,5 @@
-import chalk from 'chalk';
-import { writeCliLine } from './cliOutput.js';
+import chalk from "chalk";
+import { writeCliLine } from "./cliOutput.js";
 
 /**
  * Shared terminal styling for the project's interactive CLIs.
@@ -9,20 +9,20 @@ import { writeCliLine } from './cliOutput.js';
  * tooling). The eBay brand palette matches the setup wizard.
  */
 export const ebayPalette = {
-  red: chalk.hex('#E53238'),
-  blue: chalk.hex('#0064D2'),
-  yellow: chalk.hex('#F5AF02'),
-  green: chalk.hex('#86B817'),
+	red: chalk.hex("#E53238"),
+	blue: chalk.hex("#0064D2"),
+	yellow: chalk.hex("#F5AF02"),
+	green: chalk.hex("#86B817"),
 };
 
 /** Semantic text styles used across CLI output. */
 export const ui = {
-  dim: chalk.dim,
-  bold: chalk.bold,
-  success: chalk.green,
-  warning: chalk.yellow,
-  error: chalk.red,
-  info: chalk.cyan,
+	dim: chalk.dim,
+	bold: chalk.bold,
+	success: chalk.green,
+	warning: chalk.yellow,
+	error: chalk.red,
+	info: chalk.cyan,
 };
 
 /**
@@ -37,7 +37,7 @@ export const ui = {
  * ```
  */
 export const printSuccess = (message: string): void => {
-  writeCliLine(`  ${ui.success('✓')} ${message}`);
+	writeCliLine(`  ${ui.success("✓")} ${message}`);
 };
 
 /**
@@ -52,7 +52,7 @@ export const printSuccess = (message: string): void => {
  * ```
  */
 export const printWarning = (message: string): void => {
-  writeCliLine(`  ${ui.warning('⚠')} ${message}`);
+	writeCliLine(`  ${ui.warning("⚠")} ${message}`);
 };
 
 /**
@@ -67,7 +67,7 @@ export const printWarning = (message: string): void => {
  * ```
  */
 export const printError = (message: string): void => {
-  writeCliLine(`  ${ui.error('✗')} ${message}`);
+	writeCliLine(`  ${ui.error("✗")} ${message}`);
 };
 
 /**
@@ -82,7 +82,7 @@ export const printError = (message: string): void => {
  * ```
  */
 export const printInfo = (message: string): void => {
-  writeCliLine(`  ${ui.info('ℹ')} ${message}`);
+	writeCliLine(`  ${ui.info("ℹ")} ${message}`);
 };
 
 /**
@@ -97,7 +97,7 @@ export const printInfo = (message: string): void => {
  * ```
  */
 export const printHeading = (title: string): void => {
-  writeCliLine(`\n  ${ui.bold(title)}`);
+	writeCliLine(`\n  ${ui.bold(title)}`);
 };
 
 /**
@@ -112,5 +112,5 @@ export const printHeading = (title: string): void => {
  * ```
  */
 export const printRule = (width = 56): void => {
-  writeCliLine('  ' + ui.dim('─'.repeat(width)));
+	writeCliLine("  " + ui.dim("─".repeat(width)));
 };

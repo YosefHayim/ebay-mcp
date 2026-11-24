@@ -1,5 +1,9 @@
-import type { SkillDoc, SkillLayer, SkillProvider } from '@/cli/skills/types.js';
-import { ownershipMarker } from '@/cli/skills/markers.js';
+import { ownershipMarker } from "@/cli/skills/markers.js";
+import type {
+	SkillDoc,
+	SkillLayer,
+	SkillProvider,
+} from "@/cli/skills/types.js";
 
 /**
  * Composes the shared Markdown body (title + intro + sections) at a given
@@ -8,12 +12,17 @@ import { ownershipMarker } from '@/cli/skills/markers.js';
  * `###` sections) for a managed block inside a user's file.
  */
 const renderBody = (doc: SkillDoc, baseLevel: number): string => {
-  const heading = (level: number) => '#'.repeat(level);
-  const parts: string[] = [`${heading(baseLevel)} ${doc.title}`, '', doc.intro];
-  for (const section of doc.sections) {
-    parts.push('', `${heading(baseLevel + 1)} ${section.heading}`, '', section.body);
-  }
-  return parts.join('\n');
+	const heading = (level: number) => "#".repeat(level);
+	const parts: string[] = [`${heading(baseLevel)} ${doc.title}`, "", doc.intro];
+	for (const section of doc.sections) {
+		parts.push(
+			"",
+			`${heading(baseLevel + 1)} ${section.heading}`,
+			"",
+			section.body,
+		);
+	}
+	return parts.join("\n");
 };
 
 /** YAML frontmatter scalar that is safe for arbitrary text (JSON strings are valid YAML). */
@@ -34,13 +43,19 @@ const yamlString = (text: string): string => JSON.stringify(text);
  * ```
  */
 export const renderClaudeSkill = (doc: SkillDoc, layer: SkillLayer): string => {
-  const frontmatter = [
-    '---',
-    `name: ${doc.slug}`,
-    `description: ${yamlString(doc.description)}`,
-    '---',
-  ];
-  return [...frontmatter, ownershipMarker(layer), '', renderBody(doc, 1), ''].join('\n');
+	const frontmatter = [
+		"---",
+		`name: ${doc.slug}`,
+		`description: ${yamlString(doc.description)}`,
+		"---",
+	];
+	return [
+		...frontmatter,
+		ownershipMarker(layer),
+		"",
+		renderBody(doc, 1),
+		"",
+	].join("\n");
 };
 
 /**
@@ -58,13 +73,19 @@ export const renderClaudeSkill = (doc: SkillDoc, layer: SkillLayer): string => {
  * ```
  */
 export const renderCursorRule = (doc: SkillDoc, layer: SkillLayer): string => {
-  const frontmatter = [
-    '---',
-    `description: ${yamlString(doc.description)}`,
-    'alwaysApply: false',
-    '---',
-  ];
-  return [...frontmatter, ownershipMarker(layer), '', renderBody(doc, 1), ''].join('\n');
+	const frontmatter = [
+		"---",
+		`description: ${yamlString(doc.description)}`,
+		"alwaysApply: false",
+		"---",
+	];
+	return [
+		...frontmatter,
+		ownershipMarker(layer),
+		"",
+		renderBody(doc, 1),
+		"",
+	].join("\n");
 };
 
 /**
@@ -97,13 +118,17 @@ export const renderCodexSection = (doc: SkillDoc): string => renderBody(doc, 2);
  * const skillContent = renderSkill('codex', doc, 'using');
  * ```
  */
-export const renderSkill = (provider: SkillProvider, doc: SkillDoc, layer: SkillLayer): string => {
-  switch (provider) {
-    case 'claude':
-      return renderClaudeSkill(doc, layer);
-    case 'cursor':
-      return renderCursorRule(doc, layer);
-    case 'codex':
-      return renderCodexSection(doc);
-  }
+export const renderSkill = (
+	provider: SkillProvider,
+	doc: SkillDoc,
+	layer: SkillLayer,
+): string => {
+	switch (provider) {
+		case "claude":
+			return renderClaudeSkill(doc, layer);
+		case "cursor":
+			return renderCursorRule(doc, layer);
+		case "codex":
+			return renderCodexSection(doc);
+	}
 };

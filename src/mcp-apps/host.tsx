@@ -19,17 +19,17 @@
  * server side has.
  */
 
-import './styles.css';
-import type { App } from '@modelcontextprotocol/ext-apps/react';
-import { useApp, useHostStyles } from '@modelcontextprotocol/ext-apps/react';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { type ReactNode, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import "./styles.css";
+import type { App } from "@modelcontextprotocol/ext-apps/react";
+import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { type ReactNode, useState } from "react";
+import { createRoot } from "react-dom/client";
 import type {
-  ToolCallRef,
-  ViewArchetype,
-  ViewModelByArchetype,
-} from '@/tool-registry/ui/viewModels.js';
+	ToolCallRef,
+	ViewArchetype,
+	ViewModelByArchetype,
+} from "@/tool-registry/ui/viewModels.js";
 
 /**
  * Narrows a raw tool result to the view model for `archetype`, or `null` if the
@@ -38,21 +38,21 @@ import type {
  * {@link ViewModel}; the discriminant check guards the single cast.
  */
 const extractView = <A extends ViewArchetype>(
-  toolResult: CallToolResult,
-  archetype: A,
+	toolResult: CallToolResult,
+	archetype: A,
 ): ViewModelByArchetype[A] | null => {
-  const structured = toolResult.structuredContent;
-  if (
-    structured &&
-    typeof structured === 'object' &&
-    'archetype' in structured &&
-    structured.archetype === archetype
-  ) {
-    // Wire data is an open record; the discriminant check above confirms the
-    // archetype, so the `unknown` hop is the safe bridge to the concrete model.
-    return structured as unknown as ViewModelByArchetype[A];
-  }
-  return null;
+	const structured = toolResult.structuredContent;
+	if (
+		structured &&
+		typeof structured === "object" &&
+		"archetype" in structured &&
+		structured.archetype === archetype
+	) {
+		// Wire data is an open record; the discriminant check above confirms the
+		// archetype, so the `unknown` hop is the safe bridge to the concrete model.
+		return structured as unknown as ViewModelByArchetype[A];
+	}
+	return null;
 };
 
 /**
@@ -61,14 +61,14 @@ const extractView = <A extends ViewArchetype>(
  * @typeParam A - The archetype this view renders, fixing `view`'s concrete type.
  */
 export interface ViewState<A extends ViewArchetype> {
-  /** The latest view model the host delivered, or `null` before the first result. */
-  view: ViewModelByArchetype[A] | null;
-  /** The connected app instance, used to drive interactions. `null` until connected. */
-  app: App | null;
-  /** Whether the MCP Apps handshake has completed. */
-  isConnected: boolean;
-  /** Connection error, if the handshake failed. */
-  error: Error | null;
+	/** The latest view model the host delivered, or `null` before the first result. */
+	view: ViewModelByArchetype[A] | null;
+	/** The connected app instance, used to drive interactions. `null` until connected. */
+	app: App | null;
+	/** Whether the MCP Apps handshake has completed. */
+	isConnected: boolean;
+	/** Connection error, if the handshake failed. */
+	error: Error | null;
 }
 
 /**
@@ -85,34 +85,36 @@ export interface ViewState<A extends ViewArchetype> {
  * const { view, app, isConnected, error } = useViewModel('table');
  * ```
  */
-export const useViewModel = <A extends ViewArchetype>(archetype: A): ViewState<A> => {
-  const [view, setView] = useState<ViewModelByArchetype[A] | null>(null);
-  const { app, isConnected, error } = useApp({
-    appInfo: { name: `ebay-${archetype}-view`, version: '1.0.0' },
-    capabilities: {},
-    onAppCreated: (created) => {
-      created.ontoolresult = (toolResult: CallToolResult) => {
-        const next = extractView(toolResult, archetype);
-        if (next) {
-          setView(next);
-        }
-      };
-    },
-  });
+export const useViewModel = <A extends ViewArchetype>(
+	archetype: A,
+): ViewState<A> => {
+	const [view, setView] = useState<ViewModelByArchetype[A] | null>(null);
+	const { app, isConnected, error } = useApp({
+		appInfo: { name: `ebay-${archetype}-view`, version: "1.0.0" },
+		capabilities: {},
+		onAppCreated: (created) => {
+			created.ontoolresult = (toolResult: CallToolResult) => {
+				const next = extractView(toolResult, archetype);
+				if (next) {
+					setView(next);
+				}
+			};
+		},
+	});
 
-  useHostStyles(app, app?.getHostContext());
+	useHostStyles(app, app?.getHostContext());
 
-  return { view, app, isConnected, error };
+	return { view, app, isConnected, error };
 };
 
 /** Props for the shared app state wrapper. */
 interface AppShellProps {
-  /** Whether the MCP Apps host handshake completed. */
-  isConnected: boolean;
-  /** Connection error reported by the host app hook. */
-  error: Error | null;
-  /** Rendered app contents once connected. */
-  children: ReactNode;
+	/** Whether the MCP Apps host handshake completed. */
+	isConnected: boolean;
+	/** Connection error reported by the host app hook. */
+	error: Error | null;
+	/** Rendered app contents once connected. */
+	children: ReactNode;
 }
 
 /**
@@ -127,20 +129,28 @@ interface AppShellProps {
  * <AppShell isConnected={isConnected} error={error}>{children}</AppShell>
  * ```
  */
-export const AppShell = ({ isConnected, error, children }: AppShellProps): ReactNode => {
-  if (error) {
-    return <div className="state state--error">Unable to load view: {error.message}</div>;
-  }
-  if (!isConnected) {
-    return <div className="state">Connecting…</div>;
-  }
-  return children;
+export const AppShell = ({
+	isConnected,
+	error,
+	children,
+}: AppShellProps): ReactNode => {
+	if (error) {
+		return (
+			<div className="state state--error">
+				Unable to load view: {error.message}
+			</div>
+		);
+	}
+	if (!isConnected) {
+		return <div className="state">Connecting…</div>;
+	}
+	return children;
 };
 
 /** Props for the connected-but-empty placeholder. */
 interface EmptyStateProps {
-  /** Placeholder text shown inside the empty state. */
-  label: string;
+	/** Placeholder text shown inside the empty state. */
+	label: string;
 }
 
 /**
@@ -155,15 +165,15 @@ interface EmptyStateProps {
  * ```
  */
 export const EmptyState = ({ label }: EmptyStateProps): ReactNode => (
-  <div className="state">{label}</div>
+	<div className="state">{label}</div>
 );
 
 /** Turns a {@link ToolCallRef} into a concise natural-language instruction. */
 const describeRef = (ref: ToolCallRef): string => {
-  const args = Object.entries(ref.arguments)
-    .map(([name, argument]) => `${name}=${String(argument)}`)
-    .join(', ');
-  return `Run the ${ref.tool} tool${args ? ` with ${args}` : ''}.`;
+	const args = Object.entries(ref.arguments)
+		.map(([name, argument]) => `${name}=${String(argument)}`)
+		.join(", ");
+	return `Run the ${ref.tool} tool${args ? ` with ${args}` : ""}.`;
 };
 
 /**
@@ -182,13 +192,13 @@ const describeRef = (ref: ToolCallRef): string => {
  * ```
  */
 export const drill = (app: App | null, ref: ToolCallRef): void => {
-  if (!app) {
-    return;
-  }
-  void app.sendMessage({
-    role: 'user',
-    content: [{ type: 'text', text: describeRef(ref) }],
-  });
+	if (!app) {
+		return;
+	}
+	void app.sendMessage({
+		role: "user",
+		content: [{ type: "text", text: describeRef(ref) }],
+	});
 };
 
 /**
@@ -208,15 +218,18 @@ export const drill = (app: App | null, ref: ToolCallRef): void => {
  * ```
  */
 export const runServerTool = async <A extends ViewArchetype>(
-  app: App | null,
-  ref: ToolCallRef,
-  archetype: A,
+	app: App | null,
+	ref: ToolCallRef,
+	archetype: A,
 ): Promise<ViewModelByArchetype[A] | null> => {
-  if (!app) {
-    return null;
-  }
-  const toolResult = await app.callServerTool({ name: ref.tool, arguments: ref.arguments });
-  return extractView(toolResult, archetype);
+	if (!app) {
+		return null;
+	}
+	const toolResult = await app.callServerTool({
+		name: ref.tool,
+		arguments: ref.arguments,
+	});
+	return extractView(toolResult, archetype);
 };
 
 /**
@@ -231,9 +244,9 @@ export const runServerTool = async <A extends ViewArchetype>(
  * ```
  */
 export const mount = (node: ReactNode): void => {
-  const container = document.getElementById('root');
-  if (!container) {
-    throw new Error('Missing #root container');
-  }
-  createRoot(container).render(node);
+	const container = document.getElementById("root");
+	if (!container) {
+		throw new Error("Missing #root container");
+	}
+	createRoot(container).render(node);
 };

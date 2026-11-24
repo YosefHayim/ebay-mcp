@@ -10,94 +10,108 @@
  * so no real registry request or background process is spawned.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const notify = vi.fn();
 const fetchInfo = vi.fn();
 
 /** Mutable state the mocked notifier exposes; reset before each test. */
 let mockUpdate: { latest: string; current?: string } | undefined;
-let lastConstructorOptions: { shouldNotifyInNpmScript?: boolean; updateCheckInterval?: number };
+let lastConstructorOptions: {
+	shouldNotifyInNpmScript?: boolean;
+	updateCheckInterval?: number;
+};
 
-vi.mock('update-notifier', () => ({
-  default: (options: { shouldNotifyInNpmScript?: boolean; updateCheckInterval?: number }) => {
-    lastConstructorOptions = options;
-    return { notify, fetchInfo, update: mockUpdate };
-  },
+vi.mock("update-notifier", () => ({
+	default: (options: {
+		shouldNotifyInNpmScript?: boolean;
+		updateCheckInterval?: number;
+	}) => {
+		lastConstructorOptions = options;
+		return { notify, fetchInfo, update: mockUpdate };
+	},
 }));
 
 import {
-  checkForUpdates,
-  getCachedUpdateNotice,
-  getUpdateInfo,
-  getVersion,
-} from '@/shared/version.js';
+	checkForUpdates,
+	getCachedUpdateNotice,
+	getUpdateInfo,
+	getVersion,
+} from "@/shared/version.js";
 
 const CURRENT = getVersion();
 
 beforeEach(() => {
-  mockUpdate = undefined;
-  lastConstructorOptions = {};
-  notify.mockClear();
-  fetchInfo.mockClear();
+	mockUpdate = undefined;
+	lastConstructorOptions = {};
+	notify.mockClear();
+	fetchInfo.mockClear();
 });
 
 afterEach(() => {
-  vi.clearAllMocks();
+	vi.clearAllMocks();
 });
 
-describe('checkForUpdates', () => {
-  it('opts into npm-script contexts so `npm run setup` is not silenced', () => {
-    checkForUpdates();
+describe("checkForUpdates", () => {
+	it("opts into npm-script contexts so `npm run setup` is not silenced", () => {
+		checkForUpdates();
 
-    expect(lastConstructorOptions.shouldNotifyInNpmScript).toBe(true);
-    expect(notify).toHaveBeenCalledWith(expect.objectContaining({ isGlobal: true, defer: false }));
-  });
+		expect(lastConstructorOptions.shouldNotifyInNpmScript).toBe(true);
+		expect(notify).toHaveBeenCalledWith(
+			expect.objectContaining({ isGlobal: true, defer: false }),
+		);
+	});
 
-  it('forwards the defer flag for the long-lived server context', () => {
-    checkForUpdates({ defer: true });
+	it("forwards the defer flag for the long-lived server context", () => {
+		checkForUpdates({ defer: true });
 
-    expect(notify).toHaveBeenCalledWith(expect.objectContaining({ defer: true }));
-  });
+		expect(notify).toHaveBeenCalledWith(
+			expect.objectContaining({ defer: true }),
+		);
+	});
 });
 
-describe('getCachedUpdateNotice', () => {
-  it('returns a one-line notice when a newer version is cached', () => {
-    mockUpdate = { latest: '99.0.0' };
+describe("getCachedUpdateNotice", () => {
+	it("returns a one-line notice when a newer version is cached", () => {
+		mockUpdate = { latest: "99.0.0" };
 
-    const notice = getCachedUpdateNotice();
+		const notice = getCachedUpdateNotice();
 
-    expect(notice).toBe(
-      `Update available ${CURRENT} → 99.0.0 — run \`npm i -g ebay-mcp\` to update`,
-    );
-  });
+		expect(notice).toBe(
+			`Update available ${CURRENT} → 99.0.0 — run \`npm i -g ebay-mcp\` to update`,
+		);
+	});
 
-  it('returns undefined before the cache is populated (first run)', () => {
-    mockUpdate = undefined;
+	it("returns undefined before the cache is populated (first run)", () => {
+		mockUpdate = undefined;
 
-    expect(getCachedUpdateNotice()).toBeUndefined();
-  });
+		expect(getCachedUpdateNotice()).toBeUndefined();
+	});
 
-  it('returns undefined when already on the latest version', () => {
-    mockUpdate = { latest: CURRENT };
+	it("returns undefined when already on the latest version", () => {
+		mockUpdate = { latest: CURRENT };
 
-    expect(getCachedUpdateNotice()).toBeUndefined();
-  });
+		expect(getCachedUpdateNotice()).toBeUndefined();
+	});
 });
 
-describe('getUpdateInfo', () => {
-  it('reports current/latest/name when a newer version exists', async () => {
-    mockUpdate = { latest: '99.0.0' };
+describe("getUpdateInfo", () => {
+	it("reports current/latest/name when a newer version exists", async () => {
+		mockUpdate = { latest: "99.0.0" };
 
-    const updateInfo = await getUpdateInfo();
+		const updateInfo = await getUpdateInfo();
 
-    expect(fetchInfo).toHaveBeenCalled();
-    expect(updateInfo).toEqual({ current: CURRENT, latest: '99.0.0', name: 'ebay-mcp' });
-  });
+		expect(fetchInfo).toHaveBeenCalled();
+		expect(updateInfo).toEqual({
+			current: CURRENT,
+			latest: "99.0.0",
+			name: "ebay-mcp",
+		});
+	});
 
-  it('returns undefined when the latest version equals the current one', async () => {
-    mockUpdate = { latest: CURRENT };
+	it("returns undefined when the latest version equals the current one", async () => {
+		mockUpdate = { latest: CURRENT };
 
-    expect(await getUpdateInfo()).toBeUndefined();
-  });
+		expect(await getUpdateInfo()).toBeUndefined();
+	});
 });

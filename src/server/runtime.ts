@@ -1,20 +1,30 @@
-import { McpServer, type RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Implementation } from '@modelcontextprotocol/sdk/types.js';
-import { EbaySellerApi } from '@/ebay-apis/ebaySellerApi.js';
-import { getEbayConfig, mcpConfig } from '@/shared/environment.js';
-import { resolveToolGatingMode } from '@/shared/toolFamilies.js';
-import { isReadOnlyModeEnabled, isReadOnlyTool } from '@/server/readOnlyFilter.js';
 import {
-  createToolGatingController,
-  DYNAMIC_MODE_INSTRUCTIONS,
-  registerMetaTools,
-  toolNamesInFamilies,
-} from '@/server/toolGating.js';
-import { buildUiToolResult, createUiBridge, type UiBridge } from '@/server/uiBridge.js';
-import { getToolEntries, type ToolEntry } from '@/tool-registry/registry.js';
-import { getEbayErrorDetails } from '@/shared/errors.js';
-import { serverLogger, toolLogger } from '@/shared/logger.js';
-import { Effect } from 'effect';
+	McpServer,
+	type RegisteredTool,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { Implementation } from "@modelcontextprotocol/sdk/types.js";
+import { Effect } from "effect";
+import { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
+import {
+	isReadOnlyModeEnabled,
+	isReadOnlyTool,
+} from "@/server/readOnlyFilter.js";
+import {
+	createToolGatingController,
+	DYNAMIC_MODE_INSTRUCTIONS,
+	registerMetaTools,
+	toolNamesInFamilies,
+} from "@/server/toolGating.js";
+import {
+	buildUiToolResult,
+	createUiBridge,
+	type UiBridge,
+} from "@/server/uiBridge.js";
+import { getEbayConfig, mcpConfig } from "@/shared/environment.js";
+import { getEbayErrorDetails } from "@/shared/errors.js";
+import { serverLogger, toolLogger } from "@/shared/logger.js";
+import { resolveToolGatingMode } from "@/shared/toolFamilies.js";
+import { getToolEntries, type ToolEntry } from "@/tool-registry/registry.js";
 
 type ToolArgs = Record<string, unknown>;
 
@@ -22,120 +32,124 @@ type ToolArgs = Record<string, unknown>;
  * Optional dependencies and metadata for constructing the eBay MCP runtime.
  */
 export interface EbayMcpRuntimeOptions {
-  /** Optional prebuilt API facade, mainly for tests. */
-  api?: EbaySellerApi;
-  /** Optional MCP implementation metadata advertised during initialize. */
-  serverConfig?: Implementation;
-  /** Enables debug/error logs for each tool call when true. */
-  logToolExecution?: boolean;
+	/** Optional prebuilt API facade, mainly for tests. */
+	api?: EbaySellerApi;
+	/** Optional MCP implementation metadata advertised during initialize. */
+	serverConfig?: Implementation;
+	/** Enables debug/error logs for each tool call when true. */
+	logToolExecution?: boolean;
 }
 
 /**
  * Initialized MCP server runtime and eBay API facade.
  */
 export interface EbayMcpRuntime {
-  /** eBay API facade shared by every registered tool handler. */
-  api: EbaySellerApi;
-  /** MCP server instance with eBay tools registered. */
-  server: McpServer;
-  /** Initializes credentials/token state before the server accepts real calls. */
-  initializeApi(): Promise<void>;
+	/** eBay API facade shared by every registered tool handler. */
+	api: EbaySellerApi;
+	/** MCP server instance with eBay tools registered. */
+	server: McpServer;
+	/** Initializes credentials/token state before the server accepts real calls. */
+	initializeApi(): Promise<void>;
 }
 
 function formatToolSuccess(handlerOutput: unknown) {
-  // JSON.stringify(undefined) returns undefined (not a string), which produces an
-  // invalid MCP content block and triggers client -32602 on empty-body 201/204s.
-  const successDocument =
-    handlerOutput === undefined || handlerOutput === null ? { status: 'success' } : handlerOutput;
+	// JSON.stringify(undefined) returns undefined (not a string), which produces an
+	// invalid MCP content block and triggers client -32602 on empty-body 201/204s.
+	const successDocument =
+		handlerOutput === undefined || handlerOutput === null
+			? { status: "success" }
+			: handlerOutput;
 
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: JSON.stringify(successDocument, null, 2),
-      },
-    ],
-  };
+	return {
+		content: [
+			{
+				type: "text" as const,
+				text: JSON.stringify(successDocument, null, 2),
+			},
+		],
+	};
 }
 
 function formatToolFailure(error: unknown) {
-  const { message, status, errors } = getEbayErrorDetails(error);
-  const failureDocument: Record<string, unknown> = { error: message };
-  if (status !== undefined) {
-    failureDocument.status = status;
-  }
-  if (errors !== undefined) {
-    failureDocument.details = errors;
-  }
+	const { message, status, errors } = getEbayErrorDetails(error);
+	const failureDocument: Record<string, unknown> = { error: message };
+	if (status !== undefined) {
+		failureDocument.status = status;
+	}
+	if (errors !== undefined) {
+		failureDocument.details = errors;
+	}
 
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: JSON.stringify(failureDocument, null, 2),
-      },
-    ],
-    isError: true,
-  };
+	return {
+		content: [
+			{
+				type: "text" as const,
+				text: JSON.stringify(failureDocument, null, 2),
+			},
+		],
+		isError: true,
+	};
 }
 
 function registerTool(
-  server: McpServer,
-  api: EbaySellerApi,
-  entry: ToolEntry,
-  logToolExecution: boolean,
-  ui: UiBridge,
+	server: McpServer,
+	api: EbaySellerApi,
+	entry: ToolEntry,
+	logToolExecution: boolean,
+	ui: UiBridge,
 ): RegisteredTool {
-  const { definition, handler } = entry;
+	const { definition, handler } = entry;
 
-  // Registered plainly (no UI `_meta`) so every host gets a working text tool by
-  // default; the capability gate later flips `_meta.ui` on for UI-capable clients.
-  const registered = server.registerTool(
-    definition.name,
-    {
-      description: definition.description,
-      inputSchema: definition.inputSchema,
-      annotations: definition.annotations,
-    },
-    async (args: ToolArgs) => {
-      if (logToolExecution) {
-        toolLogger.debug(`Executing tool: ${definition.name}`, { args });
-      }
+	// Registered plainly (no UI `_meta`) so every host gets a working text tool by
+	// default; the capability gate later flips `_meta.ui` on for UI-capable clients.
+	const registered = server.registerTool(
+		definition.name,
+		{
+			description: definition.description,
+			inputSchema: definition.inputSchema,
+			annotations: definition.annotations,
+		},
+		async (args: ToolArgs) => {
+			if (logToolExecution) {
+				toolLogger.debug(`Executing tool: ${definition.name}`, { args });
+			}
 
-      return await Effect.runPromise(
-        Effect.tryPromise({
-          try: async () => handler(api, args),
-          catch: (error) => error,
-        }).pipe(
-          Effect.map((handlerOutput) => {
-            if (logToolExecution) {
-              toolLogger.debug(`Tool ${definition.name} completed successfully`);
-            }
+			return await Effect.runPromise(
+				Effect.tryPromise({
+					try: async () => handler(api, args),
+					catch: (error) => error,
+				}).pipe(
+					Effect.map((handlerOutput) => {
+						if (logToolExecution) {
+							toolLogger.debug(
+								`Tool ${definition.name} completed successfully`,
+							);
+						}
 
-            if (entry.formatResult) {
-              return entry.formatResult(handlerOutput, args);
-            }
+						if (entry.formatResult) {
+							return entry.formatResult(handlerOutput, args);
+						}
 
-            return ui.shouldRender(entry)
-              ? buildUiToolResult(entry.ui, handlerOutput)
-              : formatToolSuccess(handlerOutput);
-          }),
-          Effect.catchAll((error) => {
-            if (logToolExecution) {
-              toolLogger.error(`Tool ${definition.name} failed`, {
-                error: getEbayErrorDetails(error).message,
-              });
-            }
+						return ui.shouldRender(entry)
+							? buildUiToolResult(entry.ui, handlerOutput)
+							: formatToolSuccess(handlerOutput);
+					}),
+					Effect.catchAll((error) => {
+						if (logToolExecution) {
+							toolLogger.error(`Tool ${definition.name} failed`, {
+								error: getEbayErrorDetails(error).message,
+							});
+						}
 
-            return Effect.succeed(formatToolFailure(error));
-          }),
-        ),
-      );
-    },
-  );
+						return Effect.succeed(formatToolFailure(error));
+					}),
+				),
+			);
+		},
+	);
 
-  ui.register(entry, registered);
-  return registered;
+	ui.register(entry, registered);
+	return registered;
 }
 
 /**
@@ -150,75 +164,79 @@ function registerTool(
  * await runtime.initializeApi();
  * ```
  */
-export const createEbayMcpRuntime = (options: EbayMcpRuntimeOptions = {}): EbayMcpRuntime => {
-  const api = options.api ?? new EbaySellerApi(getEbayConfig());
-  const serverInfo = options.serverConfig ?? mcpConfig;
-  const mode = resolveToolGatingMode();
+export const createEbayMcpRuntime = (
+	options: EbayMcpRuntimeOptions = {},
+): EbayMcpRuntime => {
+	const api = options.api ?? new EbaySellerApi(getEbayConfig());
+	const serverInfo = options.serverConfig ?? mcpConfig;
+	const mode = resolveToolGatingMode();
 
-  // Instructions are set only in dynamic mode so the agent knows the catalogue is
-  // hidden behind the discovery tools; default/static modes keep the handshake
-  // byte-for-byte unchanged (a bare single-arg construction).
-  const server =
-    mode.kind === 'dynamic'
-      ? new McpServer(serverInfo, { instructions: DYNAMIC_MODE_INSTRUCTIONS })
-      : new McpServer(serverInfo);
+	// Instructions are set only in dynamic mode so the agent knows the catalogue is
+	// hidden behind the discovery tools; default/static modes keep the handshake
+	// byte-for-byte unchanged (a bare single-arg construction).
+	const server =
+		mode.kind === "dynamic"
+			? new McpServer(serverInfo, { instructions: DYNAMIC_MODE_INSTRUCTIONS })
+			: new McpServer(serverInfo);
 
-  const ui = createUiBridge(server, import.meta.url);
+	const ui = createUiBridge(server, import.meta.url);
 
-  // Static mode registers only the named families; all and dynamic register the
-  // full catalogue (dynamic then disables it below, before the transport connects).
-  const allEntries = getToolEntries();
-  let entries =
-    mode.kind === 'static'
-      ? (() => {
-          const names = toolNamesInFamilies(mode.families);
-          return allEntries.filter((entry) => names.has(entry.definition.name));
-        })()
-      : allEntries;
+	// Static mode registers only the named families; all and dynamic register the
+	// full catalogue (dynamic then disables it below, before the transport connects).
+	const allEntries = getToolEntries();
+	let entries =
+		mode.kind === "static"
+			? (() => {
+					const names = toolNamesInFamilies(mode.families);
+					return allEntries.filter((entry) => names.has(entry.definition.name));
+				})()
+			: allEntries;
 
-  // Optional second gate: drop any non-read-only tools after family selection so
-  // EBAY_READ_ONLY composes with all / static / dynamic modes.
-  if (isReadOnlyModeEnabled()) {
-    entries = entries.filter((entry) => isReadOnlyTool(entry.definition));
-    serverLogger.info(`EBAY_READ_ONLY: filtered to ${entries.length} read-only tools`);
-  }
+	// Optional second gate: drop any non-read-only tools after family selection so
+	// EBAY_READ_ONLY composes with all / static / dynamic modes.
+	if (isReadOnlyModeEnabled()) {
+		entries = entries.filter((entry) => isReadOnlyTool(entry.definition));
+		serverLogger.info(
+			`EBAY_READ_ONLY: filtered to ${entries.length} read-only tools`,
+		);
+	}
 
-  const handles = new Map<string, RegisteredTool>();
-  for (const entry of entries) {
-    handles.set(
-      entry.definition.name,
-      registerTool(server, api, entry, options.logToolExecution ?? false, ui),
-    );
-  }
+	const handles = new Map<string, RegisteredTool>();
+	for (const entry of entries) {
+		handles.set(
+			entry.definition.name,
+			registerTool(server, api, entry, options.logToolExecution ?? false, ui),
+		);
+	}
 
-  if (mode.kind === 'dynamic') {
-    // Disable before `connect`: the SDK only emits `tools/listChanged` once the
-    // transport is connected, so these flips are silent. The agent re-enables the
-    // tools it needs via the meta-tools, which fire `listChanged` post-connect.
-    for (const handle of handles.values()) {
-      handle.disable();
-    }
-    registerMetaTools(server, createToolGatingController(handles));
-    serverLogger.info(
-      `Dynamic tool mode: ${handles.size} eBay tools hidden behind 3 discovery tools`,
-    );
-  } else if (mode.kind === 'static') {
-    serverLogger.info(
-      `Static tool mode: registered ${handles.size} tools from families: ${mode.families.join(', ')}`,
-    );
-  } else {
-    serverLogger.info(`Registering ${handles.size} tools`);
-  }
+	if (mode.kind === "dynamic") {
+		// Disable before `connect`: the SDK only emits `tools/listChanged` once the
+		// transport is connected, so these flips are silent. The agent re-enables the
+		// tools it needs via the meta-tools, which fire `listChanged` post-connect.
+		for (const handle of handles.values()) {
+			handle.disable();
+		}
+		registerMetaTools(server, createToolGatingController(handles));
+		serverLogger.info(
+			`Dynamic tool mode: ${handles.size} eBay tools hidden behind 3 discovery tools`,
+		);
+	} else if (mode.kind === "static") {
+		serverLogger.info(
+			`Static tool mode: registered ${handles.size} tools from families: ${mode.families.join(", ")}`,
+		);
+	} else {
+		serverLogger.info(`Registering ${handles.size} tools`);
+	}
 
-  // Install after registration so every UI-eligible tool is captured before the
-  // gate can flip their metadata on a UI-capable client's `initialize`.
-  ui.installCapabilityGate();
+	// Install after registration so every UI-eligible tool is captured before the
+	// gate can flip their metadata on a UI-capable client's `initialize`.
+	ui.installCapabilityGate();
 
-  return {
-    api,
-    server,
-    async initializeApi() {
-      await Effect.runPromise(api.initialize());
-    },
-  };
+	return {
+		api,
+		server,
+		async initializeApi() {
+			await Effect.runPromise(api.initialize());
+		},
+	};
 };

@@ -1,50 +1,50 @@
-import type { StoredTokenData } from '@/shared/ebay.js';
+import type { StoredTokenData } from "@/shared/ebay.js";
 
 /**
  * Mock token storage for testing
  */
 export class MockTokenStorage {
-  private static tokens: StoredTokenData | null = null;
+	private static tokens: StoredTokenData | null = null;
 
-  static async hasTokens(): Promise<boolean> {
-    return MockTokenStorage.tokens !== null;
-  }
+	static async hasTokens(): Promise<boolean> {
+		return MockTokenStorage.tokens !== null;
+	}
 
-  static async loadTokens(): Promise<StoredTokenData> {
-    if (!MockTokenStorage.tokens) {
-      throw new Error('No tokens stored');
-    }
-    return MockTokenStorage.tokens;
-  }
+	static async loadTokens(): Promise<StoredTokenData> {
+		if (!MockTokenStorage.tokens) {
+			throw new Error("No tokens stored");
+		}
+		return MockTokenStorage.tokens;
+	}
 
-  static async saveTokens(tokens: StoredTokenData): Promise<void> {
-    MockTokenStorage.tokens = tokens;
-  }
+	static async saveTokens(tokens: StoredTokenData): Promise<void> {
+		MockTokenStorage.tokens = tokens;
+	}
 
-  static async clearTokens(): Promise<void> {
-    MockTokenStorage.tokens = null;
-  }
+	static async clearTokens(): Promise<void> {
+		MockTokenStorage.tokens = null;
+	}
 
-  static isUserAccessTokenExpired(tokens: StoredTokenData): boolean {
-    return Date.now() >= tokens.userAccessTokenExpiry;
-  }
+	static isUserAccessTokenExpired(tokens: StoredTokenData): boolean {
+		return Date.now() >= tokens.userAccessTokenExpiry;
+	}
 
-  static isUserRefreshTokenExpired(tokens: StoredTokenData): boolean {
-    return Date.now() >= tokens.userRefreshTokenExpiry;
-  }
+	static isUserRefreshTokenExpired(tokens: StoredTokenData): boolean {
+		return Date.now() >= tokens.userRefreshTokenExpiry;
+	}
 
-  // Helper methods for testing
-  static setMockTokens(tokens: StoredTokenData | null): void {
-    MockTokenStorage.tokens = tokens;
-  }
+	// Helper methods for testing
+	static setMockTokens(tokens: StoredTokenData | null): void {
+		MockTokenStorage.tokens = tokens;
+	}
 
-  static getMockTokens(): StoredTokenData | null {
-    return MockTokenStorage.tokens;
-  }
+	static getMockTokens(): StoredTokenData | null {
+		return MockTokenStorage.tokens;
+	}
 
-  static reset(): void {
-    MockTokenStorage.tokens = null;
-  }
+	static reset(): void {
+		MockTokenStorage.tokens = null;
+	}
 }
 
 /**
@@ -58,17 +58,19 @@ export class MockTokenStorage {
  * const tokens = createMockTokens({ scope: 'scope-a scope-b' });
  * ```
  */
-export const createMockTokens = (overrides: Partial<StoredTokenData> = {}): StoredTokenData => {
-  const now = Date.now();
-  return {
-    userAccessToken: 'mock_access_token',
-    userRefreshToken: 'mock_refresh_token',
-    tokenType: 'Bearer',
-    userAccessTokenExpiry: now + 7200 * 1000, // 2 hours from now
-    userRefreshTokenExpiry: now + 18 * 30 * 24 * 60 * 60 * 1000, // 18 months
-    scope: 'https://api.ebay.com/oauth/api_scope/sell.inventory',
-    ...overrides,
-  };
+export const createMockTokens = (
+	overrides: Partial<StoredTokenData> = {},
+): StoredTokenData => {
+	const now = Date.now();
+	return {
+		userAccessToken: "mock_access_token",
+		userRefreshToken: "mock_refresh_token",
+		tokenType: "Bearer",
+		userAccessTokenExpiry: now + 7200 * 1000, // 2 hours from now
+		userRefreshTokenExpiry: now + 18 * 30 * 24 * 60 * 60 * 1000, // 18 months
+		scope: "https://api.ebay.com/oauth/api_scope/sell.inventory",
+		...overrides,
+	};
 };
 
 /**
@@ -82,11 +84,11 @@ export const createMockTokens = (overrides: Partial<StoredTokenData> = {}): Stor
  * ```
  */
 export const createExpiredAccessToken = (): StoredTokenData => {
-  const now = Date.now();
-  return createMockTokens({
-    userAccessTokenExpiry: now - 1000, // 1 second ago
-    userRefreshTokenExpiry: now + 18 * 30 * 24 * 60 * 60 * 1000, // Still valid
-  });
+	const now = Date.now();
+	return createMockTokens({
+		userAccessTokenExpiry: now - 1000, // 1 second ago
+		userRefreshTokenExpiry: now + 18 * 30 * 24 * 60 * 60 * 1000, // Still valid
+	});
 };
 
 /**
@@ -100,9 +102,9 @@ export const createExpiredAccessToken = (): StoredTokenData => {
  * ```
  */
 export const createFullyExpiredTokens = (): StoredTokenData => {
-  const now = Date.now();
-  return createMockTokens({
-    userAccessTokenExpiry: now - 1000, // 1 second ago
-    userRefreshTokenExpiry: now - 1000, // Also expired
-  });
+	const now = Date.now();
+	return createMockTokens({
+		userAccessTokenExpiry: now - 1000, // 1 second ago
+		userRefreshTokenExpiry: now - 1000, // Also expired
+	});
 };

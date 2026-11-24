@@ -4,234 +4,252 @@
  * Tests the configuration after setup to ensure everything is working properly.
  */
 
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import chalk from 'chalk';
-import { EbayOAuthClient } from '@/auth/oauth.js';
-import { getOAuthAuthorizationUrl } from '@/shared/environment.js';
-import { parseEnvFile } from '@/shared/envParser.js';
-import { getErrorMessage } from '@/shared/errors.js';
-import type { EbayConfig } from '@/shared/ebay.js';
-import { Effect, Either } from 'effect';
-import { writeCliLine } from '@/shared/cliOutput.js';
+import chalk from "chalk";
+import { Effect, Either } from "effect";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
+import { EbayOAuthClient } from "@/auth/oauth.js";
+import { writeCliLine } from "@/shared/cliOutput.js";
+import type { EbayConfig } from "@/shared/ebay.js";
+import { getOAuthAuthorizationUrl } from "@/shared/environment.js";
+import { parseEnvFile } from "@/shared/envParser.js";
+import { getErrorMessage } from "@/shared/errors.js";
 
 /**
  * Result for one setup validation test.
  */
 export interface ValidationResult {
-  /** Human-readable validation name printed in diagnostics output. */
-  test: string;
-  /** Whether the validation completed successfully. */
-  passed: boolean;
-  /** User-facing summary of the validation outcome. */
-  message: string;
-  /** Optional remediation or failure detail. */
-  error?: string;
+	/** Human-readable validation name printed in diagnostics output. */
+	test: string;
+	/** Whether the validation completed successfully. */
+	passed: boolean;
+	/** User-facing summary of the validation outcome. */
+	message: string;
+	/** Optional remediation or failure detail. */
+	error?: string;
 }
 
 /**
  * Aggregate result returned after all setup validation tests run.
  */
 export interface ValidationSummary {
-  /** Number of validation checks that were executed. */
-  totalTests: number;
-  /** Number of checks that passed. */
-  passed: number;
-  /** Number of checks that failed. */
-  failed: number;
-  /** Ordered list of individual validation outcomes. */
-  results: ValidationResult[];
+	/** Number of validation checks that were executed. */
+	totalTests: number;
+	/** Number of checks that passed. */
+	passed: number;
+	/** Number of checks that failed. */
+	failed: number;
+	/** Ordered list of individual validation outcomes. */
+	results: ValidationResult[];
 }
 
 /**
  * Validates that the .env file exists and is readable.
  */
 const validateEnvFile = (projectRoot: string): ValidationResult => {
-  const envPath = join(projectRoot, '.env');
+	const envPath = join(projectRoot, ".env");
 
-  if (!existsSync(envPath)) {
-    return {
-      test: '.env File Existence',
-      passed: false,
-      message: 'Configuration file not found',
-      error: `.env file does not exist at ${envPath}`,
-    };
-  }
+	if (!existsSync(envPath)) {
+		return {
+			test: ".env File Existence",
+			passed: false,
+			message: "Configuration file not found",
+			error: `.env file does not exist at ${envPath}`,
+		};
+	}
 
-  const readable = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: () => readFileSync(envPath, 'utf-8'),
-        catch: (error) => error,
-      }),
-    ),
-  );
+	const readable = Effect.runSync(
+		Effect.either(
+			Effect.try({
+				try: () => readFileSync(envPath, "utf-8"),
+				catch: (error) => error,
+			}),
+		),
+	);
 
-  if (Either.isRight(readable)) {
-    return {
-      test: '.env File Existence',
-      passed: true,
-      message: 'Configuration file exists and is readable',
-    };
-  }
+	if (Either.isRight(readable)) {
+		return {
+			test: ".env File Existence",
+			passed: true,
+			message: "Configuration file exists and is readable",
+		};
+	}
 
-  return {
-    test: '.env File Existence',
-    passed: false,
-    message: 'Configuration file cannot be read',
-    error: getErrorMessage(readable.left),
-  };
+	return {
+		test: ".env File Existence",
+		passed: false,
+		message: "Configuration file cannot be read",
+		error: getErrorMessage(readable.left),
+	};
 };
 
 /**
  * Validates that required app credentials are present.
  */
-const validateAppCredentials = (envVars: Record<string, string>): ValidationResult => {
-  const required = ['EBAY_CLIENT_ID', 'EBAY_CLIENT_SECRET', 'EBAY_REDIRECT_URI'];
-  const missing: string[] = [];
+const validateAppCredentials = (
+	envVars: Record<string, string>,
+): ValidationResult => {
+	const required = [
+		"EBAY_CLIENT_ID",
+		"EBAY_CLIENT_SECRET",
+		"EBAY_REDIRECT_URI",
+	];
+	const missing: string[] = [];
 
-  for (const key of required) {
-    if (!envVars[key] || envVars[key].trim() === '') {
-      missing.push(key);
-    }
-  }
+	for (const key of required) {
+		if (!envVars[key] || envVars[key].trim() === "") {
+			missing.push(key);
+		}
+	}
 
-  if (missing.length > 0) {
-    return {
-      test: 'App Credentials',
-      passed: false,
-      message: 'Missing required app credentials',
-      error: `Missing: ${missing.join(', ')}`,
-    };
-  }
+	if (missing.length > 0) {
+		return {
+			test: "App Credentials",
+			passed: false,
+			message: "Missing required app credentials",
+			error: `Missing: ${missing.join(", ")}`,
+		};
+	}
 
-  return {
-    test: 'App Credentials',
-    passed: true,
-    message: 'All required app credentials are present',
-  };
+	return {
+		test: "App Credentials",
+		passed: true,
+		message: "All required app credentials are present",
+	};
 };
 
 /**
  * Validates the configured eBay environment value.
  */
-const validateEnvironment = (envVars: Record<string, string>): ValidationResult => {
-  const env = envVars.EBAY_ENVIRONMENT || 'sandbox';
+const validateEnvironment = (
+	envVars: Record<string, string>,
+): ValidationResult => {
+	const env = envVars.EBAY_ENVIRONMENT || "sandbox";
 
-  if (env !== 'sandbox' && env !== 'production') {
-    return {
-      test: 'Environment Setting',
-      passed: false,
-      message: 'Invalid environment value',
-      error: `EBAY_ENVIRONMENT must be "sandbox" or "production", got "${env}"`,
-    };
-  }
+	if (env !== "sandbox" && env !== "production") {
+		return {
+			test: "Environment Setting",
+			passed: false,
+			message: "Invalid environment value",
+			error: `EBAY_ENVIRONMENT must be "sandbox" or "production", got "${env}"`,
+		};
+	}
 
-  return {
-    test: 'Environment Setting',
-    passed: true,
-    message: `Environment set to "${env}"`,
-  };
+	return {
+		test: "Environment Setting",
+		passed: true,
+		message: `Environment set to "${env}"`,
+	};
 };
 
 /**
  * Checks whether optional user tokens are configured.
  */
-const validateUserTokens = (envVars: Record<string, string>): ValidationResult => {
-  const hasRefreshToken =
-    envVars.EBAY_USER_REFRESH_TOKEN && envVars.EBAY_USER_REFRESH_TOKEN.trim() !== '';
+const validateUserTokens = (
+	envVars: Record<string, string>,
+): ValidationResult => {
+	const hasRefreshToken =
+		envVars.EBAY_USER_REFRESH_TOKEN &&
+		envVars.EBAY_USER_REFRESH_TOKEN.trim() !== "";
 
-  if (!hasRefreshToken) {
-    return {
-      test: 'User Tokens (Optional)',
-      passed: true,
-      message: 'No user tokens configured (app token only mode)',
-      error: 'To enable user-specific API calls, set EBAY_USER_REFRESH_TOKEN',
-    };
-  }
+	if (!hasRefreshToken) {
+		return {
+			test: "User Tokens (Optional)",
+			passed: true,
+			message: "No user tokens configured (app token only mode)",
+			error: "To enable user-specific API calls, set EBAY_USER_REFRESH_TOKEN",
+		};
+	}
 
-  return {
-    test: 'User Tokens',
-    passed: true,
-    message: 'User refresh token is configured',
-  };
+	return {
+		test: "User Tokens",
+		passed: true,
+		message: "User refresh token is configured",
+	};
 };
 
 /**
  * Tests OAuth client initialization.
  */
-const validateOAuthInitialization = async (config: EbayConfig): Promise<ValidationResult> => {
-  const initialized = await Effect.runPromise(
-    Effect.either(
-      Effect.gen(function* () {
-        const oauthClient = new EbayOAuthClient(config);
-        yield* oauthClient.initialize();
-      }),
-    ),
-  );
+const validateOAuthInitialization = async (
+	config: EbayConfig,
+): Promise<ValidationResult> => {
+	const initialized = await Effect.runPromise(
+		Effect.either(
+			Effect.gen(function* () {
+				const oauthClient = new EbayOAuthClient(config);
+				yield* oauthClient.initialize();
+			}),
+		),
+	);
 
-  if (Either.isRight(initialized)) {
-    return {
-      test: 'OAuth Client Initialization',
-      passed: true,
-      message: 'OAuth client initialized successfully',
-    };
-  }
+	if (Either.isRight(initialized)) {
+		return {
+			test: "OAuth Client Initialization",
+			passed: true,
+			message: "OAuth client initialized successfully",
+		};
+	}
 
-  return {
-    test: 'OAuth Client Initialization',
-    passed: false,
-    message: 'Failed to initialize OAuth client',
-    error: getErrorMessage(initialized.left),
-  };
+	return {
+		test: "OAuth Client Initialization",
+		passed: false,
+		message: "Failed to initialize OAuth client",
+		error: getErrorMessage(initialized.left),
+	};
 };
 
 /**
  * Tests OAuth URL generation.
  */
 const validateOAuthURL = (config: EbayConfig): ValidationResult => {
-  const redirectUri = config.redirectUri;
-  if (!redirectUri) {
-    return {
-      test: 'OAuth URL Generation',
-      passed: false,
-      message: 'Redirect URI is required for OAuth URL generation',
-      error: 'EBAY_REDIRECT_URI is not configured',
-    };
-  }
+	const redirectUri = config.redirectUri;
+	if (!redirectUri) {
+		return {
+			test: "OAuth URL Generation",
+			passed: false,
+			message: "Redirect URI is required for OAuth URL generation",
+			error: "EBAY_REDIRECT_URI is not configured",
+		};
+	}
 
-  const generated = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: () => getOAuthAuthorizationUrl(config.clientId, redirectUri, config.environment),
-        catch: (error) => error,
-      }),
-    ),
-  );
+	const generated = Effect.runSync(
+		Effect.either(
+			Effect.try({
+				try: () =>
+					getOAuthAuthorizationUrl(
+						config.clientId,
+						redirectUri,
+						config.environment,
+					),
+				catch: (error) => error,
+			}),
+		),
+	);
 
-  if (Either.isLeft(generated)) {
-    return {
-      test: 'OAuth URL Generation',
-      passed: false,
-      message: 'Failed to generate OAuth URL',
-      error: getErrorMessage(generated.left),
-    };
-  }
+	if (Either.isLeft(generated)) {
+		return {
+			test: "OAuth URL Generation",
+			passed: false,
+			message: "Failed to generate OAuth URL",
+			error: getErrorMessage(generated.left),
+		};
+	}
 
-  if (!generated.right.startsWith('http')) {
-    return {
-      test: 'OAuth URL Generation',
-      passed: false,
-      message: 'Invalid OAuth URL generated',
-      error: 'Generated URL is not valid',
-    };
-  }
+	if (!generated.right.startsWith("http")) {
+		return {
+			test: "OAuth URL Generation",
+			passed: false,
+			message: "Invalid OAuth URL generated",
+			error: "Generated URL is not valid",
+		};
+	}
 
-  return {
-    test: 'OAuth URL Generation',
-    passed: true,
-    message: 'OAuth URL can be generated',
-  };
+	return {
+		test: "OAuth URL Generation",
+		passed: true,
+		message: "OAuth URL can be generated",
+	};
 };
 
 /**
@@ -244,106 +262,116 @@ const validateOAuthURL = (config: EbayConfig): ValidationResult => {
  * const summary = await validateSetup(process.cwd());
  * ```
  */
-export const validateSetup = async (projectRoot: string): Promise<ValidationSummary> => {
-  const results: ValidationResult[] = [];
+export const validateSetup = async (
+	projectRoot: string,
+): Promise<ValidationSummary> => {
+	const results: ValidationResult[] = [];
 
-  writeCliLine(chalk.bold.cyan('\n🧪 Running Configuration Tests...\n'));
+	writeCliLine(chalk.bold.cyan("\n🧪 Running Configuration Tests...\n"));
 
-  // Test 1: .env file exists
-  const envFileResult = validateEnvFile(projectRoot);
-  results.push(envFileResult);
-  printResult(envFileResult);
+	// Test 1: .env file exists
+	const envFileResult = validateEnvFile(projectRoot);
+	results.push(envFileResult);
+	printResult(envFileResult);
 
-  if (!envFileResult.passed) {
-    return {
-      totalTests: 1,
-      passed: 0,
-      failed: 1,
-      results,
-    };
-  }
+	if (!envFileResult.passed) {
+		return {
+			totalTests: 1,
+			passed: 0,
+			failed: 1,
+			results,
+		};
+	}
 
-  // Parse .env file
-  const envPath = join(projectRoot, '.env');
-  const envVars = parseEnvFile(envPath);
+	// Parse .env file
+	const envPath = join(projectRoot, ".env");
+	const envVars = parseEnvFile(envPath);
 
-  // Test 2: App credentials
-  const appCredsResult = validateAppCredentials(envVars);
-  results.push(appCredsResult);
-  printResult(appCredsResult);
+	// Test 2: App credentials
+	const appCredsResult = validateAppCredentials(envVars);
+	results.push(appCredsResult);
+	printResult(appCredsResult);
 
-  // Test 3: Environment setting
-  const envResult = validateEnvironment(envVars);
-  results.push(envResult);
-  printResult(envResult);
+	// Test 3: Environment setting
+	const envResult = validateEnvironment(envVars);
+	results.push(envResult);
+	printResult(envResult);
 
-  // Test 4: User tokens (optional)
-  const userTokensResult = validateUserTokens(envVars);
-  results.push(userTokensResult);
-  printResult(userTokensResult);
+	// Test 4: User tokens (optional)
+	const userTokensResult = validateUserTokens(envVars);
+	results.push(userTokensResult);
+	printResult(userTokensResult);
 
-  // If app credentials are valid, test OAuth functionality
-  if (appCredsResult.passed) {
-    const config: EbayConfig = {
-      clientId: envVars.EBAY_CLIENT_ID,
-      clientSecret: envVars.EBAY_CLIENT_SECRET,
-      redirectUri: envVars.EBAY_REDIRECT_URI,
-      environment: (envVars.EBAY_ENVIRONMENT || 'sandbox') as 'sandbox' | 'production',
-    };
+	// If app credentials are valid, test OAuth functionality
+	if (appCredsResult.passed) {
+		const config: EbayConfig = {
+			clientId: envVars.EBAY_CLIENT_ID,
+			clientSecret: envVars.EBAY_CLIENT_SECRET,
+			redirectUri: envVars.EBAY_REDIRECT_URI,
+			environment: (envVars.EBAY_ENVIRONMENT || "sandbox") as
+				| "sandbox"
+				| "production",
+		};
 
-    // Test 5: OAuth initialization
-    const oauthInitResult = await validateOAuthInitialization(config);
-    results.push(oauthInitResult);
-    printResult(oauthInitResult);
+		// Test 5: OAuth initialization
+		const oauthInitResult = await validateOAuthInitialization(config);
+		results.push(oauthInitResult);
+		printResult(oauthInitResult);
 
-    // Test 6: OAuth URL generation
-    if (oauthInitResult.passed) {
-      const oauthURLResult = validateOAuthURL(config);
-      results.push(oauthURLResult);
-      printResult(oauthURLResult);
-    }
-  }
+		// Test 6: OAuth URL generation
+		if (oauthInitResult.passed) {
+			const oauthURLResult = validateOAuthURL(config);
+			results.push(oauthURLResult);
+			printResult(oauthURLResult);
+		}
+	}
 
-  // Calculate summary
-  const passed = results.filter((check) => check.passed).length;
-  const failed = results.length - passed;
+	// Calculate summary
+	const passed = results.filter((check) => check.passed).length;
+	const failed = results.length - passed;
 
-  // Print summary
-  writeCliLine(chalk.gray('\n' + '─'.repeat(60)));
-  writeCliLine(chalk.bold.white('\n📊 Validation Summary\n'));
-  writeCliLine(`  Total Tests: ${results.length}`);
-  writeCliLine(`  ${chalk.green('✓ Passed:')} ${passed}`);
-  writeCliLine(`  ${chalk.red('✗ Failed:')} ${failed}`);
+	// Print summary
+	writeCliLine(chalk.gray("\n" + "─".repeat(60)));
+	writeCliLine(chalk.bold.white("\n📊 Validation Summary\n"));
+	writeCliLine(`  Total Tests: ${results.length}`);
+	writeCliLine(`  ${chalk.green("✓ Passed:")} ${passed}`);
+	writeCliLine(`  ${chalk.red("✗ Failed:")} ${failed}`);
 
-  if (failed === 0) {
-    writeCliLine(chalk.green.bold('\n✨ All tests passed! Configuration is valid.\n'));
-  } else {
-    writeCliLine(chalk.yellow.bold('\n⚠️  Some tests failed. Please review the errors above.\n'));
-  }
+	if (failed === 0) {
+		writeCliLine(
+			chalk.green.bold("\n✨ All tests passed! Configuration is valid.\n"),
+		);
+	} else {
+		writeCliLine(
+			chalk.yellow.bold(
+				"\n⚠️  Some tests failed. Please review the errors above.\n",
+			),
+		);
+	}
 
-  return {
-    totalTests: results.length,
-    passed,
-    failed,
-    results,
-  };
+	return {
+		totalTests: results.length,
+		passed,
+		failed,
+		results,
+	};
 };
 
 /**
  * Prints a single validation result.
  */
 const printResult = (validation: ValidationResult): void => {
-  const icon = validation.passed ? chalk.green('✓') : chalk.red('✗');
-  const status = validation.passed ? chalk.green('PASS') : chalk.red('FAIL');
+	const icon = validation.passed ? chalk.green("✓") : chalk.red("✗");
+	const status = validation.passed ? chalk.green("PASS") : chalk.red("FAIL");
 
-  writeCliLine(`${icon} ${chalk.bold(validation.test)}: ${status}`);
-  writeCliLine(`  ${chalk.gray(validation.message)}`);
+	writeCliLine(`${icon} ${chalk.bold(validation.test)}: ${status}`);
+	writeCliLine(`  ${chalk.gray(validation.message)}`);
 
-  if (validation.error) {
-    writeCliLine(`  ${chalk.yellow('→')} ${chalk.yellow(validation.error)}`);
-  }
+	if (validation.error) {
+		writeCliLine(`  ${chalk.yellow("→")} ${chalk.yellow(validation.error)}`);
+	}
 
-  writeCliLine('');
+	writeCliLine("");
 };
 
 /**
@@ -357,30 +385,55 @@ const printResult = (validation: ValidationResult): void => {
  * ```
  */
 export const displayRecommendations = (summary: ValidationSummary): void => {
-  const hasUserTokens = summary.results.some(
-    (validation) => validation.test === 'User Tokens' && validation.passed && !validation.error,
-  );
+	const hasUserTokens = summary.results.some(
+		(validation) =>
+			validation.test === "User Tokens" &&
+			validation.passed &&
+			!validation.error,
+	);
 
-  writeCliLine(chalk.bold.cyan('💡 Recommendations:\n'));
+	writeCliLine(chalk.bold.cyan("💡 Recommendations:\n"));
 
-  if (!hasUserTokens) {
-    writeCliLine(chalk.yellow('  ⚠️  User tokens not configured'));
-    writeCliLine(chalk.gray('     • You can only use app token for limited API access'));
-    writeCliLine(chalk.gray('     • To enable full API access, use the ebay_get_oauth_url tool'));
-    writeCliLine(
-      chalk.gray('     • Then save your refresh token to EBAY_USER_REFRESH_TOKEN in .env\n'),
-    );
-  }
+	if (!hasUserTokens) {
+		writeCliLine(chalk.yellow("  ⚠️  User tokens not configured"));
+		writeCliLine(
+			chalk.gray("     • You can only use app token for limited API access"),
+		);
+		writeCliLine(
+			chalk.gray(
+				"     • To enable full API access, use the ebay_get_oauth_url tool",
+			),
+		);
+		writeCliLine(
+			chalk.gray(
+				"     • Then save your refresh token to EBAY_USER_REFRESH_TOKEN in .env\n",
+			),
+		);
+	}
 
-  if (summary.failed > 0) {
-    writeCliLine(chalk.red('  ❌ Configuration has errors'));
-    writeCliLine(chalk.gray('     • Review the failed tests above'));
-    writeCliLine(chalk.gray('     • Update your .env file with correct values'));
-    writeCliLine(chalk.gray('     • Run the setup wizard again: npm run setup\n'));
-  } else {
-    writeCliLine(chalk.green('  ✅ Configuration is complete and valid'));
-    writeCliLine(chalk.gray('     • Restart your MCP client (Claude Desktop, Cline, etc.)'));
-    writeCliLine(chalk.gray('     • The eBay MCP server should now be available'));
-    writeCliLine(chalk.gray('     • Try using tools like: ebay_get_user, ebay_get_oauth_url\n'));
-  }
+	if (summary.failed > 0) {
+		writeCliLine(chalk.red("  ❌ Configuration has errors"));
+		writeCliLine(chalk.gray("     • Review the failed tests above"));
+		writeCliLine(
+			chalk.gray("     • Update your .env file with correct values"),
+		);
+		writeCliLine(
+			chalk.gray("     • Run the setup wizard again: npm run setup\n"),
+		);
+	} else {
+		writeCliLine(chalk.green("  ✅ Configuration is complete and valid"));
+		writeCliLine(
+			chalk.gray(
+				"     • Restart your MCP client (Claude Desktop, Cline, etc.)",
+			),
+		);
+		writeCliLine(
+			chalk.gray("     • The eBay MCP server should now be available"),
+		);
+		writeCliLine(
+			chalk.gray(
+				"     • Try using tools like: ebay_get_user, ebay_get_oauth_url\n",
+			),
+		);
+	}
 };

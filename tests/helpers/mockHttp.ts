@@ -1,4 +1,4 @@
-import nock from 'nock';
+import nock from "nock";
 
 /**
  * Mock eBay OAuth token endpoint
@@ -14,24 +14,26 @@ import nock from 'nock';
  * ```
  */
 export const mockOAuthTokenEndpoint = (
-  environment: 'production' | 'sandbox' = 'sandbox',
-  responseData?: object,
-  statusCode = 200,
+	environment: "production" | "sandbox" = "sandbox",
+	responseData?: object,
+	statusCode = 200,
 ) => {
-  const baseUrl =
-    environment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
+	const baseUrl =
+		environment === "production"
+			? "https://api.ebay.com"
+			: "https://api.sandbox.ebay.com";
 
-  const defaultResponse = {
-    access_token: 'test_access_token',
-    token_type: 'Bearer',
-    expires_in: 7200,
-    refresh_token: 'test_refresh_token',
-    refresh_token_expires_in: 47_304_000,
-  };
+	const defaultResponse = {
+		access_token: "test_access_token",
+		token_type: "Bearer",
+		expires_in: 7200,
+		refresh_token: "test_refresh_token",
+		refresh_token_expires_in: 47_304_000,
+	};
 
-  return nock(baseUrl)
-    .post('/identity/v1/oauth2/token')
-    .reply(statusCode, responseData || defaultResponse);
+	return nock(baseUrl)
+		.post("/identity/v1/oauth2/token")
+		.reply(statusCode, responseData || defaultResponse);
 };
 
 /**
@@ -50,27 +52,29 @@ export const mockOAuthTokenEndpoint = (
  * ```
  */
 export const mockEbayApiEndpoint = (
-  path: string,
-  method: 'get' | 'post' | 'put' | 'delete' = 'get',
-  environment: 'production' | 'sandbox' = 'sandbox',
-  responseData?: object,
-  statusCode = 200,
+	path: string,
+	method: "get" | "post" | "put" | "delete" = "get",
+	environment: "production" | "sandbox" = "sandbox",
+	responseData?: object,
+	statusCode = 200,
 ) => {
-  const baseUrl =
-    environment === 'production' ? 'https://api.ebay.com' : 'https://api.sandbox.ebay.com';
+	const baseUrl =
+		environment === "production"
+			? "https://api.ebay.com"
+			: "https://api.sandbox.ebay.com";
 
-  const nockInstance = nock(baseUrl);
+	const nockInstance = nock(baseUrl);
 
-  switch (method) {
-    case 'get':
-      return nockInstance.get(path).reply(statusCode, responseData || {});
-    case 'post':
-      return nockInstance.post(path).reply(statusCode, responseData || {});
-    case 'put':
-      return nockInstance.put(path).reply(statusCode, responseData || {});
-    case 'delete':
-      return nockInstance.delete(path).reply(statusCode, responseData || {});
-  }
+	switch (method) {
+		case "get":
+			return nockInstance.get(path).reply(statusCode, responseData || {});
+		case "post":
+			return nockInstance.post(path).reply(statusCode, responseData || {});
+		case "put":
+			return nockInstance.put(path).reply(statusCode, responseData || {});
+		case "delete":
+			return nockInstance.delete(path).reply(statusCode, responseData || {});
+	}
 };
 
 /**
@@ -89,25 +93,31 @@ export const mockEbayApiEndpoint = (
  * ```
  */
 export const mockEbayApiError = (
-  path: string,
-  method: 'get' | 'post' | 'put' | 'delete' = 'get',
-  environment: 'production' | 'sandbox' = 'sandbox',
-  errorMessage = 'API Error',
-  statusCode = 400,
+	path: string,
+	method: "get" | "post" | "put" | "delete" = "get",
+	environment: "production" | "sandbox" = "sandbox",
+	errorMessage = "API Error",
+	statusCode = 400,
 ) => {
-  const errorResponse = {
-    errors: [
-      {
-        errorId: 1001,
-        domain: 'API_INVENTORY',
-        category: 'REQUEST',
-        message: errorMessage,
-        longMessage: `Detailed error: ${errorMessage}`,
-      },
-    ],
-  };
+	const errorResponse = {
+		errors: [
+			{
+				errorId: 1001,
+				domain: "API_INVENTORY",
+				category: "REQUEST",
+				message: errorMessage,
+				longMessage: `Detailed error: ${errorMessage}`,
+			},
+		],
+	};
 
-  return mockEbayApiEndpoint(path, method, environment, errorResponse, statusCode);
+	return mockEbayApiEndpoint(
+		path,
+		method,
+		environment,
+		errorResponse,
+		statusCode,
+	);
 };
 
 /**
@@ -121,7 +131,7 @@ export const mockEbayApiError = (
  * ```
  */
 export const cleanupMocks = (): void => {
-  nock.cleanAll();
+	nock.cleanAll();
 };
 
 /**
@@ -135,11 +145,11 @@ export const cleanupMocks = (): void => {
  * ```
  */
 export const enableMocks = (): void => {
-  if (!nock.isActive()) {
-    nock.activate();
-  }
-  // Disable real HTTP requests
-  nock.disableNetConnect();
+	if (!nock.isActive()) {
+		nock.activate();
+	}
+	// Disable real HTTP requests
+	nock.disableNetConnect();
 };
 
 /**
@@ -153,6 +163,6 @@ export const enableMocks = (): void => {
  * ```
  */
 export const disableMocks = (): void => {
-  nock.restore();
-  nock.enableNetConnect();
+	nock.restore();
+	nock.enableNetConnect();
 };

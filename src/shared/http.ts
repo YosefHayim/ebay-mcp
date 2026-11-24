@@ -17,45 +17,45 @@
  * the codebase treat HTTP like the old axios calls without the dependency.
  */
 
-import { getErrorMessage } from '@/shared/errors.js';
-import { isRecord } from '@/shared/typeGuards.js';
-import { Cause, Data, Effect, Exit, Option } from 'effect';
+import { Cause, Data, Effect, Exit, Option } from "effect";
+import { getErrorMessage } from "@/shared/errors.js";
+import { isRecord } from "@/shared/typeGuards.js";
 
 /** How to decode a successful response body. Defaults to `json`. */
-export type ResponseType = 'json' | 'text' | 'arraybuffer';
+export type ResponseType = "json" | "text" | "arraybuffer";
 
 /**
  * Options for {@link httpRequest}. Mirrors the subset of axios config the
  * codebase actually used, expressed in fetch-native terms.
  */
 export interface HttpRequestOptions {
-  /** HTTP method. Defaults to `GET`. */
-  method?: string;
-  /** Absolute URL, or a path to be joined onto `baseUrl`. */
-  url: string;
-  /** Optional base URL prepended to `url` when `url` is a path. */
-  baseUrl?: string;
-  /** Query parameters; `null`/`undefined` values are skipped. */
-  params?: Record<string, unknown>;
-  /** Request headers. Caller-provided values win over inferred defaults. */
-  headers?: Record<string, string>;
-  /**
-   * Request body. An object is JSON-stringified (with a JSON content-type when
-   * none is set); a `URLSearchParams` is form-encoded; strings/`Buffer` are sent
-   * as-is; `FormData`/`Blob` are handed to fetch untouched so it can set the
-   * multipart boundary. `undefined` sends no body.
-   */
-  body?: unknown;
-  /** Abort the request after this many milliseconds. */
-  timeoutMs?: number;
-  /** Decoding for the success body. Defaults to `json`. */
-  responseType?: ResponseType;
-  /**
-   * For `arraybuffer` bodies: stop reading once the body is known to exceed this many
-   * bytes. The returned buffer is then empty (a larger `content-length`) or truncated just
-   * past the limit, so the caller can reject it without buffering the whole file.
-   */
-  maxBytes?: number;
+	/** HTTP method. Defaults to `GET`. */
+	method?: string;
+	/** Absolute URL, or a path to be joined onto `baseUrl`. */
+	url: string;
+	/** Optional base URL prepended to `url` when `url` is a path. */
+	baseUrl?: string;
+	/** Query parameters; `null`/`undefined` values are skipped. */
+	params?: Record<string, unknown>;
+	/** Request headers. Caller-provided values win over inferred defaults. */
+	headers?: Record<string, string>;
+	/**
+	 * Request body. An object is JSON-stringified (with a JSON content-type when
+	 * none is set); a `URLSearchParams` is form-encoded; strings/`Buffer` are sent
+	 * as-is; `FormData`/`Blob` are handed to fetch untouched so it can set the
+	 * multipart boundary. `undefined` sends no body.
+	 */
+	body?: unknown;
+	/** Abort the request after this many milliseconds. */
+	timeoutMs?: number;
+	/** Decoding for the success body. Defaults to `json`. */
+	responseType?: ResponseType;
+	/**
+	 * For `arraybuffer` bodies: stop reading once the body is known to exceed this many
+	 * bytes. The returned buffer is then empty (a larger `content-length`) or truncated just
+	 * past the limit, so the caller can reject it without buffering the whole file.
+	 */
+	maxBytes?: number;
 }
 
 /**
@@ -63,10 +63,10 @@ export interface HttpRequestOptions {
  * read them case-insensitively (the same guarantee axios gave).
  */
 export interface HttpResponse<T> {
-  data: T;
-  status: number;
-  statusText: string;
-  headers: Record<string, string>;
+	data: T;
+	status: number;
+	statusText: string;
+	headers: Record<string, string>;
 }
 
 /**
@@ -76,43 +76,43 @@ export interface HttpResponse<T> {
  *
  * `status` is `undefined` for network/timeout failures (no response received).
  */
-export class HttpError extends Data.TaggedError('HttpError')<{
-  /** Human-readable failure detail. */
-  readonly message: string;
-  /** Failed request URL. */
-  readonly url: string;
-  /** HTTP status for response failures; absent for network/timeout failures. */
-  readonly status?: number;
-  /** HTTP status text for response failures. */
-  readonly statusText?: string;
-  /** Parsed response body (JSON when decodable, otherwise the raw text). */
-  readonly data?: unknown;
-  /** Lowercased response headers, empty for network/timeout failures. */
-  readonly headers: Record<string, string>;
-  /** True when the failure was our own timeout aborting the request. */
-  readonly isTimeout: boolean;
+export class HttpError extends Data.TaggedError("HttpError")<{
+	/** Human-readable failure detail. */
+	readonly message: string;
+	/** Failed request URL. */
+	readonly url: string;
+	/** HTTP status for response failures; absent for network/timeout failures. */
+	readonly status?: number;
+	/** HTTP status text for response failures. */
+	readonly statusText?: string;
+	/** Parsed response body (JSON when decodable, otherwise the raw text). */
+	readonly data?: unknown;
+	/** Lowercased response headers, empty for network/timeout failures. */
+	readonly headers: Record<string, string>;
+	/** True when the failure was our own timeout aborting the request. */
+	readonly isTimeout: boolean;
 }> {
-  constructor(
-    message: string,
-    init: {
-      url: string;
-      status?: number;
-      statusText?: string;
-      data?: unknown;
-      headers?: Record<string, string>;
-      isTimeout?: boolean;
-    },
-  ) {
-    super({
-      message,
-      url: init.url,
-      ...(init.status === undefined ? {} : { status: init.status }),
-      ...(init.statusText === undefined ? {} : { statusText: init.statusText }),
-      ...(init.data === undefined ? {} : { data: init.data }),
-      headers: init.headers ?? {},
-      isTimeout: init.isTimeout ?? false,
-    });
-  }
+	constructor(
+		message: string,
+		init: {
+			url: string;
+			status?: number;
+			statusText?: string;
+			data?: unknown;
+			headers?: Record<string, string>;
+			isTimeout?: boolean;
+		},
+	) {
+		super({
+			message,
+			url: init.url,
+			...(init.status === undefined ? {} : { status: init.status }),
+			...(init.statusText === undefined ? {} : { statusText: init.statusText }),
+			...(init.data === undefined ? {} : { data: init.data }),
+			headers: init.headers ?? {},
+			isTimeout: init.isTimeout ?? false,
+		});
+	}
 }
 
 /**
@@ -126,7 +126,8 @@ export class HttpError extends Data.TaggedError('HttpError')<{
  * if (isHttpError(error)) return error.status;
  * ```
  */
-export const isHttpError = (error: unknown): error is HttpError => error instanceof HttpError;
+export const isHttpError = (error: unknown): error is HttpError =>
+	error instanceof HttpError;
 
 /**
  * Extract a human-readable message from an error, understanding both the eBay
@@ -142,147 +143,168 @@ export const isHttpError = (error: unknown): error is HttpError => error instanc
  * const message = describeHttpError(error, 'Request failed');
  * ```
  */
-export const describeHttpError = (error: unknown, fallback = 'Unknown error'): string => {
-  if (isHttpError(error)) {
-    const { data: errorBody } = error;
-    if (isRecord(errorBody)) {
-      if (typeof errorBody.error_description === 'string') {
-        return errorBody.error_description;
-      }
-      const firstError = Array.isArray(errorBody.errors) ? errorBody.errors[0] : undefined;
-      if (isRecord(firstError)) {
-        const detail = firstError.longMessage ?? firstError.message;
-        if (typeof detail === 'string') {
-          return detail;
-        }
-      }
-    }
-    return error.message || fallback;
-  }
-  return getErrorMessage(error, fallback);
+export const describeHttpError = (
+	error: unknown,
+	fallback = "Unknown error",
+): string => {
+	if (isHttpError(error)) {
+		const { data: errorBody } = error;
+		if (isRecord(errorBody)) {
+			if (typeof errorBody.error_description === "string") {
+				return errorBody.error_description;
+			}
+			const firstError = Array.isArray(errorBody.errors)
+				? errorBody.errors[0]
+				: undefined;
+			if (isRecord(firstError)) {
+				const detail = firstError.longMessage ?? firstError.message;
+				if (typeof detail === "string") {
+					return detail;
+				}
+			}
+		}
+		return error.message || fallback;
+	}
+	return getErrorMessage(error, fallback);
 };
 
 /** Coerce a query-param value to a string without producing `[object Object]`. */
 const stringifyParam = (param: unknown): string => {
-  if (typeof param === 'string') {
-    return param;
-  }
-  if (typeof param === 'number' || typeof param === 'boolean' || typeof param === 'bigint') {
-    return String(param);
-  }
-  return JSON.stringify(param);
+	if (typeof param === "string") {
+		return param;
+	}
+	if (
+		typeof param === "number" ||
+		typeof param === "boolean" ||
+		typeof param === "bigint"
+	) {
+		return String(param);
+	}
+	return JSON.stringify(param);
 };
 
 /** Build the final request URL, appending serialized query params. */
-const buildUrl = (url: string, baseUrl?: string, params?: Record<string, unknown>): string => {
-  let full = baseUrl ? `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}` : url;
+const buildUrl = (
+	url: string,
+	baseUrl?: string,
+	params?: Record<string, unknown>,
+): string => {
+	let full = baseUrl
+		? `${baseUrl.replace(/\/$/, "")}/${url.replace(/^\//, "")}`
+		: url;
 
-  if (params) {
-    const search = new URLSearchParams();
-    for (const [name, param] of Object.entries(params)) {
-      if (param == null) {
-        continue;
-      }
-      const entries = Array.isArray(param) ? param : [param];
-      for (const entry of entries) {
-        search.append(name, stringifyParam(entry));
-      }
-    }
-    const query = search.toString();
-    if (query) {
-      full += (full.includes('?') ? '&' : '?') + query;
-    }
-  }
+	if (params) {
+		const search = new URLSearchParams();
+		for (const [name, param] of Object.entries(params)) {
+			if (param == null) {
+				continue;
+			}
+			const entries = Array.isArray(param) ? param : [param];
+			for (const entry of entries) {
+				search.append(name, stringifyParam(entry));
+			}
+		}
+		const query = search.toString();
+		if (query) {
+			full += (full.includes("?") ? "&" : "?") + query;
+		}
+	}
 
-  return full;
+	return full;
 };
 
 /** Result of {@link prepareBody}: the wire body plus any content-type to infer. */
 interface PreparedBody {
-  body: BodyInit | undefined;
-  contentType?: string;
+	body: BodyInit | undefined;
+	contentType?: string;
 }
 
 /** Serialize the request body and infer a content-type when the caller omitted one. */
 const prepareBody = (requestBody: unknown): PreparedBody => {
-  if (requestBody == null) {
-    return { body: undefined };
-  }
-  if (typeof requestBody === 'string') {
-    return { body: requestBody };
-  }
-  if (requestBody instanceof URLSearchParams) {
-    return { body: requestBody.toString(), contentType: 'application/x-www-form-urlencoded' };
-  }
-  if (requestBody instanceof Uint8Array || requestBody instanceof ArrayBuffer) {
-    return { body: requestBody as BodyInit };
-  }
-  if (requestBody instanceof FormData || requestBody instanceof Blob) {
-    // fetch derives the content-type itself (multipart boundary / blob type).
-    return { body: requestBody };
-  }
-  return { body: JSON.stringify(requestBody), contentType: 'application/json' };
+	if (requestBody == null) {
+		return { body: undefined };
+	}
+	if (typeof requestBody === "string") {
+		return { body: requestBody };
+	}
+	if (requestBody instanceof URLSearchParams) {
+		return {
+			body: requestBody.toString(),
+			contentType: "application/x-www-form-urlencoded",
+		};
+	}
+	if (requestBody instanceof Uint8Array || requestBody instanceof ArrayBuffer) {
+		return { body: requestBody as BodyInit };
+	}
+	if (requestBody instanceof FormData || requestBody instanceof Blob) {
+		// fetch derives the content-type itself (multipart boundary / blob type).
+		return { body: requestBody };
+	}
+	return { body: JSON.stringify(requestBody), contentType: "application/json" };
 };
 
 /** Lowercase response header names into a plain record for case-insensitive reads. */
 const collectHeaders = (response: Response): Record<string, string> => {
-  const headers: Record<string, string> = {};
-  response.headers.forEach((headerValue, headerName) => {
-    headers[headerName.toLowerCase()] = headerValue;
-  });
-  return headers;
+	const headers: Record<string, string> = {};
+	response.headers.forEach((headerValue, headerName) => {
+		headers[headerName.toLowerCase()] = headerValue;
+	});
+	return headers;
 };
 
 /** Read a binary body, stopping as soon as it is known to exceed `maxBytes`. */
-const readCappedBody = async (response: Response, maxBytes: number): Promise<Buffer> => {
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  if (Number(response.headers.get('content-length')) > maxBytes) {
-    await response.body?.cancel();
-    return Buffer.alloc(0);
-  }
-  for await (const chunk of response.body ?? []) {
-    chunks.push(chunk);
-    size += chunk.byteLength;
-    if (size > maxBytes) {
-      break;
-    }
-  }
-  return Buffer.concat(chunks, size);
+const readCappedBody = async (
+	response: Response,
+	maxBytes: number,
+): Promise<Buffer> => {
+	const chunks: Uint8Array[] = [];
+	let size = 0;
+	if (Number(response.headers.get("content-length")) > maxBytes) {
+		await response.body?.cancel();
+		return Buffer.alloc(0);
+	}
+	for await (const chunk of response.body ?? []) {
+		chunks.push(chunk);
+		size += chunk.byteLength;
+		if (size > maxBytes) {
+			break;
+		}
+	}
+	return Buffer.concat(chunks, size);
 };
 
 /** Decode a successful body per `responseType`, treating an empty body as `undefined`. */
 const decodeBody = async <T>(
-  response: Response,
-  responseType: ResponseType,
-  maxBytes?: number,
+	response: Response,
+	responseType: ResponseType,
+	maxBytes?: number,
 ): Promise<T> => {
-  if (responseType === 'arraybuffer') {
-    return (
-      maxBytes === undefined
-        ? Buffer.from(await response.arrayBuffer())
-        : await readCappedBody(response, maxBytes)
-    ) as T;
-  }
-  const text = await response.text();
-  if (responseType === 'text') {
-    return text as T;
-  }
-  // JSON: an empty body (e.g. 204 No Content) is not valid JSON — return undefined.
-  return (text ? JSON.parse(text) : undefined) as T;
+	if (responseType === "arraybuffer") {
+		return (
+			maxBytes === undefined
+				? Buffer.from(await response.arrayBuffer())
+				: await readCappedBody(response, maxBytes)
+		) as T;
+	}
+	const text = await response.text();
+	if (responseType === "text") {
+		return text as T;
+	}
+	// JSON: an empty body (e.g. 204 No Content) is not valid JSON — return undefined.
+	return (text ? JSON.parse(text) : undefined) as T;
 };
 
 /** Parse an error body as JSON when possible, otherwise keep the raw text. */
 const parseErrorData = (text: string): unknown => {
-  if (!text) {
-    return;
-  }
-  return Effect.runSync(
-    Effect.try({
-      try: () => JSON.parse(text) as unknown,
-      catch: () => text,
-    }).pipe(Effect.catchAll((rawText) => Effect.succeed(rawText))),
-  );
+	if (!text) {
+		return;
+	}
+	return Effect.runSync(
+		Effect.try({
+			try: () => JSON.parse(text) as unknown,
+			catch: () => text,
+		}).pipe(Effect.catchAll((rawText) => Effect.succeed(rawText))),
+	);
 };
 
 /**
@@ -294,34 +316,34 @@ const parseErrorData = (text: string): unknown => {
  * has been decoded.
  */
 interface RequestDeadline {
-  /** Signal passed to `fetch`; aborts the response stream too. */
-  readonly signal: AbortSignal;
-  /** Whether our own timer aborted this request. */
-  readonly expired: () => boolean;
-  /** Disarm the timer; safe to call more than once. */
-  readonly clear: () => void;
+	/** Signal passed to `fetch`; aborts the response stream too. */
+	readonly signal: AbortSignal;
+	/** Whether our own timer aborted this request. */
+	readonly expired: () => boolean;
+	/** Disarm the timer; safe to call more than once. */
+	readonly clear: () => void;
 }
 
 /** Arm a {@link RequestDeadline}; without `timeoutMs` the request is never aborted. */
 const startDeadline = (timeoutMs?: number): RequestDeadline => {
-  const controller = new AbortController();
-  let expired = false;
-  const timer = timeoutMs
-    ? setTimeout(() => {
-        expired = true;
-        controller.abort();
-      }, timeoutMs)
-    : undefined;
+	const controller = new AbortController();
+	let expired = false;
+	const timer = timeoutMs
+		? setTimeout(() => {
+				expired = true;
+				controller.abort();
+			}, timeoutMs)
+		: undefined;
 
-  return {
-    signal: controller.signal,
-    expired: () => expired,
-    clear: () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    },
-  };
+	return {
+		signal: controller.signal,
+		expired: () => expired,
+		clear: () => {
+			if (timer) {
+				clearTimeout(timer);
+			}
+		},
+	};
 };
 
 /**
@@ -339,81 +361,100 @@ const startDeadline = (timeoutMs?: number): RequestDeadline => {
  * ```
  */
 export const httpRequestEffect = <T = unknown>(
-  options: HttpRequestOptions,
+	options: HttpRequestOptions,
 ): Effect.Effect<HttpResponse<T>, HttpError> => {
-  const { method = 'GET', responseType = 'json', timeoutMs } = options;
-  const url = buildUrl(options.url, options.baseUrl, options.params);
-  const { body: wireBody, contentType } = prepareBody(options.body);
+	const { method = "GET", responseType = "json", timeoutMs } = options;
+	const url = buildUrl(options.url, options.baseUrl, options.params);
+	const { body: wireBody, contentType } = prepareBody(options.body);
 
-  const headers: Record<string, string> = { ...options.headers };
-  if (contentType && !Object.keys(headers).some((key) => key.toLowerCase() === 'content-type')) {
-    headers['Content-Type'] = contentType;
-  }
+	const headers: Record<string, string> = { ...options.headers };
+	if (
+		contentType &&
+		!Object.keys(headers).some((key) => key.toLowerCase() === "content-type")
+	) {
+		headers["Content-Type"] = contentType;
+	}
 
-  return Effect.suspend(() => {
-    const deadline = startDeadline(timeoutMs);
+	return Effect.suspend(() => {
+		const deadline = startDeadline(timeoutMs);
 
-    /** Describe a transport or body-read failure, naming the timeout when ours fired. */
-    const failure = (error: unknown, stage: string, response?: Response): HttpError => {
-      const responseInit = response
-        ? {
-            status: response.status,
-            statusText: response.statusText,
-            headers: collectHeaders(response),
-          }
-        : {};
+		/** Describe a transport or body-read failure, naming the timeout when ours fired. */
+		const failure = (
+			error: unknown,
+			stage: string,
+			response?: Response,
+		): HttpError => {
+			const responseInit = response
+				? {
+						status: response.status,
+						statusText: response.statusText,
+						headers: collectHeaders(response),
+					}
+				: {};
 
-      return deadline.expired()
-        ? new HttpError(`Request to ${url} timed out after ${timeoutMs}ms reading the ${stage}`, {
-            url,
-            ...responseInit,
-            isTimeout: true,
-          })
-        : new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
-            url,
-            ...responseInit,
-          });
-    };
+			return deadline.expired()
+				? new HttpError(
+						`Request to ${url} timed out after ${timeoutMs}ms reading the ${stage}`,
+						{
+							url,
+							...responseInit,
+							isTimeout: true,
+						},
+					)
+				: new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
+						url,
+						...responseInit,
+					});
+		};
 
-    return Effect.gen(function* () {
-      const response = yield* Effect.tryPromise({
-        try: () => fetch(url, { method, headers, body: wireBody, signal: deadline.signal }),
-        catch: (error) => failure(error, 'response headers'),
-      });
-      const responseHeaders = collectHeaders(response);
+		return Effect.gen(function* () {
+			const response = yield* Effect.tryPromise({
+				try: () =>
+					fetch(url, {
+						method,
+						headers,
+						body: wireBody,
+						signal: deadline.signal,
+					}),
+				catch: (error) => failure(error, "response headers"),
+			});
+			const responseHeaders = collectHeaders(response);
 
-      if (!response.ok) {
-        const errorText = yield* Effect.tryPromise({
-          try: () => response.text(),
-          catch: (error) => failure(error, 'error body', response),
-        });
-        const errorBody = parseErrorData(errorText);
-        return yield* Effect.fail(
-          new HttpError(`Request to ${url} failed with status ${response.status}`, {
-            url,
-            status: response.status,
-            statusText: response.statusText,
-            data: errorBody,
-            headers: responseHeaders,
-          }),
-        );
-      }
+			if (!response.ok) {
+				const errorText = yield* Effect.tryPromise({
+					try: () => response.text(),
+					catch: (error) => failure(error, "error body", response),
+				});
+				const errorBody = parseErrorData(errorText);
+				return yield* Effect.fail(
+					new HttpError(
+						`Request to ${url} failed with status ${response.status}`,
+						{
+							url,
+							status: response.status,
+							statusText: response.statusText,
+							data: errorBody,
+							headers: responseHeaders,
+						},
+					),
+				);
+			}
 
-      const decodedBody = yield* Effect.tryPromise({
-        try: () => decodeBody<T>(response, responseType, options.maxBytes),
-        catch: (error) => failure(error, 'response body', response),
-      });
+			const decodedBody = yield* Effect.tryPromise({
+				try: () => decodeBody<T>(response, responseType, options.maxBytes),
+				catch: (error) => failure(error, "response body", response),
+			});
 
-      return {
-        data: decodedBody,
-        status: response.status,
-        statusText: response.statusText,
-        headers: responseHeaders,
-      };
-      // The deadline stays armed until the body has been decoded, so a response
-      // stream that stalls mid-body fails instead of hanging the caller forever.
-    }).pipe(Effect.ensuring(Effect.sync(deadline.clear)));
-  });
+			return {
+				data: decodedBody,
+				status: response.status,
+				statusText: response.statusText,
+				headers: responseHeaders,
+			};
+			// The deadline stays armed until the body has been decoded, so a response
+			// stream that stalls mid-body fails instead of hanging the caller forever.
+		}).pipe(Effect.ensuring(Effect.sync(deadline.clear)));
+	});
 };
 
 /**
@@ -429,18 +470,18 @@ export const httpRequestEffect = <T = unknown>(
  * ```
  */
 export const httpRequest = async <T = unknown>(
-  options: HttpRequestOptions,
+	options: HttpRequestOptions,
 ): Promise<HttpResponse<T>> => {
-  const exit = await Effect.runPromiseExit(httpRequestEffect<T>(options));
+	const exit = await Effect.runPromiseExit(httpRequestEffect<T>(options));
 
-  if (Exit.isSuccess(exit)) {
-    return exit.value;
-  }
+	if (Exit.isSuccess(exit)) {
+		return exit.value;
+	}
 
-  const failure = Cause.failureOption(exit.cause);
-  if (Option.isSome(failure)) {
-    throw failure.value;
-  }
+	const failure = Cause.failureOption(exit.cause);
+	if (Option.isSome(failure)) {
+		throw failure.value;
+	}
 
-  throw new HttpError(Cause.pretty(exit.cause), { url: options.url });
+	throw new HttpError(Cause.pretty(exit.cause), { url: options.url });
 };

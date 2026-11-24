@@ -1,7 +1,7 @@
-import { realpathSync } from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { realpathSync } from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 /**
  * Resolve symlinks so a script launched through a link (an npm global bin, `npm link`)
@@ -9,11 +9,11 @@ import { fileURLToPath } from 'node:url';
  * exist on disk fall back to plain resolution.
  */
 const toRealPath = (filePath: string): string => {
-  try {
-    return realpathSync(filePath);
-  } catch {
-    return path.resolve(filePath);
-  }
+	try {
+		return realpathSync(filePath);
+	} catch {
+		return path.resolve(filePath);
+	}
 };
 
 /**
@@ -31,5 +31,5 @@ const toRealPath = (filePath: string): string => {
  * ```
  */
 export const isEntryModule = (moduleUrl: string): boolean =>
-  process.argv[1] !== undefined &&
-  toRealPath(process.argv[1]) === toRealPath(fileURLToPath(moduleUrl));
+	process.argv[1] !== undefined &&
+	toRealPath(process.argv[1]) === toRealPath(fileURLToPath(moduleUrl));

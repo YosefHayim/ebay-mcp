@@ -1,7 +1,10 @@
-import type { EbayApiClient, EbayRequestConfig } from '@/ebay-client/ebayApiClient.js';
-import { formatZodIssues } from '@/shared/zodIssues.js';
-import type { z } from 'zod';
-import { Data, Effect } from 'effect';
+import { Data, Effect } from "effect";
+import type { z } from "zod";
+import type {
+	EbayApiClient,
+	EbayRequestConfig,
+} from "@/ebay-client/ebayApiClient.js";
+import { formatZodIssues } from "@/shared/zodIssues.js";
 
 /**
  * Query-string values accepted by the eBay REST client helpers.
@@ -9,37 +12,38 @@ import { Data, Effect } from 'effect';
 export type QueryParams = Record<string, string | number>;
 
 /** HTTP methods supported by the shared eBay REST request helpers. */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /** One endpoint-owned query parameter allowed by {@link buildEndpointParams}. */
 export interface EndpointParamSpec {
-  /** Query-string key expected by eBay, usually snake_case from the OpenAPI spec. */
-  readonly wireName: string;
-  /** Already-typed local value; undefined and empty strings are omitted. */
-  readonly value: string | number | undefined;
+	/** Query-string key expected by eBay, usually snake_case from the OpenAPI spec. */
+	readonly wireName: string;
+	/** Already-typed local value; undefined and empty strings are omitted. */
+	readonly value: string | number | undefined;
 }
 
 /** Tagged failure returned by migrated eBay API endpoint Effects. */
-export class EbayApiError extends Data.TaggedError('EbayApiError')<{
-  /** HTTP method used by the failed eBay request. */
-  readonly method: HttpMethod;
-  /** eBay REST path passed to the request adapter. */
-  readonly path: string;
-  /** Lower-level transport, parsing, or adapter failure. */
-  readonly cause: unknown;
+export class EbayApiError extends Data.TaggedError("EbayApiError")<{
+	/** HTTP method used by the failed eBay request. */
+	readonly method: HttpMethod;
+	/** eBay REST path passed to the request adapter. */
+	readonly path: string;
+	/** Lower-level transport, parsing, or adapter failure. */
+	readonly cause: unknown;
 }> {
-  override get message(): string {
-    const detail = this.cause instanceof Error ? this.cause.message : String(this.cause);
-    return `eBay ${this.method} ${this.path} failed: ${detail}`;
-  }
+	override get message(): string {
+		const detail =
+			this.cause instanceof Error ? this.cause.message : String(this.cause);
+		return `eBay ${this.method} ${this.path} failed: ${detail}`;
+	}
 }
 
 /** Tagged validation failure returned before an endpoint request is sent. */
-export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
-  /** Endpoint parameter that failed validation. */
-  readonly parameter: string;
-  /** Human-readable validation failure message. */
-  readonly message: string;
+export class EndpointInputError extends Data.TaggedError("EndpointInputError")<{
+	/** Endpoint parameter that failed validation. */
+	readonly parameter: string;
+	/** Human-readable validation failure message. */
+	readonly message: string;
 }> {}
 
 /**
@@ -57,16 +61,19 @@ export class EndpointInputError extends Data.TaggedError('EndpointInputError')<{
  * ```
  */
 export const decodeEndpointInputEffect = <TSchema extends z.ZodTypeAny>(
-  schema: TSchema,
-  input: unknown,
-  parameter = 'input',
+	schema: TSchema,
+	input: unknown,
+	parameter = "input",
 ): Effect.Effect<z.infer<TSchema>, EndpointInputError> => {
-  const parsedInput = schema.safeParse(input);
-  return parsedInput.success
-    ? Effect.succeed(parsedInput.data)
-    : Effect.fail(
-        new EndpointInputError({ parameter, message: formatZodIssues(parsedInput.error) }),
-      );
+	const parsedInput = schema.safeParse(input);
+	return parsedInput.success
+		? Effect.succeed(parsedInput.data)
+		: Effect.fail(
+				new EndpointInputError({
+					parameter,
+					message: formatZodIssues(parsedInput.error),
+				}),
+			);
 };
 
 /**
@@ -81,8 +88,10 @@ export const decodeEndpointInputEffect = <TSchema extends z.ZodTypeAny>(
  * yield* requestGetEffect(client, path, undefined, marketplaceHeader('EBAY_GB'));
  * ```
  */
-export const marketplaceHeader = (marketplaceId: string): EbayRequestConfig => ({
-  headers: { 'X-EBAY-C-MARKETPLACE-ID': marketplaceId },
+export const marketplaceHeader = (
+	marketplaceId: string,
+): EbayRequestConfig => ({
+	headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId },
 });
 
 /**
@@ -99,17 +108,17 @@ export const marketplaceHeader = (marketplaceId: string): EbayRequestConfig => (
  * ```
  */
 export const buildEndpointParams = (
-  params: Record<string, EndpointParamSpec>,
+	params: Record<string, EndpointParamSpec>,
 ): QueryParams | undefined => {
-  const query: QueryParams = {};
+	const query: QueryParams = {};
 
-  for (const param of Object.values(params)) {
-    if (param.value !== undefined && param.value !== '') {
-      query[param.wireName] = param.value;
-    }
-  }
+	for (const param of Object.values(params)) {
+		if (param.value !== undefined && param.value !== "") {
+			query[param.wireName] = param.value;
+		}
+	}
 
-  return Object.keys(query).length > 0 ? query : undefined;
+	return Object.keys(query).length > 0 ? query : undefined;
 };
 
 /**
@@ -125,19 +134,19 @@ export const buildEndpointParams = (
  * ```
  */
 export const requireStringEffect = (
-  value: unknown,
-  name: string,
+	value: unknown,
+	name: string,
 ): Effect.Effect<string, EndpointInputError> => {
-  if (!value || typeof value !== 'string') {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: name,
-        message: `${name} is required and must be a string`,
-      }),
-    );
-  }
+	if (!value || typeof value !== "string") {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: name,
+				message: `${name} is required and must be a string`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value);
+	return Effect.succeed(value);
 };
 
 /**
@@ -153,23 +162,23 @@ export const requireStringEffect = (
  * ```
  */
 export const optionalStringEffect = (
-  value: unknown,
-  name: string,
+	value: unknown,
+	name: string,
 ): Effect.Effect<string | undefined, EndpointInputError> => {
-  if (value === undefined) {
-    return Effect.succeed(undefined);
-  }
+	if (value === undefined) {
+		return Effect.succeed(undefined);
+	}
 
-  if (typeof value !== 'string') {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: name,
-        message: `${name} must be a string when provided`,
-      }),
-    );
-  }
+	if (typeof value !== "string") {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: name,
+				message: `${name} must be a string when provided`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value);
+	return Effect.succeed(value);
 };
 
 /**
@@ -185,23 +194,23 @@ export const optionalStringEffect = (
  * ```
  */
 export const optionalPositiveNumberEffect = (
-  value: unknown,
-  name: string,
+	value: unknown,
+	name: string,
 ): Effect.Effect<number | undefined, EndpointInputError> => {
-  if (value === undefined) {
-    return Effect.succeed(undefined);
-  }
+	if (value === undefined) {
+		return Effect.succeed(undefined);
+	}
 
-  if (typeof value !== 'number' || value < 1) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: name,
-        message: `${name} must be a positive number when provided`,
-      }),
-    );
-  }
+	if (typeof value !== "number" || value < 1) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: name,
+				message: `${name} must be a positive number when provided`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value);
+	return Effect.succeed(value);
 };
 
 /**
@@ -217,23 +226,23 @@ export const optionalPositiveNumberEffect = (
  * ```
  */
 export const optionalNonNegativeNumberEffect = (
-  value: unknown,
-  name: string,
+	value: unknown,
+	name: string,
 ): Effect.Effect<number | undefined, EndpointInputError> => {
-  if (value === undefined) {
-    return Effect.succeed(undefined);
-  }
+	if (value === undefined) {
+		return Effect.succeed(undefined);
+	}
 
-  if (typeof value !== 'number' || value < 0) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: name,
-        message: `${name} must be a non-negative number when provided`,
-      }),
-    );
-  }
+	if (typeof value !== "number" || value < 0) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: name,
+				message: `${name} must be a non-negative number when provided`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value);
+	return Effect.succeed(value);
 };
 
 /**
@@ -249,19 +258,19 @@ export const optionalNonNegativeNumberEffect = (
  * ```
  */
 export const requireObjectEffect = <T extends object>(
-  value: unknown,
-  name: string,
+	value: unknown,
+	name: string,
 ): Effect.Effect<T, EndpointInputError> => {
-  if (!value || typeof value !== 'object') {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: name,
-        message: `${name} is required and must be an object`,
-      }),
-    );
-  }
+	if (!value || typeof value !== "object") {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: name,
+				message: `${name} is required and must be an object`,
+			}),
+		);
+	}
 
-  return Effect.succeed(value as T);
+	return Effect.succeed(value as T);
 };
 
 /**
@@ -279,21 +288,23 @@ export const requireObjectEffect = <T extends object>(
  * ```
  */
 export const requestGetEffect = <T = unknown>(
-  client: EbayApiClient,
-  path: string,
-  params?: QueryParams,
-  config?: EbayRequestConfig,
+	client: EbayApiClient,
+	path: string,
+	params?: QueryParams,
+	config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
-  Effect.tryPromise({
-    try: () => {
-      if (config !== undefined) {
-        return client.get<T>(path, params, config);
-      }
+	Effect.tryPromise({
+		try: () => {
+			if (config !== undefined) {
+				return client.get<T>(path, params, config);
+			}
 
-      return params === undefined ? client.get<T>(path) : client.get<T>(path, params);
-    },
-    catch: (cause) => new EbayApiError({ method: 'GET', path, cause }),
-  });
+			return params === undefined
+				? client.get<T>(path)
+				: client.get<T>(path, params);
+		},
+		catch: (cause) => new EbayApiError({ method: "GET", path, cause }),
+	});
 
 /**
  * Execute a POST request as an Effect with typed eBay API errors.
@@ -310,21 +321,23 @@ export const requestGetEffect = <T = unknown>(
  * ```
  */
 export const requestPostEffect = <T = unknown>(
-  client: EbayApiClient,
-  path: string,
-  requestBody?: unknown,
-  config?: EbayRequestConfig,
+	client: EbayApiClient,
+	path: string,
+	requestBody?: unknown,
+	config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
-  Effect.tryPromise({
-    try: () => {
-      if (config !== undefined) {
-        return client.post<T>(path, requestBody, config);
-      }
+	Effect.tryPromise({
+		try: () => {
+			if (config !== undefined) {
+				return client.post<T>(path, requestBody, config);
+			}
 
-      return requestBody === undefined ? client.post<T>(path) : client.post<T>(path, requestBody);
-    },
-    catch: (cause) => new EbayApiError({ method: 'POST', path, cause }),
-  });
+			return requestBody === undefined
+				? client.post<T>(path)
+				: client.post<T>(path, requestBody);
+		},
+		catch: (cause) => new EbayApiError({ method: "POST", path, cause }),
+	});
 
 /**
  * Execute a PUT request as an Effect with typed eBay API errors.
@@ -340,18 +353,18 @@ export const requestPostEffect = <T = unknown>(
  * ```
  */
 export const requestPutEffect = <T = unknown>(
-  client: EbayApiClient,
-  path: string,
-  requestBody?: unknown,
-  config?: EbayRequestConfig,
+	client: EbayApiClient,
+	path: string,
+	requestBody?: unknown,
+	config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
-  Effect.tryPromise({
-    try: () =>
-      config === undefined
-        ? client.put<T>(path, requestBody)
-        : client.put<T>(path, requestBody, config),
-    catch: (cause) => new EbayApiError({ method: 'PUT', path, cause }),
-  });
+	Effect.tryPromise({
+		try: () =>
+			config === undefined
+				? client.put<T>(path, requestBody)
+				: client.put<T>(path, requestBody, config),
+		catch: (cause) => new EbayApiError({ method: "PUT", path, cause }),
+	});
 
 /**
  * Execute a PATCH request as an Effect with typed eBay API errors.
@@ -368,18 +381,18 @@ export const requestPutEffect = <T = unknown>(
  * ```
  */
 export const requestPatchEffect = <T = unknown>(
-  client: EbayApiClient,
-  path: string,
-  requestBody?: unknown,
-  config?: EbayRequestConfig,
+	client: EbayApiClient,
+	path: string,
+	requestBody?: unknown,
+	config?: EbayRequestConfig,
 ): Effect.Effect<T, EbayApiError> =>
-  Effect.tryPromise({
-    try: () =>
-      config === undefined
-        ? client.patch<T>(path, requestBody)
-        : client.patch<T>(path, requestBody, config),
-    catch: (cause) => new EbayApiError({ method: 'PATCH', path, cause }),
-  });
+	Effect.tryPromise({
+		try: () =>
+			config === undefined
+				? client.patch<T>(path, requestBody)
+				: client.patch<T>(path, requestBody, config),
+		catch: (cause) => new EbayApiError({ method: "PATCH", path, cause }),
+	});
 
 /**
  * Execute a DELETE request as an Effect with typed eBay API errors.
@@ -394,10 +407,10 @@ export const requestPatchEffect = <T = unknown>(
  * ```
  */
 export const requestDeleteEffect = <T = unknown>(
-  client: EbayApiClient,
-  path: string,
+	client: EbayApiClient,
+	path: string,
 ): Effect.Effect<T, EbayApiError> =>
-  Effect.tryPromise({
-    try: () => client.delete<T>(path),
-    catch: (cause) => new EbayApiError({ method: 'DELETE', path, cause }),
-  });
+	Effect.tryPromise({
+		try: () => client.delete<T>(path),
+		catch: (cause) => new EbayApiError({ method: "DELETE", path, cause }),
+	});

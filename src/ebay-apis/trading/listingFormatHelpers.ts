@@ -1,170 +1,187 @@
-import { BUY_IT_NOW_MARGIN_LABEL, meetsBuyItNowMargin } from '@/ebay-client/auctionPricing.js';
-import { EndpointInputError } from '@/ebay-client/request.js';
-import { FormatType } from '@/shared/ebayEnums.js';
-import { isRecord } from '@/shared/typeGuards.js';
-import { Effect } from 'effect';
+import { Effect } from "effect";
+import {
+	BUY_IT_NOW_MARGIN_LABEL,
+	meetsBuyItNowMargin,
+} from "@/ebay-client/auctionPricing.js";
+import { EndpointInputError } from "@/ebay-client/request.js";
+import { FormatType } from "@/shared/ebayEnums.js";
+import { isRecord } from "@/shared/typeGuards.js";
 
 /** Trading API `ListingType` token for auctions. */
-export const TRADING_AUCTION_LISTING_TYPE = 'Chinese';
+export const TRADING_AUCTION_LISTING_TYPE = "Chinese";
 /** Trading API `ListingDuration` token reserved for fixed-price listings. */
-const TRADING_GTC_DURATION = 'GTC';
+const TRADING_GTC_DURATION = "GTC";
 /** Trading API `EndingReason` that only applies to auctions with bids. */
-const SELL_TO_HIGH_BIDDER_REASON = 'SellToHighBidder';
+const SELL_TO_HIGH_BIDDER_REASON = "SellToHighBidder";
 
 /** Trading listing operations whose XML call name depends on the listing format. */
-export type TradingListingOperation = 'create' | 'revise' | 'end' | 'relist';
+export type TradingListingOperation = "create" | "revise" | "end" | "relist";
 
 /** Trading API call names per listing operation and format. */
-const TRADING_CALL_NAMES: Record<TradingListingOperation, Record<FormatType, string>> = {
-  create: { AUCTION: 'AddItem', FIXED_PRICE: 'AddFixedPriceItem' },
-  revise: { AUCTION: 'ReviseItem', FIXED_PRICE: 'ReviseFixedPriceItem' },
-  end: { AUCTION: 'EndItem', FIXED_PRICE: 'EndFixedPriceItem' },
-  relist: { AUCTION: 'RelistItem', FIXED_PRICE: 'RelistFixedPriceItem' },
+const TRADING_CALL_NAMES: Record<
+	TradingListingOperation,
+	Record<FormatType, string>
+> = {
+	create: { AUCTION: "AddItem", FIXED_PRICE: "AddFixedPriceItem" },
+	revise: { AUCTION: "ReviseItem", FIXED_PRICE: "ReviseFixedPriceItem" },
+	end: { AUCTION: "EndItem", FIXED_PRICE: "EndFixedPriceItem" },
+	relist: { AUCTION: "RelistItem", FIXED_PRICE: "RelistFixedPriceItem" },
 };
 
 /** Trading `Item` payload as supplied by callers: raw XML field names, unknown values. */
 export type TradingItemFields = Record<string, unknown>;
 
 const inputError = (parameter: string, message: string): EndpointInputError =>
-  new EndpointInputError({ parameter, message: `${parameter}: ${message}` });
+	new EndpointInputError({ parameter, message: `${parameter}: ${message}` });
 
 /**
  * Reads a Trading amount, which callers may pass as a bare number, a numeric
  * string, or an attributed XML node such as `{ '#text': 9.99, '@_currencyID': 'USD' }`.
  */
 const parseTradingAmount = (rawAmount: unknown): number | undefined => {
-  const amount = isRecord(rawAmount) ? rawAmount['#text'] : rawAmount;
-  if (amount === undefined || amount === null || amount === '') {
-    return;
-  }
-  const parsed = Number(amount);
-  return Number.isFinite(parsed) ? parsed : undefined;
+	const amount = isRecord(rawAmount) ? rawAmount["#text"] : rawAmount;
+	if (amount === undefined || amount === null || amount === "") {
+		return;
+	}
+	const parsed = Number(amount);
+	return Number.isFinite(parsed) ? parsed : undefined;
 };
 
 const isBestOfferEnabled = (tradingItem: TradingItemFields): boolean => {
-  const details = tradingItem.BestOfferDetails;
-  if (!isRecord(details)) {
-    return false;
-  }
-  return details.BestOfferEnabled === true || details.BestOfferEnabled === 'true';
+	const details = tradingItem.BestOfferDetails;
+	if (!isRecord(details)) {
+		return false;
+	}
+	return (
+		details.BestOfferEnabled === true || details.BestOfferEnabled === "true"
+	);
 };
 
 const auctionViolation = (
-  tradingItem: TradingItemFields,
-  parameter: string,
+	tradingItem: TradingItemFields,
+	parameter: string,
 ): EndpointInputError | undefined => {
-  if (
-    tradingItem.ListingType !== undefined &&
-    tradingItem.ListingType !== TRADING_AUCTION_LISTING_TYPE
-  ) {
-    return inputError(
-      `${parameter}.ListingType`,
-      `AUCTION listings use ListingType ${TRADING_AUCTION_LISTING_TYPE}; omit it or pass format FIXED_PRICE for ${String(tradingItem.ListingType)}`,
-    );
-  }
-  if (tradingItem.ListingDuration === TRADING_GTC_DURATION) {
-    return inputError(
-      `${parameter}.ListingDuration`,
-      'AUCTION listings need a day-count ListingDuration such as Days_7; GTC is only valid for FIXED_PRICE listings',
-    );
-  }
-  if (tradingItem.Quantity !== undefined && Number(tradingItem.Quantity) !== 1) {
-    return inputError(
-      `${parameter}.Quantity`,
-      'AUCTION listings sell a single unit; omit Quantity or set it to 1',
-    );
-  }
-  if (isBestOfferEnabled(tradingItem) && tradingItem.BuyItNowPrice !== undefined) {
-    return inputError(
-      `${parameter}.BestOfferDetails.BestOfferEnabled`,
-      'an AUCTION listing can carry Best Offer or a BuyItNowPrice, not both',
-    );
-  }
+	if (
+		tradingItem.ListingType !== undefined &&
+		tradingItem.ListingType !== TRADING_AUCTION_LISTING_TYPE
+	) {
+		return inputError(
+			`${parameter}.ListingType`,
+			`AUCTION listings use ListingType ${TRADING_AUCTION_LISTING_TYPE}; omit it or pass format FIXED_PRICE for ${String(tradingItem.ListingType)}`,
+		);
+	}
+	if (tradingItem.ListingDuration === TRADING_GTC_DURATION) {
+		return inputError(
+			`${parameter}.ListingDuration`,
+			"AUCTION listings need a day-count ListingDuration such as Days_7; GTC is only valid for FIXED_PRICE listings",
+		);
+	}
+	if (
+		tradingItem.Quantity !== undefined &&
+		Number(tradingItem.Quantity) !== 1
+	) {
+		return inputError(
+			`${parameter}.Quantity`,
+			"AUCTION listings sell a single unit; omit Quantity or set it to 1",
+		);
+	}
+	if (
+		isBestOfferEnabled(tradingItem) &&
+		tradingItem.BuyItNowPrice !== undefined
+	) {
+		return inputError(
+			`${parameter}.BestOfferDetails.BestOfferEnabled`,
+			"an AUCTION listing can carry Best Offer or a BuyItNowPrice, not both",
+		);
+	}
 };
 
 /** Fields eBay requires when an auction is created with AddItem. */
 const auctionCreateViolation = (
-  tradingItem: TradingItemFields,
-  parameter: string,
+	tradingItem: TradingItemFields,
+	parameter: string,
 ): EndpointInputError | undefined => {
-  if (tradingItem.ListingDuration === undefined) {
-    return inputError(
-      `${parameter}.ListingDuration`,
-      'ListingDuration is required for AUCTION listings (a day count such as Days_7)',
-    );
-  }
-  if (parseTradingAmount(tradingItem.StartPrice) === undefined) {
-    return inputError(
-      `${parameter}.StartPrice`,
-      'StartPrice (the opening bid) is required for AUCTION listings',
-    );
-  }
+	if (tradingItem.ListingDuration === undefined) {
+		return inputError(
+			`${parameter}.ListingDuration`,
+			"ListingDuration is required for AUCTION listings (a day count such as Days_7)",
+		);
+	}
+	if (parseTradingAmount(tradingItem.StartPrice) === undefined) {
+		return inputError(
+			`${parameter}.StartPrice`,
+			"StartPrice (the opening bid) is required for AUCTION listings",
+		);
+	}
 };
 
 const fixedPriceViolation = (
-  tradingItem: TradingItemFields,
-  parameter: string,
+	tradingItem: TradingItemFields,
+	parameter: string,
 ): EndpointInputError | undefined => {
-  if (tradingItem.ListingType === TRADING_AUCTION_LISTING_TYPE) {
-    return inputError(
-      `${parameter}.ListingType`,
-      `ListingType ${TRADING_AUCTION_LISTING_TYPE} is an auction; pass format AUCTION instead`,
-    );
-  }
-  if (
-    tradingItem.ListingDuration !== undefined &&
-    tradingItem.ListingDuration !== TRADING_GTC_DURATION
-  ) {
-    return inputError(
-      `${parameter}.ListingDuration`,
-      `FIXED_PRICE listings must use ListingDuration ${TRADING_GTC_DURATION} (the only duration eBay accepts for fixed-price listings); day counts such as Days_7 are for AUCTION listings`,
-    );
-  }
-  if (tradingItem.ReservePrice !== undefined) {
-    return inputError(`${parameter}.ReservePrice`, 'ReservePrice only applies to AUCTION listings');
-  }
-  if (tradingItem.BuyItNowPrice !== undefined) {
-    return inputError(
-      `${parameter}.BuyItNowPrice`,
-      'BuyItNowPrice only applies to AUCTION listings; FIXED_PRICE listings use StartPrice',
-    );
-  }
+	if (tradingItem.ListingType === TRADING_AUCTION_LISTING_TYPE) {
+		return inputError(
+			`${parameter}.ListingType`,
+			`ListingType ${TRADING_AUCTION_LISTING_TYPE} is an auction; pass format AUCTION instead`,
+		);
+	}
+	if (
+		tradingItem.ListingDuration !== undefined &&
+		tradingItem.ListingDuration !== TRADING_GTC_DURATION
+	) {
+		return inputError(
+			`${parameter}.ListingDuration`,
+			`FIXED_PRICE listings must use ListingDuration ${TRADING_GTC_DURATION} (the only duration eBay accepts for fixed-price listings); day counts such as Days_7 are for AUCTION listings`,
+		);
+	}
+	if (tradingItem.ReservePrice !== undefined) {
+		return inputError(
+			`${parameter}.ReservePrice`,
+			"ReservePrice only applies to AUCTION listings",
+		);
+	}
+	if (tradingItem.BuyItNowPrice !== undefined) {
+		return inputError(
+			`${parameter}.BuyItNowPrice`,
+			"BuyItNowPrice only applies to AUCTION listings; FIXED_PRICE listings use StartPrice",
+		);
+	}
 };
 
 const auctionPriceViolation = (
-  tradingItem: TradingItemFields,
-  parameter: string,
+	tradingItem: TradingItemFields,
+	parameter: string,
 ): EndpointInputError | undefined => {
-  const start = parseTradingAmount(tradingItem.StartPrice);
-  if (start === undefined) {
-    return;
-  }
-  const reserve = parseTradingAmount(tradingItem.ReservePrice);
-  if (reserve !== undefined && reserve <= start) {
-    return inputError(
-      `${parameter}.ReservePrice`,
-      'ReservePrice must be higher than StartPrice (the opening bid)',
-    );
-  }
-  const buyItNow = parseTradingAmount(tradingItem.BuyItNowPrice);
-  if (buyItNow !== undefined && !meetsBuyItNowMargin(start, buyItNow)) {
-    return inputError(
-      `${parameter}.BuyItNowPrice`,
-      `BuyItNowPrice must be at least ${BUY_IT_NOW_MARGIN_LABEL} higher than StartPrice (the opening bid)`,
-    );
-  }
+	const start = parseTradingAmount(tradingItem.StartPrice);
+	if (start === undefined) {
+		return;
+	}
+	const reserve = parseTradingAmount(tradingItem.ReservePrice);
+	if (reserve !== undefined && reserve <= start) {
+		return inputError(
+			`${parameter}.ReservePrice`,
+			"ReservePrice must be higher than StartPrice (the opening bid)",
+		);
+	}
+	const buyItNow = parseTradingAmount(tradingItem.BuyItNowPrice);
+	if (buyItNow !== undefined && !meetsBuyItNowMargin(start, buyItNow)) {
+		return inputError(
+			`${parameter}.BuyItNowPrice`,
+			`BuyItNowPrice must be at least ${BUY_IT_NOW_MARGIN_LABEL} higher than StartPrice (the opening bid)`,
+		);
+	}
 };
 
 /** Inputs to the Trading listing-format rules. */
 export interface TradingListingFormatCheck {
-  /** Raw Trading `Item` fields supplied by the caller. */
-  readonly item: TradingItemFields;
-  /** Listing format the caller selected. */
-  readonly format: FormatType;
-  /** Parameter path used to label the failing field (for example `item`). */
-  readonly parameter: string;
-  /** Whether the payload creates a listing, which makes the auction essentials mandatory. */
-  readonly isCreate: boolean;
+	/** Raw Trading `Item` fields supplied by the caller. */
+	readonly item: TradingItemFields;
+	/** Listing format the caller selected. */
+	readonly format: FormatType;
+	/** Parameter path used to label the failing field (for example `item`). */
+	readonly parameter: string;
+	/** Whether the payload creates a listing, which makes the auction essentials mandatory. */
+	readonly isCreate: boolean;
 }
 
 /**
@@ -191,19 +208,19 @@ export interface TradingListingFormatCheck {
  * ```
  */
 export const findTradingListingFormatViolation = ({
-  item: tradingItem,
-  format,
-  parameter,
-  isCreate,
+	item: tradingItem,
+	format,
+	parameter,
+	isCreate,
 }: TradingListingFormatCheck): EndpointInputError | undefined => {
-  if (format === FormatType.FIXED_PRICE) {
-    return fixedPriceViolation(tradingItem, parameter);
-  }
-  return (
-    auctionViolation(tradingItem, parameter) ??
-    (isCreate ? auctionCreateViolation(tradingItem, parameter) : undefined) ??
-    auctionPriceViolation(tradingItem, parameter)
-  );
+	if (format === FormatType.FIXED_PRICE) {
+		return fixedPriceViolation(tradingItem, parameter);
+	}
+	return (
+		auctionViolation(tradingItem, parameter) ??
+		(isCreate ? auctionCreateViolation(tradingItem, parameter) : undefined) ??
+		auctionPriceViolation(tradingItem, parameter)
+	);
 };
 
 /**
@@ -223,10 +240,10 @@ export const findTradingListingFormatViolation = ({
  * ```
  */
 export const validateTradingListingFormatEffect = (
-  check: TradingListingFormatCheck,
+	check: TradingListingFormatCheck,
 ): Effect.Effect<void, EndpointInputError> => {
-  const violation = findTradingListingFormatViolation(check);
-  return violation ? Effect.fail(violation) : Effect.void;
+	const violation = findTradingListingFormatViolation(check);
+	return violation ? Effect.fail(violation) : Effect.void;
 };
 
 /**
@@ -243,19 +260,22 @@ export const validateTradingListingFormatEffect = (
  * ```
  */
 export const validateTradingEndingReasonEffect = (
-  reason: string | undefined,
-  format: FormatType,
-  parameter: string,
+	reason: string | undefined,
+	format: FormatType,
+	parameter: string,
 ): Effect.Effect<void, EndpointInputError> => {
-  if (reason === SELL_TO_HIGH_BIDDER_REASON && format === FormatType.FIXED_PRICE) {
-    return Effect.fail(
-      inputError(
-        parameter,
-        `${SELL_TO_HIGH_BIDDER_REASON} only ends AUCTION listings; pass format AUCTION or another reason`,
-      ),
-    );
-  }
-  return Effect.void;
+	if (
+		reason === SELL_TO_HIGH_BIDDER_REASON &&
+		format === FormatType.FIXED_PRICE
+	) {
+		return Effect.fail(
+			inputError(
+				parameter,
+				`${SELL_TO_HIGH_BIDDER_REASON} only ends AUCTION listings; pass format AUCTION or another reason`,
+			),
+		);
+	}
+	return Effect.void;
 };
 
 /**
@@ -270,8 +290,10 @@ export const validateTradingEndingReasonEffect = (
  * const callName = tradingCallName('create', FormatType.AUCTION); // 'AddItem'
  * ```
  */
-export const tradingCallName = (operation: TradingListingOperation, format: FormatType): string =>
-  TRADING_CALL_NAMES[operation][format];
+export const tradingCallName = (
+	operation: TradingListingOperation,
+	format: FormatType,
+): string => TRADING_CALL_NAMES[operation][format];
 
 /**
  * Resolves the listing format selected for a Trading call, defaulting to fixed price.
@@ -284,5 +306,6 @@ export const tradingCallName = (operation: TradingListingOperation, format: Form
  * const format = resolveTradingFormat(undefined); // FormatType.FIXED_PRICE
  * ```
  */
-export const resolveTradingFormat = (format: FormatType | undefined): FormatType =>
-  format ?? FormatType.FIXED_PRICE;
+export const resolveTradingFormat = (
+	format: FormatType | undefined,
+): FormatType => format ?? FormatType.FIXED_PRICE;

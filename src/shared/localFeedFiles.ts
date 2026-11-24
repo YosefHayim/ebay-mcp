@@ -1,4 +1,4 @@
-import { isUtf8 } from 'node:buffer';
+import { isUtf8 } from "node:buffer";
 
 const ZIP_SIGNATURE = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 const GZIP_SIGNATURE = Buffer.from([0x1f, 0x8b, 0x08]);
@@ -9,11 +9,11 @@ const LESS_THAN = 0x3c;
 
 /** Whether markup opens the document, after an optional byte-order mark and any whitespace. */
 const opensWithMarkup = (bytes: Buffer): boolean => {
-  const withoutBom = bytes.subarray(0, UTF8_BOM.length).equals(UTF8_BOM)
-    ? bytes.subarray(UTF8_BOM.length)
-    : bytes;
-  const first = withoutBom.findIndex((byte) => !XML_WHITESPACE.has(byte));
-  return first !== -1 && withoutBom[first] === LESS_THAN;
+	const withoutBom = bytes.subarray(0, UTF8_BOM.length).equals(UTF8_BOM)
+		? bytes.subarray(UTF8_BOM.length)
+		: bytes;
+	const first = withoutBom.findIndex((byte) => !XML_WHITESPACE.has(byte));
+	return first !== -1 && withoutBom[first] === LESS_THAN;
 };
 
 /**
@@ -26,10 +26,10 @@ export const MAX_FEED_FILE_BYTES = 15 * 1024 * 1024;
 
 /** Feed file extensions and MIME types: LMS feeds are XML or zipped XML; Seller Hub feeds use CSV. */
 export const FEED_FILE_MIME_BY_EXTENSION: Readonly<Record<string, string>> = {
-  xml: 'application/xml',
-  csv: 'text/csv',
-  zip: 'application/zip',
-  gz: 'application/gzip',
+	xml: "application/xml",
+	csv: "text/csv",
+	zip: "application/zip",
+	gz: "application/gzip",
 };
 
 /**
@@ -46,21 +46,24 @@ export const FEED_FILE_MIME_BY_EXTENSION: Readonly<Record<string, string>> = {
  * feedFileProblem(Buffer.from('<?xml version="1.0"?><BulkDataExchangeRequests/>'), 'application/xml'); // undefined
  * ```
  */
-export const feedFileProblem = (bytes: Buffer, mimeType: string): string | undefined => {
-  if (mimeType === 'application/zip') {
-    return bytes.subarray(0, ZIP_SIGNATURE.length).equals(ZIP_SIGNATURE)
-      ? undefined
-      : 'content is not a ZIP archive';
-  }
-  if (mimeType === 'application/gzip') {
-    return bytes.subarray(0, GZIP_SIGNATURE.length).equals(GZIP_SIGNATURE)
-      ? undefined
-      : 'content is not a gzip file';
-  }
-  if (bytes.includes(0) || !isUtf8(bytes)) {
-    return `content is not UTF-8 text without NUL bytes, as ${mimeType} requires`;
-  }
-  if (mimeType === 'application/xml' && !opensWithMarkup(bytes)) {
-    return 'content does not start with XML markup';
-  }
+export const feedFileProblem = (
+	bytes: Buffer,
+	mimeType: string,
+): string | undefined => {
+	if (mimeType === "application/zip") {
+		return bytes.subarray(0, ZIP_SIGNATURE.length).equals(ZIP_SIGNATURE)
+			? undefined
+			: "content is not a ZIP archive";
+	}
+	if (mimeType === "application/gzip") {
+		return bytes.subarray(0, GZIP_SIGNATURE.length).equals(GZIP_SIGNATURE)
+			? undefined
+			: "content is not a gzip file";
+	}
+	if (bytes.includes(0) || !isUtf8(bytes)) {
+		return `content is not UTF-8 text without NUL bytes, as ${mimeType} requires`;
+	}
+	if (mimeType === "application/xml" && !opensWithMarkup(bytes)) {
+		return "content does not start with XML markup";
+	}
 };

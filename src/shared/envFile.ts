@@ -22,16 +22,18 @@
  * ```
  */
 export const quoteEnvValue = (envValue: string): string => {
-  if (envValue === '' || !/[#\s"'`]/.test(envValue)) {
-    return envValue;
-  }
-  const quoteMark = ['"', "'", '`'].find((candidate) =>
-    candidate === '"' ? !/["\\]/.test(envValue) : !envValue.includes(candidate),
-  );
-  if (quoteMark === undefined) {
-    throw new Error('Cannot write a .env value that contains ", \' and ` quote marks');
-  }
-  return `${quoteMark}${envValue}${quoteMark}`;
+	if (envValue === "" || !/[#\s"'`]/.test(envValue)) {
+		return envValue;
+	}
+	const quoteMark = ['"', "'", "`"].find((candidate) =>
+		candidate === '"' ? !/["\\]/.test(envValue) : !envValue.includes(candidate),
+	);
+	if (quoteMark === undefined) {
+		throw new Error(
+			"Cannot write a .env value that contains \", ' and ` quote marks",
+		);
+	}
+	return `${quoteMark}${envValue}${quoteMark}`;
 };
 
 /**
@@ -46,6 +48,6 @@ export const quoteEnvValue = (envValue: string): string => {
  * ```
  */
 export const stringifyEnv = (env: Record<string, string>): string =>
-  Object.entries(env)
-    .map(([name, envValue]) => `${name}=${quoteEnvValue(envValue)}`)
-    .join('\n');
+	Object.entries(env)
+		.map(([name, envValue]) => `${name}=${quoteEnvValue(envValue)}`)
+		.join("\n");

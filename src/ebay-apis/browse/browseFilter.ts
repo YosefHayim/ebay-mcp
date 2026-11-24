@@ -5,8 +5,8 @@
  * grammar, which is fiddly enough to be worth isolating and testing on its own.
  */
 
-import { EndpointInputError } from '@/ebay-client/request.js';
-import { Effect } from 'effect';
+import { Effect } from "effect";
+import { EndpointInputError } from "@/ebay-client/request.js";
 
 /** Detects a price clause in a caller-supplied raw filter expression. */
 const RAW_PRICE_CLAUSE = /(^|,)\s*price(Currency)?:/;
@@ -28,43 +28,43 @@ const RAW_PRICE_CLAUSE = /(^|,)\s*price(Currency)?:/;
  * ```
  */
 export const buildBrowseFilter = (input: {
-  readonly conditions?: readonly string[];
-  readonly buyingOptions?: readonly string[];
-  readonly priceMin?: number;
-  readonly priceMax?: number;
-  readonly priceCurrency?: string;
-  readonly filter?: string;
+	readonly conditions?: readonly string[];
+	readonly buyingOptions?: readonly string[];
+	readonly priceMin?: number;
+	readonly priceMax?: number;
+	readonly priceCurrency?: string;
+	readonly filter?: string;
 }): string | undefined => {
-  const clauses: string[] = [];
+	const clauses: string[] = [];
 
-  if (input.conditions && input.conditions.length > 0) {
-    clauses.push(`conditions:{${input.conditions.join('|')}}`);
-  }
+	if (input.conditions && input.conditions.length > 0) {
+		clauses.push(`conditions:{${input.conditions.join("|")}}`);
+	}
 
-  if (input.buyingOptions && input.buyingOptions.length > 0) {
-    clauses.push(`buyingOptions:{${input.buyingOptions.join('|')}}`);
-  }
+	if (input.buyingOptions && input.buyingOptions.length > 0) {
+		clauses.push(`buyingOptions:{${input.buyingOptions.join("|")}}`);
+	}
 
-  const hasMin = input.priceMin !== undefined;
-  const hasMax = input.priceMax !== undefined;
-  if (hasMin || hasMax) {
-    // `price:[10]` reads as an exact match to eBay, so a lower bound on its own
-    // must still emit the open-ended `[10..]` form.
-    let range = `[..${input.priceMax}]`;
-    if (hasMin && hasMax) {
-      range = `[${input.priceMin}..${input.priceMax}]`;
-    } else if (hasMin) {
-      range = `[${input.priceMin}..]`;
-    }
-    clauses.push(`price:${range}`);
-    clauses.push(`priceCurrency:${input.priceCurrency ?? 'USD'}`);
-  }
+	const hasMin = input.priceMin !== undefined;
+	const hasMax = input.priceMax !== undefined;
+	if (hasMin || hasMax) {
+		// `price:[10]` reads as an exact match to eBay, so a lower bound on its own
+		// must still emit the open-ended `[10..]` form.
+		let range = `[..${input.priceMax}]`;
+		if (hasMin && hasMax) {
+			range = `[${input.priceMin}..${input.priceMax}]`;
+		} else if (hasMin) {
+			range = `[${input.priceMin}..]`;
+		}
+		clauses.push(`price:${range}`);
+		clauses.push(`priceCurrency:${input.priceCurrency ?? "USD"}`);
+	}
 
-  if (input.filter) {
-    clauses.push(input.filter);
-  }
+	if (input.filter) {
+		clauses.push(input.filter);
+	}
 
-  return clauses.length > 0 ? clauses.join(',') : undefined;
+	return clauses.length > 0 ? clauses.join(",") : undefined;
 };
 
 /**
@@ -79,18 +79,18 @@ export const buildBrowseFilter = (input: {
  * @returns Unit when the two cannot collide, or a tagged input error.
  */
 export const requireNoPriceFilterConflict = (
-  rawFilter: string | undefined,
-  hasPriceBounds: boolean,
+	rawFilter: string | undefined,
+	hasPriceBounds: boolean,
 ): Effect.Effect<void, EndpointInputError> => {
-  if (rawFilter && hasPriceBounds && RAW_PRICE_CLAUSE.test(rawFilter)) {
-    return Effect.fail(
-      new EndpointInputError({
-        parameter: 'filter',
-        message:
-          'filter already contains a price clause; use either priceMin/priceMax or a raw price filter, not both',
-      }),
-    );
-  }
+	if (rawFilter && hasPriceBounds && RAW_PRICE_CLAUSE.test(rawFilter)) {
+		return Effect.fail(
+			new EndpointInputError({
+				parameter: "filter",
+				message:
+					"filter already contains a price clause; use either priceMin/priceMax or a raw price filter, not both",
+			}),
+		);
+	}
 
-  return Effect.succeed(undefined);
+	return Effect.succeed(undefined);
 };

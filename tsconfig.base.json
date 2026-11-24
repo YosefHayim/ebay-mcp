@@ -1,8 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+	"compilerOptions": {
+		"target": "ES2022",
+		"strict": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true
+	}
 }

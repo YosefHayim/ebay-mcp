@@ -5,240 +5,252 @@
  * with the eBay MCP server settings.
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { homedir, platform } from 'os';
-import { Effect, Either } from 'effect';
-import { getErrorMessage } from './errors.js';
-import { setupLogger } from './logger.js';
+import { Effect, Either } from "effect";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { homedir, platform } from "os";
+import { dirname, join } from "path";
+import { getErrorMessage } from "./errors.js";
+import { setupLogger } from "./logger.js";
 
 /**
  * Detection result for an MCP-capable client configuration location.
  */
 export interface DetectedMCPClient {
-  /** Stable client key used by setup flags and configuration routing. */
-  name: string;
-  /** Absolute path to the client configuration file. */
-  configPath: string;
-  /** Whether the client configuration directory exists. */
-  detected: boolean;
+	/** Stable client key used by setup flags and configuration routing. */
+	name: string;
+	/** Absolute path to the client configuration file. */
+	configPath: string;
+	/** Whether the client configuration directory exists. */
+	detected: boolean;
 }
 
 /**
  * LLM client metadata shown during setup and auto-configuration.
  */
 export interface LLMClient extends DetectedMCPClient {
-  /** Human-readable client name shown in setup prompts. */
-  displayName: string;
-  /** Whether the expected configuration file exists. */
-  configExists: boolean;
+	/** Human-readable client name shown in setup prompts. */
+	displayName: string;
+	/** Whether the expected configuration file exists. */
+	configExists: boolean;
 }
 
 /**
  * MCP server command block written into client configuration files.
  */
 export interface MCPServerConfig {
-  /** Executable command used by the client to start the MCP server. */
-  command: string;
-  /** Arguments passed to the MCP server command. */
-  args?: string[];
-  /** Optional environment variables injected by the client. */
-  env?: Record<string, string>;
+	/** Executable command used by the client to start the MCP server. */
+	command: string;
+	/** Arguments passed to the MCP server command. */
+	args?: string[];
+	/** Optional environment variables injected by the client. */
+	env?: Record<string, string>;
 }
 
 /**
  * Gets the config file path for Claude Desktop based on OS.
  */
 const getClaudeConfigPath = (): string => {
-  const os = platform();
-  const home = homedir();
+	const os = platform();
+	const home = homedir();
 
-  switch (os) {
-    case 'darwin': // macOS
-      return join(home, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
-    case 'win32': // Windows
-      return join(home, 'AppData', 'Roaming', 'Claude', 'claude_desktop_config.json');
-    case 'linux':
-      return join(home, '.config', 'Claude', 'claude_desktop_config.json');
-    default:
-      return join(home, '.config', 'Claude', 'claude_desktop_config.json');
-  }
+	switch (os) {
+		case "darwin": // macOS
+			return join(
+				home,
+				"Library",
+				"Application Support",
+				"Claude",
+				"claude_desktop_config.json",
+			);
+		case "win32": // Windows
+			return join(
+				home,
+				"AppData",
+				"Roaming",
+				"Claude",
+				"claude_desktop_config.json",
+			);
+		case "linux":
+			return join(home, ".config", "Claude", "claude_desktop_config.json");
+		default:
+			return join(home, ".config", "Claude", "claude_desktop_config.json");
+	}
 };
 
 /**
  * Gets the config file path for Cline (VSCode extension).
  */
 const getClineConfigPath = (): string => {
-  const home = homedir();
-  const os = platform();
+	const home = homedir();
+	const os = platform();
 
-  switch (os) {
-    case 'darwin':
-      return join(
-        home,
-        'Library',
-        'Application Support',
-        'Code',
-        'User',
-        'globalStorage',
-        'saoudrizwan.claude-dev',
-        'settings',
-        'cline_mcp_settings.json',
-      );
-    case 'win32':
-      return join(
-        home,
-        'AppData',
-        'Roaming',
-        'Code',
-        'User',
-        'globalStorage',
-        'saoudrizwan.claude-dev',
-        'settings',
-        'cline_mcp_settings.json',
-      );
-    default:
-      return join(
-        home,
-        '.config',
-        'Code',
-        'User',
-        'globalStorage',
-        'saoudrizwan.claude-dev',
-        'settings',
-        'cline_mcp_settings.json',
-      );
-  }
+	switch (os) {
+		case "darwin":
+			return join(
+				home,
+				"Library",
+				"Application Support",
+				"Code",
+				"User",
+				"globalStorage",
+				"saoudrizwan.claude-dev",
+				"settings",
+				"cline_mcp_settings.json",
+			);
+		case "win32":
+			return join(
+				home,
+				"AppData",
+				"Roaming",
+				"Code",
+				"User",
+				"globalStorage",
+				"saoudrizwan.claude-dev",
+				"settings",
+				"cline_mcp_settings.json",
+			);
+		default:
+			return join(
+				home,
+				".config",
+				"Code",
+				"User",
+				"globalStorage",
+				"saoudrizwan.claude-dev",
+				"settings",
+				"cline_mcp_settings.json",
+			);
+	}
 };
 
 /**
  * Gets the config path for Continue.dev.
  */
 const getContinueConfigPath = (): string => {
-  const home = homedir();
-  return join(home, '.continue', 'config.json');
+	const home = homedir();
+	return join(home, ".continue", "config.json");
 };
 
 /**
  * Gets the config path for Zed editor.
  */
 const getZedConfigPath = (): string => {
-  const home = homedir();
-  const os = platform();
+	const home = homedir();
+	const os = platform();
 
-  switch (os) {
-    case 'darwin':
-      return join(home, '.config', 'zed', 'settings.json');
-    case 'win32':
-      return join(home, 'AppData', 'Roaming', 'Zed', 'settings.json');
-    default:
-      return join(home, '.config', 'zed', 'settings.json');
-  }
+	switch (os) {
+		case "darwin":
+			return join(home, ".config", "zed", "settings.json");
+		case "win32":
+			return join(home, "AppData", "Roaming", "Zed", "settings.json");
+		default:
+			return join(home, ".config", "zed", "settings.json");
+	}
 };
 
 /**
  * Gets the config path for Cursor IDE.
  */
 const getCursorConfigPath = (): string => {
-  const home = homedir();
-  const os = platform();
+	const home = homedir();
+	const os = platform();
 
-  switch (os) {
-    case 'darwin':
-      return join(home, '.cursor', 'mcp.json');
-    case 'win32':
-      return join(home, '.cursor', 'mcp.json');
-    default:
-      return join(home, '.cursor', 'mcp.json');
-  }
+	switch (os) {
+		case "darwin":
+			return join(home, ".cursor", "mcp.json");
+		case "win32":
+			return join(home, ".cursor", "mcp.json");
+		default:
+			return join(home, ".cursor", "mcp.json");
+	}
 };
 
 /**
  * Gets the config path for Windsurf (Codeium).
  */
 const getWindsurfConfigPath = (): string => {
-  const home = homedir();
-  const os = platform();
+	const home = homedir();
+	const os = platform();
 
-  switch (os) {
-    case 'darwin':
-      return join(home, '.codeium', 'windsurf', 'mcp_config.json');
-    case 'win32':
-      return join(home, '.codeium', 'windsurf', 'mcp_config.json');
-    default:
-      return join(home, '.codeium', 'windsurf', 'mcp_config.json');
-  }
+	switch (os) {
+		case "darwin":
+			return join(home, ".codeium", "windsurf", "mcp_config.json");
+		case "win32":
+			return join(home, ".codeium", "windsurf", "mcp_config.json");
+		default:
+			return join(home, ".codeium", "windsurf", "mcp_config.json");
+	}
 };
 
 /**
  * Gets the config path for Roo Code (VSCode extension).
  */
 const getRooCodeConfigPath = (): string => {
-  const home = homedir();
-  const os = platform();
+	const home = homedir();
+	const os = platform();
 
-  switch (os) {
-    case 'darwin':
-      return join(
-        home,
-        'Library',
-        'Application Support',
-        'Code',
-        'User',
-        'globalStorage',
-        'rooveterinaryinc.roo-cline',
-        'settings',
-        'mcp_settings.json',
-      );
-    case 'win32':
-      return join(
-        home,
-        'AppData',
-        'Roaming',
-        'Code',
-        'User',
-        'globalStorage',
-        'rooveterinaryinc.roo-cline',
-        'settings',
-        'mcp_settings.json',
-      );
-    default:
-      return join(
-        home,
-        '.config',
-        'Code',
-        'User',
-        'globalStorage',
-        'rooveterinaryinc.roo-cline',
-        'settings',
-        'mcp_settings.json',
-      );
-  }
+	switch (os) {
+		case "darwin":
+			return join(
+				home,
+				"Library",
+				"Application Support",
+				"Code",
+				"User",
+				"globalStorage",
+				"rooveterinaryinc.roo-cline",
+				"settings",
+				"mcp_settings.json",
+			);
+		case "win32":
+			return join(
+				home,
+				"AppData",
+				"Roaming",
+				"Code",
+				"User",
+				"globalStorage",
+				"rooveterinaryinc.roo-cline",
+				"settings",
+				"mcp_settings.json",
+			);
+		default:
+			return join(
+				home,
+				".config",
+				"Code",
+				"User",
+				"globalStorage",
+				"rooveterinaryinc.roo-cline",
+				"settings",
+				"mcp_settings.json",
+			);
+	}
 };
 
 /**
  * Gets the config path for Claude Code CLI.
  */
 const getClaudeCodeConfigPath = (): string => {
-  const home = homedir();
-  return join(home, '.claude.json');
+	const home = homedir();
+	return join(home, ".claude.json");
 };
 
 /**
  * Gets the config path for Amazon Q Developer.
  */
 const getAmazonQConfigPath = (): string => {
-  const home = homedir();
-  const os = platform();
+	const home = homedir();
+	const os = platform();
 
-  switch (os) {
-    case 'darwin':
-      return join(home, '.aws', 'amazonq', 'mcp.json');
-    case 'win32':
-      return join(home, '.aws', 'amazonq', 'mcp.json');
-    default:
-      return join(home, '.aws', 'amazonq', 'mcp.json');
-  }
+	switch (os) {
+		case "darwin":
+			return join(home, ".aws", "amazonq", "mcp.json");
+		case "win32":
+			return join(home, ".aws", "amazonq", "mcp.json");
+		default:
+			return join(home, ".aws", "amazonq", "mcp.json");
+	}
 };
 
 /**
@@ -251,153 +263,163 @@ const getAmazonQConfigPath = (): string => {
  * ```
  */
 export const detectLLMClients = (): LLMClient[] => {
-  const clients: LLMClient[] = [
-    {
-      name: 'claude',
-      displayName: 'Claude Desktop',
-      configPath: getClaudeConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'cline',
-      displayName: 'Cline (VSCode Extension)',
-      configPath: getClineConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'continue',
-      displayName: 'Continue.dev',
-      configPath: getContinueConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'zed',
-      displayName: 'Zed Editor',
-      configPath: getZedConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'cursor',
-      displayName: 'Cursor IDE',
-      configPath: getCursorConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'windsurf',
-      displayName: 'Windsurf (Codeium)',
-      configPath: getWindsurfConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'roocode',
-      displayName: 'Roo Code (VSCode Extension)',
-      configPath: getRooCodeConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'claudecode',
-      displayName: 'Claude Code CLI',
-      configPath: getClaudeCodeConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-    {
-      name: 'amazonq',
-      displayName: 'Amazon Q Developer',
-      configPath: getAmazonQConfigPath(),
-      detected: false,
-      configExists: false,
-    },
-  ];
+	const clients: LLMClient[] = [
+		{
+			name: "claude",
+			displayName: "Claude Desktop",
+			configPath: getClaudeConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "cline",
+			displayName: "Cline (VSCode Extension)",
+			configPath: getClineConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "continue",
+			displayName: "Continue.dev",
+			configPath: getContinueConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "zed",
+			displayName: "Zed Editor",
+			configPath: getZedConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "cursor",
+			displayName: "Cursor IDE",
+			configPath: getCursorConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "windsurf",
+			displayName: "Windsurf (Codeium)",
+			configPath: getWindsurfConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "roocode",
+			displayName: "Roo Code (VSCode Extension)",
+			configPath: getRooCodeConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "claudecode",
+			displayName: "Claude Code CLI",
+			configPath: getClaudeCodeConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+		{
+			name: "amazonq",
+			displayName: "Amazon Q Developer",
+			configPath: getAmazonQConfigPath(),
+			detected: false,
+			configExists: false,
+		},
+	];
 
-  // Check which clients exist
-  for (const client of clients) {
-    client.configExists = existsSync(client.configPath);
-    // Check if parent directory exists (indicates app is installed)
-    const parentDir = dirname(client.configPath);
-    client.detected = existsSync(parentDir);
-  }
+	// Check which clients exist
+	for (const client of clients) {
+		client.configExists = existsSync(client.configPath);
+		// Check if parent directory exists (indicates app is installed)
+		const parentDir = dirname(client.configPath);
+		client.detected = existsSync(parentDir);
+	}
 
-  return clients;
+	return clients;
 };
 
 /**
  * Reads and parses a JSON config file safely.
  */
 const readJSONConfig = (path: string): Record<string, unknown> =>
-  Effect.runSync(
-    Effect.try({
-      try: () => {
-        if (!existsSync(path)) {
-          return {};
-        }
+	Effect.runSync(
+		Effect.try({
+			try: () => {
+				if (!existsSync(path)) {
+					return {};
+				}
 
-        const content = readFileSync(path, 'utf-8');
-        return JSON.parse(content) as Record<string, unknown>;
-      },
-      catch: () => ({}),
-    }).pipe(Effect.catchAll((fallbackConfig) => Effect.succeed(fallbackConfig))),
-  );
+				const content = readFileSync(path, "utf-8");
+				return JSON.parse(content) as Record<string, unknown>;
+			},
+			catch: () => ({}),
+		}).pipe(
+			Effect.catchAll((fallbackConfig) => Effect.succeed(fallbackConfig)),
+		),
+	);
 
 /**
  * Writes a JSON config file safely.
  */
-const writeJSONConfig = (path: string, config: Record<string, unknown>): void => {
-  // Ensure directory exists
-  const dir = dirname(path);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
+const writeJSONConfig = (
+	path: string,
+	config: Record<string, unknown>,
+): void => {
+	// Ensure directory exists
+	const dir = dirname(path);
+	if (!existsSync(dir)) {
+		mkdirSync(dir, { recursive: true });
+	}
 
-  writeFileSync(path, JSON.stringify(config, null, 2), 'utf-8');
+	writeFileSync(path, JSON.stringify(config, null, 2), "utf-8");
 };
 
-const runClientConfigurator = (clientLabel: string, configure: () => void): boolean => {
-  const configured = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: configure,
-        catch: (error) => error,
-      }),
-    ),
-  );
+const runClientConfigurator = (
+	clientLabel: string,
+	configure: () => void,
+): boolean => {
+	const configured = Effect.runSync(
+		Effect.either(
+			Effect.try({
+				try: configure,
+				catch: (error) => error,
+			}),
+		),
+	);
 
-  if (Either.isRight(configured)) {
-    return true;
-  }
+	if (Either.isRight(configured)) {
+		return true;
+	}
 
-  setupLogger.error(`Failed to configure ${clientLabel}`, {
-    error: getErrorMessage(configured.left),
-  });
-  return false;
+	setupLogger.error(`Failed to configure ${clientLabel}`, {
+		error: getErrorMessage(configured.left),
+	});
+	return false;
 };
 
 const ensureMcpServersConfig = (
-  config: Record<string, unknown>,
+	config: Record<string, unknown>,
 ): Record<string, MCPServerConfig> => {
-  if (!config.mcpServers || typeof config.mcpServers !== 'object') {
-    config.mcpServers = {};
-  }
+	if (!config.mcpServers || typeof config.mcpServers !== "object") {
+		config.mcpServers = {};
+	}
 
-  return config.mcpServers as Record<string, MCPServerConfig>;
+	return config.mcpServers as Record<string, MCPServerConfig>;
 };
 
 const hasMcpServerConfig = (configPath: string): boolean => {
-  if (!existsSync(configPath)) {
-    return false;
-  }
+	if (!existsSync(configPath)) {
+		return false;
+	}
 
-  const config = readJSONConfig(configPath);
-  const mcpServers = config.mcpServers as Record<string, MCPServerConfig> | undefined;
+	const config = readJSONConfig(configPath);
+	const mcpServers = config.mcpServers as
+		| Record<string, MCPServerConfig>
+		| undefined;
 
-  return !!mcpServers?.['ebay-mcp-server'];
+	return !!mcpServers?.["ebay-mcp-server"];
 };
 
 /**
@@ -411,20 +433,20 @@ const hasMcpServerConfig = (configPath: string): boolean => {
  * ```
  */
 export const configureClaudeDesktop = (projectRoot: string): boolean => {
-  return runClientConfigurator('Claude Desktop', () => {
-    const configPath = getClaudeConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Claude Desktop", () => {
+		const configPath = getClaudeConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -438,20 +460,20 @@ export const configureClaudeDesktop = (projectRoot: string): boolean => {
  * ```
  */
 export const configureCline = (projectRoot: string): boolean => {
-  return runClientConfigurator('Cline', () => {
-    const configPath = getClineConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Cline", () => {
+		const configPath = getClineConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -465,48 +487,50 @@ export const configureCline = (projectRoot: string): boolean => {
  * ```
  */
 export const configureContinue = (projectRoot: string): boolean => {
-  return runClientConfigurator('Continue.dev', () => {
-    const configPath = getContinueConfigPath();
-    const config = readJSONConfig(configPath);
+	return runClientConfigurator("Continue.dev", () => {
+		const configPath = getContinueConfigPath();
+		const config = readJSONConfig(configPath);
 
-    // Initialize experimental.modelContextProtocolServers if it doesn't exist
-    if (!config.experimental || typeof config.experimental !== 'object') {
-      config.experimental = {};
-    }
+		// Initialize experimental.modelContextProtocolServers if it doesn't exist
+		if (!config.experimental || typeof config.experimental !== "object") {
+			config.experimental = {};
+		}
 
-    const experimental = config.experimental as Record<string, unknown>;
+		const experimental = config.experimental as Record<string, unknown>;
 
-    if (
-      !(
-        experimental.modelContextProtocolServers &&
-        Array.isArray(experimental.modelContextProtocolServers)
-      )
-    ) {
-      experimental.modelContextProtocolServers = [];
-    }
+		if (
+			!(
+				experimental.modelContextProtocolServers &&
+				Array.isArray(experimental.modelContextProtocolServers)
+			)
+		) {
+			experimental.modelContextProtocolServers = [];
+		}
 
-    const mcpServers = experimental.modelContextProtocolServers as MCPServerConfig[];
+		const mcpServers =
+			experimental.modelContextProtocolServers as MCPServerConfig[];
 
-    // Check if eBay server already exists
-    const existingIndex = mcpServers.findIndex(
-      (server) => server.command === 'node' && server.args?.[0]?.includes('ebay-mcp'),
-    );
+		// Check if eBay server already exists
+		const existingIndex = mcpServers.findIndex(
+			(server) =>
+				server.command === "node" && server.args?.[0]?.includes("ebay-mcp"),
+		);
 
-    const serverConfig: MCPServerConfig = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		const serverConfig: MCPServerConfig = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    if (existingIndex >= 0) {
-      mcpServers[existingIndex] = serverConfig;
-    } else {
-      mcpServers.push(serverConfig);
-    }
+		if (existingIndex >= 0) {
+			mcpServers[existingIndex] = serverConfig;
+		} else {
+			mcpServers.push(serverConfig);
+		}
 
-    experimental.modelContextProtocolServers = mcpServers;
-    config.experimental = experimental;
-    writeJSONConfig(configPath, config);
-  });
+		experimental.modelContextProtocolServers = mcpServers;
+		config.experimental = experimental;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -522,29 +546,29 @@ export const configureContinue = (projectRoot: string): boolean => {
  * ```
  */
 export const configureZed = (projectRoot: string): boolean => {
-  return runClientConfigurator('Zed', () => {
-    const configPath = getZedConfigPath();
-    const config = readJSONConfig(configPath);
+	return runClientConfigurator("Zed", () => {
+		const configPath = getZedConfigPath();
+		const config = readJSONConfig(configPath);
 
-    // Initialize context_servers if it doesn't exist
-    if (!config.context_servers || typeof config.context_servers !== 'object') {
-      config.context_servers = {};
-    }
+		// Initialize context_servers if it doesn't exist
+		if (!config.context_servers || typeof config.context_servers !== "object") {
+			config.context_servers = {};
+		}
 
-    const contextServers = config.context_servers as Record<string, unknown>;
+		const contextServers = config.context_servers as Record<string, unknown>;
 
-    // Add or update eBay MCP server configuration
-    contextServers['ebay-mcp-server'] = {
-      command: {
-        path: 'node',
-        args: [join(projectRoot, 'build', 'index.js')],
-      },
-      settings: {},
-    };
+		// Add or update eBay MCP server configuration
+		contextServers["ebay-mcp-server"] = {
+			command: {
+				path: "node",
+				args: [join(projectRoot, "build", "index.js")],
+			},
+			settings: {},
+		};
 
-    config.context_servers = contextServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.context_servers = contextServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -560,20 +584,20 @@ export const configureZed = (projectRoot: string): boolean => {
  * ```
  */
 export const configureCursor = (projectRoot: string): boolean => {
-  return runClientConfigurator('Cursor', () => {
-    const configPath = getCursorConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Cursor", () => {
+		const configPath = getCursorConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -587,20 +611,20 @@ export const configureCursor = (projectRoot: string): boolean => {
  * ```
  */
 export const configureWindsurf = (projectRoot: string): boolean => {
-  return runClientConfigurator('Windsurf', () => {
-    const configPath = getWindsurfConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Windsurf", () => {
+		const configPath = getWindsurfConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -614,20 +638,20 @@ export const configureWindsurf = (projectRoot: string): boolean => {
  * ```
  */
 export const configureRooCode = (projectRoot: string): boolean => {
-  return runClientConfigurator('Roo Code', () => {
-    const configPath = getRooCodeConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Roo Code", () => {
+		const configPath = getRooCodeConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -643,20 +667,20 @@ export const configureRooCode = (projectRoot: string): boolean => {
  * ```
  */
 export const configureClaudeCode = (projectRoot: string): boolean => {
-  return runClientConfigurator('Claude Code CLI', () => {
-    const configPath = getClaudeCodeConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Claude Code CLI", () => {
+		const configPath = getClaudeCodeConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -670,20 +694,20 @@ export const configureClaudeCode = (projectRoot: string): boolean => {
  * ```
  */
 export const configureAmazonQ = (projectRoot: string): boolean => {
-  return runClientConfigurator('Amazon Q', () => {
-    const configPath = getAmazonQConfigPath();
-    const config = readJSONConfig(configPath);
-    const mcpServers = ensureMcpServersConfig(config);
+	return runClientConfigurator("Amazon Q", () => {
+		const configPath = getAmazonQConfigPath();
+		const config = readJSONConfig(configPath);
+		const mcpServers = ensureMcpServersConfig(config);
 
-    // Add or update eBay MCP server configuration
-    mcpServers['ebay-mcp-server'] = {
-      command: 'node',
-      args: [join(projectRoot, 'build', 'index.js')],
-    };
+		// Add or update eBay MCP server configuration
+		mcpServers["ebay-mcp-server"] = {
+			command: "node",
+			args: [join(projectRoot, "build", "index.js")],
+		};
 
-    config.mcpServers = mcpServers;
-    writeJSONConfig(configPath, config);
-  });
+		config.mcpServers = mcpServers;
+		writeJSONConfig(configPath, config);
+	});
 };
 
 /**
@@ -697,29 +721,32 @@ export const configureAmazonQ = (projectRoot: string): boolean => {
  * const configured = configureLLMClient('cursor', process.cwd());
  * ```
  */
-export const configureLLMClient = (clientName: string, projectRoot: string): boolean => {
-  switch (clientName) {
-    case 'claude':
-      return configureClaudeDesktop(projectRoot);
-    case 'cline':
-      return configureCline(projectRoot);
-    case 'continue':
-      return configureContinue(projectRoot);
-    case 'zed':
-      return configureZed(projectRoot);
-    case 'cursor':
-      return configureCursor(projectRoot);
-    case 'windsurf':
-      return configureWindsurf(projectRoot);
-    case 'roocode':
-      return configureRooCode(projectRoot);
-    case 'claudecode':
-      return configureClaudeCode(projectRoot);
-    case 'amazonq':
-      return configureAmazonQ(projectRoot);
-    default:
-      return false;
-  }
+export const configureLLMClient = (
+	clientName: string,
+	projectRoot: string,
+): boolean => {
+	switch (clientName) {
+		case "claude":
+			return configureClaudeDesktop(projectRoot);
+		case "cline":
+			return configureCline(projectRoot);
+		case "continue":
+			return configureContinue(projectRoot);
+		case "zed":
+			return configureZed(projectRoot);
+		case "cursor":
+			return configureCursor(projectRoot);
+		case "windsurf":
+			return configureWindsurf(projectRoot);
+		case "roocode":
+			return configureRooCode(projectRoot);
+		case "claudecode":
+			return configureClaudeCode(projectRoot);
+		case "amazonq":
+			return configureAmazonQ(projectRoot);
+		default:
+			return false;
+	}
 };
 
 /**
@@ -733,12 +760,15 @@ export const configureLLMClient = (clientName: string, projectRoot: string): boo
  * const instructions = getManualConfigInstructions('claude', process.cwd());
  * ```
  */
-export const getManualConfigInstructions = (clientName: string, projectRoot: string): string => {
-  const buildPath = join(projectRoot, 'build', 'index.js');
+export const getManualConfigInstructions = (
+	clientName: string,
+	projectRoot: string,
+): string => {
+	const buildPath = join(projectRoot, "build", "index.js");
 
-  switch (clientName) {
-    case 'claude':
-      return `
+	switch (clientName) {
+		case "claude":
+			return `
 Add this to ${getClaudeConfigPath()}:
 
 {
@@ -750,8 +780,8 @@ Add this to ${getClaudeConfigPath()}:
   }
 }`;
 
-    case 'cline':
-      return `
+		case "cline":
+			return `
 Add this to ${getClineConfigPath()}:
 
 {
@@ -763,8 +793,8 @@ Add this to ${getClineConfigPath()}:
   }
 }`;
 
-    case 'continue':
-      return `
+		case "continue":
+			return `
 Add this to ${getContinueConfigPath()}:
 
 {
@@ -778,8 +808,8 @@ Add this to ${getContinueConfigPath()}:
   }
 }`;
 
-    case 'zed':
-      return `
+		case "zed":
+			return `
 Add this to ${getZedConfigPath()}:
 
 {
@@ -794,8 +824,8 @@ Add this to ${getZedConfigPath()}:
   }
 }`;
 
-    case 'cursor':
-      return `
+		case "cursor":
+			return `
 Add this to ${getCursorConfigPath()}:
 
 {
@@ -807,8 +837,8 @@ Add this to ${getCursorConfigPath()}:
   }
 }`;
 
-    case 'windsurf':
-      return `
+		case "windsurf":
+			return `
 Add this to ${getWindsurfConfigPath()}:
 
 {
@@ -820,8 +850,8 @@ Add this to ${getWindsurfConfigPath()}:
   }
 }`;
 
-    case 'roocode':
-      return `
+		case "roocode":
+			return `
 Add this to ${getRooCodeConfigPath()}:
 
 {
@@ -833,8 +863,8 @@ Add this to ${getRooCodeConfigPath()}:
   }
 }`;
 
-    case 'claudecode':
-      return `
+		case "claudecode":
+			return `
 Add this to ${getClaudeCodeConfigPath()}:
 
 {
@@ -846,8 +876,8 @@ Add this to ${getClaudeCodeConfigPath()}:
   }
 }`;
 
-    case 'amazonq':
-      return `
+		case "amazonq":
+			return `
 Add this to ${getAmazonQConfigPath()}:
 
 {
@@ -859,9 +889,9 @@ Add this to ${getAmazonQConfigPath()}:
   }
 }`;
 
-    default:
-      return 'Manual configuration instructions not available for this client.';
-  }
+		default:
+			return "Manual configuration instructions not available for this client.";
+	}
 };
 
 /**
@@ -875,66 +905,75 @@ Add this to ${getAmazonQConfigPath()}:
  * const ready = verifyClientConfiguration('cursor', process.cwd());
  * ```
  */
-export const verifyClientConfiguration = (clientName: string, _projectRoot: string): boolean => {
-  const verified = Effect.runSync(
-    Effect.either(
-      Effect.try({
-        try: () => {
-          switch (clientName) {
-            case 'claude':
-              return hasMcpServerConfig(getClaudeConfigPath());
+export const verifyClientConfiguration = (
+	clientName: string,
+	_projectRoot: string,
+): boolean => {
+	const verified = Effect.runSync(
+		Effect.either(
+			Effect.try({
+				try: () => {
+					switch (clientName) {
+						case "claude":
+							return hasMcpServerConfig(getClaudeConfigPath());
 
-            case 'cline':
-              return hasMcpServerConfig(getClineConfigPath());
+						case "cline":
+							return hasMcpServerConfig(getClineConfigPath());
 
-            case 'continue': {
-              const configPath = getContinueConfigPath();
-              if (!existsSync(configPath)) return false;
+						case "continue": {
+							const configPath = getContinueConfigPath();
+							if (!existsSync(configPath)) return false;
 
-              const config = readJSONConfig(configPath);
-              const experimental = config.experimental as Record<string, unknown> | undefined;
-              const mcpServers = experimental?.modelContextProtocolServers as
-                | MCPServerConfig[]
-                | undefined;
+							const config = readJSONConfig(configPath);
+							const experimental = config.experimental as
+								| Record<string, unknown>
+								| undefined;
+							const mcpServers = experimental?.modelContextProtocolServers as
+								| MCPServerConfig[]
+								| undefined;
 
-              return !!mcpServers?.some((server) => server.args?.[0]?.includes('ebay-mcp-server'));
-            }
+							return !!mcpServers?.some((server) =>
+								server.args?.[0]?.includes("ebay-mcp-server"),
+							);
+						}
 
-            case 'zed': {
-              const configPath = getZedConfigPath();
-              if (!existsSync(configPath)) return false;
+						case "zed": {
+							const configPath = getZedConfigPath();
+							if (!existsSync(configPath)) return false;
 
-              const config = readJSONConfig(configPath);
-              const contextServers = config.context_servers as Record<string, unknown> | undefined;
+							const config = readJSONConfig(configPath);
+							const contextServers = config.context_servers as
+								| Record<string, unknown>
+								| undefined;
 
-              return !!contextServers?.['ebay-mcp-server'];
-            }
+							return !!contextServers?.["ebay-mcp-server"];
+						}
 
-            case 'cursor':
-              return hasMcpServerConfig(getCursorConfigPath());
+						case "cursor":
+							return hasMcpServerConfig(getCursorConfigPath());
 
-            case 'windsurf':
-              return hasMcpServerConfig(getWindsurfConfigPath());
+						case "windsurf":
+							return hasMcpServerConfig(getWindsurfConfigPath());
 
-            case 'roocode':
-              return hasMcpServerConfig(getRooCodeConfigPath());
+						case "roocode":
+							return hasMcpServerConfig(getRooCodeConfigPath());
 
-            case 'claudecode':
-              return hasMcpServerConfig(getClaudeCodeConfigPath());
+						case "claudecode":
+							return hasMcpServerConfig(getClaudeCodeConfigPath());
 
-            case 'amazonq':
-              return hasMcpServerConfig(getAmazonQConfigPath());
+						case "amazonq":
+							return hasMcpServerConfig(getAmazonQConfigPath());
 
-            default:
-              return false;
-          }
-        },
-        catch: () => false,
-      }),
-    ),
-  );
+						default:
+							return false;
+					}
+				},
+				catch: () => false,
+			}),
+		),
+	);
 
-  return Either.isRight(verified) ? verified.right : false;
+	return Either.isRight(verified) ? verified.right : false;
 };
 
 /**
@@ -947,15 +986,15 @@ export const verifyClientConfiguration = (clientName: string, _projectRoot: stri
  * ```
  */
 export const getAllSupportedClients = (): string[] => [
-  'claude',
-  'cline',
-  'continue',
-  'zed',
-  'cursor',
-  'windsurf',
-  'roocode',
-  'claudecode',
-  'amazonq',
+	"claude",
+	"cline",
+	"continue",
+	"zed",
+	"cursor",
+	"windsurf",
+	"roocode",
+	"claudecode",
+	"amazonq",
 ];
 
 /**
@@ -969,17 +1008,17 @@ export const getAllSupportedClients = (): string[] => [
  * ```
  */
 export const supportsNativeMCP = (clientName: string): boolean => {
-  // All these clients support MCP (Model Context Protocol)
-  const supportedClients = [
-    'claude',
-    'cline',
-    'continue',
-    'zed',
-    'cursor',
-    'windsurf',
-    'roocode',
-    'claudecode',
-    'amazonq',
-  ];
-  return supportedClients.includes(clientName.toLowerCase());
+	// All these clients support MCP (Model Context Protocol)
+	const supportedClients = [
+		"claude",
+		"cline",
+		"continue",
+		"zed",
+		"cursor",
+		"windsurf",
+		"roocode",
+		"claudecode",
+		"amazonq",
+	];
+	return supportedClients.includes(clientName.toLowerCase());
 };

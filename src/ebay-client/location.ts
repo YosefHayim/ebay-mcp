@@ -1,12 +1,12 @@
-import { EbayApiError } from '@/ebay-client/request.js';
-import { Effect } from 'effect';
+import { Effect } from "effect";
+import { EbayApiError } from "@/ebay-client/request.js";
 
 /** Resource created by an eBay endpoint that reports its identifier only in `Location`. */
 export interface LocatedResource {
-  /** Location header exactly as eBay returned it. */
-  readonly location: string;
-  /** Decoded final path segment, e.g. a task or schedule ID. */
-  readonly id: string;
+	/** Location header exactly as eBay returned it. */
+	readonly location: string;
+	/** Decoded final path segment, e.g. a task or schedule ID. */
+	readonly id: string;
 }
 
 /**
@@ -23,26 +23,27 @@ export interface LocatedResource {
  * ```
  */
 export const locatedResourceId = (
-  location: string | undefined,
-  collectionPath: string,
+	location: string | undefined,
+	collectionPath: string,
 ): Effect.Effect<LocatedResource, EbayApiError> =>
-  Effect.try({
-    try: () => {
-      if (!location) {
-        throw new Error('eBay returned no Location header');
-      }
-      const url = new URL(location);
-      const prefix = `${collectionPath}/`;
-      const segment = url.pathname.slice(prefix.length);
-      if (
-        url.protocol !== 'https:' ||
-        !url.pathname.startsWith(prefix) ||
-        !segment ||
-        segment.includes('/')
-      ) {
-        throw new Error('eBay returned an invalid resource Location');
-      }
-      return { location, id: decodeURIComponent(segment) };
-    },
-    catch: (cause) => new EbayApiError({ method: 'POST', path: collectionPath, cause }),
-  });
+	Effect.try({
+		try: () => {
+			if (!location) {
+				throw new Error("eBay returned no Location header");
+			}
+			const url = new URL(location);
+			const prefix = `${collectionPath}/`;
+			const segment = url.pathname.slice(prefix.length);
+			if (
+				url.protocol !== "https:" ||
+				!url.pathname.startsWith(prefix) ||
+				!segment ||
+				segment.includes("/")
+			) {
+				throw new Error("eBay returned an invalid resource Location");
+			}
+			return { location, id: decodeURIComponent(segment) };
+		},
+		catch: (cause) =>
+			new EbayApiError({ method: "POST", path: collectionPath, cause }),
+	});

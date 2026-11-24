@@ -1,19 +1,25 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { McpServer, RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
-  getUiCapability,
-  registerAppResource,
-  RESOURCE_MIME_TYPE,
-  RESOURCE_URI_META_KEY,
-} from '@modelcontextprotocol/ext-apps/server';
-import { getUiRuntimeConfig } from '@/shared/environment.js';
-import type { ResolvedToolUi, ToolEntry } from '@/tool-registry/registry.js';
-import { uiArchetypes } from '@/tool-registry/ui/archetypes.js';
-import type { ViewArchetype, ViewModel } from '@/tool-registry/ui/viewModels.js';
-import { serverLogger } from '@/shared/logger.js';
+	getUiCapability,
+	RESOURCE_MIME_TYPE,
+	RESOURCE_URI_META_KEY,
+	registerAppResource,
+} from "@modelcontextprotocol/ext-apps/server";
+import type {
+	McpServer,
+	RegisteredTool,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { getUiRuntimeConfig } from "@/shared/environment.js";
+import { serverLogger } from "@/shared/logger.js";
+import type { ResolvedToolUi, ToolEntry } from "@/tool-registry/registry.js";
+import { uiArchetypes } from "@/tool-registry/ui/archetypes.js";
+import type {
+	ViewArchetype,
+	ViewModel,
+} from "@/tool-registry/ui/viewModels.js";
 
 /**
  * The seam between the eBay tool registry and the MCP Apps extension.
@@ -55,15 +61,15 @@ type ClientUiCapabilities = Parameters<typeof getUiCapability>[0];
  * ```
  */
 export const resolveUiEnabled = (
-  capabilities: ClientUiCapabilities,
-  uiEnabledByConfig = getUiRuntimeConfig().enabled,
+	capabilities: ClientUiCapabilities,
+	uiEnabledByConfig = getUiRuntimeConfig().enabled,
 ): boolean => {
-  if (!uiEnabledByConfig) {
-    return false;
-  }
+	if (!uiEnabledByConfig) {
+		return false;
+	}
 
-  const capability = getUiCapability(capabilities);
-  return Boolean(capability?.mimeTypes?.includes(RESOURCE_MIME_TYPE));
+	const capability = getUiCapability(capabilities);
+	return Boolean(capability?.mimeTypes?.includes(RESOURCE_MIME_TYPE));
 };
 
 /**
@@ -83,30 +89,36 @@ export const resolveUiEnabled = (
  * ```
  */
 export const summarizeView = (view: ViewModel): string => {
-  switch (view.archetype) {
-    case 'table': {
-      const count = view.rows.length;
-      const tail = view.footnote ? ` — ${view.footnote}` : '';
-      const prefix = view.title ? `${view.title}: ` : '';
-      return `${prefix}${count} ${count === 1 ? 'row' : 'rows'}${tail}. Rendered as an interactive table.`;
-    }
-    case 'card': {
-      const heading = [view.title, view.subtitle].filter(Boolean).join(' — ');
-      const prefix = heading ? `${heading}: ` : '';
-      const fieldCount = view.sections.reduce((total, section) => total + section.fields.length, 0);
-      return `${prefix}${fieldCount} ${fieldCount === 1 ? 'field' : 'fields'}. Rendered as an interactive detail card.`;
-    }
-    case 'chart': {
-      const pointCount = view.series.reduce((total, series) => total + series.points.length, 0);
-      const prefix = view.title ? `${view.title} (${view.kind}): ` : '';
-      return `${prefix}${view.series.length} series, ${pointCount} ${pointCount === 1 ? 'point' : 'points'}. Rendered as an interactive chart.`;
-    }
-    case 'stat': {
-      const count = view.tiles.length;
-      const prefix = view.title ? `${view.title}: ` : '';
-      return `${prefix}${count} ${count === 1 ? 'metric' : 'metrics'}. Rendered as an interactive stat grid.`;
-    }
-  }
+	switch (view.archetype) {
+		case "table": {
+			const count = view.rows.length;
+			const tail = view.footnote ? ` — ${view.footnote}` : "";
+			const prefix = view.title ? `${view.title}: ` : "";
+			return `${prefix}${count} ${count === 1 ? "row" : "rows"}${tail}. Rendered as an interactive table.`;
+		}
+		case "card": {
+			const heading = [view.title, view.subtitle].filter(Boolean).join(" — ");
+			const prefix = heading ? `${heading}: ` : "";
+			const fieldCount = view.sections.reduce(
+				(total, section) => total + section.fields.length,
+				0,
+			);
+			return `${prefix}${fieldCount} ${fieldCount === 1 ? "field" : "fields"}. Rendered as an interactive detail card.`;
+		}
+		case "chart": {
+			const pointCount = view.series.reduce(
+				(total, series) => total + series.points.length,
+				0,
+			);
+			const prefix = view.title ? `${view.title} (${view.kind}): ` : "";
+			return `${prefix}${view.series.length} series, ${pointCount} ${pointCount === 1 ? "point" : "points"}. Rendered as an interactive chart.`;
+		}
+		case "stat": {
+			const count = view.tiles.length;
+			const prefix = view.title ? `${view.title}: ` : "";
+			return `${prefix}${count} ${count === 1 ? "metric" : "metrics"}. Rendered as an interactive stat grid.`;
+		}
+	}
 };
 
 /**
@@ -119,7 +131,7 @@ export const summarizeView = (view: ViewModel): string => {
  * which would silently disable excess-property checks in the tool mappers.
  */
 const asStructuredContent = (view: ViewModel): Record<string, unknown> =>
-  view as unknown as Record<string, unknown>;
+	view as unknown as Record<string, unknown>;
 
 /**
  * Projects a tool result into its view and packages it as a UI tool result: a
@@ -135,13 +147,16 @@ const asStructuredContent = (view: ViewModel): Record<string, unknown> =>
  * const toolResult = buildUiToolResult(entry.ui, handlerResult);
  * ```
  */
-export const buildUiToolResult = (ui: ResolvedToolUi, handlerOutput: unknown): CallToolResult => {
-  const view = ui.map(handlerOutput);
-  return {
-    content: [{ type: 'text', text: summarizeView(view) }],
-    structuredContent: asStructuredContent(view),
-    _meta: { ui: { resourceUri: ui.resourceUri } },
-  };
+export const buildUiToolResult = (
+	ui: ResolvedToolUi,
+	handlerOutput: unknown,
+): CallToolResult => {
+	const view = ui.map(handlerOutput);
+	return {
+		content: [{ type: "text", text: summarizeView(view) }],
+		structuredContent: asStructuredContent(view),
+		_meta: { ui: { resourceUri: ui.resourceUri } },
+	};
 };
 
 /**
@@ -158,17 +173,17 @@ export const buildUiToolResult = (ui: ResolvedToolUi, handlerOutput: unknown): C
  * ```
  */
 export const findRepoRoot = (startDir: string): string | undefined => {
-  let current = startDir;
-  for (;;) {
-    if (existsSync(join(current, 'package.json'))) {
-      return current;
-    }
-    const parent = dirname(current);
-    if (parent === current) {
-      return;
-    }
-    current = parent;
-  }
+	let current = startDir;
+	for (;;) {
+		if (existsSync(join(current, "package.json"))) {
+			return current;
+		}
+		const parent = dirname(current);
+		if (parent === current) {
+			return;
+		}
+		current = parent;
+	}
 };
 
 /**
@@ -183,9 +198,9 @@ export const findRepoRoot = (startDir: string): string | undefined => {
  * ```
  */
 export const resolveBuiltUiDir = (moduleUrl: string): string => {
-  const fromDir = dirname(fileURLToPath(moduleUrl));
-  const root = findRepoRoot(fromDir);
-  return root ? join(root, 'build', 'ui') : join(fromDir, '..', 'ui');
+	const fromDir = dirname(fileURLToPath(moduleUrl));
+	const root = findRepoRoot(fromDir);
+	return root ? join(root, "build", "ui") : join(fromDir, "..", "ui");
 };
 
 /**
@@ -194,12 +209,12 @@ export const resolveBuiltUiDir = (moduleUrl: string): string => {
  * tools, decide per-call whether to render, and install the capability gate.
  */
 export interface UiBridge {
-  /** Records a freshly registered tool so the gate can flip its `_meta` on connect. */
-  register(entry: ToolEntry, registered: RegisteredTool): void;
-  /** Narrows to a UI-eligible entry whose view should be emitted for this client. */
-  shouldRender(entry: ToolEntry): entry is ToolEntry & { ui: ResolvedToolUi };
-  /** Wires `oninitialized` to enable UI and advertise resource URIs when supported. */
-  installCapabilityGate(): void;
+	/** Records a freshly registered tool so the gate can flip its `_meta` on connect. */
+	register(entry: ToolEntry, registered: RegisteredTool): void;
+	/** Narrows to a UI-eligible entry whose view should be emitted for this client. */
+	shouldRender(entry: ToolEntry): entry is ToolEntry & { ui: ResolvedToolUi };
+	/** Wires `oninitialized` to enable UI and advertise resource URIs when supported. */
+	installCapabilityGate(): void;
 }
 
 /**
@@ -215,58 +230,63 @@ export interface UiBridge {
  * const ui = createUiBridge(server, import.meta.url);
  * ```
  */
-export const createUiBridge = (server: McpServer, moduleUrl: string): UiBridge => {
-  const builtUiDir = resolveBuiltUiDir(moduleUrl);
-  const available = new Set<ViewArchetype>();
+export const createUiBridge = (
+	server: McpServer,
+	moduleUrl: string,
+): UiBridge => {
+	const builtUiDir = resolveBuiltUiDir(moduleUrl);
+	const available = new Set<ViewArchetype>();
 
-  // `Object.keys` widens to `string[]`; the cast restores the manifest's key type.
-  for (const archetype of Object.keys(uiArchetypes) as ViewArchetype[]) {
-    const { uri, name, htmlFile } = uiArchetypes[archetype];
-    const htmlPath = join(builtUiDir, htmlFile);
+	// `Object.keys` widens to `string[]`; the cast restores the manifest's key type.
+	for (const archetype of Object.keys(uiArchetypes) as ViewArchetype[]) {
+		const { uri, name, htmlFile } = uiArchetypes[archetype];
+		const htmlPath = join(builtUiDir, htmlFile);
 
-    if (!existsSync(htmlPath)) {
-      serverLogger.warn(`UI view not built; "${uri}" disabled (expected ${htmlPath})`);
-      continue;
-    }
+		if (!existsSync(htmlPath)) {
+			serverLogger.warn(
+				`UI view not built; "${uri}" disabled (expected ${htmlPath})`,
+			);
+			continue;
+		}
 
-    const html = readFileSync(htmlPath, 'utf-8');
-    registerAppResource(server, name, uri, {}, () => ({
-      contents: [{ uri, mimeType: RESOURCE_MIME_TYPE, text: html }],
-    }));
-    available.add(archetype);
-  }
+		const html = readFileSync(htmlPath, "utf-8");
+		registerAppResource(server, name, uri, {}, () => ({
+			contents: [{ uri, mimeType: RESOURCE_MIME_TYPE, text: html }],
+		}));
+		available.add(archetype);
+	}
 
-  let uiEnabled = false;
-  const uiTools: { registered: RegisteredTool; resourceUri: string }[] = [];
+	let uiEnabled = false;
+	const uiTools: { registered: RegisteredTool; resourceUri: string }[] = [];
 
-  return {
-    register(entry, registered) {
-      if (entry.ui && available.has(entry.ui.archetype)) {
-        uiTools.push({ registered, resourceUri: entry.ui.resourceUri });
-      }
-    },
+	return {
+		register(entry, registered) {
+			if (entry.ui && available.has(entry.ui.archetype)) {
+				uiTools.push({ registered, resourceUri: entry.ui.resourceUri });
+			}
+		},
 
-    shouldRender(entry): entry is ToolEntry & { ui: ResolvedToolUi } {
-      return uiEnabled && entry.ui != null && available.has(entry.ui.archetype);
-    },
+		shouldRender(entry): entry is ToolEntry & { ui: ResolvedToolUi } {
+			return uiEnabled && entry.ui != null && available.has(entry.ui.archetype);
+		},
 
-    installCapabilityGate() {
-      const priorOnInitialized = server.server.oninitialized;
-      server.server.oninitialized = () => {
-        priorOnInitialized?.();
-        uiEnabled = resolveUiEnabled(server.server.getClientCapabilities());
-        if (!uiEnabled) {
-          return;
-        }
-        for (const { registered, resourceUri } of uiTools) {
-          registered.update({
-            _meta: {
-              ui: { resourceUri },
-              [RESOURCE_URI_META_KEY]: resourceUri,
-            },
-          });
-        }
-      };
-    },
-  };
+		installCapabilityGate() {
+			const priorOnInitialized = server.server.oninitialized;
+			server.server.oninitialized = () => {
+				priorOnInitialized?.();
+				uiEnabled = resolveUiEnabled(server.server.getClientCapabilities());
+				if (!uiEnabled) {
+					return;
+				}
+				for (const { registered, resourceUri } of uiTools) {
+					registered.update({
+						_meta: {
+							ui: { resourceUri },
+							[RESOURCE_URI_META_KEY]: resourceUri,
+						},
+					});
+				}
+			};
+		},
+	};
 };

@@ -1,4 +1,9 @@
-import { createHash, createPrivateKey, type KeyObject, sign } from 'node:crypto';
+import {
+	createHash,
+	createPrivateKey,
+	type KeyObject,
+	sign,
+} from "node:crypto";
 
 /**
  * eBay Digital Signatures for APIs (RFC 9421 HTTP Message Signatures).
@@ -17,10 +22,10 @@ import { createHash, createPrivateKey, type KeyObject, sign } from 'node:crypto'
  */
 
 /** Label used for the single signature eBay expects. */
-const SIGNATURE_LABEL = 'sig1';
+const SIGNATURE_LABEL = "sig1";
 
 /** Header name eBay reads the signing key JWE from. */
-const SIGNATURE_KEY_HEADER = 'x-ebay-signature-key';
+const SIGNATURE_KEY_HEADER = "x-ebay-signature-key";
 
 const PEM_PATTERN = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
 
@@ -28,9 +33,9 @@ const PEM_PATTERN = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
  * Sign the signature base with Ed25519, or RSASSA-PKCS1-v1_5 with SHA-256.
  */
 const signBase = (signatureBase: string, key: KeyObject): string => {
-  const signatureBaseBytes = Buffer.from(signatureBase, 'utf8');
-  const digest = key.asymmetricKeyType === 'ed25519' ? null : 'sha256';
-  return sign(digest, signatureBaseBytes, key).toString('base64');
+	const signatureBaseBytes = Buffer.from(signatureBase, "utf8");
+	const digest = key.asymmetricKeyType === "ed25519" ? null : "sha256";
+	return sign(digest, signatureBaseBytes, key).toString("base64");
 };
 
 /** Lower-cased `@authority`: host plus any non-default port (`URL.host` already omits defaults). */
@@ -38,17 +43,17 @@ const authorityOf = (url: URL): string => url.host.toLowerCase();
 
 /** A request about to be sent, reduced to what the signature covers. */
 export interface SignableRequest {
-  /** HTTP method, e.g. `GET`. */
-  readonly method: string;
-  /** Fully qualified URL eBay receives (query string is ignored by `@path`). */
-  readonly url: string;
-  /** Exact body bytes sent on the wire; omitted for requests without a body. */
-  readonly bodyBytes?: string | Uint8Array;
+	/** HTTP method, e.g. `GET`. */
+	readonly method: string;
+	/** Fully qualified URL eBay receives (query string is ignored by `@path`). */
+	readonly url: string;
+	/** Exact body bytes sent on the wire; omitted for requests without a body. */
+	readonly bodyBytes?: string | Uint8Array;
 }
 
 /** Raised when the configured signing private key cannot be used. */
 export class EbaySigningKeyError extends Error {
-  override readonly name = 'EbaySigningKeyError';
+	override readonly name = "EbaySigningKeyError";
 }
 
 /**
@@ -64,29 +69,29 @@ export class EbaySigningKeyError extends Error {
  * @throws {EbaySigningKeyError} When the key cannot be parsed or is not Ed25519/RSA.
  */
 export const parseSigningPrivateKey = (privateKey: string): KeyObject => {
-  const trimmed = privateKey.trim().replaceAll('\\n', '\n');
-  let key: KeyObject;
-  try {
-    key = PEM_PATTERN.test(trimmed)
-      ? createPrivateKey(trimmed)
-      : createPrivateKey({
-          key: Buffer.from(trimmed.replaceAll(/\s/g, ''), 'base64'),
-          format: 'der',
-          type: 'pkcs8',
-        });
-  } catch (cause) {
-    throw new EbaySigningKeyError(
-      'EBAY_SIGNING_PRIVATE_KEY could not be parsed. Use the privateKey value returned by ebay_create_signing_key (base64 PKCS#8) or a PEM private key.',
-      { cause },
-    );
-  }
+	const trimmed = privateKey.trim().replaceAll("\\n", "\n");
+	let key: KeyObject;
+	try {
+		key = PEM_PATTERN.test(trimmed)
+			? createPrivateKey(trimmed)
+			: createPrivateKey({
+					key: Buffer.from(trimmed.replaceAll(/\s/g, ""), "base64"),
+					format: "der",
+					type: "pkcs8",
+				});
+	} catch (cause) {
+		throw new EbaySigningKeyError(
+			"EBAY_SIGNING_PRIVATE_KEY could not be parsed. Use the privateKey value returned by ebay_create_signing_key (base64 PKCS#8) or a PEM private key.",
+			{ cause },
+		);
+	}
 
-  if (key.asymmetricKeyType !== 'ed25519' && key.asymmetricKeyType !== 'rsa') {
-    throw new EbaySigningKeyError(
-      `EBAY_SIGNING_PRIVATE_KEY is a ${key.asymmetricKeyType ?? 'unknown'} key; eBay digital signatures accept only ED25519 or RSA keys.`,
-    );
-  }
-  return key;
+	if (key.asymmetricKeyType !== "ed25519" && key.asymmetricKeyType !== "rsa") {
+		throw new EbaySigningKeyError(
+			`EBAY_SIGNING_PRIVATE_KEY is a ${key.asymmetricKeyType ?? "unknown"} key; eBay digital signatures accept only ED25519 or RSA keys.`,
+		);
+	}
+	return key;
 };
 
 /**
@@ -96,7 +101,7 @@ export const parseSigningPrivateKey = (privateKey: string): KeyObject => {
  * @returns The header value, e.g. `sha-256=:X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE=:`.
  */
 export const computeContentDigest = (bodyBytes: string | Uint8Array): string =>
-  `sha-256=:${createHash('sha256').update(bodyBytes).digest('base64')}:`;
+	`sha-256=:${createHash("sha256").update(bodyBytes).digest("base64")}:`;
 
 /**
  * Build the RFC 9421 signature base for the components eBay covers.
@@ -107,13 +112,13 @@ export const computeContentDigest = (bodyBytes: string | Uint8Array): string =>
  * @returns The newline-joined signature base.
  */
 export const buildSignatureBase = (
-  components: ReadonlyArray<readonly [string, string]>,
-  signatureParams: string,
+	components: ReadonlyArray<readonly [string, string]>,
+	signatureParams: string,
 ): string =>
-  [
-    ...components.map(([name, value]) => `"${name}": ${value}`),
-    `"@signature-params": ${signatureParams}`,
-  ].join('\n');
+	[
+		...components.map(([name, value]) => `"${name}": ${value}`),
+		`"@signature-params": ${signatureParams}`,
+	].join("\n");
 
 /**
  * Produce the eBay digital-signature headers for one request attempt.
@@ -136,33 +141,33 @@ export const buildSignatureBase = (
  * ```
  */
 export const signEbayRequest = (
-  request: SignableRequest,
-  jwe: string,
-  key: KeyObject,
-  now: number = Date.now(),
+	request: SignableRequest,
+	jwe: string,
+	key: KeyObject,
+	now: number = Date.now(),
 ): Record<string, string> => {
-  const url = new URL(request.url);
-  const created = Math.floor(now / 1000);
-  const headers: Record<string, string> = { [SIGNATURE_KEY_HEADER]: jwe };
-  const components: Array<readonly [string, string]> = [];
+	const url = new URL(request.url);
+	const created = Math.floor(now / 1000);
+	const headers: Record<string, string> = { [SIGNATURE_KEY_HEADER]: jwe };
+	const components: Array<readonly [string, string]> = [];
 
-  if (request.bodyBytes !== undefined) {
-    const contentDigest = computeContentDigest(request.bodyBytes);
-    headers['Content-Digest'] = contentDigest;
-    components.push(['content-digest', contentDigest]);
-  }
-  components.push(
-    [SIGNATURE_KEY_HEADER, jwe],
-    ['@method', request.method.toUpperCase()],
-    ['@path', url.pathname],
-    ['@authority', authorityOf(url)],
-  );
+	if (request.bodyBytes !== undefined) {
+		const contentDigest = computeContentDigest(request.bodyBytes);
+		headers["Content-Digest"] = contentDigest;
+		components.push(["content-digest", contentDigest]);
+	}
+	components.push(
+		[SIGNATURE_KEY_HEADER, jwe],
+		["@method", request.method.toUpperCase()],
+		["@path", url.pathname],
+		["@authority", authorityOf(url)],
+	);
 
-  const signatureParams = `(${components.map(([name]) => `"${name}"`).join(' ')});created=${created}`;
-  const signatureBase = buildSignatureBase(components, signatureParams);
-  const signature = signBase(signatureBase, key);
+	const signatureParams = `(${components.map(([name]) => `"${name}"`).join(" ")});created=${created}`;
+	const signatureBase = buildSignatureBase(components, signatureParams);
+	const signature = signBase(signatureBase, key);
 
-  headers['Signature-Input'] = `${SIGNATURE_LABEL}=${signatureParams}`;
-  headers.Signature = `${SIGNATURE_LABEL}=:${signature}:`;
-  return headers;
+	headers["Signature-Input"] = `${SIGNATURE_LABEL}=${signatureParams}`;
+	headers.Signature = `${SIGNATURE_LABEL}=:${signature}:`;
+	return headers;
 };

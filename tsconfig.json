@@ -1,17 +1,23 @@
 {
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "module": "Node16",
-    "moduleResolution": "Node16",
-    "outDir": "./build",
-    "rootDir": "./src",
-    "esModuleInterop": true,
-    "declaration": true,
-    "declarationMap": false,
-    "sourceMap": false,
-    "paths": { "@/*": ["./src/*"] },
-    "baseUrl": "."
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "tests", "src/mcp-apps", "vitest.config.cts"]
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"module": "Node16",
+		"moduleResolution": "Node16",
+		"outDir": "./build",
+		"rootDir": "./src",
+		"esModuleInterop": true,
+		"declaration": true,
+		"declarationMap": false,
+		"sourceMap": false,
+		"paths": { "@/*": ["./src/*"] },
+		"baseUrl": "."
+	},
+	"include": ["src/**/*"],
+	"exclude": [
+		"node_modules",
+		"build",
+		"tests",
+		"src/mcp-apps",
+		"vitest.config.cts"
+	]
 }

@@ -1,46 +1,46 @@
-import { Data } from 'effect';
+import { Data } from "effect";
 
 /** Token verifier operation names reported by {@link TokenVerifierError}. */
 export type TokenVerifierOperation =
-  | 'initialize'
-  | 'verifyToken'
-  | 'verifyViaIntrospection'
-  | 'verifyViaJWT';
+	| "initialize"
+	| "verifyToken"
+	| "verifyViaIntrospection"
+	| "verifyViaJWT";
 
 /** Stable token verifier failure reasons reported by {@link TokenVerifierError}. */
 export type TokenVerifierErrorReason =
-  | 'metadataRequest'
-  | 'notInitialized'
-  | 'missingIntrospectionEndpoint'
-  | 'introspectionRequest'
-  | 'inactiveToken'
-  | 'invalidAudience'
-  | 'missingScopes'
-  | 'missingJwksUri'
-  | 'jwtVerification';
+	| "metadataRequest"
+	| "notInitialized"
+	| "missingIntrospectionEndpoint"
+	| "introspectionRequest"
+	| "inactiveToken"
+	| "invalidAudience"
+	| "missingScopes"
+	| "missingJwksUri"
+	| "jwtVerification";
 
 /** Tagged failure returned by token verifier Effects. */
-export class TokenVerifierError extends Data.TaggedError('TokenVerifierError')<{
-  /** Verifier operation that failed. */
-  readonly operation: TokenVerifierOperation;
-  /** Stable reason for the verifier failure. */
-  readonly reason: TokenVerifierErrorReason;
-  /** Human-readable failure message safe for the HTTP auth boundary. */
-  readonly message: string;
-  /** Lower-level HTTP, JWT, or parsing cause. */
-  readonly cause?: unknown;
+export class TokenVerifierError extends Data.TaggedError("TokenVerifierError")<{
+	/** Verifier operation that failed. */
+	readonly operation: TokenVerifierOperation;
+	/** Stable reason for the verifier failure. */
+	readonly reason: TokenVerifierErrorReason;
+	/** Human-readable failure message safe for the HTTP auth boundary. */
+	readonly message: string;
+	/** Lower-level HTTP, JWT, or parsing cause. */
+	readonly cause?: unknown;
 }> {}
 
 /** Fields required to construct a {@link TokenVerifierError}. */
 export interface TokenVerifierErrorInput {
-  /** Verifier operation that failed. */
-  readonly operation: TokenVerifierOperation;
-  /** Stable reason for the verifier failure. */
-  readonly reason: TokenVerifierErrorReason;
-  /** Human-readable failure message safe for the HTTP auth boundary. */
-  readonly message: string;
-  /** Lower-level HTTP, JWT, or parsing cause. */
-  readonly cause?: unknown;
+	/** Verifier operation that failed. */
+	readonly operation: TokenVerifierOperation;
+	/** Stable reason for the verifier failure. */
+	readonly reason: TokenVerifierErrorReason;
+	/** Human-readable failure message safe for the HTTP auth boundary. */
+	readonly message: string;
+	/** Lower-level HTTP, JWT, or parsing cause. */
+	readonly cause?: unknown;
 }
 
 /**
@@ -55,14 +55,14 @@ export interface TokenVerifierErrorInput {
  * ```
  */
 export const tokenVerifierError = ({
-  operation,
-  reason,
-  message,
-  cause,
+	operation,
+	reason,
+	message,
+	cause,
 }: TokenVerifierErrorInput): TokenVerifierError =>
-  new TokenVerifierError({
-    operation,
-    reason,
-    message,
-    ...(cause === undefined ? {} : { cause }),
-  });
+	new TokenVerifierError({
+		operation,
+		reason,
+		message,
+		...(cause === undefined ? {} : { cause }),
+	});

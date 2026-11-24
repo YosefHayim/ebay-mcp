@@ -12,31 +12,31 @@
  * asserts the two agree so adding a category without updating this list fails CI.
  */
 
-import process from 'node:process';
+import process from "node:process";
 
 /**
  * Canonical tool-family keys, mirroring `toolCategories[].key`. These are the
  * accepted tokens in a static `EBAY_MCP_TOOLS` list (e.g. `inventory,fulfillment`).
  */
 export const TOOL_FAMILY_KEYS = [
-  'connector',
-  'token-management',
-  'account',
-  'finances',
-  'inventory',
-  'feed',
-  'stores',
-  'fulfillment',
-  'logistics',
-  'marketing',
-  'analytics',
-  'metadata',
-  'taxonomy',
-  'communication',
-  'browse',
-  'other',
-  'developer',
-  'trading',
+	"connector",
+	"token-management",
+	"account",
+	"finances",
+	"inventory",
+	"feed",
+	"stores",
+	"fulfillment",
+	"logistics",
+	"marketing",
+	"analytics",
+	"metadata",
+	"taxonomy",
+	"communication",
+	"browse",
+	"other",
+	"developer",
+	"trading",
 ] as const;
 
 /** A valid tool-family key. */
@@ -59,16 +59,16 @@ const FAMILY_KEY_SET: ReadonlySet<string> = new Set(TOOL_FAMILY_KEYS);
  * would advertise a guarantee the value does not yet hold.
  */
 export type ToolGatingMode =
-  | { kind: 'all' }
-  | { kind: 'dynamic' }
-  | { kind: 'static'; families: string[] };
+	| { kind: "all" }
+	| { kind: "dynamic" }
+	| { kind: "static"; families: string[] };
 
 /** Splits a raw `EBAY_MCP_TOOLS` list into trimmed, lowercased, non-empty tokens. */
 const parseFamilyTokens = (raw: string): string[] =>
-  raw
-    .split(',')
-    .map((token) => token.trim().toLowerCase())
-    .filter(Boolean);
+	raw
+		.split(",")
+		.map((token) => token.trim().toLowerCase())
+		.filter(Boolean);
 
 /**
  * Resolves `EBAY_MCP_TOOLS` into a {@link ToolGatingMode}.
@@ -86,15 +86,17 @@ const parseFamilyTokens = (raw: string): string[] =>
  * const mode = resolveToolGatingMode({ EBAY_MCP_TOOLS: 'inventory,fulfillment' });
  * ```
  */
-export const resolveToolGatingMode = (env: NodeJS.ProcessEnv = process.env): ToolGatingMode => {
-  const raw = env.EBAY_MCP_TOOLS?.trim();
-  if (!raw || raw.toLowerCase() === 'all') {
-    return { kind: 'all' };
-  }
-  if (raw.toLowerCase() === 'dynamic') {
-    return { kind: 'dynamic' };
-  }
-  return { kind: 'static', families: parseFamilyTokens(raw) };
+export const resolveToolGatingMode = (
+	env: NodeJS.ProcessEnv = process.env,
+): ToolGatingMode => {
+	const raw = env.EBAY_MCP_TOOLS?.trim();
+	if (!raw || raw.toLowerCase() === "all") {
+		return { kind: "all" };
+	}
+	if (raw.toLowerCase() === "dynamic") {
+		return { kind: "dynamic" };
+	}
+	return { kind: "static", families: parseFamilyTokens(raw) };
 };
 
 /**
@@ -112,22 +114,22 @@ export const resolveToolGatingMode = (env: NodeJS.ProcessEnv = process.env): Too
  * ```
  */
 export const getToolGatingConfigError = (
-  env: NodeJS.ProcessEnv = process.env,
+	env: NodeJS.ProcessEnv = process.env,
 ): string | undefined => {
-  const mode = resolveToolGatingMode(env);
-  if (mode.kind !== 'static') {
-    return;
-  }
+	const mode = resolveToolGatingMode(env);
+	if (mode.kind !== "static") {
+		return;
+	}
 
-  if (mode.families.length === 0) {
-    return `EBAY_MCP_TOOLS is set but lists no tool families. Use "all", "dynamic", or a comma-separated list of: ${TOOL_FAMILY_KEYS.join(', ')}.`;
-  }
+	if (mode.families.length === 0) {
+		return `EBAY_MCP_TOOLS is set but lists no tool families. Use "all", "dynamic", or a comma-separated list of: ${TOOL_FAMILY_KEYS.join(", ")}.`;
+	}
 
-  const unknown = mode.families.filter((family) => !FAMILY_KEY_SET.has(family));
-  if (unknown.length === 0) {
-    return;
-  }
+	const unknown = mode.families.filter((family) => !FAMILY_KEY_SET.has(family));
+	if (unknown.length === 0) {
+		return;
+	}
 
-  const noun = unknown.length === 1 ? 'family' : 'families';
-  return `EBAY_MCP_TOOLS contains unknown tool ${noun}: ${unknown.join(', ')}. Valid families: ${TOOL_FAMILY_KEYS.join(', ')}.`;
+	const noun = unknown.length === 1 ? "family" : "families";
+	return `EBAY_MCP_TOOLS contains unknown tool ${noun}: ${unknown.join(", ")}. Valid families: ${TOOL_FAMILY_KEYS.join(", ")}.`;
 };
