@@ -12,8 +12,6 @@ import express, {
 	type Response,
 } from "express";
 import helmet from "helmet";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 import {
 	createMetadataRouter,
 	getProtectedResourceMetadataUrl,
@@ -62,8 +60,6 @@ export interface HttpTransportConfig {
 	oauth: HttpOAuthConfig;
 	/** TCP port for the Express server URL. */
 	port: number;
-	/** Repo root used to serve static icon assets. */
-	projectRoot: string;
 	/**
 	 * Optional static bearer token. When set, HTTP MCP routes require
 	 * `Authorization: Bearer <token>` and skip the OAuth token verifier.
@@ -82,12 +78,6 @@ const parseCorsOrigins = (value: string | undefined): (string | RegExp)[] => {
 		return [LOOPBACK_ORIGIN];
 	}
 	return origins;
-};
-
-const getProjectRoot = (): string => {
-	const filename = fileURLToPath(import.meta.url);
-	const directory = dirname(filename);
-	return join(directory, "../..");
 };
 
 /**
@@ -120,7 +110,6 @@ export const createHttpTransportConfigFromEnv = (
 	},
 	authEnabled: env["OAUTH_ENABLED"] !== "false",
 	corsOrigins: parseCorsOrigins(env["MCP_CORS_ORIGINS"]),
-	projectRoot: getProjectRoot(),
 	staticAuthToken: env["MCP_AUTH_TOKEN"],
 });
 
@@ -162,34 +151,18 @@ export const getAuthServerMetadataUrl = (
 	return `${baseUrl}/.well-known/oauth-authorization-server`;
 };
 
-function createServerConfig(serverUrl: string): Implementation {
-	const iconBaseUrl = `${serverUrl}/icons`;
-	const iconSizes = [
-		"16x16",
-		"32x32",
-		"48x48",
-		"128x128",
-		"256x256",
-		"512x512",
-		"1024x1024",
-	];
-
+function createServerConfig(): Implementation {
 	return {
 		name: "ebay-mcp",
 		version: getVersion(),
 		title: "eBay API MCP Server",
 		websiteUrl: "https://github.com/YosefHayim/ebay-mcp",
-		icons: iconSizes.map((size) => ({
-			src: `${iconBaseUrl}/${size}.png`,
-			mimeType: "image/png",
-			sizes: [size],
-		})),
 	};
 }
 
-async function createMcpServer(serverUrl: string): Promise<McpServer> {
+async function createMcpServer(): Promise<McpServer> {
 	const runtime = createEbayMcpRuntime({
-		serverConfig: createServerConfig(serverUrl),
+		serverConfig: createServerConfig(),
 	});
 
 	try {
@@ -393,7 +366,7 @@ function sendInvalidSession(response: Response): void {
  * Create the Express app that serves OAuth metadata and streamable HTTP MCP sessions.
  *
  * @param config - HTTP transport config including OAuth and static asset settings.
- * @returns Express application with MCP, metadata, health, and icon routes.
+ * @returns Express application with MCP, metadata, and health routes.
  *
  * @example
  * ```ts
@@ -411,10 +384,6 @@ export const createHttpMcpApp = async (
 	app.use(express.json());
 	app.use(helmet({ xPoweredBy: false }));
 	app.use(createRequestLogger());
-	app.use(
-		"/icons",
-		express.static(join(config.projectRoot, "assets", "icons")),
-	);
 
 	app.use(
 		createMetadataRouter({
@@ -468,7 +437,7 @@ export const createHttpMcpApp = async (
 				}
 			};
 
-			const server = await createMcpServer(serverUrl);
+			const server = await createMcpServer();
 			// SDK getters type callbacks as `T | undefined`, which Transport rejects.
 			await server.connect(transport as Transport);
 		} else {

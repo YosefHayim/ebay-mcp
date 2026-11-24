@@ -1,11 +1,9 @@
 {
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"module": "Node16",
-		"moduleResolution": "Node16",
+		"module": "nodenext",
 		"outDir": "./build",
 		"rootDir": "./src",
-		"esModuleInterop": true,
 		"declaration": true,
 		"declarationMap": false,
 		"sourceMap": false,
@@ -19,7 +17,6 @@
 		"tests",
 		"src/**/*.test.ts",
 		"src/ebay-apis/analytics/testHarness.ts",
-		"src/mcp-apps",
-		"vitest.config.cts"
+		"src/mcp-apps"
 	]
 }

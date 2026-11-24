@@ -17,7 +17,6 @@
 </p>
 
 <p align="center">
-  <a href="https://yosefhayim.github.io/ebay-mcp/">Website</a> ·
   <a href="https://www.npmjs.com/package/ebay-mcp">npm</a> ·
   <a href="https://github.com/YosefHayim/ebay-mcp/releases">Releases</a>
 </p>
@@ -168,8 +167,6 @@ Each family below is a valid `EBAY_MCP_TOOLS` value. The table is generated from
 | `developer` | Developer | 7 | `ebay_get_api_status` |
 | `trading` | Trading | 6 | `ebay_get_active_listings` |
 <!-- tool-families:end -->
-
-The full searchable tool list is on the [website](https://yosefhayim.github.io/ebay-mcp/).
 
 Local media uploads support JPG, PNG, GIF, BMP, TIFF, WEBP, AVIF and HEIC up to 12 MB, and MP4 or MOV up to 150 MB. Files outside `EBAY_MCP_MEDIA_DIRS` or `EBAY_MCP_MEDIA_ROOT` are refused, and symlinks are checked before any upload.
 

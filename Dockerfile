@@ -30,10 +30,8 @@ COPY package.json pnpm-lock.yaml* ./
 # Install only production dependencies (ignore lifecycle scripts)
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# Copy built application and runtime assets from builder
+# Copy the built server from the builder
 COPY --from=builder /app/build ./build
-# Icon assets (used by stdio and served by the HTTP transport at /icons)
-COPY --from=builder /app/assets ./assets
 
 # Default HTTP port (Railway and similar platforms inject PORT; httpTransport
 # picks up PORT and binds 0.0.0.0 automatically when MCP_HOST is unset)

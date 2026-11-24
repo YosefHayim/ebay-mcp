@@ -1,7 +1,7 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
 
-const vitestConfig = defineConfig({
+export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(import.meta.dirname, "./src"),
@@ -22,7 +22,6 @@ const vitestConfig = defineConfig({
 				"**/*.config.*",
 				"**/types/**",
 				"tests/**",
-				// Exclude schema definition files (no logic to test)
 				"src/shared/apiStatusFeed.ts",
 				"src/shared/cliOutput.ts",
 				"src/shared/cliUi.ts",
@@ -56,16 +55,13 @@ const vitestConfig = defineConfig({
 				"src/shared/index.ts",
 				"src/ebay-openapi-types/**",
 				"src/ebay-apis/**/*Schemas.ts",
-				// Exclude server entry points (tested via integration)
 				"src/index.ts",
 				"src/serverHttp.ts",
-				// Exclude script files
 				"scripts/**",
 				"src/cli/**",
 				"**/*.test.ts",
 			],
 			include: ["src/**/*.ts"],
-			// Floors at the measured baseline: coverage may rise, never drop.
 			thresholds: {
 				lines: 86,
 				functions: 76,
@@ -73,13 +69,9 @@ const vitestConfig = defineConfig({
 				statements: 86,
 			},
 		},
-		// Unit suite only. The hermetic integration suite runs via its own config —
-		// `pnpm run test:integration` (vitest.integration.config.cts) and CI's test.yml.
 		include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
-		exclude: ["node_modules", "build", "dist", "**/*.integration.test.ts"],
+		exclude: ["node_modules", "build", "dist"],
 		testTimeout: 10_000,
 		hookTimeout: 10_000,
 	},
 });
-
-module.exports = vitestConfig;

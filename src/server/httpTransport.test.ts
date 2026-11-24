@@ -1,4 +1,3 @@
-import process from "node:process";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import {
@@ -27,7 +26,6 @@ function createTestConfig(
 			useIntrospection: true,
 		},
 		port: 3000,
-		projectRoot: process.cwd(),
 		...overrides,
 	};
 }

@@ -35,13 +35,12 @@ jobs:
               - package.json
               - 'tsconfig*.json'
               - 'src/mcp-apps/tsconfig.json'
-              - 'vitest*.cts'
+              - vitest.config.ts
               - '.github/**'
             code:
               - *everything
               - 'src/**'
               - 'tests/**'
-              - 'assets/**'
   verify:
     name: Test and build
     needs: changes
@@ -54,18 +53,10 @@ jobs:
           fetch-depth: 0
       - name: Setup workspace
         uses: ./.github/actions/setup
-      - name: Run integration tests
-        if: needs.changes.outputs.since == ''
-        run: pnpm test:integration
-      - name: Run unit tests with the coverage gate
+      - name: Run tests with the coverage gate
         if: needs.changes.outputs.since == ''
         run: pnpm test:coverage
-      - name: Run integration tests for changed files
-        if: needs.changes.outputs.since != ''
-        env:
-          SINCE: ${{ needs.changes.outputs.since }}
-        run: pnpm exec vitest run --config vitest.integration.config.cts --changed "$SINCE"
-      - name: Run unit tests for changed files
+      - name: Run tests for changed files
         if: needs.changes.outputs.since != ''
         env:
           SINCE: ${{ needs.changes.outputs.since }}

@@ -15,7 +15,6 @@
 		"src/**/*.test.ts",
 		"scripts/**/*.test.ts",
 		"src/ebay-apis/analytics/testHarness.ts",
-		"src/mcp-apps",
-		"vitest.config.cts"
+		"src/mcp-apps"
 	]
 }

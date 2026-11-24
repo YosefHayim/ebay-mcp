@@ -1,7 +1,5 @@
 import process from "node:process";
 import type { Implementation } from "@modelcontextprotocol/sdk/types.js";
-import { existsSync } from "fs";
-import { fileURLToPath } from "url";
 import { CREDENTIAL_ENV_PATH } from "@/shared/credentialFile.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 import { loadEnvFileIfPresent } from "@/shared/load-env-file.js";
@@ -677,17 +675,6 @@ export const getOAuthAuthorizationUrl = (
 	return `${authBase}/oauth2/authorize?${params.toString()}&scope=${scopeList}`;
 };
 
-const iconUrl = (size: string): string => {
-	const url = new URL(`../../assets/icons/${size}.png`, import.meta.url);
-	const path = fileURLToPath(url);
-	if (!existsSync(path)) {
-		writeConfigDiagnostic(
-			`Icon not found at ${path}. Ensure assets/icons is included in the package.`,
-		);
-	}
-	return url.toString();
-};
-
 /**
  * MCP server implementation metadata advertised to clients.
  */
@@ -696,41 +683,4 @@ export const mcpConfig: Implementation = {
 	version: getVersion(),
 	title: "eBay API Model Context Protocol Server",
 	websiteUrl: "https://github.com/YosefHayim/ebay-mcp",
-	icons: [
-		{
-			src: iconUrl("16x16"),
-			mimeType: "image/png",
-			sizes: ["16x16"],
-		},
-		{
-			src: iconUrl("32x32"),
-			mimeType: "image/png",
-			sizes: ["32x32"],
-		},
-		{
-			src: iconUrl("48x48"),
-			mimeType: "image/png",
-			sizes: ["48x48"],
-		},
-		{
-			src: iconUrl("128x128"),
-			mimeType: "image/png",
-			sizes: ["128x128"],
-		},
-		{
-			src: iconUrl("256x256"),
-			mimeType: "image/png",
-			sizes: ["256x256"],
-		},
-		{
-			src: iconUrl("512x512"),
-			mimeType: "image/png",
-			sizes: ["512x512"],
-		},
-		{
-			src: iconUrl("1024x1024"),
-			mimeType: "image/png",
-			sizes: ["1024x1024"],
-		},
-	],
 };
