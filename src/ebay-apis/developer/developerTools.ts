@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import {
 	clientDetailsSchema,
@@ -14,6 +13,7 @@ import {
 	signingKeySchema,
 } from "@/ebay-apis/developer/developerSchemas.js";
 import { getApiStatusFeed } from "@/shared/apiStatusFeed.js";
+import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 import type { OutputArgs } from "@/tool-registry/types.js";
@@ -51,15 +51,21 @@ export const developerEntries: ToolEntry[] = [
 			},
 			description: "Latest API status items from eBay developer feed",
 		},
-		handler: (_api, args) =>
-			Effect.runPromise(
-				getApiStatusFeed(args).pipe(
-					Effect.map((feed) => ({
-						items: feed.items,
-						...(feed.error && { error: feed.error }),
-					})),
-				),
-			),
+		handler: async (_api, args) => {
+			const feed = await getApiStatusFeed(
+				defined({
+					api: args.api,
+					limit: args.limit,
+					status: args.status,
+				}),
+			);
+
+			if (feed.error) {
+				return { items: feed.items, error: feed.error };
+			}
+
+			return { items: feed.items };
+		},
 	}),
 	defineTool({
 		name: "ebay_get_rate_limits",
@@ -70,8 +76,7 @@ export const developerEntries: ToolEntry[] = [
 			name: "GetRateLimitsOutput",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.developer.getRateLimits(args)),
+		handler: (api, args) => api.developer.getRateLimits(args),
 		ui: { archetype: "stat", map: mapRateLimitsToStat },
 	}),
 	defineTool({
@@ -83,8 +88,7 @@ export const developerEntries: ToolEntry[] = [
 			name: "GetUserRateLimitsOutput",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.developer.getUserRateLimits(args)),
+		handler: (api, args) => api.developer.getUserRateLimits(args),
 		ui: { archetype: "stat", map: mapUserRateLimitsToStat },
 	}),
 	defineTool({
@@ -96,8 +100,7 @@ export const developerEntries: ToolEntry[] = [
 			name: "RegisterClientOutput",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.developer.registerClient(args)),
+		handler: (api, args) => api.developer.registerClient(args),
 	}),
 	defineTool({
 		name: "ebay_get_signing_keys",
@@ -108,8 +111,7 @@ export const developerEntries: ToolEntry[] = [
 			name: "GetSigningKeysOutput",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.developer.getSigningKeys(args)),
+		handler: (api, args) => api.developer.getSigningKeys(args),
 	}),
 	defineTool({
 		name: "ebay_create_signing_key",
@@ -120,8 +122,7 @@ export const developerEntries: ToolEntry[] = [
 			name: "CreateSigningKeyOutput",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.developer.createSigningKey(args)),
+		handler: (api, args) => api.developer.createSigningKey(args),
 	}),
 	defineTool({
 		name: "ebay_get_signing_key",
@@ -132,7 +133,6 @@ export const developerEntries: ToolEntry[] = [
 			name: "GetSigningKeyOutput",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.developer.getSigningKey(args)),
+		handler: (api, args) => api.developer.getSigningKey(args),
 	}),
 ];

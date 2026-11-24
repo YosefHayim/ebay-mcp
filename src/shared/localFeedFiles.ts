@@ -66,4 +66,6 @@ export const feedFileProblem = (
 	if (mimeType === "application/xml" && !opensWithMarkup(bytes)) {
 		return "content does not start with XML markup";
 	}
+
+	return undefined;
 };

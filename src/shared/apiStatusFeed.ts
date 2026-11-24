@@ -3,7 +3,6 @@
  * Used by the ebay_get_api_status MCP tool and optionally by the docs sync script.
  */
 
-import { Effect, Either } from "effect";
 import { XMLParser } from "fast-xml-parser";
 import { getErrorMessage } from "@/shared/errors.js";
 import { httpRequestEffect, isHttpError } from "./http.js";
@@ -100,81 +99,69 @@ export interface ApiStatusFeedResult {
  * optionally filtered by status and API name, limited to `limit` items.
  *
  * @param options - Optional status/API filters and item limit.
- * @returns An Effect that succeeds with parsed feed items or a recoverable error string.
- *
- * @example
- * ```ts
- * const feed = await Effect.runPromise(getApiStatusFeed({ status: 'Unresolved', limit: 10 }));
- * ```
+ * @returns Parsed feed items, or an empty list plus a recoverable error string.
  */
-export const getApiStatusFeed = (
+export async function getApiStatusFeed(
 	options: GetApiStatusFeedOptions = {},
-): Effect.Effect<ApiStatusFeedResult> => {
+): Promise<ApiStatusFeedResult> {
 	const { limit = 20, status: statusFilter, api: apiFilter } = options;
 
-	return Effect.either(
-		httpRequestEffect<string>({
+	try {
+		const feedResponse = await httpRequestEffect<string>({
 			url: RSS_URL,
 			timeoutMs: 15_000,
 			responseType: "text",
 			headers: { Accept: "application/rss+xml, application/xml, text/xml" },
-		}).pipe(
-			Effect.flatMap((response) =>
-				Effect.try({
-					try: () => {
-						const parser = new XMLParser({
-							ignoreAttributes: true,
-							trimValues: true,
-							parseTagValue: false,
-						});
-						const parsed = parser.parse(response.data) as RssRoot;
+		});
+		const parser = new XMLParser({
+			ignoreAttributes: true,
+			trimValues: true,
+			parseTagValue: false,
+		});
+		const parsed = parser.parse(feedResponse.data) as RssRoot;
+		const channel = parsed?.rss?.channel;
 
-						const channel = parsed?.rss?.channel;
-						if (!channel) {
-							return { items: [], error: "RSS feed missing channel" };
-						}
+		if (!channel) {
+			return { items: [], error: "RSS feed missing channel" };
+		}
 
-						let rawItems: RssItemRaw[] = [];
-						if (Array.isArray(channel.item)) {
-							rawItems = channel.item;
-						} else if (channel.item) {
-							rawItems = [channel.item];
-						}
-						let items: ApiStatusItem[] = rawItems.map(parseItem);
+		let rawItems: RssItemRaw[] = [];
 
-						if (statusFilter) {
-							items = items.filter(
-								(entry) =>
-									entry.status.toLowerCase() === statusFilter.toLowerCase(),
-							);
-						}
-						if (apiFilter?.trim()) {
-							const needle = apiFilter.trim().toLowerCase();
-							items = items.filter((entry) =>
-								entry.api.toLowerCase().includes(needle),
-							);
-						}
+		if (Array.isArray(channel.item)) {
+			rawItems = channel.item;
+		} else if (channel.item) {
+			rawItems = [channel.item];
+		}
 
-						items = items.slice(0, Math.min(limit, 50));
+		let items: ApiStatusItem[] = rawItems.map(parseItem);
 
-						return { items };
-					},
-					catch: (error) => error,
-				}),
-			),
-		),
-	).pipe(
-		Effect.map((parsedFeed) => {
-			if (Either.isLeft(parsedFeed)) {
-				const feedError = parsedFeed.left;
-				const message =
-					isHttpError(feedError) && feedError.status
-						? `Feed unavailable (HTTP ${feedError.status})`
-						: getErrorMessage(feedError, "Failed to fetch API status feed");
-				return { items: [], error: message };
-			}
+		if (statusFilter) {
+			items = items.filter(
+				(entry) => entry.status.toLowerCase() === statusFilter.toLowerCase(),
+			);
+		}
 
-			return parsedFeed.right;
-		}),
-	);
-};
+		const apiNeedle = apiFilter?.trim().toLowerCase();
+
+		if (apiNeedle) {
+			items = items.filter((entry) =>
+				entry.api.toLowerCase().includes(apiNeedle),
+			);
+		}
+
+		const itemLimit = Math.min(limit, 50);
+
+		return { items: items.slice(0, itemLimit) };
+	} catch (feedError) {
+		const httpStatus = isHttpError(feedError) ? feedError.status : undefined;
+
+		if (typeof httpStatus === "number") {
+			return { items: [], error: `Feed unavailable (HTTP ${httpStatus})` };
+		}
+
+		return {
+			items: [],
+			error: getErrorMessage(feedError, "Failed to fetch API status feed"),
+		};
+	}
+}

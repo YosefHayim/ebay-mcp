@@ -1,4 +1,3 @@
-import { Data, Effect } from "effect";
 import type { z } from "zod";
 import type {
 	EbayApiClient,
@@ -6,411 +5,293 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import { formatZodIssues } from "@/shared/zodIssues.js";
 
-/**
- * Query-string values accepted by the eBay REST client helpers.
- */
 export type QueryParams = Record<string, string | number>;
 
-/** HTTP methods supported by the shared eBay REST request helpers. */
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-/** One endpoint-owned query parameter allowed by {@link buildEndpointParams}. */
 export interface EndpointParamSpec {
-	/** Query-string key expected by eBay, usually snake_case from the OpenAPI spec. */
 	readonly wireName: string;
-	/** Already-typed local value; undefined and empty strings are omitted. */
 	readonly value: string | number | undefined;
 }
 
-/** Tagged failure returned by migrated eBay API endpoint Effects. */
-export class EbayApiError extends Data.TaggedError("EbayApiError")<{
-	/** HTTP method used by the failed eBay request. */
+export class EbayApiError extends Error {
+	readonly _tag = "EbayApiError";
 	readonly method: HttpMethod;
-	/** eBay REST path passed to the request adapter. */
 	readonly path: string;
-	/** Lower-level transport, parsing, or adapter failure. */
-	readonly cause: unknown;
-}> {
-	override get message(): string {
+
+	constructor(failure: {
+		method: HttpMethod;
+		path: string;
+		cause: unknown;
+	}) {
 		const detail =
-			this.cause instanceof Error ? this.cause.message : String(this.cause);
-		return `eBay ${this.method} ${this.path} failed: ${detail}`;
+			failure.cause instanceof Error
+				? failure.cause.message
+				: String(failure.cause);
+
+		super(`eBay ${failure.method} ${failure.path} failed: ${detail}`, {
+			cause: failure.cause,
+		});
+		this.name = "EbayApiError";
+		this.method = failure.method;
+		this.path = failure.path;
 	}
 }
 
-/** Tagged validation failure returned before an endpoint request is sent. */
-export class EndpointInputError extends Data.TaggedError("EndpointInputError")<{
-	/** Endpoint parameter that failed validation. */
+export class EndpointInputError extends Error {
+	readonly _tag = "EndpointInputError";
 	readonly parameter: string;
-	/** Human-readable validation failure message. */
-	readonly message: string;
-}> {}
 
-/**
- * Parses endpoint input through its Zod schema (the tool's SSOT), reporting a
- * failure as EndpointInputError so endpoint Effects keep one input-failure type.
- *
- * @param schema - Zod endpoint input schema.
- * @param input - Raw endpoint input.
- * @param parameter - Parameter named in the failure; defaults to `input`.
- * @returns An Effect with the decoded input, or EndpointInputError.
- *
- * @example
- * ```ts
- * const { documentId } = yield* decodeEndpointInputEffect(documentIdInputSchema, input);
- * ```
- */
-export const decodeEndpointInputEffect = <TSchema extends z.ZodTypeAny>(
-	schema: TSchema,
+	constructor(failure: { parameter: string; message: string }) {
+		super(failure.message);
+		this.name = "EndpointInputError";
+		this.parameter = failure.parameter;
+	}
+}
+
+export function decodeEndpointInputEffect<Schema extends z.ZodTypeAny>(
+	schema: Schema,
 	input: unknown,
 	parameter = "input",
-): Effect.Effect<z.infer<TSchema>, EndpointInputError> => {
+): z.infer<Schema> {
 	const parsedInput = schema.safeParse(input);
-	return parsedInput.success
-		? Effect.succeed(parsedInput.data)
-		: Effect.fail(
-				new EndpointInputError({
-					parameter,
-					message: formatZodIssues(parsedInput.error),
-				}),
-			);
-};
 
-/**
- * Builds the per-call `X-EBAY-C-MARKETPLACE-ID` header for operations whose marketplace
- * differs from the client's configured `EBAY_MARKETPLACE_ID`.
- *
- * @param marketplaceId - eBay marketplace ID, e.g. `EBAY_GB`.
- * @returns A request config carrying only the marketplace header.
- *
- * @example
- * ```ts
- * yield* requestGetEffect(client, path, undefined, marketplaceHeader('EBAY_GB'));
- * ```
- */
-export const marketplaceHeader = (
-	marketplaceId: string,
-): EbayRequestConfig => ({
-	headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId },
-});
+	if (parsedInput.success) {
+		return parsedInput.data;
+	}
 
-/**
- * Builds query params from an endpoint-owned allow-list.
- *
- * @param params - Camel-case local parameter names mapped to their eBay wire names and values.
- * @returns A query object for the request adapter, or undefined when every value is omitted.
- *
- * @example
- * ```ts
- * const params = buildEndpointParams({
- *   policyTypes: { wireName: 'policy_types', value: input.policyTypes },
- * });
- * ```
- */
-export const buildEndpointParams = (
+	throw new EndpointInputError({
+		parameter,
+		message: formatZodIssues(parsedInput.error),
+	});
+}
+
+export function marketplaceHeader(marketplaceId: string): EbayRequestConfig {
+	return {
+		headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId },
+	};
+}
+
+export function buildEndpointParams(
 	params: Record<string, EndpointParamSpec>,
-): QueryParams | undefined => {
+): QueryParams | undefined {
 	const query: QueryParams = {};
 
 	for (const param of Object.values(params)) {
-		if (param.value !== undefined && param.value !== "") {
-			query[param.wireName] = param.value;
+		const paramValue = param.value;
+
+		if (paramValue === undefined) {
+			continue;
 		}
+
+		if (paramValue === "") {
+			continue;
+		}
+
+		query[param.wireName] = paramValue;
 	}
 
-	return Object.keys(query).length > 0 ? query : undefined;
-};
+	const hasQuery = Object.keys(query).length > 0;
 
-/**
- * Require a tool argument or API field to be a non-empty string inside Effect code.
- *
- * @param value - Unknown value supplied by a caller or transport boundary.
- * @param name - Parameter name used in the validation message.
- * @returns An Effect that succeeds with the string or fails with a tagged input error.
- *
- * @example
- * ```ts
- * const signingKeyId = yield* requireStringEffect(input.signingKeyId, 'signingKeyId');
- * ```
- */
-export const requireStringEffect = (
-	value: unknown,
-	name: string,
-): Effect.Effect<string, EndpointInputError> => {
-	if (!value || typeof value !== "string") {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: name,
-				message: `${name} is required and must be a string`,
-			}),
-		);
+	if (hasQuery) {
+		return query;
 	}
 
-	return Effect.succeed(value);
-};
+	return undefined;
+}
 
-/**
- * Validate an optional string inside Effect code.
- *
- * @param value - Optional value supplied for an endpoint query parameter.
- * @param name - Parameter name used in the validation message.
- * @returns An Effect that succeeds with the string, undefined, or a tagged input error.
- *
- * @example
- * ```ts
- * const sort = yield* optionalStringEffect(input.sort, 'sort');
- * ```
- */
-export const optionalStringEffect = (
+export function requireStringEffect(value: unknown, name: string): string {
+	if (typeof value !== "string") {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} is required and must be a string`,
+		});
+	}
+
+	if (value.length === 0) {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} is required and must be a string`,
+		});
+	}
+
+	return value;
+}
+
+export function optionalStringEffect(
 	value: unknown,
 	name: string,
-): Effect.Effect<string | undefined, EndpointInputError> => {
+): string | undefined {
 	if (value === undefined) {
-		return Effect.succeed(undefined);
+		return undefined;
 	}
 
 	if (typeof value !== "string") {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: name,
-				message: `${name} must be a string when provided`,
-			}),
-		);
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a string when provided`,
+		});
 	}
 
-	return Effect.succeed(value);
-};
+	return value;
+}
 
-/**
- * Validate an optional positive numeric query parameter inside Effect code.
- *
- * @param value - Optional value supplied for an endpoint query parameter.
- * @param name - Parameter name used in the validation message.
- * @returns An Effect that succeeds with the number, undefined, or a tagged input error.
- *
- * @example
- * ```ts
- * const limit = yield* optionalPositiveNumberEffect(input.limit, 'limit');
- * ```
- */
-export const optionalPositiveNumberEffect = (
+export function optionalPositiveNumberEffect(
 	value: unknown,
 	name: string,
-): Effect.Effect<number | undefined, EndpointInputError> => {
+): number | undefined {
 	if (value === undefined) {
-		return Effect.succeed(undefined);
+		return undefined;
 	}
 
-	if (typeof value !== "number" || value < 1) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: name,
-				message: `${name} must be a positive number when provided`,
-			}),
-		);
+	if (typeof value !== "number") {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a positive number when provided`,
+		});
 	}
 
-	return Effect.succeed(value);
-};
+	if (value < 1) {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a positive number when provided`,
+		});
+	}
 
-/**
- * Validate an optional non-negative numeric query parameter inside Effect code.
- *
- * @param value - Optional value supplied for an endpoint query parameter.
- * @param name - Parameter name used in the validation message.
- * @returns An Effect that succeeds with the number, undefined, or a tagged input error.
- *
- * @example
- * ```ts
- * const offset = yield* optionalNonNegativeNumberEffect(input.offset, 'offset');
- * ```
- */
-export const optionalNonNegativeNumberEffect = (
+	return value;
+}
+
+export function optionalNonNegativeNumberEffect(
 	value: unknown,
 	name: string,
-): Effect.Effect<number | undefined, EndpointInputError> => {
+): number | undefined {
 	if (value === undefined) {
-		return Effect.succeed(undefined);
+		return undefined;
 	}
 
-	if (typeof value !== "number" || value < 0) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: name,
-				message: `${name} must be a non-negative number when provided`,
-			}),
-		);
+	if (typeof value !== "number") {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a non-negative number when provided`,
+		});
 	}
 
-	return Effect.succeed(value);
-};
+	if (value < 0) {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a non-negative number when provided`,
+		});
+	}
 
-/**
- * Require a tool argument or API payload field to be an object inside Effect code.
- *
- * @param value - Unknown value supplied by a caller or transport boundary.
- * @param name - Parameter name used in the validation message.
- * @returns An Effect that succeeds with the expected object shape or fails with a tagged input error.
- *
- * @example
- * ```ts
- * const createOffersRequest = yield* requireObjectEffect<CreateOffersRequest>(offerData, 'offerData');
- * ```
- */
-export const requireObjectEffect = <T extends object>(
+	return value;
+}
+
+export function requireObjectEffect<ObjectShape extends object>(
 	value: unknown,
 	name: string,
-): Effect.Effect<T, EndpointInputError> => {
-	if (!value || typeof value !== "object") {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: name,
-				message: `${name} is required and must be an object`,
-			}),
-		);
+): ObjectShape {
+	if (typeof value !== "object") {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} is required and must be an object`,
+		});
 	}
 
-	return Effect.succeed(value as T);
-};
+	if (value === null) {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} is required and must be an object`,
+		});
+	}
 
-/**
- * Execute a GET request as an Effect with typed eBay API errors.
- *
- * @param client - eBay REST client that owns auth and transport details.
- * @param path - eBay REST path to request.
- * @param params - Optional query parameters already mapped to eBay wire names.
- * @param config - Optional per-request headers or params, used for endpoint-specific headers.
- * @returns An Effect that succeeds with the generated eBay response DTO.
- *
- * @example
- * ```ts
- * const policies = await Effect.runPromise(requestGetEffect(client, path, params));
- * ```
- */
-export const requestGetEffect = <T = unknown>(
+	return value as ObjectShape;
+}
+
+async function requestWithEbayError<Response>(
+	method: HttpMethod,
+	path: string,
+	send: () => Promise<Response>,
+): Promise<Response> {
+	try {
+		return await send();
+	} catch (cause) {
+		throw new EbayApiError({ method, path, cause });
+	}
+}
+
+export function requestGetEffect<Response = unknown>(
 	client: EbayApiClient,
 	path: string,
 	params?: QueryParams,
 	config?: EbayRequestConfig,
-): Effect.Effect<T, EbayApiError> =>
-	Effect.tryPromise({
-		try: () => {
-			if (config !== undefined) {
-				return client.get<T>(path, params, config);
-			}
+): Promise<Response> {
+	return requestWithEbayError("GET", path, function sendGet() {
+		if (config !== undefined) {
+			return client.get<Response>(path, params, config);
+		}
 
-			return params === undefined
-				? client.get<T>(path)
-				: client.get<T>(path, params);
-		},
-		catch: (cause) => new EbayApiError({ method: "GET", path, cause }),
+		if (params === undefined) {
+			return client.get<Response>(path);
+		}
+
+		return client.get<Response>(path, params);
 	});
+}
 
-/**
- * Execute a POST request as an Effect with typed eBay API errors.
- *
- * @param client - eBay REST client that owns auth and transport details.
- * @param path - eBay REST path to request.
- * @param requestBody - Optional JSON body to send.
- * @param config - Optional per-request headers or params, used for endpoint-specific headers.
- * @returns An Effect that succeeds with the generated eBay response DTO.
- *
- * @example
- * ```ts
- * const createdPolicy = await Effect.runPromise(requestPostEffect(client, path, requestBody));
- * ```
- */
-export const requestPostEffect = <T = unknown>(
+export function requestPostEffect<Response = unknown>(
 	client: EbayApiClient,
 	path: string,
 	requestBody?: unknown,
 	config?: EbayRequestConfig,
-): Effect.Effect<T, EbayApiError> =>
-	Effect.tryPromise({
-		try: () => {
-			if (config !== undefined) {
-				return client.post<T>(path, requestBody, config);
-			}
+): Promise<Response> {
+	return requestWithEbayError("POST", path, function sendPost() {
+		if (config !== undefined) {
+			return client.post<Response>(path, requestBody, config);
+		}
 
-			return requestBody === undefined
-				? client.post<T>(path)
-				: client.post<T>(path, requestBody);
-		},
-		catch: (cause) => new EbayApiError({ method: "POST", path, cause }),
+		if (requestBody === undefined) {
+			return client.post<Response>(path);
+		}
+
+		return client.post<Response>(path, requestBody);
 	});
+}
 
-/**
- * Execute a PUT request as an Effect with typed eBay API errors.
- *
- * @param client - eBay REST client that owns auth and transport details.
- * @param path - eBay REST path to request.
- * @param requestBody - Optional JSON body to send.
- * @returns An Effect that succeeds with the generated eBay response DTO.
- *
- * @example
- * ```ts
- * const updatedPolicy = await Effect.runPromise(requestPutEffect(client, path, requestBody));
- * ```
- */
-export const requestPutEffect = <T = unknown>(
+export function requestPutEffect<Response = unknown>(
 	client: EbayApiClient,
 	path: string,
 	requestBody?: unknown,
 	config?: EbayRequestConfig,
-): Effect.Effect<T, EbayApiError> =>
-	Effect.tryPromise({
-		try: () =>
-			config === undefined
-				? client.put<T>(path, requestBody)
-				: client.put<T>(path, requestBody, config),
-		catch: (cause) => new EbayApiError({ method: "PUT", path, cause }),
-	});
+): Promise<Response> {
+	return requestWithEbayError("PUT", path, function sendPut() {
+		if (config === undefined) {
+			return client.put<Response>(path, requestBody);
+		}
 
-/**
- * Execute a PATCH request as an Effect with typed eBay API errors.
- *
- * @param client - eBay REST client that owns auth and transport details.
- * @param path - eBay REST path to request.
- * @param requestBody - Optional JSON body to send.
- * @param config - Optional per-request headers or params, used for endpoint-specific headers.
- * @returns An Effect that succeeds with the generated eBay response DTO.
- *
- * @example
- * ```ts
- * await Effect.runPromise(requestPatchEffect(client, path, requestBody, { headers }));
- * ```
- */
-export const requestPatchEffect = <T = unknown>(
+		return client.put<Response>(path, requestBody, config);
+	});
+}
+
+export function requestPatchEffect<Response = unknown>(
 	client: EbayApiClient,
 	path: string,
 	requestBody?: unknown,
 	config?: EbayRequestConfig,
-): Effect.Effect<T, EbayApiError> =>
-	Effect.tryPromise({
-		try: () =>
-			config === undefined
-				? client.patch<T>(path, requestBody)
-				: client.patch<T>(path, requestBody, config),
-		catch: (cause) => new EbayApiError({ method: "PATCH", path, cause }),
-	});
+): Promise<Response> {
+	return requestWithEbayError("PATCH", path, function sendPatch() {
+		if (config === undefined) {
+			return client.patch<Response>(path, requestBody);
+		}
 
-/**
- * Execute a DELETE request as an Effect with typed eBay API errors.
- *
- * @param client - eBay REST client that owns auth and transport details.
- * @param path - eBay REST path to request.
- * @returns An Effect that succeeds with the generated eBay response DTO.
- *
- * @example
- * ```ts
- * await Effect.runPromise(requestDeleteEffect(client, path));
- * ```
- */
-export const requestDeleteEffect = <T = unknown>(
+		return client.patch<Response>(path, requestBody, config);
+	});
+}
+
+export function requestDeleteEffect<Response = unknown>(
 	client: EbayApiClient,
 	path: string,
-): Effect.Effect<T, EbayApiError> =>
-	Effect.tryPromise({
-		try: () => client.delete<T>(path),
-		catch: (cause) => new EbayApiError({ method: "DELETE", path, cause }),
+): Promise<Response> {
+	return requestWithEbayError("DELETE", path, function sendDelete() {
+		return client.delete<Response>(path);
 	});
+}

@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import {
 	findSellerStandardsProfilesInputSchema,
 	getCustomerServiceMetricInputSchema,
@@ -27,8 +26,7 @@ export const analyticsEntries: ToolEntry[] = [
 			},
 			description: "Traffic report data",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.analytics.getTrafficReport(args)),
+		handler: (api, args) => api.analytics.getTrafficReport(args),
 		ui: { archetype: "chart", map: mapTrafficReportToChart },
 	}),
 	defineTool({
@@ -42,8 +40,7 @@ export const analyticsEntries: ToolEntry[] = [
 			},
 			description: "Seller standards profiles",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.analytics.findSellerStandardsProfiles(args)),
+		handler: (api, args) => api.analytics.findSellerStandardsProfiles(args),
 	}),
 	defineTool({
 		name: "ebay_get_seller_standards_profile",
@@ -58,8 +55,7 @@ export const analyticsEntries: ToolEntry[] = [
 			},
 			description: "Seller standards profile data",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.analytics.getSellerStandardsProfile(args)),
+		handler: (api, args) => api.analytics.getSellerStandardsProfile(args),
 		ui: { archetype: "card", map: mapStandardsProfileToCard },
 	}),
 	defineTool({
@@ -73,8 +69,7 @@ export const analyticsEntries: ToolEntry[] = [
 			},
 			description: "Customer service metric data",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.analytics.getCustomerServiceMetric(args)),
+		handler: (api, args) => api.analytics.getCustomerServiceMetric(args),
 		ui: { archetype: "chart", map: mapCustomerServiceMetricToChart },
 	}),
 ];

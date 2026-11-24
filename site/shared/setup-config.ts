@@ -37,7 +37,7 @@ const createEnvironmentVariables = (
 		EBAY_MCP_TOOLS: createToolsValue(choices),
 	};
 	if (choices.environment === "production")
-		variables.EBAY_USER_REFRESH_TOKEN = "your_refresh_token";
+		variables["EBAY_USER_REFRESH_TOKEN"] = "your_refresh_token";
 
 	return variables;
 };
@@ -96,7 +96,7 @@ export const createSetupConfig = (choices: SetupChoices): SetupConfig => {
 		};
 	}
 	const clientDetails =
-		JSON_CLIENT_DETAILS[choices.clientId] ?? JSON_CLIENT_DETAILS.desktop;
+		JSON_CLIENT_DETAILS[choices.clientId] ?? JSON_CLIENT_DETAILS["desktop"];
 
 	return {
 		filePath: clientDetails?.filePath ?? "",

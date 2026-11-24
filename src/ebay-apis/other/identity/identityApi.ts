@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import { EbayApiError } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/commerceIdentityV1Oas3.js";
@@ -24,39 +23,34 @@ export class IdentityApi {
 	 * Retrieves account profile information for the authenticated user.
 	 *
 	 * @param input - Empty endpoint input object.
-	 * @returns An Effect that succeeds with eBay's UserResponse.
+	 * @returns A promise of eBay's UserResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const user = await Effect.runPromise(identityApi.getUser({}));
+	 * const user = await identityApi.getUser({});
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/identity/resources/user/methods/getUser
 	 */
-	public getUser = (
-		input: GetUserInput = {},
-	): Effect.Effect<UserResponse, EbayApiError> => {
+	public getUser = async (input: GetUserInput = {}): Promise<UserResponse> => {
 		void input;
-		const client = this.client;
 
-		return Effect.tryPromise({
-			try: () => {
-				const config = client.getConfig();
-				const identityBaseUrl = getIdentityBaseUrl(
-					config.environment,
-					config.apiBaseUrl,
-				);
+		try {
+			const config = this.client.getConfig();
+			const identityBaseUrl = getIdentityBaseUrl(
+				config.environment,
+				config.apiBaseUrl,
+			);
 
-				return client.getWithFullUrl<UserResponse>(
-					`${identityBaseUrl}${this.basePath}/user`,
-				);
-			},
-			catch: (cause) =>
-				new EbayApiError({
-					method: "GET",
-					path: `${this.basePath}/user`,
-					cause,
-				}),
-		});
+			return await this.client.getWithFullUrl<UserResponse>(
+				`${identityBaseUrl}${this.basePath}/user`,
+			);
+		} catch (error) {
+			throw new EbayApiError({
+				method: "GET",
+				path: `${this.basePath}/user`,
+				cause: error,
+			});
+		}
 	};
 }

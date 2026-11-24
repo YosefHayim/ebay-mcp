@@ -1,12 +1,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import {
 	type Implementation,
 	isInitializeRequest,
 } from "@modelcontextprotocol/sdk/types.js";
 import cors from "cors";
 import { randomUUID } from "crypto";
-import { Effect, Either } from "effect";
 import express, {
 	type Request,
 	type RequestHandler,
@@ -20,7 +20,10 @@ import {
 	getProtectedResourceMetadataUrl,
 } from "@/auth/oauthMetadata.js";
 import { createBearerAuthMiddleware } from "@/auth/oauthMiddleware.js";
-import { TokenVerifier } from "@/auth/tokenVerifier.js";
+import {
+	TokenVerifier,
+	type TokenVerifierConfig,
+} from "@/auth/tokenVerifier.js";
 import { createEbayMcpRuntime } from "@/server/runtime.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 import { getDefaultScopes, getEbayConfig } from "@/shared/environment.js";
@@ -35,9 +38,9 @@ export interface HttpOAuthConfig {
 	/** OAuth authorization server issuer/base URL. */
 	authServerUrl: string;
 	/** Optional client ID used for token introspection. */
-	clientId?: string;
+	clientId?: string | undefined;
 	/** Optional client secret used for token introspection. */
-	clientSecret?: string;
+	clientSecret?: string | undefined;
 	/** OAuth scopes required to access MCP tools over HTTP. */
 	requiredScopes: string[];
 	/** Whether bearer tokens are validated through introspection. */
@@ -66,7 +69,7 @@ export interface HttpTransportConfig {
 	 * Optional static bearer token. When set, HTTP MCP routes require
 	 * `Authorization: Bearer <token>` and skip the OAuth token verifier.
 	 */
-	staticAuthToken?: string;
+	staticAuthToken?: string | undefined;
 }
 
 const LOOPBACK_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
@@ -104,22 +107,22 @@ export const createHttpTransportConfigFromEnv = (
 ): HttpTransportConfig => ({
 	// Cloud platforms (Railway, Render, Fly, etc.) inject PORT; bind all interfaces
 	// by default so the container is reachable unless MCP_HOST is set explicitly.
-	host: env.MCP_HOST || (env.PORT ? "0.0.0.0" : "localhost"),
-	port: Number(env.MCP_PORT) || Number(env.PORT) || 3000,
+	host: env["MCP_HOST"] || (env["PORT"] ? "0.0.0.0" : "localhost"),
+	port: Number(env["MCP_PORT"]) || Number(env["PORT"]) || 3000,
 	oauth: {
 		authServerUrl:
-			env.OAUTH_AUTH_SERVER_URL ?? "http://localhost:8080/realms/master",
-		clientId: env.OAUTH_CLIENT_ID,
-		clientSecret: env.OAUTH_CLIENT_SECRET,
-		requiredScopes: (env.OAUTH_REQUIRED_SCOPES || "mcp:tools")
+			env["OAUTH_AUTH_SERVER_URL"] ?? "http://localhost:8080/realms/master",
+		clientId: env["OAUTH_CLIENT_ID"],
+		clientSecret: env["OAUTH_CLIENT_SECRET"],
+		requiredScopes: (env["OAUTH_REQUIRED_SCOPES"] || "mcp:tools")
 			.split(",")
 			.map((scope) => scope.trim()),
-		useIntrospection: env.OAUTH_USE_INTROSPECTION !== "false",
+		useIntrospection: env["OAUTH_USE_INTROSPECTION"] !== "false",
 	},
-	authEnabled: env.OAUTH_ENABLED !== "false",
-	corsOrigins: parseCorsOrigins(env.MCP_CORS_ORIGINS),
+	authEnabled: env["OAUTH_ENABLED"] !== "false",
+	corsOrigins: parseCorsOrigins(env["MCP_CORS_ORIGINS"]),
 	projectRoot: getProjectRoot(),
-	staticAuthToken: env.MCP_AUTH_TOKEN,
+	staticAuthToken: env["MCP_AUTH_TOKEN"],
 });
 
 /**
@@ -190,23 +193,40 @@ async function createMcpServer(serverUrl: string): Promise<McpServer> {
 		serverConfig: createServerConfig(serverUrl),
 	});
 
-	const initialized = await Effect.runPromise(
-		Effect.either(
-			Effect.tryPromise({
-				try: () => runtime.initializeApi(),
-				catch: (error) => error,
-			}),
-		),
-	);
-
-	if (Either.isLeft(initialized)) {
-		const error = initialized.left;
+	try {
+		await runtime.initializeApi();
+	} catch (error) {
 		const message = getErrorMessage(error, String(error));
 		serverLogger.error(`Failed to initialize eBay API client: ${message}`);
 		throw error;
 	}
 
 	return runtime.server;
+}
+
+function createTokenVerifierConfig(
+	config: HttpTransportConfig,
+	serverUrl: string,
+): TokenVerifierConfig {
+	const verifierConfig: TokenVerifierConfig = {
+		authServerMetadata: getAuthServerMetadataUrl(config),
+		expectedAudience: serverUrl,
+		requiredScopes: config.oauth.requiredScopes,
+		useIntrospection: config.oauth.useIntrospection,
+	};
+	const clientId = config.oauth.clientId;
+
+	if (clientId != null) {
+		verifierConfig.clientId = clientId;
+	}
+
+	const clientSecret = config.oauth.clientSecret;
+
+	if (clientSecret != null) {
+		verifierConfig.clientSecret = clientSecret;
+	}
+
+	return verifierConfig;
 }
 
 async function createAuthMiddleware(
@@ -237,21 +257,13 @@ async function createAuthMiddleware(
 
 	serverLogger.info("Initializing OAuth token verifier...");
 
-	const tokenVerifier = new TokenVerifier({
-		authServerMetadata: getAuthServerMetadataUrl(config),
-		clientId: config.oauth.clientId,
-		clientSecret: config.oauth.clientSecret,
-		expectedAudience: serverUrl,
-		requiredScopes: config.oauth.requiredScopes,
-		useIntrospection: config.oauth.useIntrospection,
-	});
-
-	const initialized = await Effect.runPromise(
-		Effect.either(tokenVerifier.initialize()),
+	const tokenVerifier = new TokenVerifier(
+		createTokenVerifierConfig(config, serverUrl),
 	);
 
-	if (Either.isLeft(initialized)) {
-		const error = initialized.left;
+	try {
+		await tokenVerifier.initialize();
+	} catch (error) {
 		serverLogger.error("Failed to initialize token verifier", {
 			error: getErrorMessage(error, String(error)),
 		});
@@ -372,7 +384,8 @@ export const createHttpMcpApp = async (
 			};
 
 			const server = await createMcpServer(serverUrl);
-			await server.connect(transport);
+			// SDK getters type callbacks as `T | undefined`, which Transport rejects.
+			await server.connect(transport as Transport);
 		} else {
 			response.status(400).json({
 				jsonrpc: "2.0",

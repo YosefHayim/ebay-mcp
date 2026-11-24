@@ -1,9 +1,6 @@
-import { Effect } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -89,259 +86,208 @@ export class FeedbackApi {
 	 * Retrieves line items awaiting feedback.
 	 *
 	 * @param input - Optional filter, pagination, and sort query parameters.
-	 * @returns An Effect that succeeds with eBay's generated AwaitingFeedbackResponse.
+	 * @returns eBay's generated AwaitingFeedbackResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const awaiting = await Effect.runPromise(
-	 *   feedbackApi.getItemsAwaitingFeedback({ filter: 'userRole:SELLER', limit: 25 }),
-	 * );
+	 * const awaiting = await feedbackApi.getItemsAwaitingFeedback({ filter: 'userRole:SELLER', limit: 25 });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/awaiting_feedback/methods/getItemsAwaitingFeedback
 	 */
-	getItemsAwaitingFeedback = (
+	getItemsAwaitingFeedback = async (
 		input: GetAwaitingFeedbackInput = {},
-	): Effect.Effect<
-		AwaitingFeedbackResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<AwaitingFeedbackResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/awaiting_feedback`;
 
-		return Effect.gen(function* () {
-			const filter = yield* optionalStringEffect(input.filter, "filter");
-			const limit = yield* optionalPositiveNumberEffect(input.limit, "limit");
-			const offset = yield* optionalNonNegativeNumberEffect(
-				input.offset,
-				"offset",
-			);
-			const sort = yield* optionalStringEffect(input.sort, "sort");
-			const params = buildEndpointParams({
-				filter: { wireName: "filter", value: filter },
-				limit: { wireName: "limit", value: limit },
-				offset: { wireName: "offset", value: offset },
-				sort: { wireName: "sort", value: sort },
-			});
-
-			return yield* requestGetEffect<AwaitingFeedbackResponse>(
-				client,
-				path,
-				params,
-			);
+		const filter = optionalStringEffect(input.filter, "filter");
+		const limit = optionalPositiveNumberEffect(input.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(input.offset, "offset");
+		const sort = optionalStringEffect(input.sort, "sort");
+		const params = buildEndpointParams({
+			filter: { wireName: "filter", value: filter },
+			limit: { wireName: "limit", value: limit },
+			offset: { wireName: "offset", value: offset },
+			sort: { wireName: "sort", value: sort },
 		});
+
+		return await requestGetEffect<AwaitingFeedbackResponse>(
+			client,
+			path,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves feedback for a specified eBay user.
 	 *
 	 * @param input - Required user and feedback type plus optional endpoint filters.
-	 * @returns An Effect that succeeds with eBay's generated GetFeedbackResponse.
+	 * @returns eBay's generated GetFeedbackResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const feedback = await Effect.runPromise(
-	 *   feedbackApi.getFeedback({ userId: 'seller_123', feedbackType: 'FEEDBACK_RECEIVED' }),
-	 * );
+	 * const feedback = await feedbackApi.getFeedback({ userId: 'seller_123', feedbackType: 'FEEDBACK_RECEIVED' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/feedback/methods/getFeedback
 	 */
-	getFeedback = (
+	getFeedback = async (
 		input: GetFeedbackInput,
-	): Effect.Effect<GetFeedbackResponse, EbayApiError | EndpointInputError> => {
+	): Promise<GetFeedbackResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/feedback`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetFeedbackInput>(
-				input,
-				"input",
-			);
-			const userId = yield* requireStringEffect(
-				validatedInput.userId,
-				"userId",
-			);
-			const feedbackType = yield* requireStringEffect(
-				validatedInput.feedbackType,
-				"feedbackType",
-			);
-			const feedbackId = yield* optionalStringEffect(
-				validatedInput.feedbackId,
-				"feedbackId",
-			);
-			const filter = yield* optionalStringEffect(
-				validatedInput.filter,
-				"filter",
-			);
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const listingId = yield* optionalStringEffect(
-				validatedInput.listingId,
-				"listingId",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const orderLineItemId = yield* optionalStringEffect(
-				validatedInput.orderLineItemId,
-				"orderLineItemId",
-			);
-			const sort = yield* optionalStringEffect(validatedInput.sort, "sort");
-			const transactionId = yield* optionalStringEffect(
-				validatedInput.transactionId,
-				"transactionId",
-			);
-			const params = buildEndpointParams({
-				userId: { wireName: "user_id", value: userId },
-				feedbackType: { wireName: "feedback_type", value: feedbackType },
-				feedbackId: { wireName: "feedback_id", value: feedbackId },
-				filter: { wireName: "filter", value: filter },
-				limit: { wireName: "limit", value: limit },
-				listingId: { wireName: "listing_id", value: listingId },
-				offset: { wireName: "offset", value: offset },
-				orderLineItemId: {
-					wireName: "order_line_item_id",
-					value: orderLineItemId,
-				},
-				sort: { wireName: "sort", value: sort },
-				transactionId: { wireName: "transaction_id", value: transactionId },
-			});
-
-			return yield* requestGetEffect<GetFeedbackResponse>(client, path, params);
+		const validatedInput = requireObjectEffect<GetFeedbackInput>(
+			input,
+			"input",
+		);
+		const userId = requireStringEffect(validatedInput.userId, "userId");
+		const feedbackType = requireStringEffect(
+			validatedInput.feedbackType,
+			"feedbackType",
+		);
+		const feedbackId = optionalStringEffect(
+			validatedInput.feedbackId,
+			"feedbackId",
+		);
+		const filter = optionalStringEffect(validatedInput.filter, "filter");
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const listingId = optionalStringEffect(
+			validatedInput.listingId,
+			"listingId",
+		);
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const orderLineItemId = optionalStringEffect(
+			validatedInput.orderLineItemId,
+			"orderLineItemId",
+		);
+		const sort = optionalStringEffect(validatedInput.sort, "sort");
+		const transactionId = optionalStringEffect(
+			validatedInput.transactionId,
+			"transactionId",
+		);
+		const params = buildEndpointParams({
+			userId: { wireName: "user_id", value: userId },
+			feedbackType: { wireName: "feedback_type", value: feedbackType },
+			feedbackId: { wireName: "feedback_id", value: feedbackId },
+			filter: { wireName: "filter", value: filter },
+			limit: { wireName: "limit", value: limit },
+			listingId: { wireName: "listing_id", value: listingId },
+			offset: { wireName: "offset", value: offset },
+			orderLineItemId: {
+				wireName: "order_line_item_id",
+				value: orderLineItemId,
+			},
+			sort: { wireName: "sort", value: sort },
+			transactionId: { wireName: "transaction_id", value: transactionId },
 		});
+
+		return await requestGetEffect<GetFeedbackResponse>(client, path, params);
 	};
 
 	/**
 	 * Retrieves a feedback rating summary for a user.
 	 *
 	 * @param input - Required eBay user ID and rating summary filter.
-	 * @returns An Effect that succeeds with eBay's generated GetFeedbackRatingSummaryResponse.
+	 * @returns eBay's generated GetFeedbackRatingSummaryResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const summary = await Effect.runPromise(
-	 *   feedbackApi.getFeedbackRatingSummary({
+	 * const summary = await feedbackApi.getFeedbackRatingSummary({
 	 *     userId: 'seller_123',
 	 *     filter: 'ratingType:OVERALL_EXPERIENCE',
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/feedback_rating_summary/methods/getFeedbackRatingSummary
 	 */
-	getFeedbackRatingSummary = (
+	getFeedbackRatingSummary = async (
 		input: GetFeedbackRatingSummaryInput,
-	): Effect.Effect<
-		GetFeedbackRatingSummaryResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetFeedbackRatingSummaryResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/feedback_rating_summary`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetFeedbackRatingSummaryInput>(
-					input,
-					"input",
-				);
-			const userId = yield* requireStringEffect(
-				validatedInput.userId,
-				"userId",
-			);
-			const filter = yield* requireStringEffect(
-				validatedInput.filter,
-				"filter",
-			);
-			const params = buildEndpointParams({
-				userId: { wireName: "user_id", value: userId },
-				filter: { wireName: "filter", value: filter },
-			});
-
-			return yield* requestGetEffect<GetFeedbackRatingSummaryResponse>(
-				client,
-				path,
-				params,
-			);
+		const validatedInput = requireObjectEffect<GetFeedbackRatingSummaryInput>(
+			input,
+			"input",
+		);
+		const userId = requireStringEffect(validatedInput.userId, "userId");
+		const filter = requireStringEffect(validatedInput.filter, "filter");
+		const params = buildEndpointParams({
+			userId: { wireName: "user_id", value: userId },
+			filter: { wireName: "filter", value: filter },
 		});
+
+		return await requestGetEffect<GetFeedbackRatingSummaryResponse>(
+			client,
+			path,
+			params,
+		);
 	};
 
 	/**
 	 * Leaves feedback for the user's order partner.
 	 *
 	 * @param feedbackData - Generated LeaveFeedbackRequest body.
-	 * @returns An Effect that succeeds with eBay's generated LeaveFeedbackResponse.
+	 * @returns eBay's generated LeaveFeedbackResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const feedback = await Effect.runPromise(
-	 *   feedbackApi.leaveFeedback({ commentText: 'Great buyer', commentType: 'POSITIVE' }),
-	 * );
+	 * const feedback = await feedbackApi.leaveFeedback({ commentText: 'Great buyer', commentType: 'POSITIVE' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/feedback/methods/leaveFeedback
 	 */
-	leaveFeedback = (
+	leaveFeedback = async (
 		feedbackData: LeaveFeedbackRequest,
-	): Effect.Effect<
-		LeaveFeedbackResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<LeaveFeedbackResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/feedback`;
 
-		return Effect.gen(function* () {
-			const feedbackRequest = yield* requireObjectEffect<LeaveFeedbackRequest>(
-				feedbackData,
-				"feedbackData",
-			);
+		const feedbackRequest = requireObjectEffect<LeaveFeedbackRequest>(
+			feedbackData,
+			"feedbackData",
+		);
 
-			return yield* requestPostEffect<LeaveFeedbackResponse>(
-				client,
-				path,
-				feedbackRequest,
-			);
-		});
+		return await requestPostEffect<LeaveFeedbackResponse>(
+			client,
+			path,
+			feedbackRequest,
+		);
 	};
 
 	/**
 	 * Responds to feedback received from another eBay user.
 	 *
 	 * @param feedbackReply - Generated RespondToFeedbackRequest body.
-	 * @returns An Effect that succeeds with eBay's generated empty response.
+	 * @returns eBay's generated empty response.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   feedbackApi.respondToFeedback({ feedbackId: 'feedback-1', responseText: 'Thank you' }),
-	 * );
+	 * await feedbackApi.respondToFeedback({ feedbackId: 'feedback-1', responseText: 'Thank you' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/feedback/resources/respond_to_feedback/methods/respondToFeedback
 	 */
-	respondToFeedback = (
+	respondToFeedback = async (
 		feedbackReply: RespondToFeedbackRequest,
-	): Effect.Effect<
-		RespondToFeedbackResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<RespondToFeedbackResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/respond_to_feedback`;
 
-		return Effect.gen(function* () {
-			const replyRequest = yield* requireObjectEffect<RespondToFeedbackRequest>(
-				feedbackReply,
-				"feedbackReply",
-			);
+		const replyRequest = requireObjectEffect<RespondToFeedbackRequest>(
+			feedbackReply,
+			"feedbackReply",
+		);
 
-			return yield* requestPostEffect<RespondToFeedbackResponse>(
-				client,
-				path,
-				replyRequest,
-			);
-		});
+		return await requestPostEffect<RespondToFeedbackResponse>(
+			client,
+			path,
+			replyRequest,
+		);
 	};
 }

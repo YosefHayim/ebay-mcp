@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	findSellerStandardsProfilesInputSchema,
@@ -9,8 +8,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalStringEffect,
 	requestGetEffect,
 	requireObjectEffect,
@@ -76,82 +73,67 @@ export class AnalyticsApi {
 	 * Retrieves listing traffic report metrics.
 	 *
 	 * @param input - Traffic report dimension, filter, metric, and optional sort expression.
-	 * @returns An Effect that succeeds with eBay's generated traffic report response.
+	 * @returns A promise that resolves with eBay's generated traffic report response.
 	 *
 	 * @example
 	 * ```ts
-	 * const report = await Effect.runPromise(
-	 *   analyticsApi.getTrafficReport({
+	 * const report = await analyticsApi.getTrafficReport({
 	 *     dimension: 'LISTING',
 	 *     filter: 'listing_ids:{123}',
 	 *     metric: 'IMPRESSION',
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/traffic_report/methods/getTrafficReport
 	 */
-	getTrafficReport = (
+	getTrafficReport = async (
 		input: GetTrafficReportInput,
-	): Effect.Effect<
-		GetTrafficReportResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetTrafficReportResponse> => {
 		const { basePath, client } = this;
 		const path = `${basePath}/traffic_report`;
-
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetTrafficReportInput>(
-				input,
-				"input",
-			);
-			const validatedDimension = yield* requireStringEffect(
-				validatedInput.dimension,
-				"dimension",
-			);
-			const validatedFilter = yield* requireStringEffect(
-				validatedInput.filter,
-				"filter",
-			);
-			const validatedMetric = yield* requireStringEffect(
-				validatedInput.metric,
-				"metric",
-			);
-			const validatedSort = yield* optionalStringEffect(
-				validatedInput.sort,
-				"sort",
-			);
-			const params = buildEndpointParams({
-				dimension: { wireName: "dimension", value: validatedDimension },
-				filter: { wireName: "filter", value: validatedFilter },
-				metric: { wireName: "metric", value: validatedMetric },
-				sort: { wireName: "sort", value: validatedSort },
-			});
-
-			return yield* requestGetEffect<GetTrafficReportResponse>(
-				client,
-				path,
-				params,
-			);
+		const validatedInput = requireObjectEffect<GetTrafficReportInput>(
+			input,
+			"input",
+		);
+		const validatedDimension = requireStringEffect(
+			validatedInput.dimension,
+			"dimension",
+		);
+		const validatedFilter = requireStringEffect(
+			validatedInput.filter,
+			"filter",
+		);
+		const validatedMetric = requireStringEffect(
+			validatedInput.metric,
+			"metric",
+		);
+		const validatedSort = optionalStringEffect(validatedInput.sort, "sort");
+		const params = buildEndpointParams({
+			dimension: { wireName: "dimension", value: validatedDimension },
+			filter: { wireName: "filter", value: validatedFilter },
+			metric: { wireName: "metric", value: validatedMetric },
+			sort: { wireName: "sort", value: validatedSort },
 		});
+
+		return requestGetEffect<GetTrafficReportResponse>(client, path, params);
 	};
 
 	/**
 	 * Retrieves every seller standards profile available for the seller.
 	 *
 	 * @param input - Empty endpoint input object.
-	 * @returns An Effect that succeeds with eBay's generated seller standards profile collection.
+	 * @returns A promise that resolves with eBay's generated seller standards profile collection.
 	 *
 	 * @example
 	 * ```ts
-	 * const profiles = await Effect.runPromise(analyticsApi.findSellerStandardsProfiles({}));
+	 * const profiles = await analyticsApi.findSellerStandardsProfiles({});
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/findSellerStandardsProfiles
 	 */
 	findSellerStandardsProfiles = (
 		input: FindSellerStandardsProfilesInput = {},
-	): Effect.Effect<FindSellerStandardsProfilesResponse, EbayApiError> => {
+	): Promise<FindSellerStandardsProfilesResponse> => {
 		void input;
 		return requestGetEffect<FindSellerStandardsProfilesResponse>(
 			this.client,
@@ -163,107 +145,86 @@ export class AnalyticsApi {
 	 * Retrieves one seller standards profile by program and cycle.
 	 *
 	 * @param input - Seller standards program identifier and cycle.
-	 * @returns An Effect that succeeds with eBay's generated StandardsProfile response.
+	 * @returns A promise that resolves with eBay's generated StandardsProfile response.
 	 *
 	 * @example
 	 * ```ts
-	 * const profile = await Effect.runPromise(
-	 *   analyticsApi.getSellerStandardsProfile({
+	 * const profile = await analyticsApi.getSellerStandardsProfile({
 	 *     program: 'CUSTOMER_SERVICE',
 	 *     cycle: 'CURRENT',
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/getSellerStandardsProfile
 	 */
-	getSellerStandardsProfile = (
+	getSellerStandardsProfile = async (
 		input: GetSellerStandardsProfileInput,
-	): Effect.Effect<
-		GetSellerStandardsProfileResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetSellerStandardsProfileResponse> => {
 		const { basePath, client } = this;
+		const validatedInput = requireObjectEffect<GetSellerStandardsProfileInput>(
+			input,
+			"input",
+		);
+		const validatedProgram = requireStringEffect(
+			validatedInput.program,
+			"program",
+		);
+		const validatedCycle = requireStringEffect(validatedInput.cycle, "cycle");
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetSellerStandardsProfileInput>(
-					input,
-					"input",
-				);
-			const validatedProgram = yield* requireStringEffect(
-				validatedInput.program,
-				"program",
-			);
-			const validatedCycle = yield* requireStringEffect(
-				validatedInput.cycle,
-				"cycle",
-			);
-
-			return yield* requestGetEffect<GetSellerStandardsProfileResponse>(
-				client,
-				`${basePath}/seller_standards_profile/${validatedProgram}/${validatedCycle}`,
-			);
-		});
+		return requestGetEffect<GetSellerStandardsProfileResponse>(
+			client,
+			`${basePath}/seller_standards_profile/${validatedProgram}/${validatedCycle}`,
+		);
 	};
 
 	/**
 	 * Retrieves customer service metric benchmarks for a marketplace.
 	 *
 	 * @param input - Metric type, evaluation type, and marketplace identifier.
-	 * @returns An Effect that succeeds with eBay's generated customer service metric response.
+	 * @returns A promise that resolves with eBay's generated customer service metric response.
 	 *
 	 * @example
 	 * ```ts
-	 * const metric = await Effect.runPromise(
-	 *   analyticsApi.getCustomerServiceMetric({
+	 * const metric = await analyticsApi.getCustomerServiceMetric({
 	 *     customerServiceMetricType: 'ITEM_NOT_AS_DESCRIBED',
 	 *     evaluationType: 'CURRENT',
 	 *     evaluationMarketplaceId: 'EBAY_US',
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/customer_service_metric/methods/getCustomerServiceMetric
 	 */
-	getCustomerServiceMetric = (
+	getCustomerServiceMetric = async (
 		input: GetCustomerServiceMetricInput,
-	): Effect.Effect<
-		GetCustomerServiceMetricResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetCustomerServiceMetricResponse> => {
 		const { basePath, client } = this;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetCustomerServiceMetricInput>(
-					input,
-					"input",
-				);
-			const validatedMetricType = yield* requireStringEffect(
-				validatedInput.customerServiceMetricType,
-				"customerServiceMetricType",
-			);
-			const validatedEvaluationType = yield* requireStringEffect(
-				validatedInput.evaluationType,
-				"evaluationType",
-			);
-			const validatedMarketplaceId = yield* requireStringEffect(
-				validatedInput.evaluationMarketplaceId,
-				"evaluationMarketplaceId",
-			);
-			const params = buildEndpointParams({
-				evaluationMarketplaceId: {
-					wireName: "evaluation_marketplace_id",
-					value: validatedMarketplaceId,
-				},
-			});
-
-			return yield* requestGetEffect<GetCustomerServiceMetricResponse>(
-				client,
-				`${basePath}/customer_service_metric/${validatedMetricType}/${validatedEvaluationType}`,
-				params,
-			);
+		const validatedInput = requireObjectEffect<GetCustomerServiceMetricInput>(
+			input,
+			"input",
+		);
+		const validatedMetricType = requireStringEffect(
+			validatedInput.customerServiceMetricType,
+			"customerServiceMetricType",
+		);
+		const validatedEvaluationType = requireStringEffect(
+			validatedInput.evaluationType,
+			"evaluationType",
+		);
+		const validatedMarketplaceId = requireStringEffect(
+			validatedInput.evaluationMarketplaceId,
+			"evaluationMarketplaceId",
+		);
+		const params = buildEndpointParams({
+			evaluationMarketplaceId: {
+				wireName: "evaluation_marketplace_id",
+				value: validatedMarketplaceId,
+			},
 		});
+
+		return requestGetEffect<GetCustomerServiceMetricResponse>(
+			client,
+			`${basePath}/customer_service_metric/${validatedMetricType}/${validatedEvaluationType}`,
+			params,
+		);
 	};
 }

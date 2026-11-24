@@ -1,9 +1,7 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import { categoryTreeIdInputSchema } from "@/ebay-apis/taxonomy/categoryTreeSchemas.js";
 import {
 	type DownloadedFile,
-	type DownloadTooLargeError,
 	requestDownloadEffect,
 } from "@/ebay-client/download.js";
 import type {
@@ -13,8 +11,6 @@ import type {
 import {
 	buildEndpointParams,
 	decodeEndpointInputEffect,
-	type EbayApiError,
-	type EndpointInputError,
 	requestGetEffect,
 	requireObjectEffect,
 	requireStringEffect,
@@ -172,338 +168,264 @@ export class TaxonomyApi {
 	 * Retrieves the default category tree ID for a marketplace.
 	 *
 	 * @param input - Marketplace identifier used to select the default tree.
-	 * @returns An Effect that succeeds with eBay's getDefaultCategoryTreeId response, or undefined on HTTP 204.
+	 * @returns eBay's getDefaultCategoryTreeId response, or undefined on HTTP 204.
 	 *
 	 * @example
 	 * ```ts
-	 * const tree = await Effect.runPromise(
-	 *   taxonomyApi.getDefaultCategoryTreeId({ marketplaceId: 'EBAY_US' }),
-	 * );
+	 * const tree = await taxonomyApi.getDefaultCategoryTreeId({ marketplaceId: 'EBAY_US' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getDefaultCategoryTreeId
 	 */
-	public getDefaultCategoryTreeId = (
+	public getDefaultCategoryTreeId = async (
 		input: GetDefaultCategoryTreeIdInput,
-	): Effect.Effect<
-		GetDefaultCategoryTreeIdResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const path = `${this.basePath}/get_default_category_tree_id`;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetDefaultCategoryTreeIdInput>(
-					input,
-					"input",
-				);
-			const marketplaceId = yield* requireStringEffect(
-				validatedInput.marketplaceId,
-				"marketplaceId",
-			);
-			const params = buildEndpointParams({
-				marketplaceId: { wireName: "marketplace_id", value: marketplaceId },
-			});
-
-			return yield* requestGetEffect<GetDefaultCategoryTreeIdResponse>(
-				client,
-				path,
-				params,
-			);
+	): Promise<GetDefaultCategoryTreeIdResponse> => {
+		const validatedInput = requireObjectEffect<GetDefaultCategoryTreeIdInput>(
+			input,
+			"input",
+		);
+		const marketplaceId = requireStringEffect(
+			validatedInput.marketplaceId,
+			"marketplaceId",
+		);
+		const params = buildEndpointParams({
+			marketplaceId: { wireName: "marketplace_id", value: marketplaceId },
 		});
+
+		return requestGetEffect<GetDefaultCategoryTreeIdResponse>(
+			this.client,
+			`${this.basePath}/get_default_category_tree_id`,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves a full category tree.
 	 *
 	 * @param input - Category tree identifier.
-	 * @returns An Effect that succeeds with eBay's getCategoryTree response.
+	 * @returns eBay's getCategoryTree response.
 	 *
 	 * @example
 	 * ```ts
-	 * const tree = await Effect.runPromise(taxonomyApi.getCategoryTree({ categoryTreeId: '0' }));
+	 * const tree = await taxonomyApi.getCategoryTree({ categoryTreeId: '0' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategoryTree
 	 */
-	public getCategoryTree = (
+	public getCategoryTree = async (
 		input: GetCategoryTreeInput,
-	): Effect.Effect<
-		GetCategoryTreeResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
+	): Promise<GetCategoryTreeResponse> => {
+		const validatedInput = requireObjectEffect<GetCategoryTreeInput>(
+			input,
+			"input",
+		);
+		const categoryTreeId = requireStringEffect(
+			validatedInput.categoryTreeId,
+			"categoryTreeId",
+		);
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetCategoryTreeInput>(
-				input,
-				"input",
-			);
-			const categoryTreeId = yield* requireStringEffect(
-				validatedInput.categoryTreeId,
-				"categoryTreeId",
-			);
-
-			return yield* requestGetEffect<GetCategoryTreeResponse>(
-				client,
-				`${basePath}/category_tree/${categoryTreeId}`,
-			);
-		});
+		return requestGetEffect<GetCategoryTreeResponse>(
+			this.client,
+			`${this.basePath}/category_tree/${categoryTreeId}`,
+		);
 	};
 
 	/**
 	 * Retrieves a category subtree beneath one category.
 	 *
 	 * @param input - Category tree and category identifiers.
-	 * @returns An Effect that succeeds with eBay's getCategorySubtree response.
+	 * @returns eBay's getCategorySubtree response.
 	 *
 	 * @example
 	 * ```ts
-	 * const subtree = await Effect.runPromise(
-	 *   taxonomyApi.getCategorySubtree({ categoryTreeId: '0', categoryId: '123' }),
-	 * );
+	 * const subtree = await taxonomyApi.getCategorySubtree({ categoryTreeId: '0', categoryId: '123' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySubtree
 	 */
-	public getCategorySubtree = (
+	public getCategorySubtree = async (
 		input: GetCategorySubtreeInput,
-	): Effect.Effect<
-		GetCategorySubtreeResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetCategorySubtreeInput>(input, "input");
-			const categoryTreeId = yield* requireStringEffect(
-				validatedInput.categoryTreeId,
-				"categoryTreeId",
-			);
-			const categoryId = yield* requireStringEffect(
-				validatedInput.categoryId,
-				"categoryId",
-			);
-			const params = buildEndpointParams({
-				categoryId: { wireName: "category_id", value: categoryId },
-			});
-
-			return yield* requestGetEffect<GetCategorySubtreeResponse>(
-				client,
-				`${basePath}/category_tree/${categoryTreeId}/get_category_subtree`,
-				params,
-			);
+	): Promise<GetCategorySubtreeResponse> => {
+		const validatedInput = requireObjectEffect<GetCategorySubtreeInput>(
+			input,
+			"input",
+		);
+		const categoryTreeId = requireStringEffect(
+			validatedInput.categoryTreeId,
+			"categoryTreeId",
+		);
+		const categoryId = requireStringEffect(
+			validatedInput.categoryId,
+			"categoryId",
+		);
+		const params = buildEndpointParams({
+			categoryId: { wireName: "category_id", value: categoryId },
 		});
+
+		return requestGetEffect<GetCategorySubtreeResponse>(
+			this.client,
+			`${this.basePath}/category_tree/${categoryTreeId}/get_category_subtree`,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves category suggestions for listing search text.
 	 *
 	 * @param input - Category tree identifier and query text.
-	 * @returns An Effect that succeeds with eBay's getCategorySuggestions response, or undefined on HTTP 204.
+	 * @returns eBay's getCategorySuggestions response, or undefined on HTTP 204.
 	 *
 	 * @example
 	 * ```ts
-	 * const suggestions = await Effect.runPromise(
-	 *   taxonomyApi.getCategorySuggestions({ categoryTreeId: '0', query: 'iPhone' }),
-	 * );
+	 * const suggestions = await taxonomyApi.getCategorySuggestions({ categoryTreeId: '0', query: 'iPhone' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions
 	 */
-	public getCategorySuggestions = (
+	public getCategorySuggestions = async (
 		input: GetCategorySuggestionsInput,
-	): Effect.Effect<
-		GetCategorySuggestionsResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetCategorySuggestionsInput>(input, "input");
-			const categoryTreeId = yield* requireStringEffect(
-				validatedInput.categoryTreeId,
-				"categoryTreeId",
-			);
-			const query = yield* requireStringEffect(validatedInput.query, "query");
-			const params = buildEndpointParams({
-				query: { wireName: "q", value: query },
-			});
-
-			return yield* requestGetEffect<GetCategorySuggestionsResponse>(
-				client,
-				`${basePath}/category_tree/${categoryTreeId}/get_category_suggestions`,
-				params,
-			);
+	): Promise<GetCategorySuggestionsResponse> => {
+		const validatedInput = requireObjectEffect<GetCategorySuggestionsInput>(
+			input,
+			"input",
+		);
+		const categoryTreeId = requireStringEffect(
+			validatedInput.categoryTreeId,
+			"categoryTreeId",
+		);
+		const query = requireStringEffect(validatedInput.query, "query");
+		const params = buildEndpointParams({
+			query: { wireName: "q", value: query },
 		});
+
+		return requestGetEffect<GetCategorySuggestionsResponse>(
+			this.client,
+			`${this.basePath}/category_tree/${categoryTreeId}/get_category_suggestions`,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves item aspects for a category.
 	 *
 	 * @param input - Category tree and category identifiers.
-	 * @returns An Effect that succeeds with eBay's getItemAspectsForCategory response, or undefined on HTTP 204.
+	 * @returns eBay's getItemAspectsForCategory response, or undefined on HTTP 204.
 	 *
 	 * @example
 	 * ```ts
-	 * const aspects = await Effect.runPromise(
-	 *   taxonomyApi.getItemAspectsForCategory({ categoryTreeId: '0', categoryId: '123' }),
-	 * );
+	 * const aspects = await taxonomyApi.getItemAspectsForCategory({ categoryTreeId: '0', categoryId: '123' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getItemAspectsForCategory
 	 */
-	public getItemAspectsForCategory = (
+	public getItemAspectsForCategory = async (
 		input: GetItemAspectsForCategoryInput,
-	): Effect.Effect<
-		GetItemAspectsForCategoryResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetItemAspectsForCategoryInput>(
-					input,
-					"input",
-				);
-			const categoryTreeId = yield* requireStringEffect(
-				validatedInput.categoryTreeId,
-				"categoryTreeId",
-			);
-			const categoryId = yield* requireStringEffect(
-				validatedInput.categoryId,
-				"categoryId",
-			);
-			const params = buildEndpointParams({
-				categoryId: { wireName: "category_id", value: categoryId },
-			});
-
-			return yield* requestGetEffect<GetItemAspectsForCategoryResponse>(
-				client,
-				`${basePath}/category_tree/${categoryTreeId}/get_item_aspects_for_category`,
-				params,
-			);
+	): Promise<GetItemAspectsForCategoryResponse> => {
+		const validatedInput = requireObjectEffect<GetItemAspectsForCategoryInput>(
+			input,
+			"input",
+		);
+		const categoryTreeId = requireStringEffect(
+			validatedInput.categoryTreeId,
+			"categoryTreeId",
+		);
+		const categoryId = requireStringEffect(
+			validatedInput.categoryId,
+			"categoryId",
+		);
+		const params = buildEndpointParams({
+			categoryId: { wireName: "category_id", value: categoryId },
 		});
+
+		return requestGetEffect<GetItemAspectsForCategoryResponse>(
+			this.client,
+			`${this.basePath}/category_tree/${categoryTreeId}/get_item_aspects_for_category`,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves compatibility property names for a category.
 	 *
 	 * @param input - Category tree and compatibility-enabled category identifiers.
-	 * @returns An Effect that succeeds with eBay's getCompatibilityProperties response, or undefined on HTTP 204.
+	 * @returns eBay's getCompatibilityProperties response, or undefined on HTTP 204.
 	 *
 	 * @example
 	 * ```ts
-	 * const properties = await Effect.runPromise(
-	 *   taxonomyApi.getCompatibilityProperties({ categoryTreeId: '0', categoryId: '123' }),
-	 * );
+	 * const properties = await taxonomyApi.getCompatibilityProperties({ categoryTreeId: '0', categoryId: '123' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityProperties
 	 */
-	public getCompatibilityProperties = (
+	public getCompatibilityProperties = async (
 		input: GetCompatibilityPropertiesInput,
-	): Effect.Effect<
-		GetCompatibilityPropertiesResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetCompatibilityPropertiesInput>(
-					input,
-					"input",
-				);
-			const categoryTreeId = yield* requireStringEffect(
-				validatedInput.categoryTreeId,
-				"categoryTreeId",
-			);
-			const categoryId = yield* requireStringEffect(
-				validatedInput.categoryId,
-				"categoryId",
-			);
-			const params = buildEndpointParams({
-				categoryId: { wireName: "category_id", value: categoryId },
-			});
-
-			return yield* requestGetEffect<GetCompatibilityPropertiesResponse>(
-				client,
-				`${basePath}/category_tree/${categoryTreeId}/get_compatibility_properties`,
-				params,
-			);
+	): Promise<GetCompatibilityPropertiesResponse> => {
+		const validatedInput = requireObjectEffect<GetCompatibilityPropertiesInput>(
+			input,
+			"input",
+		);
+		const categoryTreeId = requireStringEffect(
+			validatedInput.categoryTreeId,
+			"categoryTreeId",
+		);
+		const categoryId = requireStringEffect(
+			validatedInput.categoryId,
+			"categoryId",
+		);
+		const params = buildEndpointParams({
+			categoryId: { wireName: "category_id", value: categoryId },
 		});
+
+		return requestGetEffect<GetCompatibilityPropertiesResponse>(
+			this.client,
+			`${this.basePath}/category_tree/${categoryTreeId}/get_compatibility_properties`,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves compatibility values for one property within a category.
 	 *
 	 * @param input - Category tree, category, and compatibility property identifiers.
-	 * @returns An Effect that succeeds with eBay's getCompatibilityPropertyValues response, or undefined on HTTP 204.
+	 * @returns eBay's getCompatibilityPropertyValues response, or undefined on HTTP 204.
 	 *
 	 * @example
 	 * ```ts
-	 * const values = await Effect.runPromise(
-	 *   taxonomyApi.getCompatibilityPropertyValues({
-	 *     categoryTreeId: '0',
-	 *     categoryId: '123',
-	 *     compatibilityProperty: 'Make',
-	 *   }),
-	 * );
+	 * const values = await taxonomyApi.getCompatibilityPropertyValues({ categoryTreeId: '0', categoryId: '123', compatibilityProperty: 'Make', });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getCompatibilityPropertyValues
 	 */
-	public getCompatibilityPropertyValues = (
+	public getCompatibilityPropertyValues = async (
 		input: GetCompatibilityPropertyValuesInput,
-	): Effect.Effect<
-		GetCompatibilityPropertyValuesResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
-
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetCompatibilityPropertyValuesInput>(
-					input,
-					"input",
-				);
-			const categoryTreeId = yield* requireStringEffect(
-				validatedInput.categoryTreeId,
-				"categoryTreeId",
-			);
-			const categoryId = yield* requireStringEffect(
-				validatedInput.categoryId,
-				"categoryId",
-			);
-			const compatibilityProperty = yield* requireStringEffect(
-				validatedInput.compatibilityProperty,
-				"compatibilityProperty",
-			);
-			const params = buildEndpointParams({
-				categoryId: { wireName: "category_id", value: categoryId },
-				compatibilityProperty: {
-					wireName: "compatibility_property",
-					value: compatibilityProperty,
-				},
-			});
-
-			return yield* requestGetEffect<GetCompatibilityPropertyValuesResponse>(
-				client,
-				`${basePath}/category_tree/${categoryTreeId}/get_compatibility_property_values`,
-				params,
-			);
+	): Promise<GetCompatibilityPropertyValuesResponse> => {
+		const validatedInput =
+			requireObjectEffect<GetCompatibilityPropertyValuesInput>(input, "input");
+		const categoryTreeId = requireStringEffect(
+			validatedInput.categoryTreeId,
+			"categoryTreeId",
+		);
+		const categoryId = requireStringEffect(
+			validatedInput.categoryId,
+			"categoryId",
+		);
+		const compatibilityProperty = requireStringEffect(
+			validatedInput.compatibilityProperty,
+			"compatibilityProperty",
+		);
+		const params = buildEndpointParams({
+			categoryId: { wireName: "category_id", value: categoryId },
+			compatibilityProperty: {
+				wireName: "compatibility_property",
+				value: compatibilityProperty,
+			},
 		});
+
+		return requestGetEffect<GetCompatibilityPropertyValuesResponse>(
+			this.client,
+			`${this.basePath}/category_tree/${categoryTreeId}/get_compatibility_property_values`,
+			params,
+		);
 	};
 
 	/**
@@ -514,66 +436,54 @@ export class TaxonomyApi {
 	 * getItemAspectsForCategory for per-category lookups.
 	 *
 	 * @param input - Category tree identifier.
-	 * @returns An Effect with the gzipped bytes, eBay's content type, and its file name.
+	 * @returns The gzipped bytes, eBay's content type, and its file name.
 	 *
 	 * @example
 	 * ```ts
-	 * const file = await Effect.runPromise(taxonomyApi.fetchItemAspects({ categoryTreeId: '3' }));
+	 * const file = await taxonomyApi.fetchItemAspects({ categoryTreeId: '3' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/fetchItemAspects
 	 */
-	public fetchItemAspects = (
+	public fetchItemAspects = async (
 		input: CategoryTreeIdInput,
-	): Effect.Effect<
-		DownloadedFile,
-		EbayApiError | EndpointInputError | DownloadTooLargeError
-	> =>
-		this.categoryTreeResourcePath(input, "fetch_item_aspects").pipe(
-			Effect.flatMap((path) =>
-				requestDownloadEffect(this.client, path, ITEM_ASPECTS_DOWNLOAD),
-			),
-		);
+	): Promise<DownloadedFile> => {
+		const path = this.categoryTreeResourcePath(input, "fetch_item_aspects");
+
+		return requestDownloadEffect(this.client, path, ITEM_ASPECTS_DOWNLOAD);
+	};
 
 	/**
 	 * Retrieves the mappings of expired leaf categories to the active categories replacing them.
 	 *
 	 * @param input - Category tree identifier.
-	 * @returns An Effect that succeeds with eBay's ExpiredCategories, or undefined on HTTP 204.
+	 * @returns eBay's ExpiredCategories, or undefined on HTTP 204.
 	 *
 	 * @example
 	 * ```ts
-	 * const expired = await Effect.runPromise(
-	 *   taxonomyApi.getExpiredCategories({ categoryTreeId: '0' }),
-	 * );
+	 * const expired = await taxonomyApi.getExpiredCategories({ categoryTreeId: '0' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/taxonomy/resources/category_tree/methods/getExpiredCategories
 	 */
-	public getExpiredCategories = (
+	public getExpiredCategories = async (
 		input: CategoryTreeIdInput,
-	): Effect.Effect<
-		GetExpiredCategoriesResponse,
-		EbayApiError | EndpointInputError
-	> =>
-		this.categoryTreeResourcePath(input, "get_expired_categories").pipe(
-			Effect.flatMap((path) =>
-				requestGetEffect<GetExpiredCategoriesResponse>(this.client, path),
-			),
-		);
+	): Promise<GetExpiredCategoriesResponse> => {
+		const path = this.categoryTreeResourcePath(input, "get_expired_categories");
+
+		return requestGetEffect<GetExpiredCategoriesResponse>(this.client, path);
+	};
 
 	private categoryTreeResourcePath = (
 		input: CategoryTreeIdInput,
 		resource: string,
-	): Effect.Effect<string, EndpointInputError> =>
-		decodeEndpointInputEffect(
+	): string => {
+		const { categoryTreeId } = decodeEndpointInputEffect(
 			categoryTreeIdInputSchema,
 			input,
 			"categoryTreeId",
-		).pipe(
-			Effect.map(
-				({ categoryTreeId }) =>
-					`${this.basePath}/category_tree/${encodeURIComponent(categoryTreeId)}/${resource}`,
-			),
 		);
+
+		return `${this.basePath}/category_tree/${encodeURIComponent(categoryTreeId)}/${resource}`;
+	};
 }

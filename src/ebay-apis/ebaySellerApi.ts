@@ -1,5 +1,3 @@
-import type { Effect } from "effect";
-import type { EbayOAuthError } from "@/auth/oauth.js";
 import { AccountApi } from "@/ebay-apis/account/accountApi.js";
 import { AccountV2Api } from "@/ebay-apis/account/accountV2Api.js";
 import { AnalyticsApi } from "@/ebay-apis/analytics/analyticsApi.js";
@@ -105,8 +103,7 @@ export class EbaySellerApi {
 	/**
 	 * Initialize the API (load tokens from storage)
 	 */
-	initialize = (): Effect.Effect<void, EbayOAuthError> =>
-		this.client.initialize();
+	initialize = (): Promise<void> => this.client.initialize();
 
 	/**
 	 * Check if the API client is authenticated
@@ -130,7 +127,7 @@ export class EbaySellerApi {
 		refreshToken: string,
 		accessTokenExpiry?: number,
 		refreshTokenExpiry?: number,
-	): Effect.Effect<void, EbayOAuthError> =>
+	): Promise<void> =>
 		this.client.setUserTokens(
 			accessToken,
 			refreshToken,

@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import {
 	createDocumentFromUrlInputSchema,
@@ -7,7 +6,10 @@ import {
 	documentIdInputSchema,
 	postOrderDocumentMetadataSchema,
 } from "@/ebay-apis/inventory/mediaDocumentsSchemas.js";
-import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
+import type {
+	EbayApiClient,
+	EbayResponse,
+} from "@/ebay-client/ebayApiClient.js";
 import { locatedResourceId } from "@/ebay-client/location.js";
 import {
 	decodeEndpointInputEffect,
@@ -67,34 +69,36 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.createImageFromUrl({ imageUrl: 'https://example.com/front.jpg' })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/createImageFromUrl
 	 */
-	const createImageFromUrl = (input: CreateImageFromUrlInput) =>
-		Effect.gen(function* () {
-			const imageSource = yield* decodeEndpointInputEffect(
-				createImageFromUrlInputSchema,
-				input,
-			);
-			const path = "/image/create_image_from_url";
-			const imageResponse = yield* Effect.tryPromise({
-				try: () =>
-					client.postForResponse<components["schemas"]["ImageResponse"]>(
-						url(path),
-						imageSource,
-						{
-							absolute: true,
-						},
-					),
-				catch: failure("POST", path),
+	const createImageFromUrl = async (input: CreateImageFromUrlInput) => {
+		const imageSource = decodeEndpointInputEffect(
+			createImageFromUrlInputSchema,
+			input,
+		);
+		const path = "/image/create_image_from_url";
+
+		var imageResponse: EbayResponse<components["schemas"]["ImageResponse"]>;
+
+		try {
+			imageResponse = await client.postForResponse<
+				components["schemas"]["ImageResponse"]
+			>(url(path), imageSource, {
+				absolute: true,
 			});
-			const resource = yield* locatedResourceId(
-				imageResponse.headers.location,
-				`${BASE_PATH}/image`,
-			);
-			return {
-				imageId: resource.id,
-				location: resource.location,
-				image: imageResponse.data,
-			};
-		});
+		} catch (cause) {
+			throw failure("POST", path)(cause);
+		}
+
+		const resource = locatedResourceId(
+			imageResponse.headers["location"],
+			`${BASE_PATH}/image`,
+		);
+
+		return {
+			imageId: resource.id,
+			location: resource.location,
+			image: imageResponse.data,
+		};
+	};
 
 	/**
 	 * Stages a listing document for subsequent upload.
@@ -103,24 +107,24 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.createDocument({ documentType: 'USER_GUIDE_OR_MANUAL', languages: ['ENGLISH'] })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocument
 	 */
-	const createDocument = (input: CreateDocumentInput) =>
-		Effect.gen(function* () {
-			const documentRequest = yield* decodeEndpointInputEffect(
-				createDocumentInputSchema,
-				input,
+	const createDocument = async (input: CreateDocumentInput) => {
+		const documentRequest = decodeEndpointInputEffect(
+			createDocumentInputSchema,
+			input,
+		);
+
+		try {
+			return await client.post<CreateDocumentResponse>(
+				url("/document"),
+				documentRequest,
+				{
+					absolute: true,
+				},
 			);
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.post<CreateDocumentResponse>(
-						url("/document"),
-						documentRequest,
-						{
-							absolute: true,
-						},
-					),
-				catch: failure("POST", "/document"),
-			});
-		});
+		} catch (cause) {
+			throw failure("POST", "/document")(cause);
+		}
+	};
 
 	/**
 	 * Creates a listing document from an HTTPS source.
@@ -129,21 +133,25 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.createDocumentFromUrl({ documentUrl: 'https://example.com/manual.pdf', documentType: 'USER_GUIDE_OR_MANUAL', languages: ['ENGLISH'] })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocumentFromUrl
 	 */
-	const createDocumentFromUrl = (input: CreateDocumentFromUrlInput) =>
-		Effect.gen(function* () {
-			const documentRequest = yield* decodeEndpointInputEffect(
-				createDocumentFromUrlInputSchema,
-				input,
+	const createDocumentFromUrl = async (input: CreateDocumentFromUrlInput) => {
+		const documentRequest = decodeEndpointInputEffect(
+			createDocumentFromUrlInputSchema,
+			input,
+		);
+		const path = "/document/create_document_from_url";
+
+		try {
+			return await client.post<CreateDocumentResponse>(
+				url(path),
+				documentRequest,
+				{
+					absolute: true,
+				},
 			);
-			const path = "/document/create_document_from_url";
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.post<CreateDocumentResponse>(url(path), documentRequest, {
-						absolute: true,
-					}),
-				catch: failure("POST", path),
-			});
-		});
+		} catch (cause) {
+			throw failure("POST", path)(cause);
+		}
+	};
 
 	/**
 	 * Retrieves the status and metadata of a listing document.
@@ -152,21 +160,21 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.getDocument({ documentId: 'DOC-1' })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/getDocument
 	 */
-	const getDocument = (input: DocumentIdInput) =>
-		Effect.gen(function* () {
-			const { documentId } = yield* decodeEndpointInputEffect(
-				documentIdInputSchema,
-				input,
-			);
-			const path = `/document/${encodeURIComponent(documentId)}`;
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.get<DocumentResponse>(url(path), undefined, {
-						absolute: true,
-					}),
-				catch: failure("GET", path),
+	const getDocument = async (input: DocumentIdInput) => {
+		const { documentId } = decodeEndpointInputEffect(
+			documentIdInputSchema,
+			input,
+		);
+		const path = `/document/${encodeURIComponent(documentId)}`;
+
+		try {
+			return await client.get<DocumentResponse>(url(path), undefined, {
+				absolute: true,
 			});
-		});
+		} catch (cause) {
+			throw failure("GET", path)(cause);
+		}
+	};
 
 	/**
 	 * Uploads bytes for a previously staged listing document.
@@ -175,22 +183,28 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.uploadDocument({ documentId: 'DOC-1', file })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/uploadDocument
 	 */
-	const uploadDocument = (input: DocumentIdInput & { file: MediaUpload }) =>
-		Effect.gen(function* () {
-			const { documentId } = yield* decodeEndpointInputEffect(
-				documentIdInputSchema,
-				input,
+	const uploadDocument = async (
+		input: DocumentIdInput & { file: MediaUpload },
+	) => {
+		const { documentId } = decodeEndpointInputEffect(
+			documentIdInputSchema,
+			input,
+		);
+		const path = `/document/${encodeURIComponent(documentId)}/upload`;
+
+		try {
+			return await client.post<DocumentResponse>(
+				url(path),
+				uploadForm(input.file),
+				{
+					absolute: true,
+					timeoutMs: UPLOAD_TIMEOUT_MS,
+				},
 			);
-			const path = `/document/${encodeURIComponent(documentId)}/upload`;
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.post<DocumentResponse>(url(path), uploadForm(input.file), {
-						absolute: true,
-						timeoutMs: UPLOAD_TIMEOUT_MS,
-					}),
-				catch: failure("POST", path),
-			});
-		});
+		} catch (cause) {
+			throw failure("POST", path)(cause);
+		}
+	};
 
 	/**
 	 * Uploads a document for a post-order entity without publishing it.
@@ -199,33 +213,43 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.uploadPostOrderDocument({ file, documentUsageType: 'RETURN_SHIPPING_LABEL', entityType: 'RETURNS', entityId: 'R-1' })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/post_order/methods/uploadPostOrderDocument
 	 */
-	const uploadPostOrderDocument = (
+	const uploadPostOrderDocument = async (
 		input: PostOrderMetadata & { file: MediaUpload },
-	) =>
-		Effect.gen(function* () {
-			const metadata = yield* decodeEndpointInputEffect(
-				postOrderDocumentMetadataSchema,
-				input,
+	) => {
+		const metadata = decodeEndpointInputEffect(
+			postOrderDocumentMetadataSchema,
+			input,
+		);
+		const form = uploadForm(input.file);
+
+		for (const [fieldName, fieldValue] of Object.entries(metadata)) {
+			form.append(fieldName, fieldValue);
+		}
+
+		const path = "/post_order/document";
+
+		var uploadResponse: EbayResponse<unknown>;
+
+		try {
+			uploadResponse = await client.postForResponse<unknown>(
+				url(path, true),
+				form,
+				{
+					absolute: true,
+					timeoutMs: UPLOAD_TIMEOUT_MS,
+				},
 			);
-			const form = uploadForm(input.file);
-			for (const [fieldName, fieldValue] of Object.entries(metadata)) {
-				form.append(fieldName, fieldValue);
-			}
-			const path = "/post_order/document";
-			const uploadResponse = yield* Effect.tryPromise({
-				try: () =>
-					client.postForResponse<unknown>(url(path, true), form, {
-						absolute: true,
-						timeoutMs: UPLOAD_TIMEOUT_MS,
-					}),
-				catch: failure("POST", path),
-			});
-			const resource = yield* locatedResourceId(
-				uploadResponse.headers.location,
-				`${BASE_PATH}${path}`,
-			);
-			return { documentId: resource.id, location: resource.location };
-		});
+		} catch (cause) {
+			throw failure("POST", path)(cause);
+		}
+
+		const resource = locatedResourceId(
+			uploadResponse.headers["location"],
+			`${BASE_PATH}${path}`,
+		);
+
+		return { documentId: resource.id, location: resource.location };
+	};
 
 	/**
 	 * Downloads post-order document bytes. The spec's string[] schema describes a binary PDF body.
@@ -234,23 +258,23 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.downloadPostOrderDocument({ documentId: 'DOC-1' })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/post_order/methods/downloadPostOrderDocument
 	 */
-	const downloadPostOrderDocument = (input: DocumentIdInput) =>
-		Effect.gen(function* () {
-			const { documentId } = yield* decodeEndpointInputEffect(
-				documentIdInputSchema,
-				input,
-			);
-			const path = `/post_order/document/${encodeURIComponent(documentId)}`;
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.get<Buffer>(url(path, true), undefined, {
-						absolute: true,
-						responseType: "arraybuffer",
-						headers: { Accept: "application/pdf" },
-					}),
-				catch: failure("GET", path),
+	const downloadPostOrderDocument = async (input: DocumentIdInput) => {
+		const { documentId } = decodeEndpointInputEffect(
+			documentIdInputSchema,
+			input,
+		);
+		const path = `/post_order/document/${encodeURIComponent(documentId)}`;
+
+		try {
+			return await client.get<Buffer>(url(path, true), undefined, {
+				absolute: true,
+				responseType: "arraybuffer",
+				headers: { Accept: "application/pdf" },
 			});
-		});
+		} catch (cause) {
+			throw failure("GET", path)(cause);
+		}
+	};
 
 	/**
 	 * Removes a submitted post-order document. eBay rejects removal after publication.
@@ -259,18 +283,19 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	 * @example media.removePostOrderDocument({ documentId: 'DOC-1' })
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/post_order/methods/removePostOrderDocument
 	 */
-	const removePostOrderDocument = (input: DocumentIdInput) =>
-		Effect.gen(function* () {
-			const { documentId } = yield* decodeEndpointInputEffect(
-				documentIdInputSchema,
-				input,
-			);
-			const path = `/post_order/document/${encodeURIComponent(documentId)}`;
-			yield* Effect.tryPromise({
-				try: () => client.delete<void>(url(path, true), { absolute: true }),
-				catch: failure("DELETE", path),
-			});
-		});
+	const removePostOrderDocument = async (input: DocumentIdInput) => {
+		const { documentId } = decodeEndpointInputEffect(
+			documentIdInputSchema,
+			input,
+		);
+		const path = `/post_order/document/${encodeURIComponent(documentId)}`;
+
+		try {
+			await client.delete<void>(url(path, true), { absolute: true });
+		} catch (cause) {
+			throw failure("DELETE", path)(cause);
+		}
+	};
 
 	return {
 		createImageFromUrl,

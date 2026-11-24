@@ -2,6 +2,20 @@
 	"compilerOptions": {
 		"target": "ES2022",
 		"strict": true,
+		"strictBuiltinIteratorReturn": true,
+		"exactOptionalPropertyTypes": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noUncheckedSideEffectImports": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true
 	}

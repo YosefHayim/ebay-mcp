@@ -9,7 +9,6 @@
 
 import process from "node:process";
 import chalk from "chalk";
-import { Effect, Either } from "effect";
 import { writeFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -66,26 +65,22 @@ async function checkApiConnectivity(): Promise<{
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), 5000);
 
-	const checked = await Effect.runPromise(
-		Effect.either(
-			Effect.tryPromise({
-				try: () =>
-					fetch("https://api.ebay.com/health", {
-						signal: controller.signal,
-					}),
-				catch: (error) => error,
-			}).pipe(Effect.ensuring(Effect.sync(() => clearTimeout(timeout)))),
-		),
-	);
+	try {
+		const healthResponse = await fetch("https://api.ebay.com/health", {
+			signal: controller.signal,
+		});
 
-	if (Either.isLeft(checked)) {
+		return {
+			canReachEbay: healthResponse.ok || healthResponse.status === 404,
+		};
+	} catch (error) {
 		return {
 			canReachEbay: false,
-			error: getErrorMessage(checked.left),
+			error: getErrorMessage(error),
 		};
+	} finally {
+		clearTimeout(timeout);
 	}
-
-	return { canReachEbay: checked.right.ok || checked.right.status === 404 };
 }
 
 /**
@@ -94,26 +89,18 @@ async function checkApiConnectivity(): Promise<{
 async function testEbayAuthentication(
 	config: EbayConfig,
 ): Promise<{ success: boolean; error?: string; userInfo?: unknown }> {
-	const authenticated = await Effect.runPromise(
-		Effect.either(
-			Effect.gen(function* () {
-				const api = new EbaySellerApi(config);
-				yield* api.initialize();
+	try {
+		const api = new EbaySellerApi(config);
+		await api.initialize();
+		const userInfo = await api.identity.getUser();
 
-				// Try to get user info
-				return yield* api.identity.getUser();
-			}),
-		),
-	);
-
-	if (Either.isLeft(authenticated)) {
+		return { success: true, userInfo };
+	} catch (error) {
 		return {
 			success: false,
-			error: getErrorMessage(authenticated.left),
+			error: getErrorMessage(error),
 		};
 	}
-
-	return { success: true, userInfo: authenticated.right };
 }
 
 /**
@@ -156,25 +143,20 @@ async function displayUpdateStatus(): Promise<void> {
 	console.log(chalk.bold.cyan("🔄 Version\n"));
 	console.log(`  ${chalk.gray("Installed:")} ${getVersion()}`);
 
-	const updateInfo = await Effect.runPromise(
-		Effect.either(
-			Effect.tryPromise({
-				try: getUpdateInfo,
-				catch: (error) => error,
-			}),
-		),
-	);
+	try {
+		const updateInfo = await getUpdateInfo();
 
-	if (Either.isLeft(updateInfo)) {
+		if (updateInfo) {
+			console.log(
+				`  ${chalk.gray("Latest:")}    ${chalk.green(updateInfo.latest)} ${chalk.yellow(`(run \`npm i -g ${updateInfo.name}\` to update)`)}`,
+			);
+		} else {
+			console.log(`  ${chalk.gray("Latest:")}    ${chalk.green("up to date")}`);
+		}
+	} catch {
 		console.log(
 			`  ${chalk.gray("Latest:")}    ${chalk.dim("update check unavailable (offline?)")}`,
 		);
-	} else if (updateInfo.right) {
-		console.log(
-			`  ${chalk.gray("Latest:")}    ${chalk.green(updateInfo.right.latest)} ${chalk.yellow(`(run \`npm i -g ${updateInfo.right.name}\` to update)`)}`,
-		);
-	} else {
-		console.log(`  ${chalk.gray("Latest:")}    ${chalk.green("up to date")}`);
 	}
 
 	console.log("");
@@ -307,24 +289,24 @@ async function generateDiagnosticReport(
 	};
 
 	// If we have credentials, test authentication
-	if (envVars.EBAY_CLIENT_ID && envVars.EBAY_CLIENT_SECRET) {
+	if (envVars["EBAY_CLIENT_ID"] && envVars["EBAY_CLIENT_SECRET"]) {
 		const config: EbayConfig = {
-			clientId: envVars.EBAY_CLIENT_ID,
-			clientSecret: envVars.EBAY_CLIENT_SECRET,
-			redirectUri: envVars.EBAY_REDIRECT_URI,
-			environment: readEnvironment(envVars.EBAY_ENVIRONMENT),
+			clientId: envVars["EBAY_CLIENT_ID"],
+			clientSecret: envVars["EBAY_CLIENT_SECRET"],
+			redirectUri: envVars["EBAY_REDIRECT_URI"],
+			environment: readEnvironment(envVars["EBAY_ENVIRONMENT"]),
 		};
 
 		const authResult = await testEbayAuthentication(config);
 
 		report.tokenInfo = {
-			hasUserToken: !!envVars.EBAY_USER_REFRESH_TOKEN,
-			hasAppToken: !!envVars.EBAY_APP_ACCESS_TOKEN,
+			hasUserToken: !!envVars["EBAY_USER_REFRESH_TOKEN"],
+			hasAppToken: !!envVars["EBAY_APP_ACCESS_TOKEN"],
 		};
 
 		if (authResult.success) {
-			report.tokenInfo.scopes = envVars.EBAY_USER_REFRESH_TOKEN
-				? parseScopeString(envVars.EBAY_USER_REFRESH_TOKEN)
+			report.tokenInfo.scopes = envVars["EBAY_USER_REFRESH_TOKEN"]
+				? parseScopeString(envVars["EBAY_USER_REFRESH_TOKEN"])
 				: [];
 		}
 	}
@@ -377,36 +359,29 @@ export const runDiagnostics = async (exportReport = false): Promise<void> => {
 	displayRecommendations(validationSummary);
 
 	// If we have credentials, test authentication
-	if (envVars.EBAY_CLIENT_ID && envVars.EBAY_CLIENT_SECRET) {
+	if (envVars["EBAY_CLIENT_ID"] && envVars["EBAY_CLIENT_SECRET"]) {
 		const config: EbayConfig = {
-			clientId: envVars.EBAY_CLIENT_ID,
-			clientSecret: envVars.EBAY_CLIENT_SECRET,
-			redirectUri: envVars.EBAY_REDIRECT_URI,
-			environment: readEnvironment(envVars.EBAY_ENVIRONMENT),
+			clientId: envVars["EBAY_CLIENT_ID"],
+			clientSecret: envVars["EBAY_CLIENT_SECRET"],
+			redirectUri: envVars["EBAY_REDIRECT_URI"],
+			environment: readEnvironment(envVars["EBAY_ENVIRONMENT"]),
 		};
 
 		await displayAuthenticationTest(config);
 
 		// Scope verification if user has refresh token
-		if (envVars.EBAY_USER_REFRESH_TOKEN) {
-			const tokenScopes = await Effect.runPromise(
-				Effect.either(
-					Effect.gen(function* () {
-						const api = new EbaySellerApi(config);
-						yield* api.initialize();
-						const authClient = api.getAuthClient();
-						return authClient.getTokenInfo().scopeInfo;
-					}),
-				),
-			);
+		if (envVars["EBAY_USER_REFRESH_TOKEN"]) {
+			try {
+				const api = new EbaySellerApi(config);
+				await api.initialize();
+				const authClient = api.getAuthClient();
+				const scopeInfo = authClient.getTokenInfo().scopeInfo;
 
-			if (Either.isLeft(tokenScopes)) {
+				if (scopeInfo) {
+					displayScopeVerification(scopeInfo.tokenScopes, config.environment);
+				}
+			} catch {
 				console.log(chalk.yellow("⚠️  Could not verify token scopes\n"));
-			} else if (tokenScopes.right) {
-				displayScopeVerification(
-					tokenScopes.right.tokenScopes,
-					config.environment,
-				);
 			}
 		}
 	}
@@ -435,20 +410,13 @@ if (isEntryModule(import.meta.url)) {
 	const cliArgs = process.argv.slice(2);
 	const exportReport = cliArgs.includes("--export") || cliArgs.includes("-e");
 
-	void Effect.runPromise(
-		Effect.either(
-			Effect.tryPromise({
-				try: () => runDiagnostics(exportReport),
-				catch: (error) => error,
-			}),
-		),
-	).then((diagnosticsOutcome) => {
-		if (Either.isLeft(diagnosticsOutcome)) {
-			console.error(
-				chalk.red("\n❌ Diagnostics failed:"),
-				getErrorMessage(diagnosticsOutcome.left),
-			);
-			process.exitCode = 1;
-		}
-	});
+	try {
+		await runDiagnostics(exportReport);
+	} catch (error) {
+		console.error(
+			chalk.red("\n❌ Diagnostics failed:"),
+			getErrorMessage(error),
+		);
+		process.exitCode = 1;
+	}
 }

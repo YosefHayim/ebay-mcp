@@ -1,9 +1,6 @@
-import { Effect } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -81,261 +78,222 @@ export class MessageApi {
 	 * Updates multiple conversations in one request.
 	 *
 	 * @param updateData - Generated BulkUpdateConversationsRequest body.
-	 * @returns An Effect that succeeds with eBay's generated bulk update response.
+	 * @returns eBay's generated bulk update response.
 	 *
 	 * @example
 	 * ```ts
-	 * const updatedConversations = await Effect.runPromise(
-	 *   messageApi.bulkUpdateConversation({ conversations: [{ conversationId: 'c1' }] }),
-	 * );
+	 * const updatedConversations = await messageApi.bulkUpdateConversation({ conversations: [{ conversationId: 'c1' }] });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/bulk_update_conversation/methods/bulkUpdateConversation
 	 */
-	bulkUpdateConversation = (
+	bulkUpdateConversation = async (
 		updateData: BulkUpdateConversationsRequest,
-	): Effect.Effect<
-		BulkUpdateConversationsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkUpdateConversationsResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/bulk_update_conversation`;
 
-		return Effect.gen(function* () {
-			const bulkUpdateRequest =
-				yield* requireObjectEffect<BulkUpdateConversationsRequest>(
-					updateData,
-					"updateData",
-				);
-
-			return yield* requestPostEffect<BulkUpdateConversationsResponse>(
-				client,
-				path,
-				bulkUpdateRequest,
+		const bulkUpdateRequest =
+			requireObjectEffect<BulkUpdateConversationsRequest>(
+				updateData,
+				"updateData",
 			);
-		});
+
+		return await requestPostEffect<BulkUpdateConversationsResponse>(
+			client,
+			path,
+			bulkUpdateRequest,
+		);
 	};
 
 	/**
 	 * Retrieves buyer-seller conversations.
 	 *
 	 * @param input - Required conversation type plus optional filters and pagination.
-	 * @returns An Effect that succeeds with eBay's generated conversation collection response.
+	 * @returns eBay's generated conversation collection response.
 	 *
 	 * @example
 	 * ```ts
-	 * const conversations = await Effect.runPromise(
-	 *   messageApi.getConversations({ conversationType: 'FROM_MEMBERS', limit: 25 }),
-	 * );
+	 * const conversations = await messageApi.getConversations({ conversationType: 'FROM_MEMBERS', limit: 25 });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/conversation/methods/getConversations
 	 */
-	getConversations = (
+	getConversations = async (
 		input: GetConversationsInput,
-	): Effect.Effect<
-		GetAllMyConversationsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetAllMyConversationsResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/conversation`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetConversationsInput>(
-				input,
-				"input",
-			);
-			const conversationType = yield* requireStringEffect(
-				validatedInput.conversationType,
-				"conversationType",
-			);
-			const conversationStatus = yield* optionalStringEffect(
-				validatedInput.conversationStatus,
-				"conversationStatus",
-			);
-			const endTime = yield* optionalStringEffect(
-				validatedInput.endTime,
-				"endTime",
-			);
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const otherPartyUsername = yield* optionalStringEffect(
-				validatedInput.otherPartyUsername,
-				"otherPartyUsername",
-			);
-			const referenceId = yield* optionalStringEffect(
-				validatedInput.referenceId,
-				"referenceId",
-			);
-			const referenceType = yield* optionalStringEffect(
-				validatedInput.referenceType,
-				"referenceType",
-			);
-			const startTime = yield* optionalStringEffect(
-				validatedInput.startTime,
-				"startTime",
-			);
-			const params = buildEndpointParams({
-				conversationType: {
-					wireName: "conversation_type",
-					value: conversationType,
-				},
-				conversationStatus: {
-					wireName: "conversation_status",
-					value: conversationStatus,
-				},
-				endTime: { wireName: "end_time", value: endTime },
-				limit: { wireName: "limit", value: limit },
-				offset: { wireName: "offset", value: offset },
-				otherPartyUsername: {
-					wireName: "other_party_username",
-					value: otherPartyUsername,
-				},
-				referenceId: { wireName: "reference_id", value: referenceId },
-				referenceType: { wireName: "reference_type", value: referenceType },
-				startTime: { wireName: "start_time", value: startTime },
-			});
-
-			return yield* requestGetEffect<GetAllMyConversationsResponse>(
-				client,
-				path,
-				params,
-			);
+		const validatedInput = requireObjectEffect<GetConversationsInput>(
+			input,
+			"input",
+		);
+		const conversationType = requireStringEffect(
+			validatedInput.conversationType,
+			"conversationType",
+		);
+		const conversationStatus = optionalStringEffect(
+			validatedInput.conversationStatus,
+			"conversationStatus",
+		);
+		const endTime = optionalStringEffect(validatedInput.endTime, "endTime");
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const otherPartyUsername = optionalStringEffect(
+			validatedInput.otherPartyUsername,
+			"otherPartyUsername",
+		);
+		const referenceId = optionalStringEffect(
+			validatedInput.referenceId,
+			"referenceId",
+		);
+		const referenceType = optionalStringEffect(
+			validatedInput.referenceType,
+			"referenceType",
+		);
+		const startTime = optionalStringEffect(
+			validatedInput.startTime,
+			"startTime",
+		);
+		const params = buildEndpointParams({
+			conversationType: {
+				wireName: "conversation_type",
+				value: conversationType,
+			},
+			conversationStatus: {
+				wireName: "conversation_status",
+				value: conversationStatus,
+			},
+			endTime: { wireName: "end_time", value: endTime },
+			limit: { wireName: "limit", value: limit },
+			offset: { wireName: "offset", value: offset },
+			otherPartyUsername: {
+				wireName: "other_party_username",
+				value: otherPartyUsername,
+			},
+			referenceId: { wireName: "reference_id", value: referenceId },
+			referenceType: { wireName: "reference_type", value: referenceType },
+			startTime: { wireName: "start_time", value: startTime },
 		});
+
+		return await requestGetEffect<GetAllMyConversationsResponse>(
+			client,
+			path,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves messages in a specific conversation.
 	 *
 	 * @param input - Conversation path ID plus required type and optional pagination.
-	 * @returns An Effect that succeeds with eBay's generated conversation message response.
+	 * @returns eBay's generated conversation message response.
 	 *
 	 * @example
 	 * ```ts
-	 * const conversation = await Effect.runPromise(
-	 *   messageApi.getConversation({ conversationId: 'c1', conversationType: 'FROM_MEMBERS' }),
-	 * );
+	 * const conversation = await messageApi.getConversation({ conversationId: 'c1', conversationType: 'FROM_MEMBERS' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/conversation/methods/getConversation
 	 */
-	getConversation = (
+	getConversation = async (
 		input: GetConversationInput,
-	): Effect.Effect<
-		GetMessagesByConversationIdResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetMessagesByConversationIdResponse> => {
 		const client = this.client;
 		const basePath = this.basePath;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetConversationInput>(
-				input,
-				"input",
-			);
-			const conversationId = yield* requireStringEffect(
-				validatedInput.conversationId,
-				"conversationId",
-			);
-			const conversationType = yield* requireStringEffect(
-				validatedInput.conversationType,
-				"conversationType",
-			);
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const params = buildEndpointParams({
-				conversationType: {
-					wireName: "conversation_type",
-					value: conversationType,
-				},
-				limit: { wireName: "limit", value: limit },
-				offset: { wireName: "offset", value: offset },
-			});
-
-			return yield* requestGetEffect<GetMessagesByConversationIdResponse>(
-				client,
-				`${basePath}/conversation/${conversationId}`,
-				params,
-			);
+		const validatedInput = requireObjectEffect<GetConversationInput>(
+			input,
+			"input",
+		);
+		const conversationId = requireStringEffect(
+			validatedInput.conversationId,
+			"conversationId",
+		);
+		const conversationType = requireStringEffect(
+			validatedInput.conversationType,
+			"conversationType",
+		);
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const params = buildEndpointParams({
+			conversationType: {
+				wireName: "conversation_type",
+				value: conversationType,
+			},
+			limit: { wireName: "limit", value: limit },
+			offset: { wireName: "offset", value: offset },
 		});
+
+		return await requestGetEffect<GetMessagesByConversationIdResponse>(
+			client,
+			`${basePath}/conversation/${conversationId}`,
+			params,
+		);
 	};
 
 	/**
 	 * Sends a message to another eBay user.
 	 *
 	 * @param messageData - Generated SendMessageRequest body.
-	 * @returns An Effect that succeeds with eBay's generated SendMessageResponse.
+	 * @returns eBay's generated SendMessageResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const sent = await Effect.runPromise(
-	 *   messageApi.sendMessage({ messageText: 'Hello', otherPartyUsername: 'buyer_123' }),
-	 * );
+	 * const sent = await messageApi.sendMessage({ messageText: 'Hello', otherPartyUsername: 'buyer_123' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/send_message/methods/sendMessage
 	 */
-	sendMessage = (
+	sendMessage = async (
 		messageData: SendMessageRequest,
-	): Effect.Effect<SendMessageResponse, EbayApiError | EndpointInputError> => {
+	): Promise<SendMessageResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/send_message`;
 
-		return Effect.gen(function* () {
-			const messageRequest = yield* requireObjectEffect<SendMessageRequest>(
-				messageData,
-				"messageData",
-			);
+		const messageRequest = requireObjectEffect<SendMessageRequest>(
+			messageData,
+			"messageData",
+		);
 
-			return yield* requestPostEffect<SendMessageResponse>(
-				client,
-				path,
-				messageRequest,
-			);
-		});
+		return await requestPostEffect<SendMessageResponse>(
+			client,
+			path,
+			messageRequest,
+		);
 	};
 
 	/**
 	 * Updates a conversation status.
 	 *
 	 * @param updateData - Generated UpdateConversationRequest body.
-	 * @returns An Effect that succeeds when eBay accepts the update.
+	 * @returns A promise that resolves when eBay accepts the update.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   messageApi.updateConversation({ conversationId: 'c1', conversationStatus: 'READ' }),
-	 * );
+	 * await messageApi.updateConversation({ conversationId: 'c1', conversationStatus: 'READ' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/update_conversation/methods/updateConversation
 	 */
-	updateConversation = (
+	updateConversation = async (
 		updateData: UpdateConversationRequest,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> => {
+	): Promise<void> => {
 		const client = this.client;
 		const path = `${this.basePath}/update_conversation`;
 
-		return Effect.gen(function* () {
-			const conversationUpdate =
-				yield* requireObjectEffect<UpdateConversationRequest>(
-					updateData,
-					"updateData",
-				);
+		const conversationUpdate = requireObjectEffect<UpdateConversationRequest>(
+			updateData,
+			"updateData",
+		);
 
-			return yield* requestPostEffect<void>(client, path, conversationUpdate);
-		});
+		return await requestPostEffect<void>(client, path, conversationUpdate);
 	};
 }

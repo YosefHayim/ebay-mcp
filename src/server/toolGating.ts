@@ -62,10 +62,17 @@ interface ToolCatalog {
 
 /** Condenses a tool description to a single sentence for the discovery listing. */
 const toSummary = (description: string): string => {
-	const firstLine = description.split("\n", 1)[0].trim();
-	const sentenceEnd = firstLine.indexOf(". ");
+	const [firstLine] = description.split("\n", 1);
+	const isFirstLineMissing = firstLine == null;
+
+	if (isFirstLineMissing) {
+		return "";
+	}
+
+	const trimmedLine = firstLine.trim();
+	const sentenceEnd = trimmedLine.indexOf(". ");
 	const sentence =
-		sentenceEnd === -1 ? firstLine : firstLine.slice(0, sentenceEnd + 1);
+		sentenceEnd === -1 ? trimmedLine : trimmedLine.slice(0, sentenceEnd + 1);
 	return sentence.length > 160 ? `${sentence.slice(0, 157)}...` : sentence;
 };
 
@@ -176,10 +183,10 @@ interface MutationResult {
 export interface ToolGatingController {
 	/** Lists families or lightweight tool rows matching the provided filters. */
 	list(args: {
-		family?: string;
-		query?: string;
-		cursor?: string;
-		limit?: number;
+		family?: string | undefined;
+		query?: string | undefined;
+		cursor?: string | undefined;
+		limit?: number | undefined;
 	}): unknown;
 	/** Enables registered eBay tools by exact tool name. */
 	enable(names: string[]): MutationResult;

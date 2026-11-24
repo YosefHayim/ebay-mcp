@@ -1,8 +1,7 @@
-import { Effect, Either } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
+	EbayApiError,
 	EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
@@ -14,23 +13,20 @@ import {
 	requireObjectEffect,
 	requireStringEffect,
 } from "@/ebay-client/request.js";
-import type {
-	components,
-	operations,
-} from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
+import type { components } from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
 import { INVENTORY_BASE_PATH } from "./inventorySharedApi.js";
 import { validateOfferFormatEffect } from "./offerFormatApi.js";
 
 /** Input accepted by getOffers. */
 export interface GetOffersInput {
 	/** Listing format filter sent as format. */
-	readonly format?: string;
+	readonly format?: string | undefined;
 	/** Number of offers to return. */
-	readonly limit?: number;
+	readonly limit?: number | undefined;
 	/** Marketplace filter sent as marketplace_id. */
-	readonly marketplaceId?: string;
+	readonly marketplaceId?: string | undefined;
 	/** Offer page offset. */
-	readonly offset?: number;
+	readonly offset?: number | undefined;
 	/** Seller-defined SKU whose offers to return. */
 	readonly sku: string;
 }
@@ -44,8 +40,8 @@ export const BATCH_GET_OFFERS_CONCURRENCY = 3;
 /** Input accepted by getOffersBySkus. Exact duplicate SKUs are queried once. */
 export interface GetOffersBySkusInput {
 	readonly skus: readonly string[];
-	readonly format?: string;
-	readonly marketplaceId?: string;
+	readonly format?: string | undefined;
+	readonly marketplaceId?: string | undefined;
 }
 
 export type GetOffersBySkuResult =
@@ -75,10 +71,99 @@ export interface OfferIdInput {
 	readonly offerId: string;
 }
 
+/** Money amount on an offer. Optional members may be omitted or undefined. */
+interface OfferAmount {
+	readonly currency?: string | undefined;
+	readonly value?: string | undefined;
+}
+
+/** Best Offer prices and switch on an offer's listing policies. */
+interface OfferBestOfferTerms {
+	readonly autoAcceptPrice?: OfferAmount | undefined;
+	readonly autoDeclinePrice?: OfferAmount | undefined;
+	readonly bestOfferEnabled?: boolean | undefined;
+}
+
+/** Listing policies supplied when creating or updating an offer. */
+interface OfferListingPolicies {
+	readonly bestOfferTerms?: OfferBestOfferTerms | undefined;
+	readonly eBayPlusIfEligible?: boolean | undefined;
+	readonly fulfillmentPolicyId?: string | undefined;
+	readonly paymentPolicyId?: string | undefined;
+	readonly productCompliancePolicyIds?: readonly string[] | undefined;
+	readonly returnPolicyId?: string | undefined;
+	readonly takeBackPolicyIds?: readonly string[] | undefined;
+}
+
+/** Prices for a fixed-price or auction offer. */
+interface OfferPricingSummary {
+	readonly auctionReservePrice?: OfferAmount | undefined;
+	readonly auctionStartPrice?: OfferAmount | undefined;
+	readonly minimumAdvertisedPrice?: OfferAmount | undefined;
+	readonly originalRetailPrice?: OfferAmount | undefined;
+	readonly price?: OfferAmount | undefined;
+	readonly pricingVisibility?: string | undefined;
+}
+
+/** Charity donation selected for an offer. */
+interface OfferCharity {
+	readonly charityId?: string | undefined;
+	readonly donationPercentage?: string | undefined;
+}
+
+/** Eco-participation identifiers on an offer. */
+interface OfferProducerResponsibility {
+	readonly producerProductId?: string | undefined;
+	readonly productDocumentationId?: string | undefined;
+	readonly productPackageId?: string | undefined;
+	readonly shipmentPackageId?: string | undefined;
+}
+
+/** Sales tax or VAT settings on an offer. */
+interface OfferTax {
+	readonly applyTax?: boolean | undefined;
+	readonly thirdPartyTaxCategory?: string | undefined;
+	readonly vatPercentage?: number | undefined;
+}
+
+/**
+ * Offer body accepted from tool input. Every optional field may be undefined
+ * because parsed input keeps missing keys as undefined.
+ */
+interface OfferWrite {
+	readonly availableQuantity?: number | undefined;
+	readonly categoryId?: string | undefined;
+	readonly charity?: OfferCharity | undefined;
+	readonly extendedProducerResponsibility?:
+		| OfferProducerResponsibility
+		| undefined;
+	readonly format?: string | undefined;
+	readonly hideBuyerDetails?: boolean | undefined;
+	readonly includeCatalogProductDetails?: boolean | undefined;
+	readonly listingDescription?: string | undefined;
+	readonly listingDuration?: string | undefined;
+	readonly listingPolicies?: OfferListingPolicies | undefined;
+	readonly listingStartDate?: string | undefined;
+	readonly lotSize?: number | undefined;
+	readonly marketplaceId?: string | undefined;
+	readonly merchantLocationKey?: string | undefined;
+	readonly pricingSummary?: OfferPricingSummary | undefined;
+	readonly quantityLimitPerBuyer?: number | undefined;
+	readonly secondaryCategoryId?: string | undefined;
+	readonly sku?: string | undefined;
+	readonly storeCategoryNames?: readonly string[] | undefined;
+	readonly tax?: OfferTax | undefined;
+}
+
+/** Several offers created in one bulk request. */
+interface BulkOfferWrite {
+	readonly requests?: readonly OfferWrite[] | undefined;
+}
+
 /** Input accepted by createOffer. */
 export interface CreateOfferInput {
 	/** Generated EbayOfferDetailsWithKeys body. */
-	readonly body: CreateOfferRequest;
+	readonly body: OfferWrite;
 }
 
 /** Input accepted by updateOffer. */
@@ -86,13 +171,13 @@ export interface UpdateOfferInput {
 	/** eBay offer identifier. */
 	readonly offerId: string;
 	/** Generated EbayOfferDetailsWithId body. */
-	readonly body: UpdateOfferRequest;
+	readonly body: OfferWrite;
 }
 
 /** Input accepted by bulkCreateOffer. */
 export interface BulkCreateOfferInput {
 	/** Generated BulkEbayOfferDetailsWithKeys body. */
-	readonly body: BulkCreateOfferRequest;
+	readonly body: BulkOfferWrite;
 }
 
 /** Input accepted by bulkPublishOffer. */
@@ -248,48 +333,122 @@ export type WithdrawOfferByInventoryItemGroupRequest =
 export type WithdrawOfferByInventoryItemGroupResponse = void;
 
 // Keep the shared request implementation private so the existing and batch methods cannot drift.
-const getOffersEffect = (
+const getOffersEffect = async (
 	client: EbayApiClient,
 	input: GetOffersInput,
-): Effect.Effect<GetOffersResponse, EbayApiError | EndpointInputError> => {
+): Promise<GetOffersResponse> => {
 	const path = `${INVENTORY_BASE_PATH}/offer`;
 
-	return Effect.gen(function* () {
-		const validatedInput = yield* requireObjectEffect<GetOffersInput>(
-			input,
-			"input",
-		);
-		const format = yield* optionalStringEffect(validatedInput.format, "format");
-		const limit = yield* optionalPositiveNumberEffect(
-			validatedInput.limit,
-			"limit",
-		);
-		const marketplaceId = yield* optionalStringEffect(
-			validatedInput.marketplaceId,
-			"marketplaceId",
-		);
-		const offset = yield* optionalNonNegativeNumberEffect(
-			validatedInput.offset,
-			"offset",
-		);
-		const sku = yield* requireStringEffect(validatedInput.sku, "sku");
-		const params = buildEndpointParams({
-			format: { wireName: "format", value: format },
-			limit: {
-				wireName: "limit",
-				value: limit === undefined ? undefined : String(limit),
-			},
-			marketplaceId: { wireName: "marketplace_id", value: marketplaceId },
-			offset: {
-				wireName: "offset",
-				value: offset === undefined ? undefined : String(offset),
-			},
-			sku: { wireName: "sku", value: sku },
+	const validatedInput = requireObjectEffect<GetOffersInput>(input, "input");
+	const format = optionalStringEffect(validatedInput.format, "format");
+	const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+	const marketplaceId = optionalStringEffect(
+		validatedInput.marketplaceId,
+		"marketplaceId",
+	);
+	const offset = optionalNonNegativeNumberEffect(
+		validatedInput.offset,
+		"offset",
+	);
+	const sku = requireStringEffect(validatedInput.sku, "sku");
+	const params = buildEndpointParams({
+		format: { wireName: "format", value: format },
+		limit: {
+			wireName: "limit",
+			value: limit === undefined ? undefined : String(limit),
+		},
+		marketplaceId: { wireName: "marketplace_id", value: marketplaceId },
+		offset: {
+			wireName: "offset",
+			value: offset === undefined ? undefined : String(offset),
+		},
+		sku: { wireName: "sku", value: sku },
+	});
+
+	return requestGetEffect<GetOffersResponse>(client, path, params);
+};
+
+function isOffersRequestError(
+	cause: unknown,
+): cause is EbayApiError | EndpointInputError {
+	if (cause instanceof EbayApiError) {
+		return true;
+	}
+
+	return cause instanceof EndpointInputError;
+}
+
+async function collectWithConcurrency<Item, Mapped>(
+	items: readonly Item[],
+	concurrency: number,
+	convertItem: (item: Item) => Promise<Mapped>,
+): Promise<Mapped[]> {
+	const mapped = new Array<Mapped>(items.length);
+	let nextIndex = 0;
+
+	async function convertNext(): Promise<void> {
+		const index = nextIndex;
+		nextIndex += 1;
+		const isDone = index >= items.length;
+
+		if (isDone) {
+			return;
+		}
+
+		const item = items.at(index);
+
+		if (item === undefined) {
+			return;
+		}
+
+		mapped[index] = await convertItem(item);
+		await convertNext();
+	}
+
+	const workerCount = Math.min(concurrency, items.length);
+	const workers: Promise<void>[] = [];
+
+	for (let workerIndex = 0; workerIndex < workerCount; workerIndex += 1) {
+		workers.push(convertNext());
+	}
+
+	await Promise.all(workers);
+	return mapped;
+}
+
+async function readOffersForSku(request: {
+	client: EbayApiClient;
+	sku: string;
+	format: string | undefined;
+	marketplaceId: string | undefined;
+}): Promise<GetOffersBySkuResult> {
+	try {
+		const offers = await getOffersEffect(request.client, {
+			sku: request.sku,
+			format: request.format,
+			marketplaceId: request.marketplaceId,
 		});
 
-		return yield* requestGetEffect<GetOffersResponse>(client, path, params);
-	});
-};
+		return { sku: request.sku, status: "success", response: offers };
+	} catch (cause) {
+		const isHandled = isOffersRequestError(cause);
+
+		if (!isHandled) {
+			throw cause;
+		}
+
+		const outcome = { left: cause };
+
+		return {
+			sku: request.sku,
+			status: "failure",
+			error: {
+				type: outcome.left._tag,
+				message: outcome.left.message,
+			},
+		};
+	}
+}
 
 /** Inventory API — offers methods closed over a shared client. */
 export const createInventoryOffersMethods = (client: EbayApiClient) => ({
@@ -306,37 +465,30 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkCreateOffer
 	 */
-	bulkCreateOffer: (
+	bulkCreateOffer: async (
 		input: BulkCreateOfferInput,
-	): Effect.Effect<
-		BulkCreateOfferResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkCreateOfferResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/bulk_create_offer`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<BulkCreateOfferInput>(
-				input,
-				"input",
-			);
-			const bulkOfferRequest =
-				yield* requireObjectEffect<BulkCreateOfferRequest>(
-					validatedInput.body,
-					"body",
-				);
-			yield* Effect.forEach(
-				bulkOfferRequest.requests ?? [],
-				(offerRequest, index) =>
-					validateOfferFormatEffect(offerRequest, `body.requests[${index}]`),
-				{ discard: true },
-			);
+		const validatedInput = requireObjectEffect<BulkCreateOfferInput>(
+			input,
+			"input",
+		);
+		const bulkOfferRequest = requireObjectEffect<BulkCreateOfferRequest>(
+			validatedInput.body,
+			"body",
+		);
+		const requests = bulkOfferRequest.requests ?? [];
 
-			return yield* requestPostEffect<BulkCreateOfferResponse>(
-				client,
-				path,
-				bulkOfferRequest,
-			);
-		});
+		for (const [index, offerRequest] of requests.entries()) {
+			validateOfferFormatEffect(offerRequest, `body.requests[${index}]`);
+		}
+
+		return requestPostEffect<BulkCreateOfferResponse>(
+			client,
+			path,
+			bulkOfferRequest,
+		);
 	},
 
 	/**
@@ -352,31 +504,25 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/bulkPublishOffer
 	 */
-	bulkPublishOffer: (
+	bulkPublishOffer: async (
 		input: BulkPublishOfferInput,
-	): Effect.Effect<
-		BulkPublishOfferResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkPublishOfferResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/bulk_publish_offer`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<BulkPublishOfferInput>(
-				input,
-				"input",
-			);
-			const bulkPublishRequest =
-				yield* requireObjectEffect<BulkPublishOfferRequest>(
-					validatedInput.body,
-					"body",
-				);
+		const validatedInput = requireObjectEffect<BulkPublishOfferInput>(
+			input,
+			"input",
+		);
+		const bulkPublishRequest = requireObjectEffect<BulkPublishOfferRequest>(
+			validatedInput.body,
+			"body",
+		);
 
-			return yield* requestPostEffect<BulkPublishOfferResponse>(
-				client,
-				path,
-				bulkPublishRequest,
-			);
-		});
+		return requestPostEffect<BulkPublishOfferResponse>(
+			client,
+			path,
+			bulkPublishRequest,
+		);
 	},
 
 	/**
@@ -394,9 +540,7 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/getOffers
 	 */
-	getOffers: (
-		input: GetOffersInput,
-	): Effect.Effect<GetOffersResponse, EbayApiError | EndpointInputError> =>
+	getOffers: (input: GetOffersInput): Promise<GetOffersResponse> =>
 		getOffersEffect(client, input),
 
 	/**
@@ -405,93 +549,81 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 * Exact duplicates are requested once. At most three requests run concurrently, and request
 	 * failures are returned beside their SKU instead of failing the whole batch.
 	 */
-	getOffersBySkus: (
+	getOffersBySkus: async (
 		input: GetOffersBySkusInput,
-	): Effect.Effect<GetOffersBySkusResponse, EndpointInputError> =>
-		Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetOffersBySkusInput>(
-				input,
-				"input",
-			);
-			if (!Array.isArray(validatedInput.skus)) {
-				return yield* Effect.fail(
-					new EndpointInputError({
-						parameter: "skus",
-						message: "skus must be an array",
-					}),
-				);
-			}
+	): Promise<GetOffersBySkusResponse> => {
+		const validatedInput = requireObjectEffect<GetOffersBySkusInput>(
+			input,
+			"input",
+		);
+
+		if (!Array.isArray(validatedInput.skus)) {
+			throw new EndpointInputError({
+				parameter: "skus",
+				message: "skus must be an array",
+			});
+		}
+
+		if (
+			validatedInput.skus.length === 0 ||
+			validatedInput.skus.length > MAX_BATCH_GET_OFFERS_SKUS
+		) {
+			throw new EndpointInputError({
+				parameter: "skus",
+				message: `skus must contain between 1 and ${MAX_BATCH_GET_OFFERS_SKUS} entries`,
+			});
+		}
+
+		for (const sku of validatedInput.skus) {
 			if (
-				validatedInput.skus.length === 0 ||
-				validatedInput.skus.length > MAX_BATCH_GET_OFFERS_SKUS
+				typeof sku !== "string" ||
+				sku.trim().length === 0 ||
+				sku.length > 50
 			) {
-				return yield* Effect.fail(
-					new EndpointInputError({
-						parameter: "skus",
-						message: `skus must contain between 1 and ${MAX_BATCH_GET_OFFERS_SKUS} entries`,
-					}),
-				);
+				throw new EndpointInputError({
+					parameter: "skus",
+					message:
+						"each SKU must be a non-empty string of at most 50 characters",
+				});
 			}
-			for (const sku of validatedInput.skus) {
-				if (
-					typeof sku !== "string" ||
-					sku.trim().length === 0 ||
-					sku.length > 50
-				) {
-					return yield* Effect.fail(
-						new EndpointInputError({
-							parameter: "skus",
-							message:
-								"each SKU must be a non-empty string of at most 50 characters",
-						}),
-					);
-				}
-			}
-			const format = yield* optionalStringEffect(
-				validatedInput.format,
-				"format",
-			);
-			const marketplaceId = yield* optionalStringEffect(
-				validatedInput.marketplaceId,
-				"marketplaceId",
-			);
-			const uniqueSkus = [...new Set(validatedInput.skus)];
-			const skuResults = yield* Effect.forEach(
-				uniqueSkus,
-				(sku) =>
-					Effect.map(
-						Effect.either(
-							getOffersEffect(client, {
-								sku,
-								format,
-								marketplaceId,
-							}),
-						),
-						(outcome): GetOffersBySkuResult =>
-							Either.isRight(outcome)
-								? { sku, status: "success", response: outcome.right }
-								: {
-										sku,
-										status: "failure",
-										error: {
-											type: outcome.left._tag,
-											message: outcome.left.message,
-										},
-									},
-					),
-				{ concurrency: BATCH_GET_OFFERS_CONCURRENCY },
-			);
-			const successCount = skuResults.filter(
-				(skuResult) => skuResult.status === "success",
-			).length;
-			return {
-				requestedSkuCount: validatedInput.skus.length,
-				uniqueSkuCount: uniqueSkus.length,
-				successCount,
-				failureCount: skuResults.length - successCount,
-				results: skuResults,
-			};
-		}),
+		}
+
+		const format = optionalStringEffect(validatedInput.format, "format");
+		const marketplaceId = optionalStringEffect(
+			validatedInput.marketplaceId,
+			"marketplaceId",
+		);
+		const uniqueSkus = [...new Set(validatedInput.skus)];
+
+		function readSku(sku: string): Promise<GetOffersBySkuResult> {
+			return readOffersForSku({
+				client,
+				sku,
+				format,
+				marketplaceId,
+			});
+		}
+
+		const skuResults = await collectWithConcurrency(
+			uniqueSkus,
+			BATCH_GET_OFFERS_CONCURRENCY,
+			readSku,
+		);
+
+		function isSuccessfulSku(skuResult: GetOffersBySkuResult): boolean {
+			return skuResult.status === "success";
+		}
+
+		const successCount = skuResults.filter(isSuccessfulSku).length;
+
+		return {
+			requestedSkuCount: validatedInput.skus.length,
+			uniqueSkuCount: uniqueSkus.length,
+			successCount,
+			failureCount: skuResults.length - successCount,
+			results: skuResults,
+		};
+	},
 
 	/**
 	 * Creates one offer.
@@ -506,28 +638,22 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/createOffer
 	 */
-	createOffer: (
+	createOffer: async (
 		input: CreateOfferInput,
-	): Effect.Effect<CreateOfferResponse, EbayApiError | EndpointInputError> => {
+	): Promise<CreateOfferResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/offer`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<CreateOfferInput>(
-				input,
-				"input",
-			);
-			const offerDetails = yield* requireObjectEffect<CreateOfferRequest>(
-				validatedInput.body,
-				"body",
-			);
-			yield* validateOfferFormatEffect(offerDetails, "body");
+		const validatedInput = requireObjectEffect<CreateOfferInput>(
+			input,
+			"input",
+		);
+		const offerDetails = requireObjectEffect<CreateOfferRequest>(
+			validatedInput.body,
+			"body",
+		);
+		validateOfferFormatEffect(offerDetails, "body");
 
-			return yield* requestPostEffect<CreateOfferResponse>(
-				client,
-				path,
-				offerDetails,
-			);
-		});
+		return requestPostEffect<CreateOfferResponse>(client, path, offerDetails);
 	},
 
 	/**
@@ -543,26 +669,16 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/getOffer
 	 */
-	getOffer: (
-		input: OfferIdInput,
-	): Effect.Effect<GetOfferResponse, EbayApiError | EndpointInputError> => {
+	getOffer: async (input: OfferIdInput): Promise<GetOfferResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<OfferIdInput>(
-				input,
-				"input",
-			);
-			const offerId = yield* requireStringEffect(
-				validatedInput.offerId,
-				"offerId",
-			);
+		const validatedInput = requireObjectEffect<OfferIdInput>(input, "input");
+		const offerId = requireStringEffect(validatedInput.offerId, "offerId");
 
-			return yield* requestGetEffect<GetOfferResponse>(
-				client,
-				`${basePath}/offer/${offerId}`,
-			);
-		});
+		return requestGetEffect<GetOfferResponse>(
+			client,
+			`${basePath}/offer/${offerId}`,
+		);
 	},
 
 	/**
@@ -580,32 +696,27 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/updateOffer
 	 */
-	updateOffer: (
+	updateOffer: async (
 		input: UpdateOfferInput,
-	): Effect.Effect<CreateOfferResponse, EbayApiError | EndpointInputError> => {
+	): Promise<CreateOfferResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<UpdateOfferInput>(
-				input,
-				"input",
-			);
-			const offerId = yield* requireStringEffect(
-				validatedInput.offerId,
-				"offerId",
-			);
-			const offerUpdate = yield* requireObjectEffect<UpdateOfferRequest>(
-				validatedInput.body,
-				"body",
-			);
-			yield* validateOfferFormatEffect(offerUpdate, "body");
+		const validatedInput = requireObjectEffect<UpdateOfferInput>(
+			input,
+			"input",
+		);
+		const offerId = requireStringEffect(validatedInput.offerId, "offerId");
+		const offerUpdate = requireObjectEffect<UpdateOfferRequest>(
+			validatedInput.body,
+			"body",
+		);
+		validateOfferFormatEffect(offerUpdate, "body");
 
-			return yield* requestPutEffect<CreateOfferResponse>(
-				client,
-				`${basePath}/offer/${offerId}`,
-				offerUpdate,
-			);
-		});
+		return requestPutEffect<CreateOfferResponse>(
+			client,
+			`${basePath}/offer/${offerId}`,
+			offerUpdate,
+		);
 	},
 
 	/**
@@ -621,26 +732,16 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/deleteOffer
 	 */
-	deleteOffer: (
-		input: OfferIdInput,
-	): Effect.Effect<DeleteOfferResponse, EbayApiError | EndpointInputError> => {
+	deleteOffer: async (input: OfferIdInput): Promise<DeleteOfferResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<OfferIdInput>(
-				input,
-				"input",
-			);
-			const offerId = yield* requireStringEffect(
-				validatedInput.offerId,
-				"offerId",
-			);
+		const validatedInput = requireObjectEffect<OfferIdInput>(input, "input");
+		const offerId = requireStringEffect(validatedInput.offerId, "offerId");
 
-			return yield* requestDeleteEffect<DeleteOfferResponse>(
-				client,
-				`${basePath}/offer/${offerId}`,
-			);
-		});
+		return requestDeleteEffect<DeleteOfferResponse>(
+			client,
+			`${basePath}/offer/${offerId}`,
+		);
 	},
 
 	/**
@@ -658,31 +759,25 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/getListingFees
 	 */
-	getListingFees: (
+	getListingFees: async (
 		input: GetListingFeesInput,
-	): Effect.Effect<
-		GetListingFeesResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetListingFeesResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/offer/get_listing_fees`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetListingFeesInput>(
-				input,
-				"input",
-			);
-			const listingFeesRequest =
-				yield* requireObjectEffect<GetListingFeesRequest>(
-					validatedInput.body,
-					"body",
-				);
+		const validatedInput = requireObjectEffect<GetListingFeesInput>(
+			input,
+			"input",
+		);
+		const listingFeesRequest = requireObjectEffect<GetListingFeesRequest>(
+			validatedInput.body,
+			"body",
+		);
 
-			return yield* requestPostEffect<GetListingFeesResponse>(
-				client,
-				path,
-				listingFeesRequest,
-			);
-		});
+		return requestPostEffect<GetListingFeesResponse>(
+			client,
+			path,
+			listingFeesRequest,
+		);
 	},
 
 	/**
@@ -698,26 +793,16 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/publishOffer
 	 */
-	publishOffer: (
-		input: OfferIdInput,
-	): Effect.Effect<PublishOfferResponse, EbayApiError | EndpointInputError> => {
+	publishOffer: async (input: OfferIdInput): Promise<PublishOfferResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<OfferIdInput>(
-				input,
-				"input",
-			);
-			const offerId = yield* requireStringEffect(
-				validatedInput.offerId,
-				"offerId",
-			);
+		const validatedInput = requireObjectEffect<OfferIdInput>(input, "input");
+		const offerId = requireStringEffect(validatedInput.offerId, "offerId");
 
-			return yield* requestPostEffect<PublishOfferResponse>(
-				client,
-				`${basePath}/offer/${offerId}/publish`,
-			);
-		});
+		return requestPostEffect<PublishOfferResponse>(
+			client,
+			`${basePath}/offer/${offerId}/publish`,
+		);
 	},
 
 	/**
@@ -737,29 +822,27 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/publishOfferByInventoryItemGroup
 	 */
-	publishOfferByInventoryItemGroup: (
+	publishOfferByInventoryItemGroup: async (
 		input: PublishOfferByInventoryItemGroupInput,
-	): Effect.Effect<PublishOfferResponse, EbayApiError | EndpointInputError> => {
+	): Promise<PublishOfferResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/offer/publish_by_inventory_item_group`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<PublishOfferByInventoryItemGroupInput>(
-					input,
-					"input",
-				);
-			const publishGroupRequest =
-				yield* requireObjectEffect<PublishOfferByInventoryItemGroupRequest>(
-					validatedInput.body,
-					"body",
-				);
-
-			return yield* requestPostEffect<PublishOfferResponse>(
-				client,
-				path,
-				publishGroupRequest,
+		const validatedInput =
+			requireObjectEffect<PublishOfferByInventoryItemGroupInput>(
+				input,
+				"input",
 			);
-		});
+		const publishGroupRequest =
+			requireObjectEffect<PublishOfferByInventoryItemGroupRequest>(
+				validatedInput.body,
+				"body",
+			);
+
+		return requestPostEffect<PublishOfferResponse>(
+			client,
+			path,
+			publishGroupRequest,
+		);
 	},
 
 	/**
@@ -775,29 +858,18 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/withdrawOffer
 	 */
-	withdrawOffer: (
+	withdrawOffer: async (
 		input: OfferIdInput,
-	): Effect.Effect<
-		WithdrawOfferResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<WithdrawOfferResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<OfferIdInput>(
-				input,
-				"input",
-			);
-			const offerId = yield* requireStringEffect(
-				validatedInput.offerId,
-				"offerId",
-			);
+		const validatedInput = requireObjectEffect<OfferIdInput>(input, "input");
+		const offerId = requireStringEffect(validatedInput.offerId, "offerId");
 
-			return yield* requestPostEffect<WithdrawOfferResponse>(
-				client,
-				`${basePath}/offer/${offerId}/withdraw`,
-			);
-		});
+		return requestPostEffect<WithdrawOfferResponse>(
+			client,
+			`${basePath}/offer/${offerId}/withdraw`,
+		);
 	},
 
 	/**
@@ -817,31 +889,26 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/offer/methods/withdrawOfferByInventoryItemGroup
 	 */
-	withdrawOfferByInventoryItemGroup: (
+	withdrawOfferByInventoryItemGroup: async (
 		input: WithdrawOfferByInventoryItemGroupInput,
-	): Effect.Effect<
-		WithdrawOfferByInventoryItemGroupResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<WithdrawOfferByInventoryItemGroupResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/offer/withdraw_by_inventory_item_group`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<WithdrawOfferByInventoryItemGroupInput>(
-					input,
-					"input",
-				);
-			const withdrawGroupRequest =
-				yield* requireObjectEffect<WithdrawOfferByInventoryItemGroupRequest>(
-					validatedInput.body,
-					"body",
-				);
-
-			return yield* requestPostEffect<WithdrawOfferByInventoryItemGroupResponse>(
-				client,
-				path,
-				withdrawGroupRequest,
+		const validatedInput =
+			requireObjectEffect<WithdrawOfferByInventoryItemGroupInput>(
+				input,
+				"input",
 			);
-		});
+		const withdrawGroupRequest =
+			requireObjectEffect<WithdrawOfferByInventoryItemGroupRequest>(
+				validatedInput.body,
+				"body",
+			);
+
+		return requestPostEffect<WithdrawOfferByInventoryItemGroupResponse>(
+			client,
+			path,
+			withdrawGroupRequest,
+		);
 	},
 });

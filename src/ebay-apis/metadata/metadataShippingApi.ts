@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import { shippingMetadataInputSchema } from "@/ebay-apis/metadata/metadataShippingSchemas.js";
 import type {
@@ -7,8 +6,6 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	decodeEndpointInputEffect,
-	type EbayApiError,
-	type EndpointInputError,
 	requestGetEffect,
 } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/sellMetadataV1Oas3.js";
@@ -62,44 +59,46 @@ export type ShippingServicesResponse =
  * Creates the Metadata API `shipping:marketplace` endpoint methods composed into MetadataApi.
  *
  * @param client - Shared authenticated eBay REST client.
- * @returns Endpoint Effects keyed by their eBay operationId.
+ * @returns Endpoint methods keyed by their eBay operationId.
  *
  * @example
  * ```ts
  * const shipping = createMetadataShippingMethods(client);
- * const carriers = await Effect.runPromise(
- *   shipping.getShippingCarriers({ marketplaceId: MarketplaceId.EBAY_US }),
- * );
+ * const carriers = await shipping.getShippingCarriers({ marketplaceId: MarketplaceId.EBAY_US });
  * ```
  */
 export const createMetadataShippingMethods = (client: EbayApiClient) => {
-	const getShippingResource = <Response>(
+	const getShippingResource = async <Response>(
 		input: ShippingMetadataInput,
 		resource: string,
-	): Effect.Effect<Response, EbayApiError | EndpointInputError> =>
-		Effect.gen(function* () {
-			const { marketplaceId, acceptLanguage } =
-				yield* decodeEndpointInputEffect(shippingMetadataInputSchema, input);
-			const path = `${SHIPPING_MARKETPLACE_PATH}/${encodeURIComponent(marketplaceId)}/${resource}`;
-			const config: EbayRequestConfig | undefined =
-				acceptLanguage === undefined
-					? undefined
-					: { headers: { "Accept-Language": acceptLanguage } };
+	): Promise<Response> => {
+		const { marketplaceId, acceptLanguage } = decodeEndpointInputEffect(
+			shippingMetadataInputSchema,
+			input,
+		);
+		const path = `${SHIPPING_MARKETPLACE_PATH}/${encodeURIComponent(marketplaceId)}/${resource}`;
+		const hasAcceptLanguage = acceptLanguage !== undefined;
 
-			return yield* requestGetEffect<Response>(client, path, undefined, config);
-		});
+		if (hasAcceptLanguage) {
+			const config: EbayRequestConfig = {
+				headers: { "Accept-Language": acceptLanguage },
+			};
+
+			return requestGetEffect<Response>(client, path, undefined, config);
+		}
+
+		return requestGetEffect<Response>(client, path);
+	};
 
 	/**
 	 * Retrieves the locations a seller can exclude from shipping on a marketplace.
 	 *
 	 * @param input - Marketplace ID and optional Accept-Language (fr-CA, fr-BE, nl-BE).
-	 * @returns An Effect that succeeds with eBay's ShippingExcludeLocationResponse.
+	 * @returns eBay's ShippingExcludeLocationResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const excluded = await Effect.runPromise(
-	 *   metadataApi.getExcludeShippingLocations({ marketplaceId: MarketplaceId.EBAY_US }),
-	 * );
+	 * const excluded = await metadataApi.getExcludeShippingLocations({ marketplaceId: MarketplaceId.EBAY_US });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getExcludeShippingLocations
@@ -114,13 +113,11 @@ export const createMetadataShippingMethods = (client: EbayApiClient) => {
 	 * Retrieves the handling times a marketplace allows for shipping after cleared payment.
 	 *
 	 * @param input - Marketplace ID and optional Accept-Language (fr-CA, fr-BE, nl-BE).
-	 * @returns An Effect that succeeds with eBay's ShippingHandlingTimeResponse.
+	 * @returns eBay's ShippingHandlingTimeResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const times = await Effect.runPromise(
-	 *   metadataApi.getHandlingTimes({ marketplaceId: MarketplaceId.EBAY_GB }),
-	 * );
+	 * const times = await metadataApi.getHandlingTimes({ marketplaceId: MarketplaceId.EBAY_GB });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getHandlingTimes
@@ -133,13 +130,11 @@ export const createMetadataShippingMethods = (client: EbayApiClient) => {
 	 * values required when supplying shipment tracking.
 	 *
 	 * @param input - Marketplace ID and optional Accept-Language (fr-CA, fr-BE, nl-BE).
-	 * @returns An Effect that succeeds with eBay's ShippingCarrierResponse.
+	 * @returns eBay's ShippingCarrierResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const carriers = await Effect.runPromise(
-	 *   metadataApi.getShippingCarriers({ marketplaceId: MarketplaceId.EBAY_US }),
-	 * );
+	 * const carriers = await metadataApi.getShippingCarriers({ marketplaceId: MarketplaceId.EBAY_US });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingCarriers
@@ -154,13 +149,11 @@ export const createMetadataShippingMethods = (client: EbayApiClient) => {
 	 * Retrieves the regions, countries, and special locations a seller can ship to.
 	 *
 	 * @param input - Marketplace ID and optional Accept-Language (fr-CA, fr-BE, nl-BE).
-	 * @returns An Effect that succeeds with eBay's ShippingLocationResponse.
+	 * @returns eBay's ShippingLocationResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const locations = await Effect.runPromise(
-	 *   metadataApi.getShippingLocations({ marketplaceId: MarketplaceId.EBAY_DE }),
-	 * );
+	 * const locations = await metadataApi.getShippingLocations({ marketplaceId: MarketplaceId.EBAY_DE });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingLocations
@@ -176,13 +169,11 @@ export const createMetadataShippingMethods = (client: EbayApiClient) => {
 	 * package limits.
 	 *
 	 * @param input - Marketplace ID and optional Accept-Language (fr-CA, fr-BE, nl-BE).
-	 * @returns An Effect that succeeds with eBay's ShippingServiceResponse.
+	 * @returns eBay's ShippingServiceResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const services = await Effect.runPromise(
-	 *   metadataApi.getShippingServices({ marketplaceId: MarketplaceId.EBAY_CA, acceptLanguage: 'fr-CA' }),
-	 * );
+	 * const services = await metadataApi.getShippingServices({ marketplaceId: MarketplaceId.EBAY_CA, acceptLanguage: 'fr-CA' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/metadata/resources/shipping:marketplace/methods/getShippingServices

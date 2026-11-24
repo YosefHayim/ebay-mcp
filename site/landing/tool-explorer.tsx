@@ -74,6 +74,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
 							<div
 								class="xscroll"
 								data-explorer-list={true}
+								// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 								dangerouslySetInnerHTML={{
 									__html: renderExplorerList(
 										startingGroups,
@@ -92,6 +93,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
 								<div
 									data-explorer-title={true}
 									style="display:contents"
+									// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 									dangerouslySetInnerHTML={{
 										__html: renderExplorerTitle(firstTool),
 									}}
@@ -99,6 +101,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
 								<div
 									data-explorer-endpoint={true}
 									style="display:contents"
+									// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 									dangerouslySetInnerHTML={{
 										__html: renderExplorerEndpoint(firstTool, fieldValues),
 									}}
@@ -117,6 +120,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
 										<div
 											data-explorer-fields={true}
 											style="display:contents"
+											// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 											dangerouslySetInnerHTML={{
 												__html: renderExplorerFields(firstTool, fieldValues),
 											}}
@@ -149,6 +153,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
 									<div
 										class="code"
 										data-explorer-request={true}
+										// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 										dangerouslySetInnerHTML={{
 											__html: renderExplorerRequest(firstTool, fieldValues),
 										}}
@@ -160,6 +165,7 @@ export const ToolExplorer = ({ catalogFile, toolCount }: ToolExplorerProps) => {
 								class="resp"
 								data-explorer-response={true}
 								hidden={!hasExample}
+								// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 								dangerouslySetInnerHTML={{
 									__html: renderExplorerResponse(firstTool, false),
 								}}

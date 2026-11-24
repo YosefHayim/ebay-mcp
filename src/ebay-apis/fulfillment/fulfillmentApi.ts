@@ -1,9 +1,7 @@
-import { Effect } from "effect";
+import type { z } from "zod";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -16,6 +14,10 @@ import type {
 	components,
 	operations,
 } from "@/ebay-openapi-types/sellFulfillmentV1Oas3.js";
+import type {
+	createShippingFulfillmentInputSchema,
+	issueRefundInputSchema,
+} from "./ordersSchemas.js";
 
 /**
  * Response returned by eBay Fulfillment API getOrders.
@@ -80,15 +82,15 @@ export type Refund = components["schemas"]["Refund"];
 /** Filters and pagination accepted by getOrders. */
 export interface GetOrdersInput {
 	/** Response field group requested from eBay, such as TAX_BREAKDOWN. */
-	readonly fieldGroups?: string;
+	readonly fieldGroups?: string | undefined;
 	/** eBay filter expression used to narrow returned orders. */
-	readonly filter?: string;
+	readonly filter?: string | undefined;
 	/** Maximum number of orders to return. */
-	readonly limit?: number;
+	readonly limit?: number | undefined;
 	/** Number of orders to skip before returning the first result. */
-	readonly offset?: number;
+	readonly offset?: number | undefined;
 	/** Comma-separated order IDs; when present, other filters are ignored by eBay. */
-	readonly orderIds?: string;
+	readonly orderIds?: string | undefined;
 }
 
 /** Input required to retrieve one order. */
@@ -96,16 +98,12 @@ export interface GetOrderInput {
 	/** eBay order identifier from getOrders. */
 	readonly orderId: string;
 	/** Response field group requested from eBay, such as TAX_BREAKDOWN. */
-	readonly fieldGroups?: string;
+	readonly fieldGroups?: string | undefined;
 }
 
-/** Input accepted by createShippingFulfillment. */
-export interface CreateShippingFulfillmentInput {
-	/** eBay order identifier receiving the shipping fulfillment. */
-	readonly orderId: string;
-	/** Generated request payload describing the shipment. */
-	readonly body: ShippingFulfillmentDetails;
-}
+export type CreateShippingFulfillmentInput = z.infer<
+	typeof createShippingFulfillmentInputSchema
+>;
 
 /** Input required to retrieve all shipping fulfillments for one order. */
 export interface GetShippingFulfillmentsInput {
@@ -121,13 +119,7 @@ export interface GetShippingFulfillmentInput {
 	readonly fulfillmentId: string;
 }
 
-/** Input accepted by issueRefund. */
-export interface IssueRefundInput {
-	/** eBay order identifier receiving the refund. */
-	readonly orderId: string;
-	/** Generated request payload describing the refund. */
-	readonly body: IssueRefundRequest;
-}
+export type IssueRefundInput = z.infer<typeof issueRefundInputSchema>;
 
 /** eBay Fulfillment order, shipping fulfillment, and refund endpoints. */
 export class FulfillmentApi {
@@ -153,45 +145,35 @@ export class FulfillmentApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrders
 	 */
-	public getOrders = (
+	public getOrders = async (
 		input: GetOrdersInput = {},
-	): Effect.Effect<
-		OrderSearchPagedCollection,
-		EbayApiError | EndpointInputError
-	> =>
-		Effect.gen(this, function* () {
-			const fieldGroups = yield* optionalStringEffect(
-				input.fieldGroups,
-				"fieldGroups",
-			);
-			const filter = yield* optionalStringEffect(input.filter, "filter");
-			const limit = yield* optionalPositiveNumberEffect(input.limit, "limit");
-			const offset = yield* optionalNonNegativeNumberEffect(
-				input.offset,
-				"offset",
-			);
-			const orderIds = yield* optionalStringEffect(input.orderIds, "orderIds");
-			const path = `${this.basePath}/order`;
-			const params = buildEndpointParams({
-				fieldGroups: { wireName: "fieldGroups", value: fieldGroups },
-				filter: { wireName: "filter", value: filter },
-				limit: {
-					wireName: "limit",
-					value: limit === undefined ? undefined : String(limit),
-				},
-				offset: {
-					wireName: "offset",
-					value: offset === undefined ? undefined : String(offset),
-				},
-				orderIds: { wireName: "orderIds", value: orderIds },
-			});
-
-			return yield* requestGetEffect<OrderSearchPagedCollection>(
-				this.client,
-				path,
-				params,
-			);
+	): Promise<OrderSearchPagedCollection> => {
+		const fieldGroups = optionalStringEffect(input.fieldGroups, "fieldGroups");
+		const filter = optionalStringEffect(input.filter, "filter");
+		const limit = optionalPositiveNumberEffect(input.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(input.offset, "offset");
+		const orderIds = optionalStringEffect(input.orderIds, "orderIds");
+		const path = `${this.basePath}/order`;
+		const params = buildEndpointParams({
+			fieldGroups: { wireName: "fieldGroups", value: fieldGroups },
+			filter: { wireName: "filter", value: filter },
+			limit: {
+				wireName: "limit",
+				value: limit === undefined ? undefined : String(limit),
+			},
+			offset: {
+				wireName: "offset",
+				value: offset === undefined ? undefined : String(offset),
+			},
+			orderIds: { wireName: "orderIds", value: orderIds },
 		});
+
+		return await requestGetEffect<OrderSearchPagedCollection>(
+			this.client,
+			path,
+			params,
+		);
+	};
 
 	/**
 	 * Retrieves one order.
@@ -208,22 +190,16 @@ export class FulfillmentApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrder
 	 */
-	public getOrder = (
-		input: GetOrderInput,
-	): Effect.Effect<Order, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const orderId = yield* requireStringEffect(input.orderId, "orderId");
-			const fieldGroups = yield* optionalStringEffect(
-				input.fieldGroups,
-				"fieldGroups",
-			);
-			const path = `${this.basePath}/order/${orderId}`;
-			const params = buildEndpointParams({
-				fieldGroups: { wireName: "fieldGroups", value: fieldGroups },
-			});
-
-			return yield* requestGetEffect<Order>(this.client, path, params);
+	public getOrder = async (input: GetOrderInput): Promise<Order> => {
+		const orderId = requireStringEffect(input.orderId, "orderId");
+		const fieldGroups = optionalStringEffect(input.fieldGroups, "fieldGroups");
+		const path = `${this.basePath}/order/${orderId}`;
+		const params = buildEndpointParams({
+			fieldGroups: { wireName: "fieldGroups", value: fieldGroups },
 		});
+
+		return await requestGetEffect<Order>(this.client, path, params);
+	};
 
 	/**
 	 * Creates a shipping fulfillment for one order.
@@ -243,27 +219,22 @@ export class FulfillmentApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/createShippingFulfillment
 	 */
-	public createShippingFulfillment = (
+	public createShippingFulfillment = async (
 		input: CreateShippingFulfillmentInput,
-	): Effect.Effect<
-		CreateShippingFulfillmentResponse,
-		EbayApiError | EndpointInputError
-	> =>
-		Effect.gen(this, function* () {
-			const orderId = yield* requireStringEffect(input.orderId, "orderId");
-			const fulfillmentDetails =
-				yield* requireObjectEffect<ShippingFulfillmentDetails>(
-					input.body,
-					"body",
-				);
-			const path = `${this.basePath}/order/${orderId}/shipping_fulfillment`;
+	): Promise<CreateShippingFulfillmentResponse> => {
+		const orderId = requireStringEffect(input.orderId, "orderId");
+		const fulfillmentDetails = requireObjectEffect<ShippingFulfillmentDetails>(
+			input.body,
+			"body",
+		);
+		const path = `${this.basePath}/order/${orderId}/shipping_fulfillment`;
 
-			return yield* requestPostEffect<CreateShippingFulfillmentResponse>(
-				this.client,
-				path,
-				fulfillmentDetails,
-			);
-		});
+		return await requestPostEffect<CreateShippingFulfillmentResponse>(
+			this.client,
+			path,
+			fulfillmentDetails,
+		);
+	};
 
 	/**
 	 * Retrieves all shipping fulfillments for one order.
@@ -280,21 +251,17 @@ export class FulfillmentApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/getShippingFulfillments
 	 */
-	public getShippingFulfillments = (
+	public getShippingFulfillments = async (
 		input: GetShippingFulfillmentsInput,
-	): Effect.Effect<
-		ShippingFulfillmentPagedCollection,
-		EbayApiError | EndpointInputError
-	> =>
-		Effect.gen(this, function* () {
-			const orderId = yield* requireStringEffect(input.orderId, "orderId");
-			const path = `${this.basePath}/order/${orderId}/shipping_fulfillment`;
+	): Promise<ShippingFulfillmentPagedCollection> => {
+		const orderId = requireStringEffect(input.orderId, "orderId");
+		const path = `${this.basePath}/order/${orderId}/shipping_fulfillment`;
 
-			return yield* requestGetEffect<ShippingFulfillmentPagedCollection>(
-				this.client,
-				path,
-			);
-		});
+		return await requestGetEffect<ShippingFulfillmentPagedCollection>(
+			this.client,
+			path,
+		);
+	};
 
 	/**
 	 * Retrieves one shipping fulfillment for one order.
@@ -314,19 +281,18 @@ export class FulfillmentApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/getShippingFulfillment
 	 */
-	public getShippingFulfillment = (
+	public getShippingFulfillment = async (
 		input: GetShippingFulfillmentInput,
-	): Effect.Effect<ShippingFulfillment, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const orderId = yield* requireStringEffect(input.orderId, "orderId");
-			const fulfillmentId = yield* requireStringEffect(
-				input.fulfillmentId,
-				"fulfillmentId",
-			);
-			const path = `${this.basePath}/order/${orderId}/shipping_fulfillment/${fulfillmentId}`;
+	): Promise<ShippingFulfillment> => {
+		const orderId = requireStringEffect(input.orderId, "orderId");
+		const fulfillmentId = requireStringEffect(
+			input.fulfillmentId,
+			"fulfillmentId",
+		);
+		const path = `${this.basePath}/order/${orderId}/shipping_fulfillment/${fulfillmentId}`;
 
-			return yield* requestGetEffect<ShippingFulfillment>(this.client, path);
-		});
+		return await requestGetEffect<ShippingFulfillment>(this.client, path);
+	};
 
 	/**
 	 * Issues a full or partial refund for one order.
@@ -349,23 +315,17 @@ export class FulfillmentApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/issueRefund
 	 */
-	public issueRefund = (
-		input: IssueRefundInput,
-	): Effect.Effect<Refund, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const orderId = yield* requireStringEffect(input.orderId, "orderId");
-			const refundRequest = yield* requireObjectEffect<IssueRefundRequest>(
-				input.body,
-				"body",
-			);
-			const path = `${this.basePath}/order/${orderId}/issue_refund`;
+	public issueRefund = async (input: IssueRefundInput): Promise<Refund> => {
+		const orderId = requireStringEffect(input.orderId, "orderId");
+		const refundRequest = requireObjectEffect<IssueRefundRequest>(
+			input.body,
+			"body",
+		);
+		const path = `${this.basePath}/order/${orderId}/issue_refund`;
 
-			// eBay requires a digital signature on issueRefund for EU/UK sellers.
-			return yield* requestPostEffect<Refund>(
-				this.client,
-				path,
-				refundRequest,
-				{ signed: true },
-			);
+		// eBay requires a digital signature on issueRefund for EU/UK sellers.
+		return await requestPostEffect<Refund>(this.client, path, refundRequest, {
+			signed: true,
 		});
+	};
 }

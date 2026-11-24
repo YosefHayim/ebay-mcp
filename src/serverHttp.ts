@@ -3,7 +3,6 @@
  */
 
 import process from "node:process";
-import { Effect, Either } from "effect";
 import {
 	createHttpMcpApp,
 	createHttpTransportConfigFromEnv,
@@ -81,37 +80,28 @@ function logStartupUrls(serverUrl: string): void {
 }
 
 async function main(): Promise<void> {
-	const started = await Effect.runPromise(
-		Effect.either(
-			Effect.gen(function* () {
-				serverLogger.info("Starting eBay API MCP Server (HTTP + OAuth)...");
+	try {
+		serverLogger.info("Starting eBay API MCP Server (HTTP + OAuth)...");
 
-				logEnvironmentValidation();
-				logConfiguration();
+		logEnvironmentValidation();
+		logConfiguration();
 
-				const app = yield* Effect.tryPromise({
-					try: () => createHttpMcpApp(CONFIG),
-					catch: (error) => error,
-				});
-				const serverUrl = getHttpServerUrl(CONFIG);
-				const server = app.listen(CONFIG.port, CONFIG.host, () => {
-					logStartupUrls(serverUrl);
-				});
+		const app = await createHttpMcpApp(CONFIG);
+		const serverUrl = getHttpServerUrl(CONFIG);
+		const server = app.listen(CONFIG.port, CONFIG.host, () => {
+			logStartupUrls(serverUrl);
+		});
 
-				process.on("SIGINT", () => {
-					serverLogger.info("Shutting down...");
-					server.close(() => {
-						serverLogger.info("Server closed");
-						process.exit(0);
-					});
-				});
-			}),
-		),
-	);
-
-	if (Either.isLeft(started)) {
+		process.on("SIGINT", () => {
+			serverLogger.info("Shutting down...");
+			server.close(() => {
+				serverLogger.info("Server closed");
+				process.exit(0);
+			});
+		});
+	} catch (error) {
 		serverLogger.error("Fatal error starting server", {
-			error: getErrorMessage(started.left, String(started.left)),
+			error: getErrorMessage(error, String(error)),
 		});
 		process.exit(1);
 	}

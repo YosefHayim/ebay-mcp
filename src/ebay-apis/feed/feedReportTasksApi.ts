@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import {
 	createCustomerServiceMetricTaskInputSchema,
@@ -16,6 +15,7 @@ import {
 } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/sellFeedV1Oas3.js";
 import {
+	type CreatedFeedTask,
 	exclusiveFeedFilters,
 	FEED_BASE_PATH,
 	feedListParams,
@@ -34,12 +34,6 @@ type GetServiceMetricTasksInput = z.infer<
 type CreateServiceMetricTaskInput = z.infer<
 	typeof createCustomerServiceMetricTaskInputSchema
 >;
-type CreateOrderTaskRequest = components["schemas"]["CreateOrderTaskRequest"];
-type CreateInventoryTaskRequest =
-	components["schemas"]["CreateInventoryTaskRequest"];
-type CreateServiceMetricsTaskRequest =
-	components["schemas"]["CreateServiceMetricsTaskRequest"];
-
 /** Order report tasks page. @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/getOrderTasks */
 export type OrderTaskCollection = components["schemas"]["OrderTaskCollection"];
 /** Order report task. @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/getOrderTask */
@@ -60,7 +54,7 @@ export type ServiceMetricsTask = components["schemas"]["ServiceMetricsTask"];
  * (`order_task`), active inventory reports (`inventory_task`) and customer service metric
  * reports (`customer_service_metric_task`).
  * @param client - Shared authenticated HTTP client.
- * @returns Endpoint Effects composed into FeedApi.
+ * @returns Endpoint methods composed into FeedApi.
  */
 export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	/**
@@ -70,17 +64,21 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getOrderTasks({ feedType: 'LMS_ORDER_REPORT', lookBackDays: 10 })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/getOrderTasks
 	 */
-	const getOrderTasks = (input: GetOrderTasksInput = {}) =>
-		decodeEndpointInputEffect(getOrderTasksInputSchema, input).pipe(
-			Effect.flatMap(exclusiveFeedFilters),
-			Effect.flatMap((query) =>
-				requestGetEffect<OrderTaskCollection>(
-					client,
-					`${FEED_BASE_PATH}/order_task`,
-					feedListParams(query),
-				),
-			),
+	const getOrderTasks = async (
+		input: GetOrderTasksInput = {},
+	): Promise<OrderTaskCollection> => {
+		const parsedInput = decodeEndpointInputEffect(
+			getOrderTasksInputSchema,
+			input,
 		);
+		const query = exclusiveFeedFilters(parsedInput);
+
+		return requestGetEffect<OrderTaskCollection>(
+			client,
+			`${FEED_BASE_PATH}/order_task`,
+			feedListParams(query),
+		);
+	};
 
 	/**
 	 * Creates an LMS_ORDER_REPORT download task; eBay answers 202 with only a Location.
@@ -89,13 +87,16 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.createOrderTask({ task: { feedType: 'LMS_ORDER_REPORT', schemaVersion: '1235' } })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/createOrderTask
 	 */
-	const createOrderTask = (input: CreateOrderTaskInput) =>
-		decodeEndpointInputEffect(createOrderTaskInputSchema, input).pipe(
-			Effect.flatMap(({ task }) => {
-				const orderTaskRequest: CreateOrderTaskRequest = task;
-				return postFeedTask(client, "/order_task", orderTaskRequest);
-			}),
+	const createOrderTask = async (
+		input: CreateOrderTaskInput,
+	): Promise<CreatedFeedTask> => {
+		const { task } = decodeEndpointInputEffect(
+			createOrderTaskInputSchema,
+			input,
 		);
+
+		return postFeedTask(client, "/order_task", task);
+	};
 
 	/**
 	 * Retrieves one order report task.
@@ -104,15 +105,14 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getOrderTask({ taskId: 'TASK-1' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/order_task/methods/getOrderTask
 	 */
-	const getOrderTask = (input: FeedTaskIdInput) =>
-		decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
-			Effect.flatMap(({ taskId }) =>
-				requestGetEffect<OrderTask>(
-					client,
-					feedResourcePath("/order_task", taskId),
-				),
-			),
+	const getOrderTask = async (input: FeedTaskIdInput): Promise<OrderTask> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+
+		return requestGetEffect<OrderTask>(
+			client,
+			feedResourcePath("/order_task", taskId),
 		);
+	};
 
 	/**
 	 * Lists active inventory report tasks.
@@ -121,17 +121,21 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getInventoryTasks({ feedType: 'LMS_ACTIVE_INVENTORY_REPORT' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/inventory_task/methods/getInventoryTasks
 	 */
-	const getInventoryTasks = (input: GetInventoryTasksInput = {}) =>
-		decodeEndpointInputEffect(getInventoryTasksInputSchema, input).pipe(
-			Effect.flatMap(exclusiveFeedFilters),
-			Effect.flatMap((query) =>
-				requestGetEffect<InventoryTaskCollection>(
-					client,
-					`${FEED_BASE_PATH}/inventory_task`,
-					feedListParams(query),
-				),
-			),
+	const getInventoryTasks = async (
+		input: GetInventoryTasksInput = {},
+	): Promise<InventoryTaskCollection> => {
+		const parsedInput = decodeEndpointInputEffect(
+			getInventoryTasksInputSchema,
+			input,
 		);
+		const query = exclusiveFeedFilters(parsedInput);
+
+		return requestGetEffect<InventoryTaskCollection>(
+			client,
+			`${FEED_BASE_PATH}/inventory_task`,
+			feedListParams(query),
+		);
+	};
 
 	/**
 	 * Creates an LMS_ACTIVE_INVENTORY_REPORT download task; eBay answers 202 with only a Location.
@@ -140,13 +144,16 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.createInventoryTask({ task: { feedType: 'LMS_ACTIVE_INVENTORY_REPORT', schemaVersion: '1.0' } })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/inventory_task/methods/createInventoryTask
 	 */
-	const createInventoryTask = (input: CreateInventoryTaskInput) =>
-		decodeEndpointInputEffect(createInventoryTaskInputSchema, input).pipe(
-			Effect.flatMap(({ task }) => {
-				const inventoryTaskRequest: CreateInventoryTaskRequest = task;
-				return postFeedTask(client, "/inventory_task", inventoryTaskRequest);
-			}),
+	const createInventoryTask = async (
+		input: CreateInventoryTaskInput,
+	): Promise<CreatedFeedTask> => {
+		const { task } = decodeEndpointInputEffect(
+			createInventoryTaskInputSchema,
+			input,
 		);
+
+		return postFeedTask(client, "/inventory_task", task);
+	};
 
 	/**
 	 * Retrieves one active inventory report task.
@@ -155,15 +162,16 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getInventoryTask({ taskId: 'TASK-1' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/inventory_task/methods/getInventoryTask
 	 */
-	const getInventoryTask = (input: FeedTaskIdInput) =>
-		decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
-			Effect.flatMap(({ taskId }) =>
-				requestGetEffect<InventoryTask>(
-					client,
-					feedResourcePath("/inventory_task", taskId),
-				),
-			),
+	const getInventoryTask = async (
+		input: FeedTaskIdInput,
+	): Promise<InventoryTask> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+
+		return requestGetEffect<InventoryTask>(
+			client,
+			feedResourcePath("/inventory_task", taskId),
 		);
+	};
 
 	/**
 	 * Lists customer service metric report tasks.
@@ -172,22 +180,21 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getCustomerServiceMetricTasks({ lookBackDays: 30 })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/customer_service_metric_task/methods/getCustomerServiceMetricTasks
 	 */
-	const getCustomerServiceMetricTasks = (
+	const getCustomerServiceMetricTasks = async (
 		input: GetServiceMetricTasksInput = {},
-	) =>
-		decodeEndpointInputEffect(
+	): Promise<CustomerServiceMetricTaskCollection> => {
+		const parsedInput = decodeEndpointInputEffect(
 			getCustomerServiceMetricTasksInputSchema,
 			input,
-		).pipe(
-			Effect.flatMap(exclusiveFeedFilters),
-			Effect.flatMap((query) =>
-				requestGetEffect<CustomerServiceMetricTaskCollection>(
-					client,
-					`${FEED_BASE_PATH}/customer_service_metric_task`,
-					feedListParams(query),
-				),
-			),
 		);
+		const query = exclusiveFeedFilters(parsedInput);
+
+		return requestGetEffect<CustomerServiceMetricTaskCollection>(
+			client,
+			`${FEED_BASE_PATH}/customer_service_metric_task`,
+			feedListParams(query),
+		);
+	};
 
 	/**
 	 * Creates a CUSTOMER_SERVICE_METRICS_REPORT download task; eBay answers 202 with only a
@@ -197,26 +204,21 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.createCustomerServiceMetricTask({ task: { feedType: 'CUSTOMER_SERVICE_METRICS_REPORT', schemaVersion: '1.0', filterCriteria: { customerServiceMetricType: 'ITEM_NOT_RECEIVED', evaluationMarketplaceId: 'EBAY_US' } } })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/customer_service_metric_task/methods/createCustomerServiceMetricTask
 	 */
-	const createCustomerServiceMetricTask = (
+	const createCustomerServiceMetricTask = async (
 		input: CreateServiceMetricTaskInput,
-	) =>
-		decodeEndpointInputEffect(
+	): Promise<CreatedFeedTask> => {
+		const { task, acceptLanguage } = decodeEndpointInputEffect(
 			createCustomerServiceMetricTaskInputSchema,
 			input,
-		).pipe(
-			Effect.flatMap(({ task, acceptLanguage }) => {
-				const metricTaskRequest: CreateServiceMetricsTaskRequest = task;
-				const headers = acceptLanguage
-					? { "Accept-Language": acceptLanguage }
-					: undefined;
-				return postFeedTask(
-					client,
-					"/customer_service_metric_task",
-					metricTaskRequest,
-					headers,
-				);
-			}),
 		);
+		let headers: Record<string, string> | undefined;
+
+		if (acceptLanguage !== undefined) {
+			headers = { "Accept-Language": acceptLanguage };
+		}
+
+		return postFeedTask(client, "/customer_service_metric_task", task, headers);
+	};
 
 	/**
 	 * Retrieves one customer service metric report task.
@@ -225,15 +227,16 @@ export const createFeedReportTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getCustomerServiceMetricTask({ taskId: 'TASK-1' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/customer_service_metric_task/methods/getCustomerServiceMetricTask
 	 */
-	const getCustomerServiceMetricTask = (input: FeedTaskIdInput) =>
-		decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
-			Effect.flatMap(({ taskId }) =>
-				requestGetEffect<ServiceMetricsTask>(
-					client,
-					feedResourcePath("/customer_service_metric_task", taskId),
-				),
-			),
+	const getCustomerServiceMetricTask = async (
+		input: FeedTaskIdInput,
+	): Promise<ServiceMetricsTask> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+
+		return requestGetEffect<ServiceMetricsTask>(
+			client,
+			feedResourcePath("/customer_service_metric_task", taskId),
 		);
+	};
 
 	return {
 		getOrderTasks,

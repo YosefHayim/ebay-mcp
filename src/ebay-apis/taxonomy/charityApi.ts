@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import {
 	getCharityOrgInputSchema,
@@ -11,7 +10,6 @@ import type {
 import {
 	buildEndpointParams,
 	decodeEndpointInputEffect,
-	type EbayApiError,
 	EndpointInputError,
 	requestGetEffect,
 } from "@/ebay-client/request.js";
@@ -61,35 +59,29 @@ export class CharityApi {
 	 * Retrieves one charitable organization supported by eBay for Charity.
 	 *
 	 * @param input - Charity organization ID and the EBAY_US or EBAY_GB marketplace.
-	 * @returns An Effect that succeeds with eBay's CharityOrg.
+	 * @returns eBay's CharityOrg.
 	 *
 	 * @example
 	 * ```ts
-	 * const charity = await Effect.runPromise(
-	 *   charityApi.getCharityOrg({ charityOrgId: '1234', marketplaceId: 'EBAY_US' }),
-	 * );
+	 * const charity = await charityApi.getCharityOrg({ charityOrgId: '1234', marketplaceId: 'EBAY_US' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/charity/resources/charity_org/methods/getCharityOrg
 	 */
-	public getCharityOrg = (
+	public getCharityOrg = async (
 		input: GetCharityOrgInput,
-	): Effect.Effect<CharityOrgResponse, EbayApiError | EndpointInputError> => {
-		const client = this.client;
+	): Promise<CharityOrgResponse> => {
+		const { charityOrgId, marketplaceId } = decodeEndpointInputEffect(
+			getCharityOrgInputSchema,
+			input,
+		);
 
-		return Effect.gen(function* () {
-			const { charityOrgId, marketplaceId } = yield* decodeEndpointInputEffect(
-				getCharityOrgInputSchema,
-				input,
-			);
-
-			return yield* requestGetEffect<CharityOrgResponse>(
-				client,
-				`${BASE_PATH}/charity_org/${encodeURIComponent(charityOrgId)}`,
-				undefined,
-				charityRequestConfig(marketplaceId),
-			);
-		});
+		return requestGetEffect<CharityOrgResponse>(
+			this.client,
+			`${BASE_PATH}/charity_org/${encodeURIComponent(charityOrgId)}`,
+			undefined,
+			charityRequestConfig(marketplaceId),
+		);
 	};
 
 	/**
@@ -97,55 +89,55 @@ export class CharityApi {
 	 * registration IDs (eBay requires exactly one of the two).
 	 *
 	 * @param input - Marketplace, q or registrationIds, and optional limit/offset paging.
-	 * @returns An Effect that succeeds with eBay's paginated CharitySearchResponse.
+	 * @returns eBay's paginated CharitySearchResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const results = await Effect.runPromise(
-	 *   charityApi.getCharityOrgs({ marketplaceId: 'EBAY_US', q: 'animal rescue', limit: 10 }),
-	 * );
+	 * const results = await charityApi.getCharityOrgs({ marketplaceId: 'EBAY_US', q: 'animal rescue', limit: 10 });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/charity/resources/charity_org/methods/getCharityOrgs
 	 */
-	public getCharityOrgs = (
+	public getCharityOrgs = async (
 		input: GetCharityOrgsInput,
-	): Effect.Effect<
-		CharitySearchResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
+	): Promise<CharitySearchResponse> => {
+		const search = decodeEndpointInputEffect(getCharityOrgsInputSchema, input);
+		const hasNeitherQuery =
+			search.q === undefined && search.registrationIds === undefined;
+		const hasBothQueries =
+			search.q !== undefined && search.registrationIds !== undefined;
 
-		return Effect.gen(function* () {
-			const search = yield* decodeEndpointInputEffect(
-				getCharityOrgsInputSchema,
-				input,
-			);
-			if ((search.q === undefined) === (search.registrationIds === undefined)) {
-				return yield* Effect.fail(
-					new EndpointInputError({
-						parameter: "q",
-						message:
-							"Supply either q or registrationIds to search charities, but not both",
-					}),
-				);
-			}
-			const params = buildEndpointParams({
-				q: { wireName: "q", value: search.q },
-				registrationIds: {
-					wireName: "registration_ids",
-					value: search.registrationIds,
-				},
-				limit: { wireName: "limit", value: search.limit },
-				offset: { wireName: "offset", value: search.offset },
+		if (hasNeitherQuery) {
+			throw new EndpointInputError({
+				parameter: "q",
+				message:
+					"Supply either q or registrationIds to search charities, but not both",
 			});
+		}
 
-			return yield* requestGetEffect<CharitySearchResponse>(
-				client,
-				`${BASE_PATH}/charity_org`,
-				params,
-				charityRequestConfig(search.marketplaceId),
-			);
+		if (hasBothQueries) {
+			throw new EndpointInputError({
+				parameter: "q",
+				message:
+					"Supply either q or registrationIds to search charities, but not both",
+			});
+		}
+
+		const params = buildEndpointParams({
+			q: { wireName: "q", value: search.q },
+			registrationIds: {
+				wireName: "registration_ids",
+				value: search.registrationIds,
+			},
+			limit: { wireName: "limit", value: search.limit },
+			offset: { wireName: "offset", value: search.offset },
 		});
+
+		return requestGetEffect<CharitySearchResponse>(
+			this.client,
+			`${BASE_PATH}/charity_org`,
+			params,
+			charityRequestConfig(search.marketplaceId),
+		);
 	};
 }

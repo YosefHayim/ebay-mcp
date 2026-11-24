@@ -22,6 +22,7 @@ function Stat({ view }: { view: StatViewModel }): ReactNode {
 			{view.title ? <h1 className="view-title">{view.title}</h1> : null}
 			<div className="stat-grid">
 				{view.tiles.map((tile, index) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: tile labels can repeat
 					<div key={`${tile.label}-${index}`} className={tileClass(tile.tone)}>
 						<span className="stat-label">{tile.label}</span>
 						<span className="stat-value">

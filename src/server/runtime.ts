@@ -3,7 +3,6 @@ import {
 	type RegisteredTool,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Implementation } from "@modelcontextprotocol/sdk/types.js";
-import { Effect } from "effect";
 import { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import {
 	isReadOnlyModeEnabled,
@@ -74,10 +73,10 @@ function formatToolFailure(error: unknown) {
 	const { message, status, errors } = getEbayErrorDetails(error);
 	const failureDocument: Record<string, unknown> = { error: message };
 	if (status !== undefined) {
-		failureDocument.status = status;
+		failureDocument["status"] = status;
 	}
 	if (errors !== undefined) {
-		failureDocument.details = errors;
+		failureDocument["details"] = errors;
 	}
 
 	return {
@@ -102,49 +101,42 @@ function registerTool(
 
 	// Registered plainly (no UI `_meta`) so every host gets a working text tool by
 	// default; the capability gate later flips `_meta.ui` on for UI-capable clients.
+	const annotations = definition.annotations;
 	const registered = server.registerTool(
 		definition.name,
 		{
 			description: definition.description,
 			inputSchema: definition.inputSchema,
-			annotations: definition.annotations,
+			...(annotations == null ? {} : { annotations }),
 		},
 		async (args: ToolArgs) => {
 			if (logToolExecution) {
 				toolLogger.debug(`Executing tool: ${definition.name}`, { args });
 			}
 
-			return await Effect.runPromise(
-				Effect.tryPromise({
-					try: async () => handler(api, args),
-					catch: (error) => error,
-				}).pipe(
-					Effect.map((handlerOutput) => {
-						if (logToolExecution) {
-							toolLogger.debug(
-								`Tool ${definition.name} completed successfully`,
-							);
-						}
+			try {
+				const handlerOutput = await handler(api, args);
 
-						if (entry.formatResult) {
-							return entry.formatResult(handlerOutput, args);
-						}
+				if (logToolExecution) {
+					toolLogger.debug(`Tool ${definition.name} completed successfully`);
+				}
 
-						return ui.shouldRender(entry)
-							? buildUiToolResult(entry.ui, handlerOutput)
-							: formatToolSuccess(handlerOutput);
-					}),
-					Effect.catchAll((error) => {
-						if (logToolExecution) {
-							toolLogger.error(`Tool ${definition.name} failed`, {
-								error: getEbayErrorDetails(error).message,
-							});
-						}
+				if (entry.formatResult) {
+					return entry.formatResult(handlerOutput, args);
+				}
 
-						return Effect.succeed(formatToolFailure(error));
-					}),
-				),
-			);
+				return ui.shouldRender(entry)
+					? buildUiToolResult(entry.ui, handlerOutput)
+					: formatToolSuccess(handlerOutput);
+			} catch (error) {
+				if (logToolExecution) {
+					toolLogger.error(`Tool ${definition.name} failed`, {
+						error: getEbayErrorDetails(error).message,
+					});
+				}
+
+				return formatToolFailure(error);
+			}
 		},
 	);
 
@@ -236,7 +228,7 @@ export const createEbayMcpRuntime = (
 		api,
 		server,
 		async initializeApi() {
-			await Effect.runPromise(api.initialize());
+			await api.initialize();
 		},
 	};
 };

@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type {
@@ -9,7 +8,6 @@ import type {
 	BulkUpdatePriceQuantityRequest,
 	CreateInventoryLocationRequest,
 	GetListingFeesRequest,
-	InventoryItem,
 	InventoryItemGroup,
 	LocationMapping,
 	ProductCompatibility,
@@ -244,8 +242,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetInventoryItemsResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getInventoryItems(args)),
+		handler: (api, args) => api.inventory.getInventoryItems(args),
 		ui: { archetype: "table", map: mapInventoryItemsToTable },
 	}),
 	defineTool({
@@ -257,8 +254,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetInventoryItemResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getInventoryItem(args)),
+		handler: (api, args) => api.inventory.getInventoryItem(args),
 		ui: { archetype: "card", map: mapInventoryItemToCard },
 	}),
 	defineTool({
@@ -270,15 +266,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "CreateOrReplaceInventoryItemResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(
-				api.inventory.createOrReplaceInventoryItem({
-					...args,
-					// The generated OpenAPI type incorrectly models `product.aspects` as a
-					// string; the endpoint wire contract and validation schema use a map.
-					body: args.body as InventoryItem,
-				}),
-			),
+		handler: (api, args) => api.inventory.createOrReplaceInventoryItem(args),
 	}),
 	defineTool({
 		name: "ebay_delete_inventory_item",
@@ -286,8 +274,7 @@ export const inventoryEntries: ToolEntry[] = [
 			"Delete an inventory item by SKU.\n\nRequired OAuth Scope: sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory",
 		inputSchema: skuInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.deleteInventoryItem(args)),
+		handler: (api, args) => api.inventory.deleteInventoryItem(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_create_or_replace_inventory_item",
@@ -298,7 +285,7 @@ export const inventoryEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		handler: (api, args) =>
-			Effect.runPromise(api.inventory.bulkCreateOrReplaceInventoryItem(args)),
+			api.inventory.bulkCreateOrReplaceInventoryItem(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_get_inventory_item",
@@ -308,8 +295,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "BulkGetInventoryItemResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.bulkGetInventoryItem(args)),
+		handler: (api, args) => api.inventory.bulkGetInventoryItem(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_price_quantity",
@@ -319,8 +305,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "BulkUpdatePriceQuantityResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.bulkUpdatePriceQuantity(args)),
+		handler: (api, args) => api.inventory.bulkUpdatePriceQuantity(args),
 	}),
 	defineTool({
 		name: "ebay_get_product_compatibility",
@@ -330,8 +315,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetProductCompatibilityResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getProductCompatibility(args)),
+		handler: (api, args) => api.inventory.getProductCompatibility(args),
 	}),
 	defineTool({
 		name: "ebay_create_or_replace_product_compatibility",
@@ -343,17 +327,14 @@ export const inventoryEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		handler: (api, args) =>
-			Effect.runPromise(
-				api.inventory.createOrReplaceProductCompatibility(args),
-			),
+			api.inventory.createOrReplaceProductCompatibility(args),
 	}),
 	defineTool({
 		name: "ebay_delete_product_compatibility",
 		description: "Delete product compatibility for an inventory item",
 		inputSchema: skuInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.deleteProductCompatibility(args)),
+		handler: (api, args) => api.inventory.deleteProductCompatibility(args),
 	}),
 	defineTool({
 		name: "ebay_get_inventory_item_group",
@@ -363,8 +344,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetInventoryItemGroupResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getInventoryItemGroup(args)),
+		handler: (api, args) => api.inventory.getInventoryItemGroup(args),
 	}),
 	defineTool({
 		name: "ebay_create_or_replace_inventory_item_group",
@@ -375,15 +355,14 @@ export const inventoryEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		handler: (api, args) =>
-			Effect.runPromise(api.inventory.createOrReplaceInventoryItemGroup(args)),
+			api.inventory.createOrReplaceInventoryItemGroup(args),
 	}),
 	defineTool({
 		name: "ebay_delete_inventory_item_group",
 		description: "Delete an inventory item group",
 		inputSchema: inventoryItemGroupKeyInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.deleteInventoryItemGroup(args)),
+		handler: (api, args) => api.inventory.deleteInventoryItemGroup(args),
 	}),
 	defineTool({
 		name: "ebay_get_inventory_locations",
@@ -393,8 +372,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetInventoryLocationsResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getInventoryLocations(args)),
+		handler: (api, args) => api.inventory.getInventoryLocations(args),
 		ui: { archetype: "table", map: mapLocationsToTable },
 	}),
 	defineTool({
@@ -405,8 +383,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetInventoryLocationResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getInventoryLocation(args)),
+		handler: (api, args) => api.inventory.getInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_create_inventory_location",
@@ -416,32 +393,28 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "CreateInventoryLocationResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.createInventoryLocation(args)),
+		handler: (api, args) => api.inventory.createInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_delete_inventory_location",
 		description: "Delete an inventory location",
 		inputSchema: merchantLocationKeyInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.deleteInventoryLocation(args)),
+		handler: (api, args) => api.inventory.deleteInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_disable_inventory_location",
 		description: "Disable an inventory location",
 		inputSchema: merchantLocationKeyInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.disableInventoryLocation(args)),
+		handler: (api, args) => api.inventory.disableInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_enable_inventory_location",
 		description: "Enable an inventory location",
 		inputSchema: merchantLocationKeyInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.enableInventoryLocation(args)),
+		handler: (api, args) => api.inventory.enableInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_update_inventory_location",
@@ -451,8 +424,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "UpdateInventoryLocationResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.updateInventoryLocation(args)),
+		handler: (api, args) => api.inventory.updateInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_get_offers",
@@ -463,7 +435,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetOffersResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.inventory.getOffers(args)),
+		handler: (api, args) => api.inventory.getOffers(args),
 		ui: { archetype: "table", map: mapOffersToTable },
 	}),
 	defineTool({
@@ -475,8 +447,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetOffersBySkusResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getOffersBySkus(args)),
+		handler: (api, args) => api.inventory.getOffersBySkus(args),
 	}),
 	defineTool({
 		name: "ebay_get_offer",
@@ -486,7 +457,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.inventory.getOffer(args)),
+		handler: (api, args) => api.inventory.getOffer(args),
 		ui: { archetype: "card", map: mapOfferToCard },
 	}),
 	defineTool({
@@ -498,7 +469,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "CreateOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.inventory.createOffer(args)),
+		handler: (api, args) => api.inventory.createOffer(args),
 	}),
 	defineTool({
 		name: "ebay_update_offer",
@@ -509,14 +480,14 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "UpdateOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.inventory.updateOffer(args)),
+		handler: (api, args) => api.inventory.updateOffer(args),
 	}),
 	defineTool({
 		name: "ebay_delete_offer",
 		description: "Delete an offer",
 		inputSchema: offerIdInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) => Effect.runPromise(api.inventory.deleteOffer(args)),
+		handler: (api, args) => api.inventory.deleteOffer(args),
 	}),
 	defineTool({
 		name: "ebay_publish_offer",
@@ -526,7 +497,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "PublishOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.inventory.publishOffer(args)),
+		handler: (api, args) => api.inventory.publishOffer(args),
 	}),
 	defineTool({
 		name: "ebay_withdraw_offer",
@@ -536,8 +507,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "WithdrawOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.withdrawOffer(args)),
+		handler: (api, args) => api.inventory.withdrawOffer(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_create_offer",
@@ -548,8 +518,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "BulkCreateOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.bulkCreateOffer(args)),
+		handler: (api, args) => api.inventory.bulkCreateOffer(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_publish_offer",
@@ -559,8 +528,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "BulkPublishOfferResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.bulkPublishOffer(args)),
+		handler: (api, args) => api.inventory.bulkPublishOffer(args),
 	}),
 	defineTool({
 		name: "ebay_get_listing_fees",
@@ -570,8 +538,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetListingFeesResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getListingFees(args)),
+		handler: (api, args) => api.inventory.getListingFees(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_migrate_listing",
@@ -581,8 +548,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "BulkMigrateListingResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.bulkMigrateListing(args)),
+		handler: (api, args) => api.inventory.bulkMigrateListing(args),
 	}),
 	defineTool({
 		name: "ebay_get_sku_location_mapping",
@@ -593,8 +559,7 @@ export const inventoryEntries: ToolEntry[] = [
 			name: "GetSkuLocationMappingResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.getSkuLocationMapping(args)),
+		handler: (api, args) => api.inventory.getSkuLocationMapping(args),
 	}),
 	defineTool({
 		name: "ebay_create_or_replace_sku_location_mapping",
@@ -603,7 +568,7 @@ export const inventoryEntries: ToolEntry[] = [
 		inputSchema: createOrReplaceSkuLocationMappingInputSchema.shape,
 		outputSchema: emptyOutputSchema,
 		handler: (api, args) =>
-			Effect.runPromise(api.inventory.createOrReplaceSkuLocationMapping(args)),
+			api.inventory.createOrReplaceSkuLocationMapping(args),
 	}),
 	defineTool({
 		name: "ebay_delete_sku_location_mapping",
@@ -611,8 +576,7 @@ export const inventoryEntries: ToolEntry[] = [
 			"Delete SKU location mapping for a listing. Removes fulfillment center location mappings for a SKU.\n\nRequired OAuth Scope: sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory",
 		inputSchema: skuLocationMappingInputSchema.shape,
 		outputSchema: emptyOutputSchema,
-		handler: (api, args) =>
-			Effect.runPromise(api.inventory.deleteSkuLocationMapping(args)),
+		handler: (api, args) => api.inventory.deleteSkuLocationMapping(args),
 	}),
 	defineTool({
 		name: "ebay_publish_offer_by_inventory_item_group",
@@ -624,7 +588,7 @@ export const inventoryEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		handler: (api, args) =>
-			Effect.runPromise(api.inventory.publishOfferByInventoryItemGroup(args)),
+			api.inventory.publishOfferByInventoryItemGroup(args),
 	}),
 	defineTool({
 		name: "ebay_withdraw_offer_by_inventory_item_group",
@@ -633,6 +597,6 @@ export const inventoryEntries: ToolEntry[] = [
 		inputSchema: withdrawOfferByInventoryItemGroupInputSchema.shape,
 		outputSchema: emptyOutputSchema,
 		handler: (api, args) =>
-			Effect.runPromise(api.inventory.withdrawOfferByInventoryItemGroup(args)),
+			api.inventory.withdrawOfferByInventoryItemGroup(args),
 	}),
 ];

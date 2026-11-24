@@ -17,7 +17,6 @@
  * the codebase treat HTTP like the old axios calls without the dependency.
  */
 
-import { Cause, Data, Effect, Exit, Option } from "effect";
 import { getErrorMessage } from "@/shared/errors.js";
 import { isRecord } from "@/shared/typeGuards.js";
 
@@ -76,22 +75,15 @@ export interface HttpResponse<T> {
  *
  * `status` is `undefined` for network/timeout failures (no response received).
  */
-export class HttpError extends Data.TaggedError("HttpError")<{
-	/** Human-readable failure detail. */
-	readonly message: string;
-	/** Failed request URL. */
+export class HttpError extends Error {
+	readonly _tag = "HttpError" as const;
 	readonly url: string;
-	/** HTTP status for response failures; absent for network/timeout failures. */
 	readonly status?: number;
-	/** HTTP status text for response failures. */
 	readonly statusText?: string;
-	/** Parsed response body (JSON when decodable, otherwise the raw text). */
 	readonly data?: unknown;
-	/** Lowercased response headers, empty for network/timeout failures. */
 	readonly headers: Record<string, string>;
-	/** True when the failure was our own timeout aborting the request. */
 	readonly isTimeout: boolean;
-}> {
+
 	constructor(
 		message: string,
 		init: {
@@ -103,15 +95,23 @@ export class HttpError extends Data.TaggedError("HttpError")<{
 			isTimeout?: boolean;
 		},
 	) {
-		super({
-			message,
-			url: init.url,
-			...(init.status === undefined ? {} : { status: init.status }),
-			...(init.statusText === undefined ? {} : { statusText: init.statusText }),
-			...(init.data === undefined ? {} : { data: init.data }),
-			headers: init.headers ?? {},
-			isTimeout: init.isTimeout ?? false,
-		});
+		super(message);
+		this.name = "HttpError";
+		this.url = init.url;
+		this.headers = init.headers ?? {};
+		this.isTimeout = init.isTimeout ?? false;
+
+		if (init.status !== undefined) {
+			this.status = init.status;
+		}
+
+		if (init.statusText !== undefined) {
+			this.statusText = init.statusText;
+		}
+
+		if (init.data !== undefined) {
+			this.data = init.data;
+		}
 	}
 }
 
@@ -150,14 +150,14 @@ export const describeHttpError = (
 	if (isHttpError(error)) {
 		const { data: errorBody } = error;
 		if (isRecord(errorBody)) {
-			if (typeof errorBody.error_description === "string") {
-				return errorBody.error_description;
+			if (typeof errorBody["error_description"] === "string") {
+				return errorBody["error_description"];
 			}
-			const firstError = Array.isArray(errorBody.errors)
-				? errorBody.errors[0]
+			const firstError = Array.isArray(errorBody["errors"])
+				? errorBody["errors"][0]
 				: undefined;
 			if (isRecord(firstError)) {
-				const detail = firstError.longMessage ?? firstError.message;
+				const detail = firstError["longMessage"] ?? firstError["message"];
 				if (typeof detail === "string") {
 					return detail;
 				}
@@ -299,12 +299,11 @@ const parseErrorData = (text: string): unknown => {
 	if (!text) {
 		return;
 	}
-	return Effect.runSync(
-		Effect.try({
-			try: () => JSON.parse(text) as unknown,
-			catch: () => text,
-		}).pipe(Effect.catchAll((rawText) => Effect.succeed(rawText))),
-	);
+	try {
+		return JSON.parse(text) as unknown;
+	} catch {
+		return text;
+	}
 };
 
 /**
@@ -346,142 +345,119 @@ const startDeadline = (timeoutMs?: number): RequestDeadline => {
 	};
 };
 
-/**
- * Builds an HTTP request Effect with timeout, query/body serialization, and uniform
- * error semantics. Succeeds on 2xx; fails with {@link HttpError} otherwise (and
- * on network/timeout failures).
- *
- * @typeParam T - Shape of the decoded success body.
- * @param options - Fetch-native request options plus timeout and response decoding settings.
- * @returns Effect that succeeds with status, lowercased headers, and decoded response body.
- *
- * @example
- * ```ts
- * const resourceResponse = await Effect.runPromise(httpRequestEffect<{ id: string }>({ url }));
- * ```
- */
-export const httpRequestEffect = <T = unknown>(
+export async function httpRequestEffect<T = unknown>(
 	options: HttpRequestOptions,
-): Effect.Effect<HttpResponse<T>, HttpError> => {
+): Promise<HttpResponse<T>> {
 	const { method = "GET", responseType = "json", timeoutMs } = options;
 	const url = buildUrl(options.url, options.baseUrl, options.params);
 	const { body: wireBody, contentType } = prepareBody(options.body);
 
 	const headers: Record<string, string> = { ...options.headers };
-	if (
-		contentType &&
-		!Object.keys(headers).some((key) => key.toLowerCase() === "content-type")
-	) {
+	const hasContentType = Object.keys(headers).some(
+		(key) => key.toLowerCase() === "content-type",
+	);
+
+	if (contentType && !hasContentType) {
 		headers["Content-Type"] = contentType;
 	}
 
-	return Effect.suspend(() => {
-		const deadline = startDeadline(timeoutMs);
+	const deadline = startDeadline(timeoutMs);
 
-		/** Describe a transport or body-read failure, naming the timeout when ours fired. */
-		const failure = (
-			error: unknown,
-			stage: string,
-			response?: Response,
-		): HttpError => {
-			const responseInit = response
-				? {
-						status: response.status,
-						statusText: response.statusText,
-						headers: collectHeaders(response),
-					}
-				: {};
+	function failure(
+		error: unknown,
+		stage: string,
+		response?: Response,
+	): HttpError {
+		const responseInit = response
+			? {
+					status: response.status,
+					statusText: response.statusText,
+					headers: collectHeaders(response),
+				}
+			: {};
+		const timedOut = deadline.expired();
 
-			return deadline.expired()
-				? new HttpError(
-						`Request to ${url} timed out after ${timeoutMs}ms reading the ${stage}`,
-						{
-							url,
-							...responseInit,
-							isTimeout: true,
-						},
-					)
-				: new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
-						url,
-						...responseInit,
-					});
-		};
+		if (timedOut) {
+			return new HttpError(
+				`Request to ${url} timed out after ${timeoutMs}ms reading the ${stage}`,
+				{
+					url,
+					...responseInit,
+					isTimeout: true,
+				},
+			);
+		}
 
-		return Effect.gen(function* () {
-			const response = yield* Effect.tryPromise({
-				try: () =>
-					fetch(url, {
-						method,
-						headers,
-						body: wireBody,
-						signal: deadline.signal,
-					}),
-				catch: (error) => failure(error, "response headers"),
+		return new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
+			url,
+			...responseInit,
+		});
+	}
+
+	try {
+		let response: Response;
+
+		try {
+			response = await fetch(url, {
+				method,
+				headers,
+				body: wireBody ?? null,
+				signal: deadline.signal,
 			});
-			const responseHeaders = collectHeaders(response);
+		} catch (error) {
+			throw failure(error, "response headers");
+		}
 
-			if (!response.ok) {
-				const errorText = yield* Effect.tryPromise({
-					try: () => response.text(),
-					catch: (error) => failure(error, "error body", response),
-				});
-				const errorBody = parseErrorData(errorText);
-				return yield* Effect.fail(
-					new HttpError(
-						`Request to ${url} failed with status ${response.status}`,
-						{
-							url,
-							status: response.status,
-							statusText: response.statusText,
-							data: errorBody,
-							headers: responseHeaders,
-						},
-					),
-				);
+		const responseHeaders = collectHeaders(response);
+		const isFailedStatus = !response.ok;
+
+		if (isFailedStatus) {
+			let errorText: string;
+
+			try {
+				errorText = await response.text();
+			} catch (error) {
+				throw failure(error, "error body", response);
 			}
 
-			const decodedBody = yield* Effect.tryPromise({
-				try: () => decodeBody<T>(response, responseType, options.maxBytes),
-				catch: (error) => failure(error, "response body", response),
-			});
+			const errorBody = parseErrorData(errorText);
+			throw new HttpError(
+				`Request to ${url} failed with status ${response.status}`,
+				{
+					url,
+					status: response.status,
+					statusText: response.statusText,
+					data: errorBody,
+					headers: responseHeaders,
+				},
+			);
+		}
 
-			return {
-				data: decodedBody,
-				status: response.status,
-				statusText: response.statusText,
-				headers: responseHeaders,
-			};
-			// The deadline stays armed until the body has been decoded, so a response
-			// stream that stalls mid-body fails instead of hanging the caller forever.
-		}).pipe(Effect.ensuring(Effect.sync(deadline.clear)));
-	});
-};
+		let decodedBody: T;
 
-/**
- * Perform an HTTP request through {@link httpRequestEffect}.
- *
- * @typeParam T - Shape of the decoded success body.
- * @param options - Fetch-native request options plus timeout and response decoding settings.
- * @returns Status, lowercased headers, and decoded response body.
- *
- * @example
- * ```ts
- * const resourceResponse = await httpRequest<{ id: string }>({ url: '/resource', baseUrl });
- * ```
- */
-export const httpRequest = async <T = unknown>(
+		try {
+			decodedBody = await decodeBody<T>(
+				response,
+				responseType,
+				options.maxBytes,
+			);
+		} catch (error) {
+			throw failure(error, "response body", response);
+		}
+
+		return {
+			data: decodedBody,
+			status: response.status,
+			statusText: response.statusText,
+			headers: responseHeaders,
+		};
+	} finally {
+		deadline.clear();
+	}
+}
+
+export async function httpRequest<T = unknown>(
 	options: HttpRequestOptions,
-): Promise<HttpResponse<T>> => {
-	const exit = await Effect.runPromiseExit(httpRequestEffect<T>(options));
-
-	if (Exit.isSuccess(exit)) {
-		return exit.value;
-	}
-
-	const failure = Cause.failureOption(exit.cause);
-	if (Option.isSome(failure)) {
-		throw failure.value;
-	}
-
-	throw new HttpError(Cause.pretty(exit.cause), { url: options.url });
-};
+): Promise<HttpResponse<T>> {
+	return httpRequestEffect<T>(options);
+}

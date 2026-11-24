@@ -1,5 +1,4 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Data, Effect } from "effect";
 import { registeredEntries } from "@/tool-registry/toolCategories.js";
 import type { ToolDefinition, ToolHandler } from "@/tool-registry/types.js";
 import type {
@@ -7,13 +6,26 @@ import type {
 	ViewModel,
 } from "@/tool-registry/ui/viewModels.js";
 
-/** Tagged failure returned when the tool registry cannot resolve a runnable tool. */
-export class ToolRegistryError extends Data.TaggedError("ToolRegistryError")<{
-	/** Human-readable registry failure message. */
-	readonly message: string;
+/** Tagged failure thrown when the tool registry cannot resolve a runnable tool. */
+export class ToolRegistryError extends Error {
+	readonly _tag = "ToolRegistryError";
 	/** Tool name involved in the failure, when a single lookup failed. */
 	readonly toolName?: string;
-}> {}
+
+	constructor(failure: {
+		readonly message: string;
+		readonly toolName?: string;
+	}) {
+		super(failure.message);
+		this.name = "ToolRegistryError";
+
+		const toolName = failure.toolName;
+		const hasToolName = toolName != null;
+		if (hasToolName) {
+			this.toolName = toolName;
+		}
+	}
+}
 
 /**
  * Interactive-UI binding resolved onto a {@link ToolEntry} when a tool opts into
@@ -103,7 +115,7 @@ export const validateToolRegistry = (
 	};
 };
 
-const validateRunnableRegistry = (): Effect.Effect<void, ToolRegistryError> => {
+const validateRunnableRegistry = (): void => {
 	const validation = validateToolRegistry();
 	const failures = [
 		validation.duplicateToolNames.length > 0
@@ -114,15 +126,12 @@ const validateRunnableRegistry = (): Effect.Effect<void, ToolRegistryError> => {
 			: undefined,
 	].filter(Boolean);
 
-	if (failures.length > 0) {
-		return Effect.fail(
-			new ToolRegistryError({
-				message: `Invalid tool registry: ${failures.join("; ")}`,
-			}),
-		);
+	const hasFailures = failures.length > 0;
+	if (hasFailures) {
+		throw new ToolRegistryError({
+			message: `Invalid tool registry: ${failures.join("; ")}`,
+		});
 	}
-
-	return Effect.void;
 };
 
 /**
@@ -140,7 +149,7 @@ export const getToolEntries = (): ToolEntry[] => {
 		return cachedEntries;
 	}
 
-	Effect.runSync(validateRunnableRegistry());
+	validateRunnableRegistry();
 	cachedEntries = registeredEntries;
 	return cachedEntries;
 };
@@ -189,22 +198,16 @@ export const executeTool = async (
 	api: Parameters<ToolHandler>[0],
 	toolName: string,
 	args: Parameters<ToolHandler>[1],
-): Promise<unknown> =>
-	Effect.runPromise(
-		Effect.gen(function* () {
-			const handler = getToolHandler(toolName);
-			if (!handler) {
-				return yield* Effect.fail(
-					new ToolRegistryError({
-						message: `Unknown tool: ${toolName}`,
-						toolName,
-					}),
-				);
-			}
+): Promise<unknown> => {
+	const handler = getToolHandler(toolName);
 
-			return yield* Effect.tryPromise({
-				try: async () => handler(api, args),
-				catch: (error) => error,
-			});
-		}),
-	);
+	const isUnknownTool = handler == null;
+	if (isUnknownTool) {
+		throw new ToolRegistryError({
+			message: `Unknown tool: ${toolName}`,
+			toolName,
+		});
+	}
+
+	return await handler(api, args);
+};

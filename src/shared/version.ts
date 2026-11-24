@@ -1,4 +1,3 @@
-import { Effect, Either } from "effect";
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import updateNotifier from "update-notifier";
@@ -42,18 +41,15 @@ export const getPackageJson = (): PackageJson => {
 		return cachedPackageJson;
 	}
 
-	const loaded = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () =>
-					JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf-8")) as unknown,
-				catch: (error) => error,
-			}),
-		),
-	);
+	let loaded: unknown = null;
+	try {
+		loaded = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf-8")) as unknown;
+	} catch {
+		loaded = null;
+	}
 
-	if (Either.isRight(loaded) && isPackageJson(loaded.right)) {
-		cachedPackageJson = loaded.right;
+	if (isPackageJson(loaded)) {
+		cachedPackageJson = loaded;
 		return cachedPackageJson;
 	}
 
@@ -186,4 +182,6 @@ export const getUpdateInfo = async (): Promise<
 			name: pkg.name,
 		};
 	}
+
+	return undefined;
 };

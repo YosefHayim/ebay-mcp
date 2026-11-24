@@ -1,9 +1,6 @@
-import { Effect } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	requestDeleteEffect,
@@ -129,27 +126,24 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/getInventoryLocation
 	 */
-	getInventoryLocation: (
+	getInventoryLocation: async (
 		input: MerchantLocationKeyInput,
-	): Effect.Effect<
-		GetInventoryLocationResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetInventoryLocationResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<MerchantLocationKeyInput>(input, "input");
-			const merchantLocationKey = yield* requireStringEffect(
-				validatedInput.merchantLocationKey,
-				"merchantLocationKey",
-			);
+		const validatedInput = requireObjectEffect<MerchantLocationKeyInput>(
+			input,
+			"input",
+		);
+		const merchantLocationKey = requireStringEffect(
+			validatedInput.merchantLocationKey,
+			"merchantLocationKey",
+		);
 
-			return yield* requestGetEffect<GetInventoryLocationResponse>(
-				client,
-				`${basePath}/location/${merchantLocationKey}`,
-			);
-		});
+		return requestGetEffect<GetInventoryLocationResponse>(
+			client,
+			`${basePath}/location/${merchantLocationKey}`,
+		);
 	},
 
 	/**
@@ -167,36 +161,30 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/createInventoryLocation
 	 */
-	createInventoryLocation: (
+	createInventoryLocation: async (
 		input: CreateInventoryLocationInput,
-	): Effect.Effect<
-		CreateInventoryLocationResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<CreateInventoryLocationResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<CreateInventoryLocationInput>(
-					input,
-					"input",
-				);
-			const merchantLocationKey = yield* requireStringEffect(
-				validatedInput.merchantLocationKey,
-				"merchantLocationKey",
+		const validatedInput = requireObjectEffect<CreateInventoryLocationInput>(
+			input,
+			"input",
+		);
+		const merchantLocationKey = requireStringEffect(
+			validatedInput.merchantLocationKey,
+			"merchantLocationKey",
+		);
+		const inventoryLocation =
+			requireObjectEffect<CreateInventoryLocationRequest>(
+				validatedInput.body,
+				"body",
 			);
-			const inventoryLocation =
-				yield* requireObjectEffect<CreateInventoryLocationRequest>(
-					validatedInput.body,
-					"body",
-				);
 
-			return yield* requestPostEffect<CreateInventoryLocationResponse>(
-				client,
-				`${basePath}/location/${merchantLocationKey}`,
-				inventoryLocation,
-			);
-		});
+		return requestPostEffect<CreateInventoryLocationResponse>(
+			client,
+			`${basePath}/location/${merchantLocationKey}`,
+			inventoryLocation,
+		);
 	},
 
 	/**
@@ -214,27 +202,24 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/deleteInventoryLocation
 	 */
-	deleteInventoryLocation: (
+	deleteInventoryLocation: async (
 		input: MerchantLocationKeyInput,
-	): Effect.Effect<
-		DeleteInventoryLocationResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<DeleteInventoryLocationResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<MerchantLocationKeyInput>(input, "input");
-			const merchantLocationKey = yield* requireStringEffect(
-				validatedInput.merchantLocationKey,
-				"merchantLocationKey",
-			);
+		const validatedInput = requireObjectEffect<MerchantLocationKeyInput>(
+			input,
+			"input",
+		);
+		const merchantLocationKey = requireStringEffect(
+			validatedInput.merchantLocationKey,
+			"merchantLocationKey",
+		);
 
-			return yield* requestDeleteEffect<DeleteInventoryLocationResponse>(
-				client,
-				`${basePath}/location/${merchantLocationKey}`,
-			);
-		});
+		return requestDeleteEffect<DeleteInventoryLocationResponse>(
+			client,
+			`${basePath}/location/${merchantLocationKey}`,
+		);
 	},
 
 	/**
@@ -252,27 +237,24 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/disableInventoryLocation
 	 */
-	disableInventoryLocation: (
+	disableInventoryLocation: async (
 		input: MerchantLocationKeyInput,
-	): Effect.Effect<
-		DisableInventoryLocationResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<DisableInventoryLocationResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<MerchantLocationKeyInput>(input, "input");
-			const merchantLocationKey = yield* requireStringEffect(
-				validatedInput.merchantLocationKey,
-				"merchantLocationKey",
-			);
+		const validatedInput = requireObjectEffect<MerchantLocationKeyInput>(
+			input,
+			"input",
+		);
+		const merchantLocationKey = requireStringEffect(
+			validatedInput.merchantLocationKey,
+			"merchantLocationKey",
+		);
 
-			return yield* requestPostEffect<DisableInventoryLocationResponse>(
-				client,
-				`${basePath}/location/${merchantLocationKey}/disable`,
-			);
-		});
+		return requestPostEffect<DisableInventoryLocationResponse>(
+			client,
+			`${basePath}/location/${merchantLocationKey}/disable`,
+		);
 	},
 
 	/**
@@ -290,27 +272,24 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/enableInventoryLocation
 	 */
-	enableInventoryLocation: (
+	enableInventoryLocation: async (
 		input: MerchantLocationKeyInput,
-	): Effect.Effect<
-		EnableInventoryLocationResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<EnableInventoryLocationResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<MerchantLocationKeyInput>(input, "input");
-			const merchantLocationKey = yield* requireStringEffect(
-				validatedInput.merchantLocationKey,
-				"merchantLocationKey",
-			);
+		const validatedInput = requireObjectEffect<MerchantLocationKeyInput>(
+			input,
+			"input",
+		);
+		const merchantLocationKey = requireStringEffect(
+			validatedInput.merchantLocationKey,
+			"merchantLocationKey",
+		);
 
-			return yield* requestPostEffect<EnableInventoryLocationResponse>(
-				client,
-				`${basePath}/location/${merchantLocationKey}/enable`,
-			);
-		});
+		return requestPostEffect<EnableInventoryLocationResponse>(
+			client,
+			`${basePath}/location/${merchantLocationKey}/enable`,
+		);
 	},
 
 	/**
@@ -326,42 +305,36 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/getInventoryLocations
 	 */
-	getInventoryLocations: (
+	getInventoryLocations: async (
 		input: InventoryPaginationInput = {},
-	): Effect.Effect<
-		GetInventoryLocationsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetInventoryLocationsResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/location`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<InventoryPaginationInput>(input, "input");
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const params = buildEndpointParams({
-				limit: {
-					wireName: "limit",
-					value: limit === undefined ? undefined : String(limit),
-				},
-				offset: {
-					wireName: "offset",
-					value: offset === undefined ? undefined : String(offset),
-				},
-			});
-
-			return yield* requestGetEffect<GetInventoryLocationsResponse>(
-				client,
-				path,
-				params,
-			);
+		const validatedInput = requireObjectEffect<InventoryPaginationInput>(
+			input,
+			"input",
+		);
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const params = buildEndpointParams({
+			limit: {
+				wireName: "limit",
+				value: limit === undefined ? undefined : String(limit),
+			},
+			offset: {
+				wireName: "offset",
+				value: offset === undefined ? undefined : String(offset),
+			},
 		});
+
+		return requestGetEffect<GetInventoryLocationsResponse>(
+			client,
+			path,
+			params,
+		);
 	},
 
 	/**
@@ -379,35 +352,29 @@ export const createInventoryLocationsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/location/methods/updateInventoryLocation
 	 */
-	updateInventoryLocation: (
+	updateInventoryLocation: async (
 		input: UpdateInventoryLocationInput,
-	): Effect.Effect<
-		UpdateInventoryLocationResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<UpdateInventoryLocationResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<UpdateInventoryLocationInput>(
-					input,
-					"input",
-				);
-			const merchantLocationKey = yield* requireStringEffect(
-				validatedInput.merchantLocationKey,
-				"merchantLocationKey",
+		const validatedInput = requireObjectEffect<UpdateInventoryLocationInput>(
+			input,
+			"input",
+		);
+		const merchantLocationKey = requireStringEffect(
+			validatedInput.merchantLocationKey,
+			"merchantLocationKey",
+		);
+		const inventoryLocationUpdate =
+			requireObjectEffect<UpdateInventoryLocationRequest>(
+				validatedInput.body,
+				"body",
 			);
-			const inventoryLocationUpdate =
-				yield* requireObjectEffect<UpdateInventoryLocationRequest>(
-					validatedInput.body,
-					"body",
-				);
 
-			return yield* requestPostEffect<UpdateInventoryLocationResponse>(
-				client,
-				`${basePath}/location/${merchantLocationKey}/update_location_details`,
-				inventoryLocationUpdate,
-			);
-		});
+		return requestPostEffect<UpdateInventoryLocationResponse>(
+			client,
+			`${basePath}/location/${merchantLocationKey}/update_location_details`,
+			inventoryLocationUpdate,
+		);
 	},
 });

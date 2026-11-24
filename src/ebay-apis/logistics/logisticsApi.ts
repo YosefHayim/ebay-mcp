@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	createFromShippingQuoteInputSchema,
@@ -8,7 +7,6 @@ import type {
 } from "@/ebay-apis/logistics/logisticsSchemas.js";
 import {
 	type DownloadedFile,
-	type DownloadTooLargeError,
 	requestDownloadEffect,
 } from "@/ebay-client/download.js";
 import type {
@@ -16,8 +14,6 @@ import type {
 	EbayRequestConfig,
 } from "@/ebay-client/ebayApiClient.js";
 import {
-	type EbayApiError,
-	type EndpointInputError,
 	optionalStringEffect,
 	requestGetEffect,
 	requestPostEffect,
@@ -79,87 +75,71 @@ export class LogisticsApi {
 	 * Creates a shipping quote with live USPS rates for one package.
 	 *
 	 * @param input - Generated ShippingQuoteRequest body plus optional marketplace header override.
-	 * @returns An Effect that succeeds with eBay's generated ShippingQuote, including its rates.
+	 * @returns eBay's generated ShippingQuote, including its rates.
 	 *
 	 * @example
 	 * ```ts
-	 * const quote = await Effect.runPromise(
-	 *   logisticsApi.createShippingQuote({ shippingQuoteRequest, marketplaceId: 'EBAY_US' }),
-	 * );
+	 * const quote = await logisticsApi.createShippingQuote({
+	 *   shippingQuoteRequest,
+	 *   marketplaceId: 'EBAY_US',
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipping_quote/methods/createShippingQuote
 	 */
-	public createShippingQuote = (
+	public createShippingQuote = async (
 		input: CreateShippingQuoteInput,
-	): Effect.Effect<
-		ShippingQuoteResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const path = `${this.basePath}/shipping_quote`;
+	): Promise<ShippingQuoteResponse> => {
+		const endpointInput = requireObjectEffect<CreateShippingQuoteInput>(
+			input,
+			"input",
+		);
+		const shippingQuoteRequest = requireObjectEffect<ShippingQuoteRequest>(
+			endpointInput.shippingQuoteRequest,
+			"shippingQuoteRequest",
+		);
+		const marketplaceId = optionalStringEffect(
+			endpointInput.marketplaceId,
+			"marketplaceId",
+		);
 
-		return Effect.gen(function* () {
-			const endpointInput =
-				yield* requireObjectEffect<CreateShippingQuoteInput>(input, "input");
-			const shippingQuoteRequest =
-				yield* requireObjectEffect<ShippingQuoteRequest>(
-					endpointInput.shippingQuoteRequest,
-					"shippingQuoteRequest",
-				);
-			const marketplaceId = yield* optionalStringEffect(
-				endpointInput.marketplaceId,
-				"marketplaceId",
-			);
-
-			return yield* requestPostEffect<ShippingQuoteResponse>(
-				client,
-				path,
-				shippingQuoteRequest,
-				marketplaceConfig(marketplaceId),
-			);
-		});
+		return requestPostEffect<ShippingQuoteResponse>(
+			this.client,
+			`${this.basePath}/shipping_quote`,
+			shippingQuoteRequest,
+			marketplaceConfig(marketplaceId),
+		);
 	};
 
 	/**
 	 * Retrieves a shipping quote and its rates by ID.
 	 *
 	 * @param input - Shipping quote identifier returned by createShippingQuote.
-	 * @returns An Effect that succeeds with eBay's generated ShippingQuote.
+	 * @returns eBay's generated ShippingQuote.
 	 *
 	 * @example
 	 * ```ts
-	 * const quote = await Effect.runPromise(
-	 *   logisticsApi.getShippingQuote({ shippingQuoteId: 'QUOTE-1' }),
-	 * );
+	 * const quote = await logisticsApi.getShippingQuote({ shippingQuoteId: 'QUOTE-1' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipping_quote/methods/getShippingQuote
 	 */
-	public getShippingQuote = (
+	public getShippingQuote = async (
 		input: ShippingQuoteIdInput,
-	): Effect.Effect<
-		ShippingQuoteResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.client;
-		const basePath = this.basePath;
+	): Promise<ShippingQuoteResponse> => {
+		const endpointInput = requireObjectEffect<ShippingQuoteIdInput>(
+			input,
+			"input",
+		);
+		const shippingQuoteId = requireStringEffect(
+			endpointInput.shippingQuoteId,
+			"shippingQuoteId",
+		);
 
-		return Effect.gen(function* () {
-			const endpointInput = yield* requireObjectEffect<ShippingQuoteIdInput>(
-				input,
-				"input",
-			);
-			const shippingQuoteId = yield* requireStringEffect(
-				endpointInput.shippingQuoteId,
-				"shippingQuoteId",
-			);
-
-			return yield* requestGetEffect<ShippingQuoteResponse>(
-				client,
-				`${basePath}/shipping_quote/${encodeURIComponent(shippingQuoteId)}`,
-			);
-		});
+		return requestGetEffect<ShippingQuoteResponse>(
+			this.client,
+			`${this.basePath}/shipping_quote/${encodeURIComponent(shippingQuoteId)}`,
+		);
 	};
 
 	/**
@@ -167,78 +147,65 @@ export class LogisticsApi {
 	 * seller's billing agreement is charged the rate's base cost plus any added options.
 	 *
 	 * @param input - Generated CreateShipmentFromQuoteRequest body plus optional marketplace header.
-	 * @returns An Effect that succeeds with eBay's generated Shipment, including its shipmentId.
+	 * @returns eBay's generated Shipment, including its shipmentId.
 	 *
 	 * @example
 	 * ```ts
-	 * const shipment = await Effect.runPromise(
-	 *   logisticsApi.createFromShippingQuote({
-	 *     shipmentRequest: { shippingQuoteId: 'QUOTE-1', rateId: 'RATE-1' },
-	 *   }),
-	 * );
+	 * const shipment = await logisticsApi.createFromShippingQuote({
+	 *   shipmentRequest: { shippingQuoteId: 'QUOTE-1', rateId: 'RATE-1' },
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/createFromShippingQuote
 	 */
-	public createFromShippingQuote = (
+	public createFromShippingQuote = async (
 		input: CreateFromShippingQuoteInput,
-	): Effect.Effect<ShipmentResponse, EbayApiError | EndpointInputError> => {
-		const client = this.client;
-		const path = `${this.basePath}/shipment/create_from_shipping_quote`;
+	): Promise<ShipmentResponse> => {
+		const endpointInput = requireObjectEffect<CreateFromShippingQuoteInput>(
+			input,
+			"input",
+		);
+		const shipmentRequest = requireObjectEffect<CreateShipmentFromQuoteRequest>(
+			endpointInput.shipmentRequest,
+			"shipmentRequest",
+		);
+		requireStringEffect(
+			shipmentRequest.shippingQuoteId,
+			"shipmentRequest.shippingQuoteId",
+		);
+		requireStringEffect(shipmentRequest.rateId, "shipmentRequest.rateId");
+		const marketplaceId = optionalStringEffect(
+			endpointInput.marketplaceId,
+			"marketplaceId",
+		);
 
-		return Effect.gen(function* () {
-			const endpointInput =
-				yield* requireObjectEffect<CreateFromShippingQuoteInput>(
-					input,
-					"input",
-				);
-			const shipmentRequest =
-				yield* requireObjectEffect<CreateShipmentFromQuoteRequest>(
-					endpointInput.shipmentRequest,
-					"shipmentRequest",
-				);
-			yield* requireStringEffect(
-				shipmentRequest.shippingQuoteId,
-				"shipmentRequest.shippingQuoteId",
-			);
-			yield* requireStringEffect(
-				shipmentRequest.rateId,
-				"shipmentRequest.rateId",
-			);
-			const marketplaceId = yield* optionalStringEffect(
-				endpointInput.marketplaceId,
-				"marketplaceId",
-			);
-
-			return yield* requestPostEffect<ShipmentResponse>(
-				client,
-				path,
-				shipmentRequest,
-				marketplaceConfig(marketplaceId),
-			);
-		});
+		return requestPostEffect<ShipmentResponse>(
+			this.client,
+			`${this.basePath}/shipment/create_from_shipping_quote`,
+			shipmentRequest,
+			marketplaceConfig(marketplaceId),
+		);
 	};
 
 	/**
 	 * Retrieves a shipment by ID.
 	 *
 	 * @param input - Shipment identifier returned by createFromShippingQuote.
-	 * @returns An Effect that succeeds with eBay's generated Shipment.
+	 * @returns eBay's generated Shipment.
 	 *
 	 * @example
 	 * ```ts
-	 * const shipment = await Effect.runPromise(logisticsApi.getShipment({ shipmentId: 'SHIP-1' }));
+	 * const shipment = await logisticsApi.getShipment({ shipmentId: 'SHIP-1' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/getShipment
 	 */
-	public getShipment = (
+	public getShipment = async (
 		input: ShipmentIdInput,
-	): Effect.Effect<ShipmentResponse, EbayApiError | EndpointInputError> =>
-		this.shipmentPath(input, "").pipe(
-			Effect.flatMap((path) =>
-				requestGetEffect<ShipmentResponse>(this.client, path),
-			),
+	): Promise<ShipmentResponse> =>
+		requestGetEffect<ShipmentResponse>(
+			this.client,
+			this.shipmentPath(input, ""),
 		);
 
 	/**
@@ -246,68 +213,58 @@ export class LogisticsApi {
 	 * A shipment whose label was already used cannot be canceled.
 	 *
 	 * @param input - Shipment identifier returned by createFromShippingQuote.
-	 * @returns An Effect that succeeds with eBay's generated Shipment and its cancellation status.
+	 * @returns eBay's generated Shipment and its cancellation status.
 	 *
 	 * @example
 	 * ```ts
-	 * const canceled = await Effect.runPromise(
-	 *   logisticsApi.cancelShipment({ shipmentId: 'SHIP-1' }),
-	 * );
+	 * const canceled = await logisticsApi.cancelShipment({ shipmentId: 'SHIP-1' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/cancelShipment
 	 */
-	public cancelShipment = (
+	public cancelShipment = async (
 		input: ShipmentIdInput,
-	): Effect.Effect<ShipmentResponse, EbayApiError | EndpointInputError> =>
-		this.shipmentPath(input, "/cancel").pipe(
-			Effect.flatMap((path) =>
-				requestPostEffect<ShipmentResponse>(this.client, path),
-			),
+	): Promise<ShipmentResponse> =>
+		requestPostEffect<ShipmentResponse>(
+			this.client,
+			this.shipmentPath(input, "/cancel"),
 		);
 
 	/**
 	 * Downloads the shipping label generated for a shipment as a PDF.
 	 *
 	 * @param input - Shipment identifier returned by createFromShippingQuote.
-	 * @returns An Effect that succeeds with the label bytes, content type, and file name; fails
-	 * with DownloadTooLargeError when the file is too large to return inline over MCP.
+	 * @returns The label bytes, content type, and file name.
+	 * @throws {DownloadTooLargeError} When the file is too large to return inline over MCP.
 	 *
 	 * @example
 	 * ```ts
-	 * const label = await Effect.runPromise(
-	 *   logisticsApi.downloadLabelFile({ shipmentId: 'SHIP-1' }),
-	 * );
+	 * const label = await logisticsApi.downloadLabelFile({ shipmentId: 'SHIP-1' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/downloadLabelFile
 	 */
-	public downloadLabelFile = (
+	public downloadLabelFile = async (
 		input: ShipmentIdInput,
-	): Effect.Effect<
-		DownloadedFile,
-		EbayApiError | EndpointInputError | DownloadTooLargeError
-	> =>
-		this.shipmentPath(input, "/download_label_file").pipe(
-			Effect.flatMap((path) =>
-				requestDownloadEffect(this.client, path, {
-					headers: { Accept: "application/pdf" },
-				}),
-			),
-		);
+	): Promise<DownloadedFile> => {
+		const path = this.shipmentPath(input, "/download_label_file");
+
+		return requestDownloadEffect(this.client, path, {
+			headers: { Accept: "application/pdf" },
+		});
+	};
 
 	/** Validates a shipment ID and builds its URL-encoded resource path plus `suffix`. */
 	private readonly shipmentPath = (
 		input: ShipmentIdInput,
 		suffix: string,
-	): Effect.Effect<string, EndpointInputError> =>
-		requireObjectEffect<ShipmentIdInput>(input, "input").pipe(
-			Effect.flatMap((endpointInput) =>
-				requireStringEffect(endpointInput.shipmentId, "shipmentId"),
-			),
-			Effect.map(
-				(shipmentId) =>
-					`${this.basePath}/shipment/${encodeURIComponent(shipmentId)}${suffix}`,
-			),
+	): string => {
+		const endpointInput = requireObjectEffect<ShipmentIdInput>(input, "input");
+		const shipmentId = requireStringEffect(
+			endpointInput.shipmentId,
+			"shipmentId",
 		);
+
+		return `${this.basePath}/shipment/${encodeURIComponent(shipmentId)}${suffix}`;
+	};
 }

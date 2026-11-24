@@ -1,9 +1,6 @@
-import { Effect } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	requestDeleteEffect,
@@ -13,10 +10,7 @@ import {
 	requireObjectEffect,
 	requireStringEffect,
 } from "@/ebay-client/request.js";
-import type {
-	components,
-	operations,
-} from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
+import type { components } from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
 import {
 	INVENTORY_BASE_PATH,
 	type InventoryPaginationInput,
@@ -39,7 +33,7 @@ export interface CreateOrReplaceInventoryItemInput {
 	 * client's configured language; pass the item's own locale when rewriting an
 	 * existing item so its localized fields stay attached to the right language.
 	 */
-	readonly contentLanguage?: string;
+	readonly contentLanguage?: string | undefined;
 }
 
 /** Input accepted by product compatibility write endpoints. */
@@ -159,12 +153,96 @@ export type BulkUpdatePriceQuantityResponse =
 export type GetInventoryItemResponse =
 	components["schemas"]["InventoryItemWithSkuLocaleGroupid"];
 
+/** How soon a warehouse can ship one inventory item. */
+interface InventoryFulfillmentTime {
+	readonly unit?: string | undefined;
+	readonly value?: number | undefined;
+}
+
+/** Quantity of one inventory item at one warehouse. */
+interface InventoryAvailabilityDistribution {
+	readonly fulfillmentTime?: InventoryFulfillmentTime | undefined;
+	readonly merchantLocationKey?: string | undefined;
+	readonly quantity?: number | undefined;
+}
+
+/** Ship-to-home quantity for one inventory item. */
+interface InventoryShipToAvailability {
+	readonly availabilityDistributions?:
+		| readonly InventoryAvailabilityDistribution[]
+		| undefined;
+	readonly quantity?: number | undefined;
+}
+
+/** Quantity available to ship or pick up. */
+interface InventoryAvailability {
+	readonly shipToLocationAvailability?: InventoryShipToAvailability | undefined;
+}
+
+/** Structured condition detail on an inventory item. */
+interface InventoryConditionDescriptor {
+	readonly name?: string | undefined;
+	readonly values?: readonly string[] | undefined;
+}
+
+/** Package length, width, and height. */
+interface InventoryPackageDimensions {
+	readonly height?: number | undefined;
+	readonly length?: number | undefined;
+	readonly unit?: string | undefined;
+	readonly width?: number | undefined;
+}
+
+/** Package weight. */
+interface InventoryPackageWeight {
+	readonly unit?: string | undefined;
+	readonly value?: number | undefined;
+}
+
+/** Shipping package size and weight. */
+interface InventoryPackageWeightAndSize {
+	readonly dimensions?: InventoryPackageDimensions | undefined;
+	readonly packageType?: string | undefined;
+	readonly weight?: InventoryPackageWeight | undefined;
+}
+
+/**
+ * Product fields on an inventory item.
+ * The generated OpenAPI type models `aspects` as a string; the wire value is a
+ * map of aspect name to values, which is what create and replace send.
+ */
+interface InventoryProduct {
+	readonly aspects?: string | Record<string, readonly string[]> | undefined;
+	readonly brand?: string | undefined;
+	readonly description?: string | undefined;
+	readonly ean?: readonly string[] | undefined;
+	readonly epid?: string | undefined;
+	readonly imageUrls?: readonly string[] | undefined;
+	readonly isbn?: readonly string[] | undefined;
+	readonly mpn?: string | undefined;
+	readonly subtitle?: string | undefined;
+	readonly title?: string | undefined;
+	readonly upc?: readonly string[] | undefined;
+	readonly videoIds?: readonly string[] | undefined;
+}
+
 /**
  * Request body accepted by createOrReplaceInventoryItem.
+ * Optional members may be undefined because callers pass parsed input through.
  *
  * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/createOrReplaceInventoryItem
  */
-export type InventoryItem = components["schemas"]["InventoryItem"];
+export interface InventoryItem {
+	readonly availability?: InventoryAvailability | undefined;
+	readonly condition?: string | undefined;
+	readonly conditionDescription?: string | undefined;
+	readonly conditionDescriptors?:
+		| readonly InventoryConditionDescriptor[]
+		| undefined;
+	readonly locale?: string | undefined;
+	readonly packageWeightAndSize?: InventoryPackageWeightAndSize | undefined;
+	readonly product?: InventoryProduct | undefined;
+}
 
 /**
  * Response returned by write endpoints that use BaseResponse.
@@ -267,42 +345,32 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/getInventoryItems
 	 */
-	getInventoryItems: (
+	getInventoryItems: async (
 		input: InventoryPaginationInput = {},
-	): Effect.Effect<
-		GetInventoryItemsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetInventoryItemsResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/inventory_item`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<InventoryPaginationInput>(input, "input");
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const params = buildEndpointParams({
-				limit: {
-					wireName: "limit",
-					value: limit === undefined ? undefined : String(limit),
-				},
-				offset: {
-					wireName: "offset",
-					value: offset === undefined ? undefined : String(offset),
-				},
-			});
-
-			return yield* requestGetEffect<GetInventoryItemsResponse>(
-				client,
-				path,
-				params,
-			);
+		const validatedInput = requireObjectEffect<InventoryPaginationInput>(
+			input,
+			"input",
+		);
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const params = buildEndpointParams({
+			limit: {
+				wireName: "limit",
+				value: limit === undefined ? undefined : String(limit),
+			},
+			offset: {
+				wireName: "offset",
+				value: offset === undefined ? undefined : String(offset),
+			},
 		});
+
+		return requestGetEffect<GetInventoryItemsResponse>(client, path, params);
 	},
 
 	/**
@@ -318,26 +386,18 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/getInventoryItem
 	 */
-	getInventoryItem: (
+	getInventoryItem: async (
 		input: SkuInput,
-	): Effect.Effect<
-		GetInventoryItemResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<GetInventoryItemResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<SkuInput>(
-				input,
-				"input",
-			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
+		const validatedInput = requireObjectEffect<SkuInput>(input, "input");
+		const sku = requireStringEffect(validatedInput.sku, "sku");
 
-			return yield* requestGetEffect<GetInventoryItemResponse>(
-				client,
-				`${basePath}/inventory_item/${sku}`,
-			);
-		});
+		return requestGetEffect<GetInventoryItemResponse>(
+			client,
+			`${basePath}/inventory_item/${sku}`,
+		);
 	},
 
 	/**
@@ -355,34 +415,29 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/createOrReplaceInventoryItem
 	 */
-	createOrReplaceInventoryItem: (
+	createOrReplaceInventoryItem: async (
 		input: CreateOrReplaceInventoryItemInput,
-	): Effect.Effect<BaseResponse, EbayApiError | EndpointInputError> => {
+	): Promise<BaseResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<CreateOrReplaceInventoryItemInput>(
-					input,
-					"input",
-				);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
-			const inventoryItem = yield* requireObjectEffect<InventoryItem>(
-				validatedInput.body,
-				"body",
-			);
-			const config =
-				validatedInput.contentLanguage === undefined
-					? undefined
-					: { headers: { "Content-Language": validatedInput.contentLanguage } };
+		const validatedInput =
+			requireObjectEffect<CreateOrReplaceInventoryItemInput>(input, "input");
+		const sku = requireStringEffect(validatedInput.sku, "sku");
+		const inventoryItem = requireObjectEffect<InventoryItem>(
+			validatedInput.body,
+			"body",
+		);
+		const config =
+			validatedInput.contentLanguage === undefined
+				? undefined
+				: { headers: { "Content-Language": validatedInput.contentLanguage } };
 
-			return yield* requestPutEffect<BaseResponse>(
-				client,
-				`${basePath}/inventory_item/${sku}`,
-				inventoryItem,
-				config,
-			);
-		});
+		return requestPutEffect<BaseResponse>(
+			client,
+			`${basePath}/inventory_item/${sku}`,
+			inventoryItem,
+			config,
+		);
 	},
 
 	/**
@@ -398,26 +453,18 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/deleteInventoryItem
 	 */
-	deleteInventoryItem: (
+	deleteInventoryItem: async (
 		input: SkuInput,
-	): Effect.Effect<
-		DeleteInventoryItemResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<DeleteInventoryItemResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<SkuInput>(
-				input,
-				"input",
-			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
+		const validatedInput = requireObjectEffect<SkuInput>(input, "input");
+		const sku = requireStringEffect(validatedInput.sku, "sku");
 
-			return yield* requestDeleteEffect<DeleteInventoryItemResponse>(
-				client,
-				`${basePath}/inventory_item/${sku}`,
-			);
-		});
+		return requestDeleteEffect<DeleteInventoryItemResponse>(
+			client,
+			`${basePath}/inventory_item/${sku}`,
+		);
 	},
 
 	/**
@@ -435,31 +482,26 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkCreateOrReplaceInventoryItem
 	 */
-	bulkCreateOrReplaceInventoryItem: (
+	bulkCreateOrReplaceInventoryItem: async (
 		input: BulkInventoryItemInput,
-	): Effect.Effect<
-		BulkCreateOrReplaceInventoryItemResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkCreateOrReplaceInventoryItemResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/bulk_create_or_replace_inventory_item`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<BulkInventoryItemInput>(
-				input,
-				"input",
+		const validatedInput = requireObjectEffect<BulkInventoryItemInput>(
+			input,
+			"input",
+		);
+		const bulkInventoryItemRequest =
+			requireObjectEffect<BulkCreateOrReplaceInventoryItemRequest>(
+				validatedInput.body,
+				"body",
 			);
-			const bulkInventoryItemRequest =
-				yield* requireObjectEffect<BulkCreateOrReplaceInventoryItemRequest>(
-					validatedInput.body,
-					"body",
-				);
 
-			return yield* requestPostEffect<BulkCreateOrReplaceInventoryItemResponse>(
-				client,
-				path,
-				bulkInventoryItemRequest,
-			);
-		});
+		return requestPostEffect<BulkCreateOrReplaceInventoryItemResponse>(
+			client,
+			path,
+			bulkInventoryItemRequest,
+		);
 	},
 
 	/**
@@ -477,29 +519,26 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkGetInventoryItem
 	 */
-	bulkGetInventoryItem: (
+	bulkGetInventoryItem: async (
 		input: BulkGetInventoryItemInput,
-	): Effect.Effect<
-		BulkGetInventoryItemResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkGetInventoryItemResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/bulk_get_inventory_item`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<BulkGetInventoryItemInput>(input, "input");
-			const bulkGetInventoryItemRequest =
-				yield* requireObjectEffect<BulkGetInventoryItemRequest>(
-					validatedInput.body,
-					"body",
-				);
-
-			return yield* requestPostEffect<BulkGetInventoryItemResponse>(
-				client,
-				path,
-				bulkGetInventoryItemRequest,
+		const validatedInput = requireObjectEffect<BulkGetInventoryItemInput>(
+			input,
+			"input",
+		);
+		const bulkGetInventoryItemRequest =
+			requireObjectEffect<BulkGetInventoryItemRequest>(
+				validatedInput.body,
+				"body",
 			);
-		});
+
+		return requestPostEffect<BulkGetInventoryItemResponse>(
+			client,
+			path,
+			bulkGetInventoryItemRequest,
+		);
 	},
 
 	/**
@@ -517,32 +556,26 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkUpdatePriceQuantity
 	 */
-	bulkUpdatePriceQuantity: (
+	bulkUpdatePriceQuantity: async (
 		input: BulkUpdatePriceQuantityInput,
-	): Effect.Effect<
-		BulkUpdatePriceQuantityResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkUpdatePriceQuantityResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/bulk_update_price_quantity`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<BulkUpdatePriceQuantityInput>(
-					input,
-					"input",
-				);
-			const bulkPriceQuantityRequest =
-				yield* requireObjectEffect<BulkUpdatePriceQuantityRequest>(
-					validatedInput.body,
-					"body",
-				);
-
-			return yield* requestPostEffect<BulkUpdatePriceQuantityResponse>(
-				client,
-				path,
-				bulkPriceQuantityRequest,
+		const validatedInput = requireObjectEffect<BulkUpdatePriceQuantityInput>(
+			input,
+			"input",
+		);
+		const bulkPriceQuantityRequest =
+			requireObjectEffect<BulkUpdatePriceQuantityRequest>(
+				validatedInput.body,
+				"body",
 			);
-		});
+
+		return requestPostEffect<BulkUpdatePriceQuantityResponse>(
+			client,
+			path,
+			bulkPriceQuantityRequest,
+		);
 	},
 
 	/**
@@ -560,23 +593,18 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/product_compatibility/methods/getProductCompatibility
 	 */
-	getProductCompatibility: (
+	getProductCompatibility: async (
 		input: SkuInput,
-	): Effect.Effect<ProductCompatibility, EbayApiError | EndpointInputError> => {
+	): Promise<ProductCompatibility> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<SkuInput>(
-				input,
-				"input",
-			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
+		const validatedInput = requireObjectEffect<SkuInput>(input, "input");
+		const sku = requireStringEffect(validatedInput.sku, "sku");
 
-			return yield* requestGetEffect<ProductCompatibility>(
-				client,
-				`${basePath}/inventory_item/${sku}/product_compatibility`,
-			);
-		});
+		return requestGetEffect<ProductCompatibility>(
+			client,
+			`${basePath}/inventory_item/${sku}/product_compatibility`,
+		);
 	},
 
 	/**
@@ -594,30 +622,27 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/product_compatibility/methods/createOrReplaceProductCompatibility
 	 */
-	createOrReplaceProductCompatibility: (
+	createOrReplaceProductCompatibility: async (
 		input: CreateOrReplaceProductCompatibilityInput,
-	): Effect.Effect<BaseResponse, EbayApiError | EndpointInputError> => {
+	): Promise<BaseResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<CreateOrReplaceProductCompatibilityInput>(
-					input,
-					"input",
-				);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
-			const productCompatibility =
-				yield* requireObjectEffect<ProductCompatibility>(
-					validatedInput.body,
-					"body",
-				);
-
-			return yield* requestPutEffect<BaseResponse>(
-				client,
-				`${basePath}/inventory_item/${sku}/product_compatibility`,
-				productCompatibility,
+		const validatedInput =
+			requireObjectEffect<CreateOrReplaceProductCompatibilityInput>(
+				input,
+				"input",
 			);
-		});
+		const sku = requireStringEffect(validatedInput.sku, "sku");
+		const productCompatibility = requireObjectEffect<ProductCompatibility>(
+			validatedInput.body,
+			"body",
+		);
+
+		return requestPutEffect<BaseResponse>(
+			client,
+			`${basePath}/inventory_item/${sku}/product_compatibility`,
+			productCompatibility,
+		);
 	},
 
 	/**
@@ -633,26 +658,18 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/product_compatibility/methods/deleteProductCompatibility
 	 */
-	deleteProductCompatibility: (
+	deleteProductCompatibility: async (
 		input: SkuInput,
-	): Effect.Effect<
-		DeleteProductCompatibilityResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<DeleteProductCompatibilityResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<SkuInput>(
-				input,
-				"input",
-			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
+		const validatedInput = requireObjectEffect<SkuInput>(input, "input");
+		const sku = requireStringEffect(validatedInput.sku, "sku");
 
-			return yield* requestDeleteEffect<DeleteProductCompatibilityResponse>(
-				client,
-				`${basePath}/inventory_item/${sku}/product_compatibility`,
-			);
-		});
+		return requestDeleteEffect<DeleteProductCompatibilityResponse>(
+			client,
+			`${basePath}/inventory_item/${sku}/product_compatibility`,
+		);
 	},
 
 	/**
@@ -670,24 +687,24 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item_group/methods/getInventoryItemGroup
 	 */
-	getInventoryItemGroup: (
+	getInventoryItemGroup: async (
 		input: InventoryItemGroupKeyInput,
-	): Effect.Effect<InventoryItemGroup, EbayApiError | EndpointInputError> => {
+	): Promise<InventoryItemGroup> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<InventoryItemGroupKeyInput>(input, "input");
-			const inventoryItemGroupKey = yield* requireStringEffect(
-				validatedInput.inventoryItemGroupKey,
-				"inventoryItemGroupKey",
-			);
+		const validatedInput = requireObjectEffect<InventoryItemGroupKeyInput>(
+			input,
+			"input",
+		);
+		const inventoryItemGroupKey = requireStringEffect(
+			validatedInput.inventoryItemGroupKey,
+			"inventoryItemGroupKey",
+		);
 
-			return yield* requestGetEffect<InventoryItemGroup>(
-				client,
-				`${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
-			);
-		});
+		return requestGetEffect<InventoryItemGroup>(
+			client,
+			`${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
+		);
 	},
 
 	/**
@@ -708,32 +725,30 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item_group/methods/createOrReplaceInventoryItemGroup
 	 */
-	createOrReplaceInventoryItemGroup: (
+	createOrReplaceInventoryItemGroup: async (
 		input: CreateOrReplaceInventoryItemGroupInput,
-	): Effect.Effect<BaseResponse, EbayApiError | EndpointInputError> => {
+	): Promise<BaseResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<CreateOrReplaceInventoryItemGroupInput>(
-					input,
-					"input",
-				);
-			const inventoryItemGroupKey = yield* requireStringEffect(
-				validatedInput.inventoryItemGroupKey,
-				"inventoryItemGroupKey",
+		const validatedInput =
+			requireObjectEffect<CreateOrReplaceInventoryItemGroupInput>(
+				input,
+				"input",
 			);
-			const inventoryItemGroup = yield* requireObjectEffect<InventoryItemGroup>(
-				validatedInput.body,
-				"body",
-			);
+		const inventoryItemGroupKey = requireStringEffect(
+			validatedInput.inventoryItemGroupKey,
+			"inventoryItemGroupKey",
+		);
+		const inventoryItemGroup = requireObjectEffect<InventoryItemGroup>(
+			validatedInput.body,
+			"body",
+		);
 
-			return yield* requestPutEffect<BaseResponse>(
-				client,
-				`${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
-				inventoryItemGroup,
-			);
-		});
+		return requestPutEffect<BaseResponse>(
+			client,
+			`${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
+			inventoryItemGroup,
+		);
 	},
 
 	/**
@@ -751,27 +766,24 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item_group/methods/deleteInventoryItemGroup
 	 */
-	deleteInventoryItemGroup: (
+	deleteInventoryItemGroup: async (
 		input: InventoryItemGroupKeyInput,
-	): Effect.Effect<
-		DeleteInventoryItemGroupResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<DeleteInventoryItemGroupResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<InventoryItemGroupKeyInput>(input, "input");
-			const inventoryItemGroupKey = yield* requireStringEffect(
-				validatedInput.inventoryItemGroupKey,
-				"inventoryItemGroupKey",
-			);
+		const validatedInput = requireObjectEffect<InventoryItemGroupKeyInput>(
+			input,
+			"input",
+		);
+		const inventoryItemGroupKey = requireStringEffect(
+			validatedInput.inventoryItemGroupKey,
+			"inventoryItemGroupKey",
+		);
 
-			return yield* requestDeleteEffect<DeleteInventoryItemGroupResponse>(
-				client,
-				`${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
-			);
-		});
+		return requestDeleteEffect<DeleteInventoryItemGroupResponse>(
+			client,
+			`${basePath}/inventory_item_group/${inventoryItemGroupKey}`,
+		);
 	},
 
 	/**
@@ -789,29 +801,26 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/inventory_item/methods/bulkMigrateListing
 	 */
-	bulkMigrateListing: (
+	bulkMigrateListing: async (
 		input: BulkMigrateListingInput,
-	): Effect.Effect<
-		BulkMigrateListingResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BulkMigrateListingResponse> => {
 		const path = `${INVENTORY_BASE_PATH}/bulk_migrate_listing`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<BulkMigrateListingInput>(input, "input");
-			const bulkMigrateListingRequest =
-				yield* requireObjectEffect<BulkMigrateListingRequest>(
-					validatedInput.body,
-					"body",
-				);
-
-			return yield* requestPostEffect<BulkMigrateListingResponse>(
-				client,
-				path,
-				bulkMigrateListingRequest,
+		const validatedInput = requireObjectEffect<BulkMigrateListingInput>(
+			input,
+			"input",
+		);
+		const bulkMigrateListingRequest =
+			requireObjectEffect<BulkMigrateListingRequest>(
+				validatedInput.body,
+				"body",
 			);
-		});
+
+		return requestPostEffect<BulkMigrateListingResponse>(
+			client,
+			path,
+			bulkMigrateListingRequest,
+		);
 	},
 
 	/**
@@ -829,25 +838,25 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/listing/methods/getSkuLocationMapping
 	 */
-	getSkuLocationMapping: (
+	getSkuLocationMapping: async (
 		input: SkuLocationMappingInput,
-	): Effect.Effect<LocationMapping, EbayApiError | EndpointInputError> => {
+	): Promise<LocationMapping> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<SkuLocationMappingInput>(input, "input");
-			const listingId = yield* requireStringEffect(
-				validatedInput.listingId,
-				"listingId",
-			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
+		const validatedInput = requireObjectEffect<SkuLocationMappingInput>(
+			input,
+			"input",
+		);
+		const listingId = requireStringEffect(
+			validatedInput.listingId,
+			"listingId",
+		);
+		const sku = requireStringEffect(validatedInput.sku, "sku");
 
-			return yield* requestGetEffect<LocationMapping>(
-				client,
-				`${basePath}/listing/${listingId}/sku/${sku}/locations`,
-			);
-		});
+		return requestGetEffect<LocationMapping>(
+			client,
+			`${basePath}/listing/${listingId}/sku/${sku}/locations`,
+		);
 	},
 
 	/**
@@ -869,36 +878,31 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/listing/methods/createOrReplaceSkuLocationMapping
 	 */
-	createOrReplaceSkuLocationMapping: (
+	createOrReplaceSkuLocationMapping: async (
 		input: CreateOrReplaceSkuLocationMappingInput,
-	): Effect.Effect<
-		CreateOrReplaceSkuLocationMappingResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<CreateOrReplaceSkuLocationMappingResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<CreateOrReplaceSkuLocationMappingInput>(
-					input,
-					"input",
-				);
-			const listingId = yield* requireStringEffect(
-				validatedInput.listingId,
-				"listingId",
+		const validatedInput =
+			requireObjectEffect<CreateOrReplaceSkuLocationMappingInput>(
+				input,
+				"input",
 			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
-			const locationMapping = yield* requireObjectEffect<LocationMapping>(
-				validatedInput.body,
-				"body",
-			);
+		const listingId = requireStringEffect(
+			validatedInput.listingId,
+			"listingId",
+		);
+		const sku = requireStringEffect(validatedInput.sku, "sku");
+		const locationMapping = requireObjectEffect<LocationMapping>(
+			validatedInput.body,
+			"body",
+		);
 
-			return yield* requestPutEffect<CreateOrReplaceSkuLocationMappingResponse>(
-				client,
-				`${basePath}/listing/${listingId}/sku/${sku}/locations`,
-				locationMapping,
-			);
-		});
+		return requestPutEffect<CreateOrReplaceSkuLocationMappingResponse>(
+			client,
+			`${basePath}/listing/${listingId}/sku/${sku}/locations`,
+			locationMapping,
+		);
 	},
 
 	/**
@@ -916,27 +920,24 @@ export const createInventoryItemsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/inventory/resources/listing/methods/deleteSkuLocationMapping
 	 */
-	deleteSkuLocationMapping: (
+	deleteSkuLocationMapping: async (
 		input: SkuLocationMappingInput,
-	): Effect.Effect<
-		DeleteSkuLocationMappingResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<DeleteSkuLocationMappingResponse> => {
 		const basePath = INVENTORY_BASE_PATH;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<SkuLocationMappingInput>(input, "input");
-			const listingId = yield* requireStringEffect(
-				validatedInput.listingId,
-				"listingId",
-			);
-			const sku = yield* requireStringEffect(validatedInput.sku, "sku");
+		const validatedInput = requireObjectEffect<SkuLocationMappingInput>(
+			input,
+			"input",
+		);
+		const listingId = requireStringEffect(
+			validatedInput.listingId,
+			"listingId",
+		);
+		const sku = requireStringEffect(validatedInput.sku, "sku");
 
-			return yield* requestDeleteEffect<DeleteSkuLocationMappingResponse>(
-				client,
-				`${basePath}/listing/${listingId}/sku/${sku}/locations`,
-			);
-		});
+		return requestDeleteEffect<DeleteSkuLocationMappingResponse>(
+			client,
+			`${basePath}/listing/${listingId}/sku/${sku}/locations`,
+		);
 	},
 });

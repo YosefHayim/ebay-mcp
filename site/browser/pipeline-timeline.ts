@@ -34,15 +34,15 @@ export const startPipelineTimeline = () => {
 
 	const runLoop = () => {
 		resetSteps();
-		pipeline.dataset.client = String(clientIndex);
+		pipeline.dataset["client"] = String(clientIndex);
 
 		for (const stepElement of stepElements) {
-			planAt(Number(stepElement.dataset.litAt), () =>
+			planAt(Number(stepElement.dataset["litAt"]), () =>
 				stepElement.classList.add("is-lit"),
 			);
 		}
 		for (const packetElement of packetElements) {
-			planAt(Number(packetElement.dataset.flyAt), () => {
+			planAt(Number(packetElement.dataset["flyAt"]), () => {
 				packetElement.classList.add("is-flying");
 				packetElement.addEventListener(
 					"animationend",

@@ -53,6 +53,19 @@ const mergeManagedBlock = (
  * const plan = planWrite(target, renderedContent);
  * ```
  */
+function attachPreviousContents(
+	plan: WritePlan,
+	previousContents: string | undefined,
+): WritePlan {
+	const isFileMissing = previousContents == null;
+
+	if (isFileMissing) {
+		return plan;
+	}
+
+	return { ...plan, previousContents };
+}
+
 export const planWrite = (
 	target: SkillTarget,
 	renderedContent: string,
@@ -72,7 +85,10 @@ export const planWrite = (
 		if (exists) {
 			action = nextContents === previousContents ? "unchanged" : "update";
 		}
-		return { target, action, nextContents, previousContents };
+		return attachPreviousContents(
+			{ target, action, nextContents },
+			previousContents,
+		);
 	}
 
 	// owned-file
@@ -80,15 +96,20 @@ export const planWrite = (
 		return { target, action: "create", nextContents: renderedContent };
 	}
 	if (!isOwnedByUs(previousContents ?? "", target.layer)) {
-		return {
-			target,
-			action: "skip-foreign",
-			nextContents: renderedContent,
+		return attachPreviousContents(
+			{
+				target,
+				action: "skip-foreign",
+				nextContents: renderedContent,
+			},
 			previousContents,
-		};
+		);
 	}
 	const action = previousContents === renderedContent ? "unchanged" : "update";
-	return { target, action, nextContents: renderedContent, previousContents };
+	return attachPreviousContents(
+		{ target, action, nextContents: renderedContent },
+		previousContents,
+	);
 };
 
 /** Outcome of applying a {@link WritePlan}. */

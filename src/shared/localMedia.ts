@@ -1,6 +1,5 @@
 import { readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
-import { Data, Effect } from "effect";
 import {
 	MEDIA_DIRS_ENV,
 	MEDIA_ROOT_ENV,
@@ -39,12 +38,17 @@ export interface LocalMediaFile {
 }
 
 /** Tagged failure for a media reference the server refuses to read. */
-export class LocalMediaError extends Data.TaggedError("LocalMediaError")<{
+export class LocalMediaError extends Error {
+	readonly _tag = "LocalMediaError" as const;
 	/** Reference exactly as the caller supplied it. */
 	readonly source: string;
-	/** Human-readable reason. */
-	readonly message: string;
-}> {}
+
+	constructor(failure: { readonly source: string; readonly message: string }) {
+		super(failure.message);
+		this.name = "LocalMediaError";
+		this.source = failure.source;
+	}
+}
 
 /** Largest image eBay Picture Services accepts. */
 export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -147,6 +151,8 @@ export const sniffMediaType = (bytes: Buffer): string | undefined => {
 		}
 		return brand === "qt" ? "video/quicktime" : "video/mp4";
 	}
+
+	return undefined;
 };
 
 const kindOf = (mimeType: string): LocalMediaKind =>
@@ -162,62 +168,57 @@ const isWithin = (target: string, dir: string): boolean =>
 const resolveReference = (
 	source: string,
 	access: MediaAccessConfig,
-): Effect.Effect<string, LocalMediaError> =>
-	Effect.gen(function* () {
-		if (source.startsWith(MEDIA_URI_PREFIX)) {
-			if (!access.mediaRoot) {
-				return yield* Effect.fail(
-					fail(
-						source,
-						`media:// references need ${MEDIA_ROOT_ENV} to point at the media directory`,
-					),
-				);
-			}
-			const relative = yield* Effect.try({
-				try: () => decodeURIComponent(source.slice(MEDIA_URI_PREFIX.length)),
-				catch: () =>
-					fail(source, "media:// reference contains invalid URI encoding"),
-			});
-			if (relative.length === 0) {
-				return yield* Effect.fail(
-					fail(source, "media:// reference has no path"),
-				);
-			}
-			return yield* Effect.succeed(path.resolve(access.mediaRoot, relative));
-		}
-		if (path.isAbsolute(source)) {
-			return yield* Effect.succeed(path.resolve(source));
-		}
-		return yield* Effect.fail(
-			fail(
+): string => {
+	if (source.startsWith(MEDIA_URI_PREFIX)) {
+		if (!access.mediaRoot) {
+			throw fail(
 				source,
-				"media references must be absolute paths or media://<relative-path> URIs",
-			),
-		);
-	});
-
-const realPathOf = (target: string): Effect.Effect<string | undefined> =>
-	Effect.tryPromise(() => realpath(target)).pipe(
-		Effect.orElseSucceed(() => undefined),
+				`media:// references need ${MEDIA_ROOT_ENV} to point at the media directory`,
+			);
+		}
+		let relative: string;
+		try {
+			relative = decodeURIComponent(source.slice(MEDIA_URI_PREFIX.length));
+		} catch {
+			throw fail(source, "media:// reference contains invalid URI encoding");
+		}
+		if (relative.length === 0) {
+			throw fail(source, "media:// reference has no path");
+		}
+		return path.resolve(access.mediaRoot, relative);
+	}
+	if (path.isAbsolute(source)) {
+		return path.resolve(source);
+	}
+	throw fail(
+		source,
+		"media references must be absolute paths or media://<relative-path> URIs",
 	);
+};
+
+const realPathOf = async (target: string): Promise<string | undefined> => {
+	try {
+		return await realpath(target);
+	} catch {
+		return undefined;
+	}
+};
 
 const expectedMimeType = (
 	source: string,
 	filePath: string,
 	kind: LocalMediaKind,
-): Effect.Effect<string, LocalMediaError> => {
+): string => {
 	const extension = path.extname(filePath).slice(1).toLowerCase();
 	const table: Readonly<Record<string, string>> = MEDIA_POLICIES[kind].types;
 	const mimeType = table[extension];
 	if (!mimeType) {
-		return Effect.fail(
-			fail(
-				source,
-				`unsupported ${kind} extension ".${extension}"; allowed: ${Object.keys(table).join(", ")}`,
-			),
+		throw fail(
+			source,
+			`unsupported ${kind} extension ".${extension}"; allowed: ${Object.keys(table).join(", ")}`,
 		);
 	}
-	return Effect.succeed(mimeType);
+	return mimeType;
 };
 
 /** HEIC and AVIF share the ISO-BMFF container; the major brand does not always match the extension. */
@@ -252,91 +253,86 @@ const mediaSignatureProblem = (
  * @param source - Absolute path or `media://` reference.
  * @param kind - Upload policy: image, video, listing document, post-order document or feed file.
  * @param access - Parsed allowlist from {@link getMediaAccessConfig}.
- * @returns An Effect that succeeds with the validated file (contents included) or fails with `LocalMediaError`.
+ * @returns The validated file, including its contents.
  *
  * @example
  * ```ts
- * const image = await Effect.runPromise(loadLocalMedia('/srv/media/front.jpg', 'image', access));
+ * const image = await loadLocalMedia('/srv/media/front.jpg', 'image', access);
  * ```
  */
-export const loadLocalMedia = (
+export const loadLocalMedia = async (
 	source: string,
 	kind: LocalMediaKind,
 	access: MediaAccessConfig,
-): Effect.Effect<LocalMediaFile, LocalMediaError> =>
-	Effect.gen(function* () {
-		if (access.allowedDirs.length === 0) {
-			return yield* Effect.fail(
-				fail(
-					source,
-					`local media access is disabled; set ${MEDIA_DIRS_ENV} (path-delimited directories) or ${MEDIA_ROOT_ENV} to the directories this server may read`,
-				),
-			);
-		}
-		const candidate = yield* resolveReference(source, access);
-		const realFilePath = yield* realPathOf(candidate);
-		if (!realFilePath) {
-			return yield* Effect.fail(fail(source, `file not found: ${candidate}`));
-		}
-		const allowedRealDirs = yield* Effect.forEach(access.allowedDirs, (dir) =>
-			realPathOf(dir).pipe(Effect.map((real) => real ?? dir)),
-		);
-		if (!allowedRealDirs.some((dir) => isWithin(realFilePath, dir))) {
-			return yield* Effect.fail(
-				fail(
-					source,
-					`resolves to ${realFilePath}, outside the allowed media directories`,
-				),
-			);
-		}
-		const stats = yield* Effect.tryPromise({
-			try: () => stat(realFilePath),
-			catch: () => fail(source, `cannot read ${realFilePath}`),
-		});
-		if (!stats.isFile()) {
-			return yield* Effect.fail(
-				fail(source, `${realFilePath} is not a regular file`),
-			);
-		}
-		const mimeType = yield* expectedMimeType(source, realFilePath, kind);
-		const limit = MEDIA_POLICIES[kind].limit;
-		if (stats.size > limit) {
-			return yield* Effect.fail(
-				fail(
-					source,
-					`${stats.size} bytes exceeds eBay's ${kind} limit of ${limit} bytes`,
-				),
-			);
-		}
-		if (stats.size === 0) {
-			return yield* Effect.fail(fail(source, "file is empty"));
-		}
-		const bytes = yield* Effect.tryPromise({
-			try: () => readFile(realFilePath),
-			catch: () => fail(source, `cannot read ${realFilePath}`),
-		});
-		if (bytes.length === 0 || bytes.length > limit) {
-			return yield* Effect.fail(
-				fail(source, `file must contain 1 to ${limit} bytes`),
-			);
-		}
-		const contentProblem =
-			kind === "feedFile"
-				? feedFileProblem(bytes, mimeType)
-				: mediaSignatureProblem(bytes, mimeType);
-		if (contentProblem) {
-			return yield* Effect.fail(fail(source, contentProblem));
-		}
-		return {
+): Promise<LocalMediaFile> => {
+	if (access.allowedDirs.length === 0) {
+		throw fail(
 			source,
-			path: realFilePath,
-			fileName: path.basename(realFilePath),
-			mimeType,
-			size: bytes.length,
-			kind,
-			bytes,
-		};
-	});
+			`local media access is disabled; set ${MEDIA_DIRS_ENV} (path-delimited directories) or ${MEDIA_ROOT_ENV} to the directories this server may read`,
+		);
+	}
+	const candidate = resolveReference(source, access);
+	const realFilePath = await realPathOf(candidate);
+	if (!realFilePath) {
+		throw fail(source, `file not found: ${candidate}`);
+	}
+	const allowedRealDirs: string[] = [];
+	for (const dir of access.allowedDirs) {
+		const realDir = await realPathOf(dir);
+		allowedRealDirs.push(realDir ?? dir);
+	}
+	if (!allowedRealDirs.some((dir) => isWithin(realFilePath, dir))) {
+		throw fail(
+			source,
+			`resolves to ${realFilePath}, outside the allowed media directories`,
+		);
+	}
+	let stats: Awaited<ReturnType<typeof stat>>;
+	try {
+		stats = await stat(realFilePath);
+	} catch {
+		throw fail(source, `cannot read ${realFilePath}`);
+	}
+	if (!stats.isFile()) {
+		throw fail(source, `${realFilePath} is not a regular file`);
+	}
+	const mimeType = expectedMimeType(source, realFilePath, kind);
+	const limit = MEDIA_POLICIES[kind].limit;
+	if (stats.size > limit) {
+		throw fail(
+			source,
+			`${stats.size} bytes exceeds eBay's ${kind} limit of ${limit} bytes`,
+		);
+	}
+	if (stats.size === 0) {
+		throw fail(source, "file is empty");
+	}
+	let bytes: Buffer;
+	try {
+		bytes = await readFile(realFilePath);
+	} catch {
+		throw fail(source, `cannot read ${realFilePath}`);
+	}
+	if (bytes.length === 0 || bytes.length > limit) {
+		throw fail(source, `file must contain 1 to ${limit} bytes`);
+	}
+	const contentProblem =
+		kind === "feedFile"
+			? feedFileProblem(bytes, mimeType)
+			: mediaSignatureProblem(bytes, mimeType);
+	if (contentProblem) {
+		throw fail(source, contentProblem);
+	}
+	return {
+		source,
+		path: realFilePath,
+		fileName: path.basename(realFilePath),
+		mimeType,
+		size: bytes.length,
+		kind,
+		bytes,
+	};
+};
 
 /**
  * Loads several media references in order, failing on the first invalid one so
@@ -345,16 +341,22 @@ export const loadLocalMedia = (
  * @param sources - Absolute paths or `media://` references.
  * @param kind - Whether images or videos are expected.
  * @param access - Parsed allowlist from {@link getMediaAccessConfig}.
- * @returns An Effect with the validated files in input order.
+ * @returns The validated files in input order.
  *
  * @example
  * ```ts
- * const images = await Effect.runPromise(loadLocalMediaList(paths, 'image', access));
+ * const images = await loadLocalMediaList(paths, 'image', access);
  * ```
  */
-export const loadLocalMediaList = (
+export const loadLocalMediaList = async (
 	sources: readonly string[],
 	kind: LocalMediaKind,
 	access: MediaAccessConfig,
-): Effect.Effect<LocalMediaFile[], LocalMediaError> =>
-	Effect.forEach(sources, (source) => loadLocalMedia(source, kind, access));
+): Promise<LocalMediaFile[]> => {
+	const files: LocalMediaFile[] = [];
+	for (const source of sources) {
+		const file = await loadLocalMedia(source, kind, access);
+		files.push(file);
+	}
+	return files;
+};

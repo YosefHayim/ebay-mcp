@@ -3,14 +3,14 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { createToolCatalog, type ToolCatalog } from "./buildToolCatalog.js";
 
-/** Markers that wrap the generated tool family list in README.md and llms.txt. */
+/** Markers that wrap the generated tool family list in README.md. */
 export const TOOL_FAMILIES_START_MARKER = "<!-- tool-families:start -->";
 export const TOOL_FAMILIES_END_MARKER = "<!-- tool-families:end -->";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 
 /** Files that carry a generated tool family block, as paths from the repository root. */
-export const TOOL_FAMILY_DOCUMENTS = ["README.md", "llms.txt"] as const;
+export const TOOL_FAMILY_DOCUMENTS = ["README.md"] as const;
 
 /** Markdown table of every tool family: key, title, tool count and one example tool. */
 export function createReadmeToolTable(catalog: ToolCatalog): string {
@@ -24,16 +24,6 @@ export function createReadmeToolTable(catalog: ToolCatalog): string {
 		"| --- | --- | --- | --- |",
 		...rows,
 	].join("\n");
-}
-
-/** Bullet list of every tool family, for llms.txt. */
-export function createToolFamilyList(catalog: ToolCatalog): string {
-	return catalog.families
-		.map(
-			(family) =>
-				`- \`${family.key}\`: ${family.title}, ${family.toolCount} tools`,
-		)
-		.join("\n");
 }
 
 /** Returns the document with the text between the two markers replaced. */
@@ -58,9 +48,10 @@ export function createToolFamilyBlock(
 	documentName: string,
 	catalog: ToolCatalog,
 ): string {
-	return documentName === "README.md"
-		? createReadmeToolTable(catalog)
-		: createToolFamilyList(catalog);
+	const isReadme = documentName === "README.md";
+	if (!isReadme) throw new Error(`${documentName} has no tool family block`);
+
+	return createReadmeToolTable(catalog);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

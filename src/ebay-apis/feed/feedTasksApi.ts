@@ -1,10 +1,10 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import {
 	createFeedTaskInputSchema,
 	feedTaskIdInputSchema,
 	getFeedTasksInputSchema,
 } from "@/ebay-apis/feed/feedSchemas.js";
+import type { DownloadedFile } from "@/ebay-client/download.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	decodeEndpointInputEffect,
@@ -19,6 +19,7 @@ import type {
 } from "@/ebay-openapi-types/sellFeedV1Oas3.js";
 import type { MediaUpload } from "../inventory/mediaApi.js";
 import {
+	type CreatedFeedTask,
 	downloadFeedFile,
 	exclusiveFeedFilters,
 	FEED_BASE_PATH,
@@ -62,7 +63,7 @@ export type UploadFeedFileResponse =
  * Creates the Feed API `task` resource endpoints: upload and download tasks without filter
  * criteria, their input/result files, and feed file uploads.
  * @param client - Shared authenticated HTTP client.
- * @returns Endpoint Effects composed into FeedApi.
+ * @returns Endpoint methods composed into FeedApi.
  */
 export const createFeedTaskMethods = (client: EbayApiClient) => {
 	/**
@@ -72,17 +73,21 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getTasks({ feedType: 'LMS_ORDER_ACK', lookBackDays: 7 })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getTasks
 	 */
-	const getTasks = (input: GetFeedTasksInput = {}) =>
-		decodeEndpointInputEffect(getFeedTasksInputSchema, input).pipe(
-			Effect.flatMap(exclusiveFeedFilters),
-			Effect.flatMap((query) =>
-				requestGetEffect<FeedTaskCollection>(
-					client,
-					`${FEED_BASE_PATH}/task`,
-					feedListParams(query),
-				),
-			),
+	const getTasks = async (
+		input: GetFeedTasksInput = {},
+	): Promise<FeedTaskCollection> => {
+		const parsedInput = decodeEndpointInputEffect(
+			getFeedTasksInputSchema,
+			input,
 		);
+		const query = exclusiveFeedFilters(parsedInput);
+
+		return requestGetEffect<FeedTaskCollection>(
+			client,
+			`${FEED_BASE_PATH}/task`,
+			feedListParams(query),
+		);
+	};
 
 	/**
 	 * Creates an upload or download task for a feed type; eBay answers 202 with only a Location.
@@ -91,20 +96,26 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.createTask({ task: { feedType: 'LMS_ADD_FIXED_PRICE_ITEM', schemaVersion: '1423' } })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/createTask
 	 */
-	const createTask = (input: CreateFeedTaskInput) =>
-		Effect.gen(function* () {
-			const { task, marketplaceId, acceptLanguage } =
-				yield* decodeEndpointInputEffect(createFeedTaskInputSchema, input);
-			const taskRequest: CreateTaskRequest = task;
-			const headers: Record<string, string> = {};
-			if (marketplaceId) {
-				headers["X-EBAY-C-MARKETPLACE-ID"] = marketplaceId;
-			}
-			if (acceptLanguage) {
-				headers["Accept-Language"] = acceptLanguage;
-			}
-			return yield* postFeedTask(client, "/task", taskRequest, headers);
-		});
+	const createTask = async (
+		input: CreateFeedTaskInput,
+	): Promise<CreatedFeedTask> => {
+		const { task, marketplaceId, acceptLanguage } = decodeEndpointInputEffect(
+			createFeedTaskInputSchema,
+			input,
+		);
+		const taskRequest: CreateTaskRequest = task;
+		const headers: Record<string, string> = {};
+
+		if (marketplaceId !== undefined) {
+			headers["X-EBAY-C-MARKETPLACE-ID"] = marketplaceId;
+		}
+
+		if (acceptLanguage !== undefined) {
+			headers["Accept-Language"] = acceptLanguage;
+		}
+
+		return postFeedTask(client, "/task", taskRequest, headers);
+	};
 
 	/**
 	 * Retrieves a feed task's status and upload summary.
@@ -113,12 +124,14 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getTask({ taskId: 'TASK-1' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getTask
 	 */
-	const getTask = (input: FeedTaskIdInput) =>
-		decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
-			Effect.flatMap(({ taskId }) =>
-				requestGetEffect<FeedTask>(client, feedResourcePath("/task", taskId)),
-			),
+	const getTask = async (input: FeedTaskIdInput): Promise<FeedTask> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+
+		return requestGetEffect<FeedTask>(
+			client,
+			feedResourcePath("/task", taskId),
 		);
+	};
 
 	/**
 	 * Downloads the file previously uploaded to a task (not for LMS_ORDER_REPORT or
@@ -128,15 +141,16 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getInputFile({ taskId: 'TASK-1' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getInputFile
 	 */
-	const getInputFile = (input: FeedTaskIdInput) =>
-		decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
-			Effect.flatMap(({ taskId }) =>
-				downloadFeedFile(
-					client,
-					feedResourcePath("/task", taskId, "/download_input_file"),
-				),
-			),
+	const getInputFile = async (
+		input: FeedTaskIdInput,
+	): Promise<DownloadedFile> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+
+		return downloadFeedFile(
+			client,
+			feedResourcePath("/task", taskId, "/download_input_file"),
 		);
+	};
 
 	/**
 	 * Downloads a task's generated result file once it is COMPLETED or COMPLETED_WITH_ERROR.
@@ -145,15 +159,16 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.getResultFile({ taskId: 'TASK-1' })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/getResultFile
 	 */
-	const getResultFile = (input: FeedTaskIdInput) =>
-		decodeEndpointInputEffect(feedTaskIdInputSchema, input).pipe(
-			Effect.flatMap(({ taskId }) =>
-				downloadFeedFile(
-					client,
-					feedResourcePath("/task", taskId, "/download_result_file"),
-				),
-			),
+	const getResultFile = async (
+		input: FeedTaskIdInput,
+	): Promise<DownloadedFile> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+
+		return downloadFeedFile(
+			client,
+			feedResourcePath("/task", taskId, "/download_result_file"),
 		);
+	};
 
 	/**
 	 * Uploads the feed file of an upload task as multipart/form-data; eBay then processes it
@@ -163,21 +178,20 @@ export const createFeedTaskMethods = (client: EbayApiClient) => {
 	 * @example feed.uploadFile({ taskId: 'TASK-1', file })
 	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/task/methods/uploadFile
 	 */
-	const uploadFile = (input: FeedTaskIdInput & { file: MediaUpload }) =>
-		Effect.gen(function* () {
-			const { taskId } = yield* decodeEndpointInputEffect(
-				feedTaskIdInputSchema,
-				input,
-			);
-			const file = yield* requireObjectEffect<MediaUpload>(input.file, "file");
-			yield* requireStringEffect(file.fileName, "file.fileName");
-			return yield* requestPostEffect<UploadFeedFileResponse>(
-				client,
-				feedResourcePath("/task", taskId, "/upload_file"),
-				feedFileForm(file),
-				{ timeoutMs: UPLOAD_TIMEOUT_MS },
-			);
-		});
+	const uploadFile = async (
+		input: FeedTaskIdInput & { file: MediaUpload },
+	): Promise<UploadFeedFileResponse> => {
+		const { taskId } = decodeEndpointInputEffect(feedTaskIdInputSchema, input);
+		const file = requireObjectEffect<MediaUpload>(input.file, "file");
+		requireStringEffect(file.fileName, "file.fileName");
+
+		return requestPostEffect<UploadFeedFileResponse>(
+			client,
+			feedResourcePath("/task", taskId, "/upload_file"),
+			feedFileForm(file),
+			{ timeoutMs: UPLOAD_TIMEOUT_MS },
+		);
+	};
 
 	return {
 		getTasks,

@@ -1,4 +1,3 @@
-import type { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	bulkCreateAdsByInventoryReferenceInputSchema,
@@ -39,7 +38,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
 	requestDeleteEffect,
 	requestGetEffect,
 	requestPostEffect,
@@ -389,7 +387,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkCreateAdsByInventoryReference: (
 		input: BulkCreateAdsByInventoryReferenceInput,
-	): Effect.Effect<BulkCreateAdsByInventoryReferenceResponse, EbayApiError> => {
+	): Promise<BulkCreateAdsByInventoryReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_create_ads_by_inventory_reference`;
 		return requestPostEffect<BulkCreateAdsByInventoryReferenceResponse>(
 			client,
@@ -413,7 +411,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkCreateAdsByListingId: (
 		input: BulkCreateAdsByListingIdInput,
-	): Effect.Effect<BulkCreateAdsByListingIdResponse, EbayApiError> => {
+	): Promise<BulkCreateAdsByListingIdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_create_ads_by_listing_id`;
 		return requestPostEffect<BulkCreateAdsByListingIdResponse>(
 			client,
@@ -437,7 +435,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkDeleteAdsByInventoryReference: (
 		input: BulkDeleteAdsByInventoryReferenceInput,
-	): Effect.Effect<BulkDeleteAdsByInventoryReferenceResponse, EbayApiError> => {
+	): Promise<BulkDeleteAdsByInventoryReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_delete_ads_by_inventory_reference`;
 		return requestPostEffect<BulkDeleteAdsByInventoryReferenceResponse>(
 			client,
@@ -461,7 +459,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkDeleteAdsByListingId: (
 		input: BulkDeleteAdsByListingIdInput,
-	): Effect.Effect<BulkDeleteAdsByListingIdResponse, EbayApiError> => {
+	): Promise<BulkDeleteAdsByListingIdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_delete_ads_by_listing_id`;
 		return requestPostEffect<BulkDeleteAdsByListingIdResponse>(
 			client,
@@ -485,10 +483,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkUpdateAdsBidByInventoryReference: (
 		input: BulkUpdateAdsBidByInventoryReferenceInput,
-	): Effect.Effect<
-		BulkUpdateAdsBidByInventoryReferenceResponse,
-		EbayApiError
-	> => {
+	): Promise<BulkUpdateAdsBidByInventoryReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_update_ads_bid_by_inventory_reference`;
 		return requestPostEffect<BulkUpdateAdsBidByInventoryReferenceResponse>(
 			client,
@@ -512,7 +507,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkUpdateAdsBidByListingId: (
 		input: BulkUpdateAdsBidByListingIdInput,
-	): Effect.Effect<BulkUpdateAdsBidByListingIdResponse, EbayApiError> => {
+	): Promise<BulkUpdateAdsBidByListingIdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_update_ads_bid_by_listing_id`;
 		return requestPostEffect<BulkUpdateAdsBidByListingIdResponse>(
 			client,
@@ -536,7 +531,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkUpdateAdsStatus: (
 		input: BulkUpdateAdsStatusInput,
-	): Effect.Effect<BulkUpdateAdsStatusResponse, EbayApiError> => {
+	): Promise<BulkUpdateAdsStatusResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_update_ads_status`;
 		return requestPostEffect<BulkUpdateAdsStatusResponse>(
 			client,
@@ -560,7 +555,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkUpdateAdsStatusByListingId: (
 		input: BulkUpdateAdsStatusByListingIdInput,
-	): Effect.Effect<BulkUpdateAdsStatusByListingIdResponse, EbayApiError> => {
+	): Promise<BulkUpdateAdsStatusByListingIdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_update_ads_status_by_listing_id`;
 		return requestPostEffect<BulkUpdateAdsStatusByListingIdResponse>(
 			client,
@@ -582,7 +577,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/getAds
 	 */
-	getAds: (input: GetAdsInput): Effect.Effect<GetAdsResponse, EbayApiError> => {
+	getAds: (input: GetAdsInput): Promise<GetAdsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad`;
 		const params = buildEndpointParams({
 			adGroupIds: { wireName: "ad_group_ids", value: input.adGroupIds },
@@ -609,7 +604,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	createAdByListingId: (
 		input: CreateAdByListingIdInput,
-	): Effect.Effect<CreateAdByListingIdResponse, EbayApiError> => {
+	): Promise<CreateAdByListingIdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad`;
 		return requestPostEffect<CreateAdByListingIdResponse>(
 			client,
@@ -633,7 +628,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	createAdsByInventoryReference: (
 		input: CreateAdsByInventoryReferenceInput,
-	): Effect.Effect<CreateAdsByInventoryReferenceResponse, EbayApiError> => {
+	): Promise<CreateAdsByInventoryReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/create_ads_by_inventory_reference`;
 		return requestPostEffect<CreateAdsByInventoryReferenceResponse>(
 			client,
@@ -655,7 +650,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/getAd
 	 */
-	getAd: (input: GetAdInput): Effect.Effect<GetAdResponse, EbayApiError> => {
+	getAd: (input: GetAdInput): Promise<GetAdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad/${input.adId}`;
 		return requestGetEffect<GetAdResponse>(client, path);
 	},
@@ -673,9 +668,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/deleteAd
 	 */
-	deleteAd: (
-		input: DeleteAdInput,
-	): Effect.Effect<DeleteAdResponse, EbayApiError> => {
+	deleteAd: (input: DeleteAdInput): Promise<DeleteAdResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad/${input.adId}`;
 		return requestDeleteEffect<DeleteAdResponse>(client, path);
 	},
@@ -695,7 +688,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	deleteAdsByInventoryReference: (
 		input: DeleteAdsByInventoryReferenceInput,
-	): Effect.Effect<DeleteAdsByInventoryReferenceResponse, EbayApiError> => {
+	): Promise<DeleteAdsByInventoryReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/delete_ads_by_inventory_reference`;
 		return requestPostEffect<DeleteAdsByInventoryReferenceResponse>(
 			client,
@@ -719,7 +712,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	getAdsByInventoryReference: (
 		input: GetAdsByInventoryReferenceInput,
-	): Effect.Effect<GetAdsByInventoryReferenceResponse, EbayApiError> => {
+	): Promise<GetAdsByInventoryReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/get_ads_by_inventory_reference`;
 		const params = buildEndpointParams({
 			inventoryReferenceId: {
@@ -751,9 +744,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad/methods/updateBid
 	 */
-	updateBid: (
-		input: UpdateBidInput,
-	): Effect.Effect<UpdateBidResponse, EbayApiError> => {
+	updateBid: (input: UpdateBidInput): Promise<UpdateBidResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad/${input.adId}/update_bid`;
 		return requestPostEffect<UpdateBidResponse>(client, path, input.request);
 	},
@@ -771,9 +762,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/getAdGroups
 	 */
-	getAdGroups: (
-		input: GetAdGroupsInput,
-	): Effect.Effect<GetAdGroupsResponse, EbayApiError> => {
+	getAdGroups: (input: GetAdGroupsInput): Promise<GetAdGroupsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad_group`;
 		const params = buildEndpointParams({
 			adGroupStatus: {
@@ -801,7 +790,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	createAdGroup: (
 		input: CreateAdGroupInput,
-	): Effect.Effect<CreateAdGroupResponse, EbayApiError> => {
+	): Promise<CreateAdGroupResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad_group`;
 		return requestPostEffect<CreateAdGroupResponse>(
 			client,
@@ -823,9 +812,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/getAdGroup
 	 */
-	getAdGroup: (
-		input: GetAdGroupInput,
-	): Effect.Effect<GetAdGroupResponse, EbayApiError> => {
+	getAdGroup: (input: GetAdGroupInput): Promise<GetAdGroupResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad_group/${input.adGroupId}`;
 		return requestGetEffect<GetAdGroupResponse>(client, path);
 	},
@@ -845,7 +832,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	updateAdGroup: (
 		input: UpdateAdGroupInput,
-	): Effect.Effect<UpdateAdGroupResponse, EbayApiError> => {
+	): Promise<UpdateAdGroupResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad_group/${input.adGroupId}`;
 		return requestPutEffect<UpdateAdGroupResponse>(client, path, input.request);
 	},
@@ -863,9 +850,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_group/methods/suggestBids
 	 */
-	suggestBids: (
-		input: SuggestBidsInput,
-	): Effect.Effect<SuggestBidsResponse, EbayApiError> => {
+	suggestBids: (input: SuggestBidsInput): Promise<SuggestBidsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad_group/${input.adGroupId}/suggest_bids`;
 		return requestPostEffect<SuggestBidsResponse>(client, path, input.request);
 	},
@@ -885,7 +870,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	suggestKeywords: (
 		input: SuggestKeywordsInput,
-	): Effect.Effect<SuggestKeywordsResponse, EbayApiError> => {
+	): Promise<SuggestKeywordsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/ad_group/${input.adGroupId}/suggest_keywords`;
 		return requestPostEffect<SuggestKeywordsResponse>(
 			client,
@@ -909,7 +894,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkCreateKeyword: (
 		input: BulkCreateKeywordInput,
-	): Effect.Effect<BulkCreateKeywordResponse, EbayApiError> => {
+	): Promise<BulkCreateKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_create_keyword`;
 		return requestPostEffect<BulkCreateKeywordResponse>(
 			client,
@@ -933,7 +918,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkUpdateKeyword: (
 		input: BulkUpdateKeywordInput,
-	): Effect.Effect<BulkUpdateKeywordResponse, EbayApiError> => {
+	): Promise<BulkUpdateKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/bulk_update_keyword`;
 		return requestPostEffect<BulkUpdateKeywordResponse>(
 			client,
@@ -955,9 +940,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/getKeywords
 	 */
-	getKeywords: (
-		input: GetKeywordsInput,
-	): Effect.Effect<GetKeywordsResponse, EbayApiError> => {
+	getKeywords: (input: GetKeywordsInput): Promise<GetKeywordsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/keyword`;
 		const params = buildEndpointParams({
 			adGroupIds: { wireName: "ad_group_ids", value: input.adGroupIds },
@@ -983,7 +966,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	createKeyword: (
 		input: CreateKeywordInput,
-	): Effect.Effect<CreateKeywordResponse, EbayApiError> => {
+	): Promise<CreateKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/keyword`;
 		return requestPostEffect<CreateKeywordResponse>(
 			client,
@@ -1005,9 +988,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/keyword/methods/getKeyword
 	 */
-	getKeyword: (
-		input: GetKeywordInput,
-	): Effect.Effect<GetKeywordResponse, EbayApiError> => {
+	getKeyword: (input: GetKeywordInput): Promise<GetKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/keyword/${input.keywordId}`;
 		return requestGetEffect<GetKeywordResponse>(client, path);
 	},
@@ -1027,7 +1008,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	updateKeyword: (
 		input: UpdateKeywordInput,
-	): Effect.Effect<UpdateKeywordResponse, EbayApiError> => {
+	): Promise<UpdateKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/keyword/${input.keywordId}`;
 		return requestPutEffect<UpdateKeywordResponse>(client, path, input.request);
 	},
@@ -1047,7 +1028,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkCreateNegativeKeyword: (
 		input: BulkCreateNegativeKeywordInput,
-	): Effect.Effect<BulkCreateNegativeKeywordResponse, EbayApiError> => {
+	): Promise<BulkCreateNegativeKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/bulk_create_negative_keyword`;
 		return requestPostEffect<BulkCreateNegativeKeywordResponse>(
 			client,
@@ -1071,7 +1052,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	bulkUpdateNegativeKeyword: (
 		input: BulkUpdateNegativeKeywordInput,
-	): Effect.Effect<BulkUpdateNegativeKeywordResponse, EbayApiError> => {
+	): Promise<BulkUpdateNegativeKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/bulk_update_negative_keyword`;
 		return requestPostEffect<BulkUpdateNegativeKeywordResponse>(
 			client,
@@ -1095,7 +1076,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	getNegativeKeywords: (
 		input: GetNegativeKeywordsInput = {},
-	): Effect.Effect<GetNegativeKeywordsResponse, EbayApiError> => {
+	): Promise<GetNegativeKeywordsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/negative_keyword`;
 		const params = buildEndpointParams({
 			adGroupIds: { wireName: "ad_group_ids", value: input.adGroupIds },
@@ -1125,7 +1106,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	createNegativeKeyword: (
 		input: CreateNegativeKeywordInput,
-	): Effect.Effect<CreateNegativeKeywordResponse, EbayApiError> => {
+	): Promise<CreateNegativeKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/negative_keyword`;
 		return requestPostEffect<CreateNegativeKeywordResponse>(
 			client,
@@ -1149,7 +1130,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	getNegativeKeyword: (
 		input: GetNegativeKeywordInput,
-	): Effect.Effect<GetNegativeKeywordResponse, EbayApiError> => {
+	): Promise<GetNegativeKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/negative_keyword/${input.negativeKeywordId}`;
 		return requestGetEffect<GetNegativeKeywordResponse>(client, path);
 	},
@@ -1169,7 +1150,7 @@ export const createMarketingAdsMethods = (client: EbayApiClient) => ({
 	 */
 	updateNegativeKeyword: (
 		input: UpdateNegativeKeywordInput,
-	): Effect.Effect<UpdateNegativeKeywordResponse, EbayApiError> => {
+	): Promise<UpdateNegativeKeywordResponse> => {
 		const path = `${MARKETING_BASE_PATH}/negative_keyword/${input.negativeKeywordId}`;
 		return requestPutEffect<UpdateNegativeKeywordResponse>(
 			client,

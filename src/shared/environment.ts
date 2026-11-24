@@ -1,7 +1,6 @@
 import process from "node:process";
 import type { Implementation } from "@modelcontextprotocol/sdk/types.js";
 import { config } from "dotenv";
-import { Effect, Either } from "effect";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { CREDENTIAL_ENV_PATH } from "@/shared/credentialFile.js";
@@ -68,8 +67,8 @@ export interface UiRuntimeConfig {
  * ```
  */
 export const getLoggingConfig = (): LoggingConfig => ({
-	logLevel: process.env.EBAY_LOG_LEVEL || "info",
-	enableFileLogging: process.env.EBAY_ENABLE_FILE_LOGGING === "true",
+	logLevel: process.env["EBAY_LOG_LEVEL"] || "info",
+	enableFileLogging: process.env["EBAY_ENABLE_FILE_LOGGING"] === "true",
 });
 
 /**
@@ -83,7 +82,7 @@ export const getLoggingConfig = (): LoggingConfig => ({
  * ```
  */
 export const getUiRuntimeConfig = (): UiRuntimeConfig => ({
-	enabled: process.env.EBAY_MCP_UI !== "off",
+	enabled: process.env["EBAY_MCP_UI"] !== "off",
 });
 
 /**
@@ -237,17 +236,17 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
 	// itself. In proxy auth mode (EBAY_MCP_DISABLE_AUTH_HEADER=true) the upstream
 	// proxy supplies authentication, so missing credentials are expected, not errors.
 	if (!proxyAuth.disableAuthHeader) {
-		if (!process.env.EBAY_CLIENT_ID) {
+		if (!process.env["EBAY_CLIENT_ID"]) {
 			errors.push("EBAY_CLIENT_ID is not set. OAuth will not work.");
 		}
 
-		if (!process.env.EBAY_CLIENT_SECRET) {
+		if (!process.env["EBAY_CLIENT_SECRET"]) {
 			errors.push("EBAY_CLIENT_SECRET is not set. OAuth will not work.");
 		}
 	}
 
 	// Validate EBAY_ENVIRONMENT
-	const environment = process.env.EBAY_ENVIRONMENT;
+	const environment = process.env["EBAY_ENVIRONMENT"];
 	if (
 		environment &&
 		environment !== "production" &&
@@ -266,7 +265,7 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
 	}
 
 	// Check if redirect URI is set (needed for OAuth user flow)
-	const redirectUri = process.env.EBAY_REDIRECT_URI;
+	const redirectUri = process.env["EBAY_REDIRECT_URI"];
 	if (redirectUri) {
 		// eBay's authorization endpoint answers a URL redirect_uri with an opaque
 		// "temporarily_unavailable" 500, so name the real problem here instead.
@@ -312,17 +311,17 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
  * ```
  */
 export const getEbayConfig = (): EbayConfig => {
-	const clientId = process.env.EBAY_CLIENT_ID ?? "";
-	const clientSecret = process.env.EBAY_CLIENT_SECRET ?? "";
+	const clientId = process.env["EBAY_CLIENT_ID"] ?? "";
+	const clientSecret = process.env["EBAY_CLIENT_SECRET"] ?? "";
 	const environment =
-		process.env.EBAY_ENVIRONMENT === "production" ? "production" : "sandbox";
-	const accessToken = process.env.EBAY_USER_ACCESS_TOKEN ?? "";
-	const refreshToken = process.env.EBAY_USER_REFRESH_TOKEN ?? "";
-	const appAccessToken = process.env.EBAY_APP_ACCESS_TOKEN ?? "";
+		process.env["EBAY_ENVIRONMENT"] === "production" ? "production" : "sandbox";
+	const accessToken = process.env["EBAY_USER_ACCESS_TOKEN"] ?? "";
+	const refreshToken = process.env["EBAY_USER_REFRESH_TOKEN"] ?? "";
+	const appAccessToken = process.env["EBAY_APP_ACCESS_TOKEN"] ?? "";
 	const marketplaceId =
-		(process.env.EBAY_MARKETPLACE_ID ?? "").trim() || "EBAY_US";
+		(process.env["EBAY_MARKETPLACE_ID"] ?? "").trim() || "EBAY_US";
 	const contentLanguage =
-		(process.env.EBAY_CONTENT_LANGUAGE ?? "").trim() || "en-US";
+		(process.env["EBAY_CONTENT_LANGUAGE"] ?? "").trim() || "en-US";
 	const { apiBaseUrl, disableAuthHeader } = getProxyAuthConfig();
 
 	// Only require client credentials when this server authenticates to eBay itself.
@@ -334,20 +333,33 @@ export const getEbayConfig = (): EbayConfig => {
 		);
 	}
 
-	return {
+	const redirectUri = process.env["EBAY_REDIRECT_URI"];
+	const signing = getSigningConfig();
+	const ebayConfig: EbayConfig = {
 		clientId,
 		clientSecret,
-		redirectUri: process.env.EBAY_REDIRECT_URI,
 		marketplaceId,
 		contentLanguage,
 		environment,
 		accessToken,
 		refreshToken,
 		appAccessToken,
-		apiBaseUrl,
 		disableAuthHeader,
-		signing: getSigningConfig(),
 	};
+
+	if (redirectUri != null) {
+		ebayConfig.redirectUri = redirectUri;
+	}
+
+	if (apiBaseUrl != null) {
+		ebayConfig.apiBaseUrl = apiBaseUrl;
+	}
+
+	if (signing != null) {
+		ebayConfig.signing = signing;
+	}
+
+	return ebayConfig;
 };
 
 /**
@@ -401,12 +413,12 @@ const DEFAULT_TRADING_SITE_ID = "0";
  * ```
  */
 export const getTradingSiteId = (): string => {
-	const override = (process.env.EBAY_SITE_ID ?? "").trim();
+	const override = (process.env["EBAY_SITE_ID"] ?? "").trim();
 	if (override !== "") {
 		return override;
 	}
 	const marketplaceId =
-		(process.env.EBAY_MARKETPLACE_ID ?? "").trim() || "EBAY_US";
+		(process.env["EBAY_MARKETPLACE_ID"] ?? "").trim() || "EBAY_US";
 	return TRADING_SITE_IDS[marketplaceId] ?? DEFAULT_TRADING_SITE_ID;
 };
 
@@ -524,7 +536,7 @@ const LOOPBACK_HOSTS = new Set([
  */
 export interface ProxyAuthConfig {
 	/** Normalized base-URL override (trailing slash stripped), or undefined when unset. */
-	apiBaseUrl?: string;
+	apiBaseUrl?: string | undefined;
 	/** Whether all eBay auth headers and token acquisition should be skipped. */
 	disableAuthHeader: boolean;
 	/** Non-fatal configuration notices (e.g. cleartext credentials, no-op flag). */
@@ -553,8 +565,9 @@ export interface ProxyAuthConfig {
  * ```
  */
 export const getProxyAuthConfig = (): ProxyAuthConfig => {
-	const disableAuthHeader = process.env.EBAY_MCP_DISABLE_AUTH_HEADER === "true";
-	const rawBaseUrl = (process.env.EBAY_MCP_API_BASE_URL ?? "").trim();
+	const disableAuthHeader =
+		process.env["EBAY_MCP_DISABLE_AUTH_HEADER"] === "true";
+	const rawBaseUrl = (process.env["EBAY_MCP_API_BASE_URL"] ?? "").trim();
 	const warnings: string[] = [];
 	const errors: string[] = [];
 	const infos: string[] = [];
@@ -562,19 +575,10 @@ export const getProxyAuthConfig = (): ProxyAuthConfig => {
 	let apiBaseUrl: string | undefined;
 	let parsedBaseUrl: URL | undefined;
 	if (rawBaseUrl) {
-		const parsed = Effect.runSync(
-			Effect.either(
-				Effect.try({
-					try: () => new URL(rawBaseUrl),
-					catch: (error) => error,
-				}),
-			),
-		);
-
-		if (Either.isRight(parsed)) {
-			parsedBaseUrl = parsed.right;
+		try {
+			parsedBaseUrl = new URL(rawBaseUrl);
 			apiBaseUrl = rawBaseUrl.replace(/\/+$/, "");
-		} else {
+		} catch {
 			errors.push(
 				`EBAY_MCP_API_BASE_URL is not a valid URL: "${rawBaseUrl}". ` +
 					'Provide an absolute URL such as "http://localhost:8080".',
@@ -612,8 +616,8 @@ export const getProxyAuthConfig = (): ProxyAuthConfig => {
 };
 
 const getSigningConfig = (): EbayConfig["signing"] => {
-	const keyJwe = process.env.EBAY_SIGNING_KEY_JWE?.trim();
-	const privateKey = process.env.EBAY_SIGNING_PRIVATE_KEY?.trim();
+	const keyJwe = process.env["EBAY_SIGNING_KEY_JWE"]?.trim();
+	const privateKey = process.env["EBAY_SIGNING_PRIVATE_KEY"]?.trim();
 	if (keyJwe && privateKey) {
 		return { keyJwe, privateKey };
 	}
@@ -622,6 +626,8 @@ const getSigningConfig = (): EbayConfig["signing"] => {
 			"Digital signatures need both EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY; only one is set, so requests will not be signed.",
 		);
 	}
+
+	return undefined;
 };
 
 /**

@@ -9,7 +9,7 @@ import type {
 /** Public tool contract shape exposed to consumers after registry normalization. */
 export interface ToolContract {
 	/** Optional MCP annotations copied from the public tool definition. */
-	annotations?: ToolAnnotations;
+	annotations?: ToolAnnotations | undefined;
 	/** Human-readable description advertised for the tool. */
 	description: string;
 	/** Stable MCP tool name used by clients and handlers. */
@@ -17,9 +17,9 @@ export interface ToolContract {
 	/** Zod raw shape advertised as the tool input schema. */
 	inputSchema: ToolDefinition["inputSchema"];
 	/** Optional JSON schema describing structured tool output. */
-	outputSchema?: OutputArgs;
+	outputSchema?: OutputArgs | undefined;
 	/** Optional display title shown by MCP hosts that support it. */
-	title?: string;
+	title?: string | undefined;
 }
 
 /** Validation report for duplicate, incomplete, or malformed tool contracts. */
@@ -108,8 +108,8 @@ export const validateToolContracts = (
 		} else if (
 			outputSchema &&
 			"type" in outputSchema &&
-			outputSchema.type !== "object" &&
-			outputSchema.type !== undefined
+			outputSchema["type"] !== "object" &&
+			outputSchema["type"] !== undefined
 		) {
 			malformedOutputSchemas.push(contract.name);
 		} else if (

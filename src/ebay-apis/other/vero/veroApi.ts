@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	createVeroReportInputSchema,
@@ -10,8 +9,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -79,192 +76,169 @@ export class VeroApi {
 	 * Creates a VeRO report for one or more allegedly infringing listings.
 	 *
 	 * @param input - Generated VeroReportItemsRequest body.
-	 * @returns An Effect that succeeds with eBay's VeroReportItemsResponse.
+	 * @returns A promise of eBay's VeroReportItemsResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const report = await Effect.runPromise(
-	 *   veroApi.createVeroReport({
-	 *     reportData: {
-	 *       reportItems: [{ itemId: '110000000000', veroReasonCodeId: 'CODE123' }],
-	 *     },
-	 *   }),
-	 * );
+	 * const report = await veroApi.createVeroReport({
+	 *   reportData: {
+	 *     reportItems: [
+	 *       { itemId: "110000000000", veroReasonCodeId: "CODE123" },
+	 *     ],
+	 *   },
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_report/methods/createVeroReport
 	 */
-	public createVeroReport = (
+	public createVeroReport = async (
 		input: CreateVeroReportInput,
-	): Effect.Effect<
-		CreateVeroReportResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<CreateVeroReportResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/vero_report`;
 
-		return Effect.gen(function* () {
-			const endpointInput = yield* requireObjectEffect<CreateVeroReportInput>(
-				input,
-				"input",
-			);
-			const veroReport = yield* requireObjectEffect<CreateVeroReportRequest>(
-				endpointInput.reportData,
-				"reportData",
-			);
+		const endpointInput = requireObjectEffect<CreateVeroReportInput>(
+			input,
+			"input",
+		);
+		const veroReport = requireObjectEffect<CreateVeroReportRequest>(
+			endpointInput.reportData,
+			"reportData",
+		);
 
-			return yield* requestPostEffect<CreateVeroReportResponse>(
-				client,
-				path,
-				veroReport,
-			);
-		});
+		return requestPostEffect<CreateVeroReportResponse>(
+			client,
+			path,
+			veroReport,
+		);
 	};
 
 	/**
 	 * Retrieves a VeRO report by ID.
 	 *
 	 * @param input - VeRO report identifier returned by createVeroReport.
-	 * @returns An Effect that succeeds with eBay's ReportStatusResponse.
+	 * @returns A promise of eBay's ReportStatusResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const report = await Effect.runPromise(veroApi.getVeroReport({ veroReportId: 'REPORT123' }));
+	 * const report = await veroApi.getVeroReport({ veroReportId: 'REPORT123' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_report/methods/getVeroReport
 	 */
-	public getVeroReport = (
+	public getVeroReport = async (
 		input: GetVeroReportInput,
-	): Effect.Effect<VeroReportResponse, EbayApiError | EndpointInputError> => {
+	): Promise<VeroReportResponse> => {
 		const client = this.client;
 		const basePath = this.basePath;
 
-		return Effect.gen(function* () {
-			const endpointInput = yield* requireObjectEffect<GetVeroReportInput>(
-				input,
-				"input",
-			);
-			const veroReportId = yield* requireStringEffect(
-				endpointInput.veroReportId,
-				"veroReportId",
-			);
+		const endpointInput = requireObjectEffect<GetVeroReportInput>(
+			input,
+			"input",
+		);
+		const veroReportId = requireStringEffect(
+			endpointInput.veroReportId,
+			"veroReportId",
+		);
 
-			return yield* requestGetEffect<VeroReportResponse>(
-				client,
-				`${basePath}/vero_report/${veroReportId}`,
-			);
-		});
+		return requestGetEffect<VeroReportResponse>(
+			client,
+			`${basePath}/vero_report/${veroReportId}`,
+		);
 	};
 
 	/**
 	 * Retrieves reported VeRO items with optional filtering and pagination.
 	 *
 	 * @param input - Optional filter, limit, and offset query parameters.
-	 * @returns An Effect that succeeds with eBay's VeroReportStatusResponse.
+	 * @returns A promise of eBay's VeroReportStatusResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const items = await Effect.runPromise(veroApi.getVeroReportItems({ limit: 10 }));
+	 * const items = await veroApi.getVeroReportItems({ limit: 10 });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_report_items/methods/getVeroReportItems
 	 */
-	public getVeroReportItems = (
+	public getVeroReportItems = async (
 		input: GetVeroReportItemsInput = {},
-	): Effect.Effect<
-		VeroReportItemsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<VeroReportItemsResponse> => {
 		const client = this.client;
 		const basePath = this.basePath;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<GetVeroReportItemsInput>(input, "input");
-			const filter = yield* optionalStringEffect(
-				validatedInput.filter,
-				"filter",
-			);
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const params = buildEndpointParams({
-				filter: { wireName: "filter", value: filter },
-				limit: { wireName: "limit", value: limit },
-				offset: { wireName: "offset", value: offset },
-			});
-
-			return yield* requestGetEffect<VeroReportItemsResponse>(
-				client,
-				`${basePath}/vero_report_items`,
-				params,
-			);
+		const validatedInput = requireObjectEffect<GetVeroReportItemsInput>(
+			input,
+			"input",
+		);
+		const filter = optionalStringEffect(validatedInput.filter, "filter");
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const params = buildEndpointParams({
+			filter: { wireName: "filter", value: filter },
+			limit: { wireName: "limit", value: limit },
+			offset: { wireName: "offset", value: offset },
 		});
+
+		return requestGetEffect<VeroReportItemsResponse>(
+			client,
+			`${basePath}/vero_report_items`,
+			params,
+		);
 	};
 
 	/**
 	 * Retrieves one VeRO reason code by ID.
 	 *
 	 * @param input - VeRO reason-code identifier.
-	 * @returns An Effect that succeeds with eBay's VeroReasonCodeResponse.
+	 * @returns A promise of eBay's VeroReasonCodeResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const reason = await Effect.runPromise(
-	 *   veroApi.getVeroReasonCode({ veroReasonCodeId: 'CODE123' }),
-	 * );
+	 * const reason = await veroApi.getVeroReasonCode({ veroReasonCodeId: 'CODE123' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_reason_code/methods/getVeroReasonCode
 	 */
-	public getVeroReasonCode = (
+	public getVeroReasonCode = async (
 		input: GetVeroReasonCodeInput,
-	): Effect.Effect<
-		VeroReasonCodeResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<VeroReasonCodeResponse> => {
 		const client = this.client;
 		const basePath = this.basePath;
 
-		return Effect.gen(function* () {
-			const endpointInput = yield* requireObjectEffect<GetVeroReasonCodeInput>(
-				input,
-				"input",
-			);
-			const veroReasonCodeId = yield* requireStringEffect(
-				endpointInput.veroReasonCodeId,
-				"veroReasonCodeId",
-			);
+		const endpointInput = requireObjectEffect<GetVeroReasonCodeInput>(
+			input,
+			"input",
+		);
+		const veroReasonCodeId = requireStringEffect(
+			endpointInput.veroReasonCodeId,
+			"veroReasonCodeId",
+		);
 
-			return yield* requestGetEffect<VeroReasonCodeResponse>(
-				client,
-				`${basePath}/vero_reason_code/${veroReasonCodeId}`,
-			);
-		});
+		return requestGetEffect<VeroReasonCodeResponse>(
+			client,
+			`${basePath}/vero_reason_code/${veroReasonCodeId}`,
+		);
 	};
 
 	/**
 	 * Retrieves all available VeRO reason codes.
 	 *
 	 * @param input - Empty endpoint input object.
-	 * @returns An Effect that succeeds with eBay's VeroReasonCodeDetailResponse.
+	 * @returns A promise of eBay's VeroReasonCodeDetailResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const reasonCodes = await Effect.runPromise(veroApi.getVeroReasonCodes({}));
+	 * const reasonCodes = await veroApi.getVeroReasonCodes({});
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/vero/resources/vero_reason_code/methods/getVeroReasonCodes
 	 */
-	public getVeroReasonCodes = (
+	public getVeroReasonCodes = async (
 		input: GetVeroReasonCodesInput = {},
-	): Effect.Effect<VeroReasonCodesResponse, EbayApiError> => {
+	): Promise<VeroReasonCodesResponse> => {
 		void input;
 		return requestGetEffect<VeroReasonCodesResponse>(
 			this.client,

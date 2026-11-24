@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import process from "node:process";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { Effect, Either } from "effect";
 import { runDiagnostics } from "@/cli/diagnostics.js";
 import { runSetup } from "@/cli/setup.js";
 import { runSkillsWizard } from "@/cli/skills.js";
@@ -21,18 +20,11 @@ const runCliCommand = async (
 	label: string,
 	command: () => Promise<void>,
 ): Promise<void> => {
-	const commandOutcome = await Effect.runPromise(
-		Effect.either(
-			Effect.tryPromise({
-				try: command,
-				catch: (error) => error,
-			}),
-		),
-	);
-
-	if (Either.isLeft(commandOutcome)) {
+	try {
+		await command();
+	} catch (error) {
 		serverLogger.error(`${label} failed`, {
-			error: getErrorMessage(commandOutcome.left, String(commandOutcome.left)),
+			error: getErrorMessage(error, String(error)),
 		});
 		process.exit(1);
 	}
@@ -138,17 +130,9 @@ class EbayMcpServer {
 
 // Start the server
 const server = new EbayMcpServer();
-const started = await Effect.runPromise(
-	Effect.either(
-		Effect.tryPromise({
-			try: () => server.run(),
-			catch: (error) => error,
-		}),
-	),
-);
-
-if (Either.isLeft(started)) {
-	const error = started.left;
+try {
+	await server.run();
+} catch (error) {
 	serverLogger.error("Fatal error running server", {
 		error: getErrorMessage(error, String(error)),
 		stack: error instanceof Error ? error.stack : undefined,

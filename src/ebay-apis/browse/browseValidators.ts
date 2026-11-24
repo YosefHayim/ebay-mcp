@@ -5,7 +5,6 @@
  * with an opaque 400, so a caller learns which parameter was wrong and why.
  */
 
-import { Effect } from "effect";
 import {
 	BROWSE_SORT_VALUES,
 	type BrowseSortValue,
@@ -41,17 +40,17 @@ const requireIntegerInRange = (
 	parameter: string,
 	min: number,
 	max: number,
-): Effect.Effect<number, EndpointInputError> => {
-	if (!Number.isInteger(value) || value < min || value > max) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter,
-				message: `${parameter} must be an integer between ${min} and ${max}`,
-			}),
-		);
+): number => {
+	const isOutsideRange = !Number.isInteger(value) || value < min || value > max;
+
+	if (isOutsideRange) {
+		throw new EndpointInputError({
+			parameter,
+			message: `${parameter} must be an integer between ${min} and ${max}`,
+		});
 	}
 
-	return Effect.succeed(value);
+	return value;
 };
 
 /**
@@ -95,24 +94,23 @@ export const DEFAULT_LIMIT = 20;
 export const optionalStringArrayEffect = (
 	value: unknown,
 	parameter: string,
-): Effect.Effect<readonly string[] | undefined, EndpointInputError> => {
+): readonly string[] | undefined => {
 	if (value === undefined) {
-		return Effect.succeed(undefined);
+		return undefined;
 	}
 
-	if (
-		!Array.isArray(value) ||
-		value.some((entry) => typeof entry !== "string" || !entry)
-	) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter,
-				message: `${parameter} must be an array of non-empty strings`,
-			}),
-		);
+	const isStringArray =
+		Array.isArray(value) &&
+		value.every((entry) => typeof entry === "string" && entry.length > 0);
+
+	if (!isStringArray) {
+		throw new EndpointInputError({
+			parameter,
+			message: `${parameter} must be an array of non-empty strings`,
+		});
 	}
 
-	return Effect.succeed(value as readonly string[]);
+	return value;
 };
 
 /**
@@ -130,30 +128,31 @@ export const optionalStringArrayEffect = (
  *
  * @example
  * ```ts
- * const categoryIds = yield* optionalNonBlankStringEffect(input.categoryIds, 'categoryIds');
+ * const categoryIds = optionalNonBlankStringEffect(input.categoryIds, 'categoryIds');
  * ```
  */
 export const optionalNonBlankStringEffect = (
 	value: unknown,
 	parameter: string,
-): Effect.Effect<string | undefined, EndpointInputError> =>
-	Effect.flatMap(optionalStringEffect(value, parameter), (text) => {
-		if (text === undefined) {
-			return Effect.succeed(undefined);
-		}
+): string | undefined => {
+	const text = optionalStringEffect(value, parameter);
 
-		const trimmed = text.trim();
-		if (!trimmed) {
-			return Effect.fail(
-				new EndpointInputError({
-					parameter,
-					message: `${parameter} must be a non-empty string when provided`,
-				}),
-			);
-		}
+	if (text === undefined) {
+		return undefined;
+	}
 
-		return Effect.succeed(trimmed);
-	});
+	const trimmed = text.trim();
+	const isBlank = trimmed.length === 0;
+
+	if (isBlank) {
+		throw new EndpointInputError({
+			parameter,
+			message: `${parameter} must be a non-empty string when provided`,
+		});
+	}
+
+	return trimmed;
+};
 
 /**
  * Validate offset is a whole number inside Browse's supported range.
@@ -162,27 +161,21 @@ export const optionalNonBlankStringEffect = (
  * @param limit - Validated page size the offset must align to.
  * @returns The same value when in range, or a tagged input error.
  */
-export const requireOffsetInRange = (
-	offset: number,
-	limit: number,
-): Effect.Effect<number, EndpointInputError> =>
-	Effect.flatMap(
-		requireIntegerInRange(offset, "offset", 0, MAX_OFFSET),
-		(validated) => {
-			// Browse rejects an offset that is not a whole number of pages (error 12515)
-			// with an opaque 400, so the page arithmetic is enforced here instead.
-			if (validated % limit !== 0) {
-				return Effect.fail(
-					new EndpointInputError({
-						parameter: "offset",
-						message: `offset must be zero or a multiple of limit (${limit}); got ${validated}`,
-					}),
-				);
-			}
+export const requireOffsetInRange = (offset: number, limit: number): number => {
+	const validated = requireIntegerInRange(offset, "offset", 0, MAX_OFFSET);
+	// Browse rejects an offset that is not a whole number of pages (error 12515)
+	// with an opaque 400, so the page arithmetic is enforced here instead.
+	const isMisalignedPage = validated % limit !== 0;
 
-			return Effect.succeed(validated);
-		},
-	);
+	if (isMisalignedPage) {
+		throw new EndpointInputError({
+			parameter: "offset",
+			message: `offset must be zero or a multiple of limit (${limit}); got ${validated}`,
+		});
+	}
+
+	return validated;
+};
 
 /**
  * Reject a price window whose bounds are not finite, or are inverted.
@@ -199,24 +192,24 @@ export const requireOffsetInRange = (
 export const requireCoherentPriceRange = (
 	priceMin: number | undefined,
 	priceMax: number | undefined,
-): Effect.Effect<void, EndpointInputError> => {
+): void => {
 	const nonFinite =
 		nonFinitePriceError(priceMin, "priceMin") ??
 		nonFinitePriceError(priceMax, "priceMax");
+
 	if (nonFinite) {
-		return Effect.fail(nonFinite);
+		throw nonFinite;
 	}
 
-	if (priceMin !== undefined && priceMax !== undefined && priceMin > priceMax) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: "priceMin",
-				message: `priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
-			}),
-		);
-	}
+	const isInverted =
+		priceMin !== undefined && priceMax !== undefined && priceMin > priceMax;
 
-	return Effect.succeed(undefined);
+	if (isInverted) {
+		throw new EndpointInputError({
+			parameter: "priceMin",
+			message: `priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
+		});
+	}
 };
 
 /**
@@ -225,9 +218,7 @@ export const requireCoherentPriceRange = (
  * @param limit - Page size already validated as a number > 0.
  * @returns The same value when in range, or a tagged input error.
  */
-export const requireLimitInRange = (
-	limit: number,
-): Effect.Effect<number, EndpointInputError> =>
+export const requireLimitInRange = (limit: number): number =>
 	requireIntegerInRange(limit, "limit", 1, MAX_LIMIT);
 
 /**
@@ -238,19 +229,19 @@ export const requireLimitInRange = (
  */
 export const requireSupportedSort = (
 	sort: string | undefined,
-): Effect.Effect<BrowseSortValue | undefined, EndpointInputError> => {
+): BrowseSortValue | undefined => {
 	if (sort === undefined) {
-		return Effect.succeed(undefined);
+		return undefined;
 	}
 
-	if (!(BROWSE_SORT_VALUES as readonly string[]).includes(sort)) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: "sort",
-				message: `sort must be one of: ${BROWSE_SORT_VALUES.join(", ")}`,
-			}),
-		);
+	const isSupported = (BROWSE_SORT_VALUES as readonly string[]).includes(sort);
+
+	if (!isSupported) {
+		throw new EndpointInputError({
+			parameter: "sort",
+			message: `sort must be one of: ${BROWSE_SORT_VALUES.join(", ")}`,
+		});
 	}
 
-	return Effect.succeed(sort as BrowseSortValue);
+	return sort as BrowseSortValue;
 };

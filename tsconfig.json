@@ -17,6 +17,8 @@
 		"node_modules",
 		"build",
 		"tests",
+		"src/**/*.test.ts",
+		"src/ebay-apis/analytics/testHarness.ts",
 		"src/mcp-apps",
 		"vitest.config.cts"
 	]

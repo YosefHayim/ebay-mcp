@@ -5,7 +5,6 @@
  * with the eBay MCP server settings.
  */
 
-import { Effect, Either } from "effect";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir, platform } from "os";
 import { dirname, join } from "path";
@@ -343,22 +342,18 @@ export const detectLLMClients = (): LLMClient[] => {
 /**
  * Reads and parses a JSON config file safely.
  */
-const readJSONConfig = (path: string): Record<string, unknown> =>
-	Effect.runSync(
-		Effect.try({
-			try: () => {
-				if (!existsSync(path)) {
-					return {};
-				}
+const readJSONConfig = (path: string): Record<string, unknown> => {
+	try {
+		if (!existsSync(path)) {
+			return {};
+		}
 
-				const content = readFileSync(path, "utf-8");
-				return JSON.parse(content) as Record<string, unknown>;
-			},
-			catch: () => ({}),
-		}).pipe(
-			Effect.catchAll((fallbackConfig) => Effect.succeed(fallbackConfig)),
-		),
-	);
+		const content = readFileSync(path, "utf-8");
+		return JSON.parse(content) as Record<string, unknown>;
+	} catch {
+		return {};
+	}
+};
 
 /**
  * Writes a JSON config file safely.
@@ -380,33 +375,25 @@ const runClientConfigurator = (
 	clientLabel: string,
 	configure: () => void,
 ): boolean => {
-	const configured = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: configure,
-				catch: (error) => error,
-			}),
-		),
-	);
-
-	if (Either.isRight(configured)) {
+	try {
+		configure();
 		return true;
+	} catch (error) {
+		setupLogger.error(`Failed to configure ${clientLabel}`, {
+			error: getErrorMessage(error),
+		});
+		return false;
 	}
-
-	setupLogger.error(`Failed to configure ${clientLabel}`, {
-		error: getErrorMessage(configured.left),
-	});
-	return false;
 };
 
 const ensureMcpServersConfig = (
 	config: Record<string, unknown>,
 ): Record<string, MCPServerConfig> => {
-	if (!config.mcpServers || typeof config.mcpServers !== "object") {
-		config.mcpServers = {};
+	if (!config["mcpServers"] || typeof config["mcpServers"] !== "object") {
+		config["mcpServers"] = {};
 	}
 
-	return config.mcpServers as Record<string, MCPServerConfig>;
+	return config["mcpServers"] as Record<string, MCPServerConfig>;
 };
 
 const hasMcpServerConfig = (configPath: string): boolean => {
@@ -415,7 +402,7 @@ const hasMcpServerConfig = (configPath: string): boolean => {
 	}
 
 	const config = readJSONConfig(configPath);
-	const mcpServers = config.mcpServers as
+	const mcpServers = config["mcpServers"] as
 		| Record<string, MCPServerConfig>
 		| undefined;
 
@@ -444,7 +431,7 @@ export const configureClaudeDesktop = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -471,7 +458,7 @@ export const configureCline = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -492,23 +479,24 @@ export const configureContinue = (projectRoot: string): boolean => {
 		const config = readJSONConfig(configPath);
 
 		// Initialize experimental.modelContextProtocolServers if it doesn't exist
-		if (!config.experimental || typeof config.experimental !== "object") {
-			config.experimental = {};
+		if (!config["experimental"] || typeof config["experimental"] !== "object") {
+			config["experimental"] = {};
 		}
 
-		const experimental = config.experimental as Record<string, unknown>;
+		const experimental = config["experimental"] as Record<string, unknown>;
 
 		if (
 			!(
-				experimental.modelContextProtocolServers &&
-				Array.isArray(experimental.modelContextProtocolServers)
+				experimental["modelContextProtocolServers"] &&
+				Array.isArray(experimental["modelContextProtocolServers"])
 			)
 		) {
-			experimental.modelContextProtocolServers = [];
+			experimental["modelContextProtocolServers"] = [];
 		}
 
-		const mcpServers =
-			experimental.modelContextProtocolServers as MCPServerConfig[];
+		const mcpServers = experimental[
+			"modelContextProtocolServers"
+		] as MCPServerConfig[];
 
 		// Check if eBay server already exists
 		const existingIndex = mcpServers.findIndex(
@@ -527,8 +515,8 @@ export const configureContinue = (projectRoot: string): boolean => {
 			mcpServers.push(serverConfig);
 		}
 
-		experimental.modelContextProtocolServers = mcpServers;
-		config.experimental = experimental;
+		experimental["modelContextProtocolServers"] = mcpServers;
+		config["experimental"] = experimental;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -551,11 +539,14 @@ export const configureZed = (projectRoot: string): boolean => {
 		const config = readJSONConfig(configPath);
 
 		// Initialize context_servers if it doesn't exist
-		if (!config.context_servers || typeof config.context_servers !== "object") {
-			config.context_servers = {};
+		if (
+			!config["context_servers"] ||
+			typeof config["context_servers"] !== "object"
+		) {
+			config["context_servers"] = {};
 		}
 
-		const contextServers = config.context_servers as Record<string, unknown>;
+		const contextServers = config["context_servers"] as Record<string, unknown>;
 
 		// Add or update eBay MCP server configuration
 		contextServers["ebay-mcp-server"] = {
@@ -566,7 +557,7 @@ export const configureZed = (projectRoot: string): boolean => {
 			settings: {},
 		};
 
-		config.context_servers = contextServers;
+		config["context_servers"] = contextServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -595,7 +586,7 @@ export const configureCursor = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -622,7 +613,7 @@ export const configureWindsurf = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -649,7 +640,7 @@ export const configureRooCode = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -678,7 +669,7 @@ export const configureClaudeCode = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -705,7 +696,7 @@ export const configureAmazonQ = (projectRoot: string): boolean => {
 			args: [join(projectRoot, "build", "index.js")],
 		};
 
-		config.mcpServers = mcpServers;
+		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
 };
@@ -909,71 +900,64 @@ export const verifyClientConfiguration = (
 	clientName: string,
 	_projectRoot: string,
 ): boolean => {
-	const verified = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () => {
-					switch (clientName) {
-						case "claude":
-							return hasMcpServerConfig(getClaudeConfigPath());
+	try {
+		switch (clientName) {
+			case "claude":
+				return hasMcpServerConfig(getClaudeConfigPath());
 
-						case "cline":
-							return hasMcpServerConfig(getClineConfigPath());
+			case "cline":
+				return hasMcpServerConfig(getClineConfigPath());
 
-						case "continue": {
-							const configPath = getContinueConfigPath();
-							if (!existsSync(configPath)) return false;
+			case "continue": {
+				const configPath = getContinueConfigPath();
+				if (!existsSync(configPath)) return false;
 
-							const config = readJSONConfig(configPath);
-							const experimental = config.experimental as
-								| Record<string, unknown>
-								| undefined;
-							const mcpServers = experimental?.modelContextProtocolServers as
-								| MCPServerConfig[]
-								| undefined;
+				const config = readJSONConfig(configPath);
+				const experimental = config["experimental"] as
+					| Record<string, unknown>
+					| undefined;
+				const mcpServers = experimental?.["modelContextProtocolServers"] as
+					| MCPServerConfig[]
+					| undefined;
 
-							return !!mcpServers?.some((server) =>
-								server.args?.[0]?.includes("ebay-mcp-server"),
-							);
-						}
+				return !!mcpServers?.some((server) =>
+					server.args?.[0]?.includes("ebay-mcp-server"),
+				);
+			}
 
-						case "zed": {
-							const configPath = getZedConfigPath();
-							if (!existsSync(configPath)) return false;
+			case "zed": {
+				const configPath = getZedConfigPath();
+				if (!existsSync(configPath)) return false;
 
-							const config = readJSONConfig(configPath);
-							const contextServers = config.context_servers as
-								| Record<string, unknown>
-								| undefined;
+				const config = readJSONConfig(configPath);
+				const contextServers = config["context_servers"] as
+					| Record<string, unknown>
+					| undefined;
 
-							return !!contextServers?.["ebay-mcp-server"];
-						}
+				return !!contextServers?.["ebay-mcp-server"];
+			}
 
-						case "cursor":
-							return hasMcpServerConfig(getCursorConfigPath());
+			case "cursor":
+				return hasMcpServerConfig(getCursorConfigPath());
 
-						case "windsurf":
-							return hasMcpServerConfig(getWindsurfConfigPath());
+			case "windsurf":
+				return hasMcpServerConfig(getWindsurfConfigPath());
 
-						case "roocode":
-							return hasMcpServerConfig(getRooCodeConfigPath());
+			case "roocode":
+				return hasMcpServerConfig(getRooCodeConfigPath());
 
-						case "claudecode":
-							return hasMcpServerConfig(getClaudeCodeConfigPath());
+			case "claudecode":
+				return hasMcpServerConfig(getClaudeCodeConfigPath());
 
-						case "amazonq":
-							return hasMcpServerConfig(getAmazonQConfigPath());
+			case "amazonq":
+				return hasMcpServerConfig(getAmazonQConfigPath());
 
-						default:
-							return false;
-					}
-				},
-				catch: () => false,
-			}),
-		),
-	);
-
-	return Either.isRight(verified) ? verified.right : false;
+			default:
+				return false;
+		}
+	} catch {
+		return false;
+	}
 };
 
 /**

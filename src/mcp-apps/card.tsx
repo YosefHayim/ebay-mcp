@@ -30,6 +30,7 @@ function Card({ view }: { view: CardViewModel }): ReactNode {
 				<div className="badges">
 					{view.badges.map((badge, index) => (
 						<span
+							// biome-ignore lint/suspicious/noArrayIndexKey: badge labels can repeat
 							key={`${badge.label}-${index}`}
 							className={badgeClass(badge.tone)}
 						>
@@ -42,6 +43,7 @@ function Card({ view }: { view: CardViewModel }): ReactNode {
 				<div key={section.heading ?? sectionIndex} className="card-section">
 					{section.heading ? <h2>{section.heading}</h2> : null}
 					{section.fields.map((field, fieldIndex) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: field labels can repeat
 						<div key={`${field.label}-${fieldIndex}`} className="field">
 							<span className="field-label">{field.label}</span>
 							<span className="field-value">

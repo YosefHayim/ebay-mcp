@@ -1,8 +1,5 @@
-import { Effect } from "effect";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
-	type EbayApiError,
-	type EndpointInputError,
 	requestPostEffect,
 	requireObjectEffect,
 } from "@/ebay-client/request.js";
@@ -32,39 +29,31 @@ export class TranslationApi {
 	 * Translates listing title or description text from one language into another.
 	 *
 	 * @param input - Generated TranslateRequest body.
-	 * @returns An Effect that succeeds with eBay's TranslateResponse.
+	 * @returns A promise of eBay's TranslateResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const translated = await Effect.runPromise(
-	 *   translationApi.translate({
-	 *     from: 'en',
-	 *     to: 'es',
-	 *     translationContext: 'ITEM_TITLE',
-	 *     text: ['Hello'],
-	 *   }),
-	 * );
+	 * const translated = await translationApi.translate({
+	 *   from: "en",
+	 *   to: "es",
+	 *   translationContext: "ITEM_TITLE",
+	 *   text: ["Hello"],
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/translation/resources/translate/methods/translate
 	 */
-	public translate = (
+	public translate = async (
 		input: TranslateInput,
-	): Effect.Effect<TranslateResponse, EbayApiError | EndpointInputError> => {
+	): Promise<TranslateResponse> => {
 		const client = this.client;
 		const path = `${this.basePath}/translate`;
 
-		return Effect.gen(function* () {
-			const translateRequest = yield* requireObjectEffect<TranslateInput>(
-				input,
-				"input",
-			);
+		const translateRequest = requireObjectEffect<TranslateInput>(
+			input,
+			"input",
+		);
 
-			return yield* requestPostEffect<TranslateResponse>(
-				client,
-				path,
-				translateRequest,
-			);
-		});
+		return requestPostEffect<TranslateResponse>(client, path, translateRequest);
 	};
 }

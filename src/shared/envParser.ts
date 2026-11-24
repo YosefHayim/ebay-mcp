@@ -32,8 +32,22 @@ export const parseEnvFile = (filePath: string): Record<string, string> => {
 			continue;
 		}
 
-		const key = match[1].trim();
-		let envValue = match[2].trim();
+		const keyText = match[1];
+		const valueText = match[2];
+		const isKeyMissing = keyText == null;
+
+		if (isKeyMissing) {
+			continue;
+		}
+
+		const isValueMissing = valueText == null;
+
+		if (isValueMissing) {
+			continue;
+		}
+
+		const key = keyText.trim();
+		let envValue = valueText.trim();
 
 		if (
 			(envValue.startsWith('"') && envValue.endsWith('"')) ||

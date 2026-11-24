@@ -100,7 +100,7 @@ export const createMetadataRouter = (config: MetadataConfig): Router => {
 
 		// Add eBay-specific information if provided
 		if (config.ebayEnvironment) {
-			serverInfo.ebay = {
+			serverInfo["ebay"] = {
 				environment: config.ebayEnvironment,
 				base_url:
 					config.ebayEnvironment === "production"

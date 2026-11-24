@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	findEligibleItemsSchema,
@@ -10,8 +9,6 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -59,114 +56,96 @@ export class NegotiationApi {
 	 * Finds listings eligible for a seller-initiated offer.
 	 *
 	 * @param input - Optional marketplace header override plus pagination query parameters.
-	 * @returns An Effect that succeeds with eBay's generated PagedEligibleItemCollection.
+	 * @returns eBay's generated PagedEligibleItemCollection.
 	 *
 	 * @example
 	 * ```ts
-	 * const eligible = await Effect.runPromise(
-	 *   negotiationApi.findEligibleItems({ marketplaceId: 'EBAY_US', limit: 10 }),
-	 * );
+	 * const eligible = await negotiationApi.findEligibleItems({ marketplaceId: 'EBAY_US', limit: 10 });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/findEligibleItems
 	 */
-	findEligibleItems = (
+	findEligibleItems = async (
 		input: FindEligibleItemsInput = {},
-	): Effect.Effect<
-		FindEligibleItemsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<FindEligibleItemsResponse> => {
 		const apiClient = this.client;
 		const path = `${this.basePath}/find_eligible_items`;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<FindEligibleItemsInput>(
-				input,
-				"input",
-			);
-			const {
-				marketplaceId: inputMarketplaceId,
-				limit: inputLimit,
-				offset: inputOffset,
-			} = validatedInput;
-			const marketplaceId = yield* optionalStringEffect(
-				inputMarketplaceId,
-				"marketplaceId",
-			);
-			const limit = yield* optionalPositiveNumberEffect(inputLimit, "limit");
-			const offset = yield* optionalNonNegativeNumberEffect(
-				inputOffset,
-				"offset",
-			);
-			const params = buildEndpointParams({
-				limit: { wireName: "limit", value: limit },
-				offset: { wireName: "offset", value: offset },
-			});
-			const config: EbayRequestConfig | undefined =
-				marketplaceId === undefined
-					? undefined
-					: { headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId } };
-
-			return yield* requestGetEffect<FindEligibleItemsResponse>(
-				apiClient,
-				path,
-				params,
-				config,
-			);
+		const validatedInput = requireObjectEffect<FindEligibleItemsInput>(
+			input,
+			"input",
+		);
+		const {
+			marketplaceId: inputMarketplaceId,
+			limit: inputLimit,
+			offset: inputOffset,
+		} = validatedInput;
+		const marketplaceId = optionalStringEffect(
+			inputMarketplaceId,
+			"marketplaceId",
+		);
+		const limit = optionalPositiveNumberEffect(inputLimit, "limit");
+		const offset = optionalNonNegativeNumberEffect(inputOffset, "offset");
+		const params = buildEndpointParams({
+			limit: { wireName: "limit", value: limit },
+			offset: { wireName: "offset", value: offset },
 		});
+		const config: EbayRequestConfig | undefined =
+			marketplaceId === undefined
+				? undefined
+				: { headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId } };
+
+		return await requestGetEffect<FindEligibleItemsResponse>(
+			apiClient,
+			path,
+			params,
+			config,
+		);
 	};
 
 	/**
 	 * Sends an offer to buyers interested in a listing.
 	 *
 	 * @param input - Offer body fields plus optional marketplace header override.
-	 * @returns An Effect that succeeds with eBay's generated offer collection response.
+	 * @returns eBay's generated offer collection response.
 	 *
 	 * @example
 	 * ```ts
-	 * const offers = await Effect.runPromise(
-	 *   negotiationApi.sendOfferToInterestedBuyers({
+	 * const offers = await negotiationApi.sendOfferToInterestedBuyers({
 	 *     marketplaceId: 'EBAY_US',
 	 *     message: 'Limited offer',
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/sendOfferToInterestedBuyers
 	 */
-	sendOfferToInterestedBuyers = (
+	sendOfferToInterestedBuyers = async (
 		input: SendOfferToInterestedBuyersInput,
-	): Effect.Effect<
-		SendOfferToInterestedBuyersResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<SendOfferToInterestedBuyersResponse> => {
 		const apiClient = this.client;
 		const path = `${this.basePath}/send_offer_to_interested_buyers`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<SendOfferToInterestedBuyersInput>(
-					input,
-					"input",
-				);
-			const { marketplaceId, ...offerData } = validatedInput;
-			const createOffersRequest =
-				yield* requireObjectEffect<CreateOffersRequest>(offerData, "offerData");
-			const validatedMarketplaceId = yield* optionalStringEffect(
-				marketplaceId,
-				"marketplaceId",
-			);
-			const config: EbayRequestConfig | undefined =
-				validatedMarketplaceId === undefined
-					? undefined
-					: { headers: { "X-EBAY-C-MARKETPLACE-ID": validatedMarketplaceId } };
+		const validatedInput =
+			requireObjectEffect<SendOfferToInterestedBuyersInput>(input, "input");
+		const { marketplaceId, ...offerData } = validatedInput;
+		const createOffersRequest = requireObjectEffect<CreateOffersRequest>(
+			offerData,
+			"offerData",
+		);
+		const validatedMarketplaceId = optionalStringEffect(
+			marketplaceId,
+			"marketplaceId",
+		);
+		const config: EbayRequestConfig | undefined =
+			validatedMarketplaceId === undefined
+				? undefined
+				: { headers: { "X-EBAY-C-MARKETPLACE-ID": validatedMarketplaceId } };
 
-			return yield* requestPostEffect<SendOfferToInterestedBuyersResponse>(
-				apiClient,
-				path,
-				createOffersRequest,
-				config,
-			);
-		});
+		return await requestPostEffect<SendOfferToInterestedBuyersResponse>(
+			apiClient,
+			path,
+			createOffersRequest,
+			config,
+		);
 	};
 }

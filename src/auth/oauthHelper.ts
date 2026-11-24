@@ -16,11 +16,11 @@ export interface OAuthCallbackResult {
 	/** Authorization code eBay appended to the redirect, when successful. */
 	code?: string;
 	/** Opaque CSRF value echoed back by eBay, when a `state` was sent. */
-	state?: string;
+	state?: string | undefined;
 	/** Error code: an eBay `error`, `'timeout'`, or `'invalid_state'`. */
 	error?: string;
 	/** Human-readable detail for {@link OAuthCallbackResult.error}. */
-	errorDescription?: string;
+	errorDescription?: string | undefined;
 }
 
 /**
@@ -275,7 +275,9 @@ export const interactiveOAuthFlow = async (
 
 	// Extract port from redirect URI
 	const portMatch = /:(\d+)/.exec(redirectUri);
-	const port = portMatch ? Number.parseInt(portMatch[1], 10) : 3000;
+	const portText = portMatch?.[1];
+	const isPortMissing = portText == null;
+	const port = isPortMissing ? 3000 : Number.parseInt(portText, 10);
 
 	// Start callback server
 	writeCliLine(chalk.cyan("Starting local OAuth callback server...\n"));

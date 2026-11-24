@@ -420,26 +420,24 @@ export const formatScopeForDisplay = (scope: string): string => {
 export const groupScopesByCategory = (
 	scopes: string[],
 ): Record<string, string[]> => {
-	const categories: Record<string, string[]> = {
-		sell: [],
-		buy: [],
-		commerce: [],
-		other: [],
-	};
+	const sell: string[] = [];
+	const buy: string[] = [];
+	const commerce: string[] = [];
+	const other: string[] = [];
 
 	scopes.forEach((scope) => {
 		if (scope.includes("/sell.")) {
-			categories.sell.push(scope);
+			sell.push(scope);
 		} else if (scope.includes("/buy.")) {
-			categories.buy.push(scope);
+			buy.push(scope);
 		} else if (scope.includes("/commerce.")) {
-			categories.commerce.push(scope);
+			commerce.push(scope);
 		} else {
-			categories.other.push(scope);
+			other.push(scope);
 		}
 	});
 
-	return categories;
+	return { sell, buy, commerce, other };
 };
 
 /**
@@ -531,6 +529,11 @@ export const getScopeTypeDescription = (scope: string): string => {
 	// Extract the last part of the scope
 	const parts = scope.split("/");
 	const scopeType = parts[parts.length - 1];
+	const isScopeTypeMissing = scopeType == null;
+
+	if (isScopeTypeMissing) {
+		return `Access to ${scope}`;
+	}
 
 	const descriptions: Record<string, string> = {
 		api_scope: "View public data from eBay",
@@ -564,5 +567,6 @@ export const getScopeTypeDescription = (scope: string): string => {
 		"sell.stores.readonly": "View eBay stores",
 	};
 
-	return descriptions[scopeType] || `Access to ${scopeType}`;
+	const description = descriptions[scopeType];
+	return description ?? `Access to ${scopeType}`;
 };

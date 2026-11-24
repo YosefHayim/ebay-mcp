@@ -33,6 +33,7 @@ import type {
 	ChartViewModel,
 	StatTile,
 	StatViewModel,
+	TableRow,
 	TableViewModel,
 	Tone,
 } from "@/tool-registry/ui/viewModels.js";
@@ -77,6 +78,68 @@ const footnoteFor = (
 	return total > shown ? `Showing ${shown} of ${total}` : `${total} total`;
 };
 
+function createTableRow(row: {
+	id: string;
+	cells: TableRow["cells"];
+	drill: TableRow["drill"];
+}): TableRow {
+	const view: TableRow = { id: row.id, cells: row.cells };
+	const drill = row.drill;
+
+	if (drill != null) {
+		view.drill = drill;
+	}
+
+	return view;
+}
+
+function createTableView(table: {
+	title: string;
+	columns: TableViewModel["columns"];
+	rows: TableViewModel["rows"];
+	footnote: string | undefined;
+}): TableViewModel {
+	const view: TableViewModel = {
+		archetype: "table",
+		title: table.title,
+		columns: table.columns,
+		rows: table.rows,
+	};
+	const footnote = table.footnote;
+
+	if (footnote != null) {
+		view.footnote = footnote;
+	}
+
+	return view;
+}
+
+function createCardView(card: {
+	title: string;
+	subtitle: string | null | undefined;
+	badges: CardBadge[] | undefined;
+	sections: CardSection[];
+}): CardViewModel {
+	const view: CardViewModel = {
+		archetype: "card",
+		title: card.title,
+		sections: card.sections,
+	};
+	const subtitle = card.subtitle;
+
+	if (subtitle != null) {
+		view.subtitle = subtitle;
+	}
+
+	const badges = card.badges;
+
+	if (badges != null) {
+		view.badges = badges;
+	}
+
+	return view;
+}
+
 type OfferPricing = Pick<
 	EbayOfferDetailsWithAll,
 	"format" | "listingDuration" | "pricingSummary"
@@ -118,7 +181,20 @@ const offerPriceFields = (offer: OfferPricing): CardSection["fields"] => {
 /** Builds a status badge only when eBay returned a status value to display. */
 const statusBadge = (status: string | undefined): CardBadge | undefined => {
 	const label = humanizeStatus(status);
-	return label ? { label, tone: statusTone(status) } : undefined;
+	const isLabelMissing = label == null;
+
+	if (isLabelMissing) {
+		return undefined;
+	}
+
+	const badge: CardBadge = { label };
+	const tone = statusTone(status);
+
+	if (tone != null) {
+		badge.tone = tone;
+	}
+
+	return badge;
 };
 
 /**
@@ -136,8 +212,7 @@ export const mapOrdersToTable = (
 	orderPage: OrderSearchPagedCollection,
 ): TableViewModel => {
 	const orders = orderPage.orders ?? [];
-	return {
-		archetype: "table",
+	return createTableView({
 		title: "Orders",
 		columns: [
 			{ key: "orderId", label: "Order" },
@@ -147,26 +222,31 @@ export const mapOrdersToTable = (
 			{ key: "buyer", label: "Buyer" },
 			{ key: "total", label: "Total", align: "right" },
 		],
-		rows: orders.map((order, index) => ({
-			id: order.orderId ?? `order-${index}`,
-			cells: {
-				orderId: order.orderId ?? null,
-				creationDate: order.creationDate ?? null,
-				fulfillment: humanizeStatus(order.orderFulfillmentStatus),
-				payment: humanizeStatus(order.orderPaymentStatus),
-				buyer: order.buyer?.username ?? null,
-				total: formatAmount(order.pricingSummary?.total),
-			},
-			drill: order.orderId
-				? {
-						tool: "ebay_get_order",
-						arguments: { orderId: order.orderId },
-						label: "View order",
-					}
-				: undefined,
-		})),
+		rows: orders.map(function toOrderRow(order, index) {
+			const orderId = order.orderId;
+			const drill =
+				orderId == null
+					? undefined
+					: {
+							tool: "ebay_get_order",
+							arguments: { orderId },
+							label: "View order",
+						};
+			return createTableRow({
+				id: orderId ?? `order-${index}`,
+				cells: {
+					orderId: orderId ?? null,
+					creationDate: order.creationDate ?? null,
+					fulfillment: humanizeStatus(order.orderFulfillmentStatus),
+					payment: humanizeStatus(order.orderPaymentStatus),
+					buyer: order.buyer?.username ?? null,
+					total: formatAmount(order.pricingSummary?.total),
+				},
+				drill,
+			});
+		}),
 		footnote: footnoteFor(orders.length, orderPage.total),
-	};
+	});
 };
 
 /**
@@ -184,8 +264,7 @@ export const mapFulfillmentsToTable = (
 	fulfillmentPage: ShippingFulfillmentPagedCollection,
 ): TableViewModel => {
 	const fulfillments = fulfillmentPage.fulfillments ?? [];
-	return {
-		archetype: "table",
+	return createTableView({
 		title: "Shipping fulfillments",
 		columns: [
 			{ key: "fulfillmentId", label: "Fulfillment" },
@@ -203,7 +282,7 @@ export const mapFulfillmentsToTable = (
 			},
 		})),
 		footnote: footnoteFor(fulfillments.length, fulfillmentPage.total),
-	};
+	});
 };
 
 /**
@@ -219,8 +298,7 @@ export const mapFulfillmentsToTable = (
  */
 export const mapOffersToTable = (offerPage: Offers): TableViewModel => {
 	const offers = offerPage.offers ?? [];
-	return {
-		archetype: "table",
+	return createTableView({
 		title: "Offers",
 		columns: [
 			{ key: "offerId", label: "Offer" },
@@ -231,27 +309,32 @@ export const mapOffersToTable = (offerPage: Offers): TableViewModel => {
 			{ key: "quantity", label: "Qty", align: "right" },
 			{ key: "status", label: "Status" },
 		],
-		rows: offers.map((offer, index) => ({
-			id: offer.offerId ?? offer.sku ?? `offer-${index}`,
-			cells: {
-				offerId: offer.offerId ?? null,
-				sku: offer.sku ?? null,
-				marketplace: offer.marketplaceId ?? null,
-				format: humanizeStatus(offer.format),
-				price: formatAmount(offerListPrice(offer)),
-				quantity: offer.availableQuantity ?? null,
-				status: humanizeStatus(offer.status),
-			},
-			drill: offer.offerId
-				? {
-						tool: "ebay_get_offer",
-						arguments: { offerId: offer.offerId },
-						label: "View offer",
-					}
-				: undefined,
-		})),
+		rows: offers.map(function toOfferRow(offer, index) {
+			const offerId = offer.offerId;
+			const drill =
+				offerId == null
+					? undefined
+					: {
+							tool: "ebay_get_offer",
+							arguments: { offerId },
+							label: "View offer",
+						};
+			return createTableRow({
+				id: offerId ?? offer.sku ?? `offer-${index}`,
+				cells: {
+					offerId: offerId ?? null,
+					sku: offer.sku ?? null,
+					marketplace: offer.marketplaceId ?? null,
+					format: humanizeStatus(offer.format),
+					price: formatAmount(offerListPrice(offer)),
+					quantity: offer.availableQuantity ?? null,
+					status: humanizeStatus(offer.status),
+				},
+				drill,
+			});
+		}),
 		footnote: footnoteFor(offers.length, offerPage.total),
-	};
+	});
 };
 
 /**
@@ -269,8 +352,7 @@ export const mapInventoryItemsToTable = (
 	inventoryPage: InventoryItems,
 ): TableViewModel => {
 	const inventoryItems = inventoryPage.inventoryItems ?? [];
-	return {
-		archetype: "table",
+	return createTableView({
 		title: "Inventory items",
 		columns: [
 			{ key: "sku", label: "SKU" },
@@ -278,26 +360,31 @@ export const mapInventoryItemsToTable = (
 			{ key: "condition", label: "Condition" },
 			{ key: "quantity", label: "Qty", align: "right" },
 		],
-		rows: inventoryItems.map((inventoryItem, index) => ({
-			id: inventoryItem.sku ?? `item-${index}`,
-			cells: {
-				sku: inventoryItem.sku ?? null,
-				title: truncate(inventoryItem.product?.title, 60) || null,
-				condition: humanizeStatus(inventoryItem.condition),
-				quantity:
-					inventoryItem.availability?.shipToLocationAvailability?.quantity ??
-					null,
-			},
-			drill: inventoryItem.sku
-				? {
-						tool: "ebay_get_inventory_item",
-						arguments: { sku: inventoryItem.sku },
-						label: "View item",
-					}
-				: undefined,
-		})),
+		rows: inventoryItems.map(function toInventoryRow(inventoryItem, index) {
+			const sku = inventoryItem.sku;
+			const drill =
+				sku == null
+					? undefined
+					: {
+							tool: "ebay_get_inventory_item",
+							arguments: { sku },
+							label: "View item",
+						};
+			return createTableRow({
+				id: sku ?? `item-${index}`,
+				cells: {
+					sku: sku ?? null,
+					title: truncate(inventoryItem.product?.title, 60) || null,
+					condition: humanizeStatus(inventoryItem.condition),
+					quantity:
+						inventoryItem.availability?.shipToLocationAvailability?.quantity ??
+						null,
+				},
+				drill,
+			});
+		}),
 		footnote: footnoteFor(inventoryItems.length, inventoryPage.total),
-	};
+	});
 };
 
 /**
@@ -315,8 +402,7 @@ export const mapLocationsToTable = (
 	locationPage: LocationResponse,
 ): TableViewModel => {
 	const locations = locationPage.locations ?? [];
-	return {
-		archetype: "table",
+	return createTableView({
 		title: "Inventory locations",
 		columns: [
 			{ key: "key", label: "Location key" },
@@ -336,7 +422,7 @@ export const mapLocationsToTable = (
 			},
 		})),
 		footnote: footnoteFor(locations.length, locationPage.total),
-	};
+	});
 };
 
 /**
@@ -356,8 +442,7 @@ export const mapDisputeSummariesToTable = (
 	disputeSummaryPage: DisputeSummaryResponse,
 ): TableViewModel => {
 	const disputes = disputeSummaryPage.paymentDisputeSummaries ?? [];
-	return {
-		archetype: "table",
+	return createTableView({
 		title: "Payment disputes",
 		columns: [
 			{ key: "disputeId", label: "Dispute" },
@@ -368,27 +453,32 @@ export const mapDisputeSummariesToTable = (
 			{ key: "buyer", label: "Buyer" },
 			{ key: "openDate", label: "Opened" },
 		],
-		rows: disputes.map((dispute, index) => ({
-			id: dispute.paymentDisputeId ?? `dispute-${index}`,
-			cells: {
-				disputeId: dispute.paymentDisputeId ?? null,
-				orderId: dispute.orderId ?? null,
-				status: humanizeStatus(dispute.paymentDisputeStatus),
-				reason: humanizeStatus(dispute.reason),
-				amount: formatAmount(dispute.amount),
-				buyer: dispute.buyerUsername ?? null,
-				openDate: dispute.openDate ?? null,
-			},
-			drill: dispute.paymentDisputeId
-				? {
-						tool: "ebay_get_payment_dispute",
-						arguments: { paymentDisputeId: dispute.paymentDisputeId },
-						label: "View dispute",
-					}
-				: undefined,
-		})),
+		rows: disputes.map(function toDisputeRow(dispute, index) {
+			const paymentDisputeId = dispute.paymentDisputeId;
+			const drill =
+				paymentDisputeId == null
+					? undefined
+					: {
+							tool: "ebay_get_payment_dispute",
+							arguments: { paymentDisputeId },
+							label: "View dispute",
+						};
+			return createTableRow({
+				id: paymentDisputeId ?? `dispute-${index}`,
+				cells: {
+					disputeId: paymentDisputeId ?? null,
+					orderId: dispute.orderId ?? null,
+					status: humanizeStatus(dispute.paymentDisputeStatus),
+					reason: humanizeStatus(dispute.reason),
+					amount: formatAmount(dispute.amount),
+					buyer: dispute.buyerUsername ?? null,
+					openDate: dispute.openDate ?? null,
+				},
+				drill,
+			});
+		}),
 		footnote: footnoteFor(disputes.length, disputeSummaryPage.total),
-	};
+	});
 };
 
 /**
@@ -413,12 +503,11 @@ export const mapOrderToCard = (order: Order): CardViewModel => {
 	if (paymentBadge) {
 		badges.push(paymentBadge);
 	}
-	return {
-		archetype: "card",
+	const buyerName = order.buyer?.username;
+	const subtitle = buyerName == null ? undefined : `Buyer: ${buyerName}`;
+	return createCardView({
 		title: order.orderId ? `Order ${order.orderId}` : "Order",
-		subtitle: order.buyer?.username
-			? `Buyer: ${order.buyer.username}`
-			: undefined,
+		subtitle,
 		badges,
 		sections: [
 			{
@@ -437,7 +526,7 @@ export const mapOrderToCard = (order: Order): CardViewModel => {
 				})),
 			},
 		],
-	};
+	});
 };
 
 /**
@@ -465,10 +554,11 @@ export const mapOfferToCard = (
 			badges.push({ label: formatLabel });
 		}
 	}
-	return {
-		archetype: "card",
+	const sku = offer.sku;
+	const subtitle = sku == null ? undefined : `SKU: ${sku}`;
+	return createCardView({
 		title: offer.offerId ? `Offer ${offer.offerId}` : "Offer",
-		subtitle: offer.sku ? `SKU: ${offer.sku}` : undefined,
+		subtitle,
 		badges,
 		sections: [
 			{
@@ -493,7 +583,7 @@ export const mapOfferToCard = (
 				],
 			},
 		],
-	};
+	});
 };
 
 /**
@@ -512,11 +602,14 @@ export const mapInventoryItemToCard = (
 ): CardViewModel => {
 	const product = inventoryItem.product;
 	const conditionBadge = statusBadge(inventoryItem.condition);
-	return {
-		archetype: "card",
+	const productTitle = product?.title;
+	const subtitle =
+		productTitle == null ? undefined : truncate(productTitle, 80);
+	const badges = conditionBadge == null ? undefined : [conditionBadge];
+	return createCardView({
 		title: inventoryItem.sku ? `SKU ${inventoryItem.sku}` : "Inventory item",
-		subtitle: product?.title ? truncate(product.title, 80) : undefined,
-		badges: conditionBadge ? [conditionBadge] : undefined,
+		subtitle,
+		badges,
 		sections: [
 			{
 				heading: "Product",
@@ -541,7 +634,7 @@ export const mapInventoryItemToCard = (
 				],
 			},
 		],
-	};
+	});
 };
 
 /**
@@ -579,15 +672,17 @@ export const mapDisputeToCard = (dispute: PaymentDispute): CardViewModel => {
 		});
 	}
 	const disputeBadge = statusBadge(dispute.paymentDisputeStatus);
-	return {
-		archetype: "card",
+	const orderId = dispute.orderId;
+	const subtitle = orderId == null ? undefined : `Order: ${orderId}`;
+	const badges = disputeBadge == null ? undefined : [disputeBadge];
+	return createCardView({
 		title: dispute.paymentDisputeId
 			? `Dispute ${dispute.paymentDisputeId}`
 			: "Payment dispute",
-		subtitle: dispute.orderId ? `Order: ${dispute.orderId}` : undefined,
-		badges: disputeBadge ? [disputeBadge] : undefined,
+		subtitle,
+		badges,
 		sections,
-	};
+	});
 };
 
 /**
@@ -634,13 +729,13 @@ export const mapStandardsProfileToCard = (
 		});
 	}
 	const standardsBadge = statusBadge(standardsProfile.standardsLevel);
-	return {
-		archetype: "card",
+	const badges = standardsBadge == null ? undefined : [standardsBadge];
+	return createCardView({
 		title: humanizeStatus(standardsProfile.program) ?? "Seller standards",
-		subtitle: humanizeStatus(standardsProfile.cycle?.cycleType) ?? undefined,
-		badges: standardsBadge ? [standardsBadge] : undefined,
+		subtitle: humanizeStatus(standardsProfile.cycle?.cycleType),
+		badges,
 		sections,
-	};
+	});
 };
 
 /**

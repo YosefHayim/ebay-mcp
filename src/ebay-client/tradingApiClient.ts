@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import XmlBuilder, {
 	type XMLBuilder as XmlBuilderInstance,
 } from "fast-xml-builder";
@@ -8,7 +7,7 @@ import { EbayApiError } from "@/ebay-client/request.js";
 import { TradingApiFailure } from "@/ebay-client/tradingApiFailure.js";
 import { getBaseUrl, getTradingSiteId } from "@/shared/environment.js";
 import { getErrorMessage } from "@/shared/errors.js";
-import { httpRequestEffect } from "@/shared/http.js";
+import { httpRequest } from "@/shared/http.js";
 import { apiLogger } from "@/shared/logger.js";
 import { isRecord } from "@/shared/typeGuards.js";
 
@@ -89,105 +88,97 @@ const createTradingApiError = (
 		}),
 	});
 
-const authorizeTradingHeaders = ({
+async function authorizeTradingHeaders({
 	restClient,
 	headers,
 	callName,
 	path,
-}: TradingAuthContext): Effect.Effect<Record<string, string>, EbayApiError> => {
+}: TradingAuthContext): Promise<Record<string, string>> {
 	if (restClient.getConfig().disableAuthHeader) {
-		return Effect.succeed(headers);
+		return headers;
 	}
 
-	return restClient
-		.getOAuthClient()
-		.getAccessToken()
-		.pipe(
-			Effect.mapError((error) =>
-				createTradingApiError(
-					{ callName, path },
-					`token acquisition failed: ${getErrorMessage(error)}`,
-				),
-			),
-			Effect.map((token) => ({ ...headers, "X-EBAY-API-IAF-TOKEN": token })),
+	try {
+		const token = await restClient.getOAuthClient().getAccessToken();
+		return { ...headers, "X-EBAY-API-IAF-TOKEN": token };
+	} catch (error) {
+		throw createTradingApiError(
+			{ callName, path },
+			`token acquisition failed: ${getErrorMessage(error)}`,
 		);
-};
+	}
+}
 
-const postTradingXml = ({
+async function postTradingXml({
 	path,
 	headers,
 	xmlBody,
 	callName,
-}: TradingPostContext): Effect.Effect<
-	{ readonly data: string },
-	EbayApiError
-> =>
-	httpRequestEffect<string>({
-		method: "POST",
-		url: path,
-		headers,
-		body: xmlBody,
-		timeoutMs: 30_000,
-		responseType: "text",
-	}).pipe(
-		Effect.mapError((error) =>
-			createTradingApiError(
-				{ callName, path },
-				`request failed: ${getErrorMessage(error)}`,
-			),
-		),
-	);
+}: TradingPostContext): Promise<{ readonly data: string }> {
+	try {
+		return await httpRequest<string>({
+			method: "POST",
+			url: path,
+			headers,
+			body: xmlBody,
+			timeoutMs: 30_000,
+			responseType: "text",
+		});
+	} catch (error) {
+		throw createTradingApiError(
+			{ callName, path },
+			`request failed: ${getErrorMessage(error)}`,
+		);
+	}
+}
 
-const parseTradingXml = ({
+function parseTradingXml({
 	parser,
 	responseText,
 	callName,
 	path,
-}: TradingParseContext): Effect.Effect<Record<string, unknown>, EbayApiError> =>
-	Effect.try({
-		try: () => parser.parse(responseText),
-		catch: (error) =>
-			new EbayApiError({
-				method: "POST",
+}: TradingParseContext): Record<string, unknown> {
+	let parsedValue: unknown;
+
+	try {
+		parsedValue = parser.parse(responseText);
+	} catch (error) {
+		throw new EbayApiError({
+			method: "POST",
+			path,
+			cause: new TradingApiFailure({
+				callName,
 				path,
-				cause: new TradingApiFailure({
-					callName,
-					path,
-					message: `Failed to parse Trading API ${callName} response: ${getErrorMessage(error)}`,
-					cause: error,
-				}),
+				message: `Failed to parse Trading API ${callName} response: ${getErrorMessage(error)}`,
+				cause: error,
 			}),
-	}).pipe(
-		Effect.flatMap((parsedValue) => {
-			if (isRecord(parsedValue)) {
-				return Effect.succeed(parsedValue);
-			}
+		});
+	}
 
-			return Effect.fail(
-				createTradingApiError({ callName, path }, "response must be an object"),
-			);
-		}),
-	);
+	if (isRecord(parsedValue)) {
+		return parsedValue;
+	}
 
-const readTradingPayload = (
+	throw createTradingApiError({ callName, path }, "response must be an object");
+}
+
+function readTradingPayload(
 	parsed: Record<string, unknown>,
 	responseTag: string,
 	{ callName, path }: TradingFailureContext,
-): Effect.Effect<Record<string, unknown>, EbayApiError> => {
+): Record<string, unknown> {
 	const responsePayload =
 		parsed[responseTag] === undefined ? parsed : parsed[responseTag];
 
 	if (isRecord(responsePayload)) {
-		return Effect.succeed(responsePayload);
+		return responsePayload;
 	}
 
-	return Effect.fail(
-		createTradingApiError(
-			{ callName, path },
-			"response payload is not an object",
-		),
+	throw createTradingApiError(
+		{ callName, path },
+		"response payload is not an object",
 	);
-};
+}
 
 const extractTradingErrorMessage = (errors: unknown): string => {
 	const firstError = Array.isArray(errors) ? errors[0] : errors;
@@ -196,12 +187,12 @@ const extractTradingErrorMessage = (errors: unknown): string => {
 		return "Trading API returned a failure without an error message";
 	}
 
-	const shortMessage = firstError.ShortMessage;
+	const shortMessage = firstError["ShortMessage"];
 	if (typeof shortMessage === "string" && shortMessage !== "") {
 		return shortMessage;
 	}
 
-	const longMessage = firstError.LongMessage;
+	const longMessage = firstError["LongMessage"];
 	if (typeof longMessage === "string" && longMessage !== "") {
 		return longMessage;
 	}
@@ -209,36 +200,53 @@ const extractTradingErrorMessage = (errors: unknown): string => {
 	return "Trading API returned a failure without an error message";
 };
 
-const validateTradingAck = (
+function tradingCallFailure(path: string, cause: unknown): EbayApiError {
+	if (cause instanceof EbayApiError) {
+		return cause;
+	}
+
+	return new EbayApiError({ method: "POST", path, cause });
+}
+
+function isTradingFailureAck(ack: unknown): boolean {
+	if (ack === "Failure") {
+		return true;
+	}
+
+	if (ack === "PartialFailure") {
+		return true;
+	}
+
+	return false;
+}
+
+function validateTradingAck(
 	tradingPayload: Record<string, unknown>,
 	{ callName, path }: TradingFailureContext,
-): Effect.Effect<Record<string, unknown>, EbayApiError> => {
-	if (tradingPayload.Ack === "Warning") {
+): Record<string, unknown> {
+	if (tradingPayload["Ack"] === "Warning") {
 		apiLogger.warn(`Trading API ${callName} returned warnings`, {
-			errors: tradingPayload.Errors,
+			errors: tradingPayload["Errors"],
 		});
 	}
 
-	if (
-		tradingPayload.Ack === "Failure" ||
-		tradingPayload.Ack === "PartialFailure"
-	) {
-		return Effect.fail(
-			new EbayApiError({
-				method: "POST",
+	const isFailed = isTradingFailureAck(tradingPayload["Ack"]);
+
+	if (isFailed) {
+		throw new EbayApiError({
+			method: "POST",
+			path,
+			cause: new TradingApiFailure({
+				callName,
 				path,
-				cause: new TradingApiFailure({
-					callName,
-					path,
-					message: extractTradingErrorMessage(tradingPayload.Errors),
-					cause: tradingPayload.Errors,
-				}),
+				message: extractTradingErrorMessage(tradingPayload["Errors"]),
+				cause: tradingPayload["Errors"],
 			}),
-		);
+		});
 	}
 
-	return Effect.succeed(tradingPayload);
-};
+	return tradingPayload;
+}
 
 /**
  * XML-based client for eBay Trading API calls that are not covered by REST APIs.
@@ -300,57 +308,63 @@ export class TradingApiClient {
 	 *
 	 * @param callName - Trading API call name, such as GetItem or AddFixedPriceItem.
 	 * @param params - XML request payload fields nested under the generated request tag.
-	 * @returns An Effect that succeeds with the parsed response payload.
+	 * @returns The parsed response payload.
 	 *
 	 * @example
 	 * ```ts
-	 * const tradingReply = await Effect.runPromise(
-	 *   tradingClient.execute('GetItem', { ItemID: '12345' }),
-	 * );
+	 * const tradingReply = await tradingClient.execute("GetItem", {
+	 *   ItemID: "12345",
+	 * });
 	 * ```
 	 */
-	execute = (
+	private async runCall(
 		callName: string,
 		params: Record<string, unknown>,
-	): Effect.Effect<Record<string, unknown>, EbayApiError> => {
-		const tradingClient = this;
+	): Promise<Record<string, unknown>> {
 		const requestTag = `${callName}Request`;
 		const responseTag = `${callName}Response`;
-		const path = buildTradingPath(tradingClient.baseUrl);
+		const path = buildTradingPath(this.baseUrl);
 		const headers = buildTradingHeaders(callName);
-		const xmlBody = buildTradingXmlBody(
-			tradingClient.builder,
-			requestTag,
-			params,
-		);
+		const xmlBody = buildTradingXmlBody(this.builder, requestTag, params);
 
 		apiLogger.debug(`Trading API ${callName}`, { xmlBody });
 
-		return Effect.gen(function* () {
-			const authorizedHeaders = yield* authorizeTradingHeaders({
-				restClient: tradingClient.restClient,
-				headers,
-				callName,
-				path,
-			});
-			const xmlResponse = yield* postTradingXml({
-				path,
-				headers: authorizedHeaders,
-				xmlBody,
-				callName,
-			});
-			const parsed = yield* parseTradingXml({
-				parser: tradingClient.parser,
-				responseText: xmlResponse.data,
-				callName,
-				path,
-			});
-			const tradingPayload = yield* readTradingPayload(parsed, responseTag, {
-				callName,
-				path,
-			});
-
-			return yield* validateTradingAck(tradingPayload, { callName, path });
+		const authorizedHeaders = await authorizeTradingHeaders({
+			restClient: this.restClient,
+			headers,
+			callName,
+			path,
 		});
+		const xmlResponse = await postTradingXml({
+			path,
+			headers: authorizedHeaders,
+			xmlBody,
+			callName,
+		});
+		const parsed = parseTradingXml({
+			parser: this.parser,
+			responseText: xmlResponse.data,
+			callName,
+			path,
+		});
+		const tradingPayload = readTradingPayload(parsed, responseTag, {
+			callName,
+			path,
+		});
+
+		return validateTradingAck(tradingPayload, { callName, path });
+	}
+
+	execute = async (
+		callName: string,
+		params: Record<string, unknown>,
+	): Promise<Record<string, unknown>> => {
+		const path = buildTradingPath(this.baseUrl);
+
+		try {
+			return await this.runCall(callName, params);
+		} catch (cause) {
+			throw tradingCallFailure(path, cause);
+		}
 	};
 }

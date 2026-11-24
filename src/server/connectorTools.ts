@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+
 import { z } from "zod";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
@@ -40,10 +40,8 @@ export const connectorEntries: ToolEntry[] = [
 			category: "chat",
 			version: "1.0.0",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(
-				Effect.gen(function* () {
-					const requestedLimit = args.limit;
+		handler: async (api, args) => {
+			const requestedLimit = args.limit;
 					const limit =
 						typeof requestedLimit === "number" &&
 						Number.isFinite(requestedLimit)
@@ -58,7 +56,7 @@ export const connectorEntries: ToolEntry[] = [
 					let offset = 0;
 
 					while (matches.length < limit) {
-						const inventoryPage = yield* api.inventory.getInventoryItems({
+						const inventoryPage = await api.inventory.getInventoryItems({
 							limit: pageSize,
 							offset,
 						});
@@ -112,8 +110,7 @@ export const connectorEntries: ToolEntry[] = [
 							},
 						],
 					};
-				}),
-			),
+		},
 	}),
 	defineTool({
 		name: "fetch",
@@ -135,11 +132,9 @@ export const connectorEntries: ToolEntry[] = [
 			category: "chat",
 			version: "1.0.0",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(
-				Effect.gen(function* () {
-					const sku = args.id;
-					const inventoryItem = yield* api.inventory.getInventoryItem({ sku });
+		handler: async (api, args) => {
+			const sku = args.id;
+			const inventoryItem = await api.inventory.getInventoryItem({ sku });
 
 					const connectorDocument = {
 						id: sku,
@@ -153,15 +148,14 @@ export const connectorEntries: ToolEntry[] = [
 						},
 					};
 
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(connectorDocument),
-							},
-						],
-					};
-				}),
-			),
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify(connectorDocument),
+					},
+				],
+			};
+		},
 	}),
 ];

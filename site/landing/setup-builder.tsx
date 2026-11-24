@@ -140,6 +140,7 @@ export const SetupBuilder = ({ catalog }: SetupBuilderProps) => {
 					<div class="code">
 						<pre
 							data-config-code={true}
+							// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 							dangerouslySetInnerHTML={{ __html: configHtml }}
 						/>
 					</div>

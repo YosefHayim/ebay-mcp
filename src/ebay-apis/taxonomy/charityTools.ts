@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import {
 	getCharityOrgInputSchema,
 	getCharityOrgsInputSchema,
@@ -16,13 +15,13 @@ export const charityEntries: ToolEntry[] = [
 		description: `Charity API: get one charitable organization supported by eBay for Charity by charityOrgId (from ebay_get_charity_orgs): name, mission statement, description, logo, location, registration ID (EIN on EBAY_US) and website. ${CHARITY_AUTH_NOTE}`,
 		inputSchema: getCharityOrgInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.charity.getCharityOrg(args)),
+		handler: (api, args) => api.charity.getCharityOrg(args),
 	}),
 	defineTool({
 		name: "ebay_get_charity_orgs",
 		description: `Charity API: search charitable organizations supported by eBay for Charity, either by keywords (q) or by comma-separated registrationIds; supply exactly one. Paginated with limit (1-100) and offset (0-10000). ${CHARITY_AUTH_NOTE}`,
 		inputSchema: getCharityOrgsInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.charity.getCharityOrgs(args)),
+		handler: (api, args) => api.charity.getCharityOrgs(args),
 	}),
 ];

@@ -168,6 +168,6 @@ export const signEbayRequest = (
 	const signature = signBase(signatureBase, key);
 
 	headers["Signature-Input"] = `${SIGNATURE_LABEL}=${signatureParams}`;
-	headers.Signature = `${SIGNATURE_LABEL}=:${signature}:`;
+	headers["Signature"] = `${SIGNATURE_LABEL}=:${signature}:`;
 	return headers;
 };

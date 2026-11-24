@@ -1,23 +1,20 @@
-import { Data, Effect } from "effect";
-
-/** Utility functions for date/timestamp conversion and validation. */
-
-/** Tagged failure returned when user-supplied date input cannot be parsed. */
-export class DateConversionError extends Data.TaggedError(
-	"DateConversionError",
-)<{
-	/** Original date value supplied by the caller. */
+export class DateConversionError extends Error {
+	readonly _tag = "DateConversionError" as const;
 	readonly input: string | Date | number;
-	/** Human-readable parse failure. */
-	readonly message: string;
-}> {}
 
-/** Return a tagged date-conversion failure for invalid user input. */
-const invalidDateInput = (
+	constructor(fields: { input: string | Date | number; message: string }) {
+		super(fields.message);
+		this.name = "DateConversionError";
+		this.input = fields.input;
+	}
+}
+
+function invalidDateInput(
 	input: string | Date | number,
 	message: string,
-): Effect.Effect<never, DateConversionError> =>
-	Effect.fail(new DateConversionError({ input, message }));
+): never {
+	throw new DateConversionError({ input, message });
+}
 
 /**
  * Convert a date string or Date object to Unix timestamp (milliseconds).
@@ -30,16 +27,16 @@ const invalidDateInput = (
  * - Relative time: "in 2 hours", "in 7200 seconds"
  *
  * @param dateInput - Date string, Date object, or Unix timestamp
- * @returns An Effect that succeeds with a Unix timestamp in milliseconds.
+ * @returns Unix timestamp in milliseconds.
  *
  * @example
  * ```ts
- * const timestamp = await Effect.runPromise(convertToTimestamp('2026-01-15T10:30:00Z'));
+ * const timestamp = convertToTimestamp('2026-01-15T10:30:00Z');
  * ```
  */
 export const convertToTimestamp = (
 	dateInput: string | Date | number,
-): Effect.Effect<number, DateConversionError> => {
+): number => {
 	// If already a number, handle as timestamp
 	if (typeof dateInput === "number") {
 		// If appears to be seconds (less than year 2100 in milliseconds)
@@ -50,12 +47,12 @@ export const convertToTimestamp = (
 
 			// If multiplying by 1000 gives reasonable future date, it's seconds
 			if (asSeconds > now - 100 * 365 * 24 * 60 * 60 * 1000) {
-				return Effect.succeed(Math.floor(asSeconds));
+				return Math.floor(asSeconds);
 			}
 		}
 
 		// Already milliseconds
-		return Effect.succeed(Math.floor(dateInput));
+		return Math.floor(dateInput);
 	}
 
 	// If Date object
@@ -64,7 +61,7 @@ export const convertToTimestamp = (
 		if (Number.isNaN(timestamp)) {
 			return invalidDateInput(dateInput, "Invalid Date object");
 		}
-		return Effect.succeed(timestamp);
+		return timestamp;
 	}
 
 	// If string, try parsing
@@ -73,15 +70,29 @@ export const convertToTimestamp = (
 		const relativeMatch =
 			/^in\s+(\d+)\s+(hours?|minutes?|seconds?|days?)$/i.exec(dateInput);
 		if (relativeMatch) {
-			const amount = Number.parseInt(relativeMatch[1], 10);
-			const unit = relativeMatch[2].toLowerCase();
+			const amountText = relativeMatch[1];
+			const unitText = relativeMatch[2];
+			const isAmountMissing = amountText == null;
+
+			if (isAmountMissing) {
+				return invalidDateInput(dateInput, "Invalid relative time");
+			}
+
+			const isUnitMissing = unitText == null;
+
+			if (isUnitMissing) {
+				return invalidDateInput(dateInput, "Invalid relative time");
+			}
+
+			const amount = Number.parseInt(amountText, 10);
+			const unit = unitText.toLowerCase();
 
 			let multiplier = 1000; // Default to seconds
 			if (unit.startsWith("minute")) multiplier = 60 * 1000;
 			else if (unit.startsWith("hour")) multiplier = 60 * 60 * 1000;
 			else if (unit.startsWith("day")) multiplier = 24 * 60 * 60 * 1000;
 
-			return Effect.succeed(Date.now() + amount * multiplier);
+			return Date.now() + amount * multiplier;
 		}
 
 		// Try parsing as ISO date or other standard format
@@ -93,7 +104,7 @@ export const convertToTimestamp = (
 			);
 		}
 
-		return Effect.succeed(parsed);
+		return parsed;
 	}
 
 	return invalidDateInput(

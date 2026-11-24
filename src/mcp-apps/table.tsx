@@ -79,7 +79,7 @@ function Table({
 											column.align === "right" ? "align-right" : undefined
 										}
 									>
-										{formatCell(row.cells[column.key])}
+										{formatCell(row.cells[column.key] ?? null)}
 									</td>
 								))}
 							</tr>

@@ -3,7 +3,6 @@
 import process from "node:process";
 import chalk from "chalk";
 import { execFileSync, execSync } from "child_process";
-import { Effect, Either } from "effect";
 import {
 	existsSync,
 	mkdirSync,
@@ -128,24 +127,22 @@ async function downloadSpecs(): Promise<{
 		const specPath = join(SPECS_DIR, folder, fileName);
 
 		const stopSpinner = showSpinner(`Downloading ${api} (${fileName})...`);
-		const refresh = refreshCachedSpec(url, specPath).pipe(Effect.either);
-		const refreshOutcome = await Effect.runPromise(refresh);
-		stopSpinner();
-
-		if (Either.isRight(refreshOutcome)) {
+		try {
+			await refreshCachedSpec(url, specPath);
+			stopSpinner();
 			console.log(`  ${ui.success("✓")} ${api} (${fileName})`);
 			downloaded++;
-			continue;
+		} catch (error) {
+			stopSpinner();
+			const reason = getErrorMessage(error, "download failed");
+			const cacheNote = existsSync(specPath)
+				? "kept the cached copy"
+				: "no cached copy";
+			console.log(
+				`  ${ui.error("✗")} ${api} (${fileName}): unavailable, ${reason}; ${cacheNote}`,
+			);
+			unavailable.push({ api, fileName, url, reason });
 		}
-
-		const reason = refreshOutcome.left.message;
-		const cacheNote = existsSync(specPath)
-			? "kept the cached copy"
-			: "no cached copy";
-		console.log(
-			`  ${ui.error("✗")} ${api} (${fileName}): unavailable, ${reason}; ${cacheNote}`,
-		);
-		unavailable.push({ api, fileName, url, reason });
 	}
 
 	if (unavailable.length > 0 && downloaded === 0) {
@@ -176,21 +173,15 @@ function generateTypes(): number {
 			if (entry.isDirectory()) {
 				processDirectory(fullPath);
 			} else if (entry.name.endsWith(".json")) {
-				const fileContent = Effect.runSync(
-					Effect.either(
-						Effect.try({
-							try: () => readFileSync(fullPath, "utf-8"),
-							catch: (error) => error,
-						}),
-					),
-				);
+				let content: string;
 
-				if (Either.isLeft(fileContent)) {
+				try {
+					content = readFileSync(fullPath, "utf-8");
+				} catch {
 					skipped++;
 					continue;
 				}
 
-				const content = fileContent.right;
 				if (!(content.includes('"openapi"') || content.includes('"swagger"'))) {
 					skipped++;
 					continue;
@@ -210,49 +201,40 @@ function generateTypes(): number {
 
 				const outputPath = join(TYPES_DIR, `${camelCaseName}.ts`);
 
-				const generatedFile = Effect.runSync(
-					Effect.either(
-						Effect.try({
-							try: () => {
-								const { spec, danglingRefs } = replaceDanglingSchemaRefs(
-									JSON.parse(content),
-								);
-								if (danglingRefs.length === 0) {
-									execSync(
-										`npx openapi-typescript "${fullPath}" -o "${outputPath}" --silent`,
-										{
-											stdio: "pipe",
-											cwd: PROJECT_ROOT,
-										},
-									);
-									return;
-								}
-
-								// openapi-typescript aborts on the first unresolved $ref, so feed it the
-								// rewritten spec on stdin instead of the upstream file.
-								console.log(
-									`  ${ui.warning("⚠")} ${camelCaseName}: undefined upstream schemas typed as unknown: ${danglingRefs.join(", ")}`,
-								);
-								execSync(`npx openapi-typescript -o "${outputPath}" --silent`, {
-									input: JSON.stringify(spec),
-									stdio: "pipe",
-									cwd: PROJECT_ROOT,
-								});
-							},
-							catch: (error) => error,
-						}),
-					),
-				);
-
-				if (Either.isRight(generatedFile)) {
-					applyNamespaceNames(outputPath, camelCaseName);
-					console.log(`  ${ui.success("✓")} ${camelCaseName}.ts`);
-					generatedPaths.push(outputPath);
-				} else {
-					console.log(
-						`  ${ui.error("✗")} ${camelCaseName}.ts (generation failed): ${getErrorMessage(generatedFile.left)}`,
+				try {
+					const { spec, danglingRefs } = replaceDanglingSchemaRefs(
+						JSON.parse(content),
 					);
+					if (danglingRefs.length === 0) {
+						execSync(
+							`npx openapi-typescript "${fullPath}" -o "${outputPath}" --silent`,
+							{
+								stdio: "pipe",
+								cwd: PROJECT_ROOT,
+							},
+						);
+					} else {
+						// openapi-typescript aborts on the first unresolved $ref, so feed it the
+						// rewritten spec on stdin instead of the upstream file.
+						console.log(
+							`  ${ui.warning("⚠")} ${camelCaseName}: undefined upstream schemas typed as unknown: ${danglingRefs.join(", ")}`,
+						);
+						execSync(`npx openapi-typescript -o "${outputPath}" --silent`, {
+							input: JSON.stringify(spec),
+							stdio: "pipe",
+							cwd: PROJECT_ROOT,
+						});
+					}
+				} catch (error) {
+					console.log(
+						`  ${ui.error("✗")} ${camelCaseName}.ts (generation failed): ${getErrorMessage(error)}`,
+					);
+					continue;
 				}
+
+				applyNamespaceNames(outputPath, camelCaseName);
+				console.log(`  ${ui.success("✓")} ${camelCaseName}.ts`);
+				generatedPaths.push(outputPath);
 			}
 		}
 	}
@@ -287,21 +269,14 @@ function extractEndpointsFromSpecs(): EndpointInfo[] {
 			if (entry.isDirectory()) {
 				processDirectory(fullPath);
 			} else if (entry.name.endsWith(".json")) {
-				const parsedSpec = Effect.runSync(
-					Effect.either(
-						Effect.try({
-							try: () =>
-								JSON.parse(readFileSync(fullPath, "utf-8")) as OpenAPISpec,
-							catch: (error) => error,
-						}),
-					),
-				);
+				let spec: OpenAPISpec;
 
-				if (Either.isLeft(parsedSpec)) {
+				try {
+					spec = JSON.parse(readFileSync(fullPath, "utf-8")) as OpenAPISpec;
+				} catch {
 					continue;
 				}
 
-				const spec = parsedSpec.right;
 				if (!spec.paths) continue;
 
 				for (const [path, methods] of Object.entries(spec.paths)) {
@@ -343,7 +318,9 @@ function collectToolNames(dir: string, tools: Set<string>): void {
 			const content = readFileSync(fullPath, "utf-8");
 			const nameMatches = content.matchAll(/name:\s*['"`]([^'"`]+)['"`]/g);
 			for (const match of nameMatches) {
-				tools.add(match[1]);
+				const toolName = match[1];
+				if (toolName === undefined) continue;
+				tools.add(toolName);
 			}
 		}
 	}
@@ -382,28 +359,25 @@ function getImplementedApiMethods(): Set<string> {
 				!entry.name.endsWith("Tools.ts") &&
 				!entry.name.endsWith("Schemas.ts")
 			) {
-				const source = Effect.runSync(
-					Effect.either(
-						Effect.try({
-							try: () => readFileSync(fullPath, "utf-8"),
-							catch: (error) => error,
-						}),
-					),
-				);
+				let apiFileText: string;
 
-				if (Either.isRight(source)) {
-					// Match async methods and class-field arrow endpoints (`name = (` / `public name = (`).
-					// Many area classes omit the `public` keyword (notification, trading, feedback, …).
-					const methodMatches = source.right.matchAll(
-						/(?:async\s+(\w+)\s*\(|(?:public\s+)?(\w+)\s*=\s*(?:async\s*)?\()/g,
-					);
-					for (const match of methodMatches) {
-						const name = match[1] || match[2];
-						// Skip common non-method bindings that the broader regex can catch.
-						if (!name || name === "const" || name === "let" || name === "var")
-							continue;
-						methods.add(name);
-					}
+				try {
+					apiFileText = readFileSync(fullPath, "utf-8");
+				} catch {
+					continue;
+				}
+
+				// Match async methods and class-field arrow endpoints (`name = (` / `public name = (`).
+				// Many area classes omit the `public` keyword (notification, trading, feedback, …).
+				const methodMatches = apiFileText.matchAll(
+					/(?:async\s+(\w+)\s*\(|(?:public\s+)?(\w+)\s*=\s*(?:async\s*)?\()/g,
+				);
+				for (const match of methodMatches) {
+					const name = match[1] || match[2];
+					// Skip common non-method bindings that the broader regex can catch.
+					if (!name || name === "const" || name === "let" || name === "var")
+						continue;
+					methods.add(name);
 				}
 			}
 		}
@@ -648,19 +622,13 @@ ${ui.bold("What this does:")}
 	console.log(ui.bold.green("\n✓ Sync complete!\n"));
 }
 
-void Effect.runPromise(
-	Effect.either(
-		Effect.tryPromise({
-			try: () => main(),
-			catch: (error) => error,
-		}),
-	),
-).then((syncOutcome) => {
-	if (Either.isLeft(syncOutcome)) {
-		console.error(
-			ui.error("\n  Sync failed:"),
-			getErrorMessage(syncOutcome.left),
-		);
+async function run(): Promise<void> {
+	try {
+		await main();
+	} catch (error) {
+		console.error(ui.error("\n  Sync failed:"), getErrorMessage(error));
 		process.exitCode = 1;
 	}
-});
+}
+
+void run();

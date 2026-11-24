@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import {
 	getBillingActivitiesInputSchema,
@@ -21,7 +20,6 @@ import {
 	buildEndpointParams,
 	decodeEndpointInputEffect,
 	EbayApiError,
-	type EndpointInputError,
 	type QueryParams,
 	requestGetEffect,
 } from "@/ebay-client/request.js";
@@ -165,11 +163,11 @@ export class FinancesApi {
 	 * Sends a GET to the apiz host (or EBAY_MCP_API_BASE_URL) with an optional marketplace
 	 * header, keeping the relative eBay path in the typed error.
 	 */
-	private readonly getFromApiz = <T>(
+	private readonly getFromApiz = async <T>(
 		path: string,
 		params: QueryParams | undefined,
 		marketplaceId: string | undefined,
-	): Effect.Effect<T, EbayApiError> => {
+	): Promise<T> => {
 		const client = this.client;
 		const config: EbayRequestConfig =
 			marketplaceId === undefined
@@ -180,14 +178,13 @@ export class FinancesApi {
 						headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId },
 					};
 
-		return Effect.tryPromise({
-			try: () => {
-				const { environment, apiBaseUrl } = client.getConfig();
-				const url = `${getIdentityBaseUrl(environment, apiBaseUrl)}${path}`;
-				return client.get<T>(url, params, config);
-			},
-			catch: (cause) => new EbayApiError({ method: "GET", path, cause }), // allow-duplicate
-		});
+		try {
+			const { environment, apiBaseUrl } = client.getConfig();
+			const url = `${getIdentityBaseUrl(environment, apiBaseUrl)}${path}`;
+			return await client.get<T>(url, params, config);
+		} catch (cause) {
+			throw new EbayApiError({ method: "GET", path, cause }); // allow-duplicate
+		}
 	};
 
 	/**
@@ -209,26 +206,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarnings
 	 */
-	public getOrderEarnings = (
+	public getOrderEarnings = async (
 		input: GetOrderEarningsInput = {},
-	): Effect.Effect<
-		OrderEarningsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<OrderEarningsResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* decodeEndpointInputEffect(
-				getOrderEarningsInputSchema,
-				input,
-			);
+		const validatedInput = decodeEndpointInputEffect(
+			getOrderEarningsInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<OrderEarningsResponse>(
-				`${BASE_PATH}/order_earnings`,
-				pageQuery(validatedInput),
-				validatedInput.marketplaceId,
-			);
-		});
+		return await getFromApiz<OrderEarningsResponse>(
+			`${BASE_PATH}/order_earnings`,
+			pageQuery(validatedInput),
+			validatedInput.marketplaceId,
+		);
 	};
 
 	/**
@@ -246,23 +238,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsById
 	 */
-	public getOrderEarningsById = (
+	public getOrderEarningsById = async (
 		input: GetOrderEarningsByIdInput,
-	): Effect.Effect<OrderEarningResponse, EbayApiError | EndpointInputError> => {
+	): Promise<OrderEarningResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { orderId, marketplaceId } = yield* decodeEndpointInputEffect(
-				getOrderEarningsByIdInputSchema,
-				input,
-			);
+		const { orderId, marketplaceId } = decodeEndpointInputEffect(
+			getOrderEarningsByIdInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<OrderEarningResponse>(
-				`${BASE_PATH}/order_earnings/${encodeURIComponent(orderId)}`,
-				undefined,
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<OrderEarningResponse>(
+			`${BASE_PATH}/order_earnings/${encodeURIComponent(orderId)}`,
+			undefined,
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -279,26 +269,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsSummary
 	 */
-	public getOrderEarningsSummary = (
+	public getOrderEarningsSummary = async (
 		input: GetOrderEarningsSummaryInput = {},
-	): Effect.Effect<
-		OrderEarningsSummaryResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<OrderEarningsSummaryResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { filter, marketplaceId } = yield* decodeEndpointInputEffect(
-				getOrderEarningsSummaryInputSchema,
-				input,
-			);
+		const { filter, marketplaceId } = decodeEndpointInputEffect(
+			getOrderEarningsSummaryInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<OrderEarningsSummaryResponse>(
-				`${BASE_PATH}/order_earnings_summary`,
-				filterQuery(filter),
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<OrderEarningsSummaryResponse>(
+			`${BASE_PATH}/order_earnings_summary`,
+			filterQuery(filter),
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -314,23 +299,19 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayout
 	 */
-	public getPayout = (
-		input: GetPayoutInput,
-	): Effect.Effect<PayoutResponse, EbayApiError | EndpointInputError> => {
+	public getPayout = async (input: GetPayoutInput): Promise<PayoutResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { payoutId, marketplaceId } = yield* decodeEndpointInputEffect(
-				getPayoutInputSchema,
-				input,
-			);
+		const { payoutId, marketplaceId } = decodeEndpointInputEffect(
+			getPayoutInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<PayoutResponse>(
-				`${BASE_PATH}/payout/${encodeURIComponent(payoutId)}`,
-				undefined,
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<PayoutResponse>(
+			`${BASE_PATH}/payout/${encodeURIComponent(payoutId)}`,
+			undefined,
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -348,26 +329,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayouts
 	 */
-	public getPayouts = (
+	public getPayouts = async (
 		input: GetPayoutsInput = {},
-	): Effect.Effect<
-		PayoutsResponse | undefined,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<PayoutsResponse | undefined> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* decodeEndpointInputEffect(
-				getPayoutsInputSchema,
-				input,
-			);
+		const validatedInput = decodeEndpointInputEffect(
+			getPayoutsInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<PayoutsResponse | undefined>(
-				`${BASE_PATH}/payout`,
-				pageQuery(validatedInput),
-				validatedInput.marketplaceId,
-			);
-		});
+		return await getFromApiz<PayoutsResponse | undefined>(
+			`${BASE_PATH}/payout`,
+			pageQuery(validatedInput),
+			validatedInput.marketplaceId,
+		);
 	};
 
 	/**
@@ -385,26 +361,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayoutSummary
 	 */
-	public getPayoutSummary = (
+	public getPayoutSummary = async (
 		input: GetPayoutSummaryInput = {},
-	): Effect.Effect<
-		PayoutSummaryResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<PayoutSummaryResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { filter, marketplaceId } = yield* decodeEndpointInputEffect(
-				getPayoutSummaryInputSchema,
-				input,
-			);
+		const { filter, marketplaceId } = decodeEndpointInputEffect(
+			getPayoutSummaryInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<PayoutSummaryResponse>(
-				`${BASE_PATH}/payout_summary`,
-				filterQuery(filter),
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<PayoutSummaryResponse>(
+			`${BASE_PATH}/payout_summary`,
+			filterQuery(filter),
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -421,26 +392,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/seller_funds_summary/methods/getSellerFundsSummary
 	 */
-	public getSellerFundsSummary = (
+	public getSellerFundsSummary = async (
 		input: GetSellerFundsSummaryInput = {},
-	): Effect.Effect<
-		SellerFundsSummaryResponse | undefined,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<SellerFundsSummaryResponse | undefined> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { marketplaceId } = yield* decodeEndpointInputEffect(
-				getSellerFundsSummaryInputSchema,
-				input,
-			);
+		const { marketplaceId } = decodeEndpointInputEffect(
+			getSellerFundsSummaryInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<SellerFundsSummaryResponse | undefined>(
-				`${BASE_PATH}/seller_funds_summary`,
-				undefined,
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<SellerFundsSummaryResponse | undefined>(
+			`${BASE_PATH}/seller_funds_summary`,
+			undefined,
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -458,26 +424,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactions
 	 */
-	public getTransactions = (
+	public getTransactions = async (
 		input: GetTransactionsInput = {},
-	): Effect.Effect<
-		TransactionsResponse | undefined,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<TransactionsResponse | undefined> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* decodeEndpointInputEffect(
-				getTransactionsInputSchema,
-				input,
-			);
+		const validatedInput = decodeEndpointInputEffect(
+			getTransactionsInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<TransactionsResponse | undefined>(
-				`${BASE_PATH}/transaction`,
-				pageQuery(validatedInput),
-				validatedInput.marketplaceId,
-			);
-		});
+		return await getFromApiz<TransactionsResponse | undefined>(
+			`${BASE_PATH}/transaction`,
+			pageQuery(validatedInput),
+			validatedInput.marketplaceId,
+		);
 	};
 
 	/**
@@ -496,26 +457,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactionSummary
 	 */
-	public getTransactionSummary = (
+	public getTransactionSummary = async (
 		input: GetTransactionSummaryInput,
-	): Effect.Effect<
-		TransactionSummaryResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<TransactionSummaryResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { filter, marketplaceId } = yield* decodeEndpointInputEffect(
-				getTransactionSummaryInputSchema,
-				input,
-			);
+		const { filter, marketplaceId } = decodeEndpointInputEffect(
+			getTransactionSummaryInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<TransactionSummaryResponse>(
-				`${BASE_PATH}/transaction_summary`,
-				filterQuery(filter),
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<TransactionSummaryResponse>(
+			`${BASE_PATH}/transaction_summary`,
+			filterQuery(filter),
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -533,23 +489,21 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/transfer/methods/getTransfer
 	 */
-	public getTransfer = (
+	public getTransfer = async (
 		input: GetTransferInput,
-	): Effect.Effect<TransferResponse, EbayApiError | EndpointInputError> => {
+	): Promise<TransferResponse> => {
 		const getFromApiz = this.getFromApiz;
 
-		return Effect.gen(function* () {
-			const { transferId, marketplaceId } = yield* decodeEndpointInputEffect(
-				getTransferInputSchema,
-				input,
-			);
+		const { transferId, marketplaceId } = decodeEndpointInputEffect(
+			getTransferInputSchema,
+			input,
+		);
 
-			return yield* getFromApiz<TransferResponse>(
-				`${BASE_PATH}/transfer/${encodeURIComponent(transferId)}`,
-				undefined,
-				marketplaceId,
-			);
-		});
+		return await getFromApiz<TransferResponse>(
+			`${BASE_PATH}/transfer/${encodeURIComponent(transferId)}`,
+			undefined,
+			marketplaceId,
+		);
 	};
 
 	/**
@@ -568,33 +522,28 @@ export class FinancesApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/billing_activity/methods/getBillingActivities
 	 */
-	public getBillingActivities = (
+	public getBillingActivities = async (
 		input: GetBillingActivitiesInput,
-	): Effect.Effect<
-		BillingActivityResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<BillingActivityResponse> => {
 		const client = this.client;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* decodeEndpointInputEffect(
-				getBillingActivitiesInputSchema,
-				input,
-			);
-			const config: EbayRequestConfig =
-				validatedInput.acceptLanguage === undefined
-					? { signed: true }
-					: {
-							signed: true,
-							headers: { "Accept-Language": validatedInput.acceptLanguage },
-						};
+		const validatedInput = decodeEndpointInputEffect(
+			getBillingActivitiesInputSchema,
+			input,
+		);
+		const config: EbayRequestConfig =
+			validatedInput.acceptLanguage === undefined
+				? { signed: true }
+				: {
+						signed: true,
+						headers: { "Accept-Language": validatedInput.acceptLanguage },
+					};
 
-			return yield* requestGetEffect<BillingActivityResponse>(
-				client,
-				`${BASE_PATH}/billing_activity`,
-				pageQuery(validatedInput),
-				config,
-			);
-		});
+		return await requestGetEffect<BillingActivityResponse>(
+			client,
+			`${BASE_PATH}/billing_activity`,
+			pageQuery(validatedInput),
+			config,
+		);
 	};
 }

@@ -27,7 +27,7 @@ export const startCopyButtons = () => {
 		fixedTextButton.addEventListener("click", () => {
 			void copyTextAndShowCopied(
 				fixedTextButton,
-				fixedTextButton.dataset.copyTarget ?? "",
+				fixedTextButton.dataset["copyTarget"] ?? "",
 			);
 		});
 	}

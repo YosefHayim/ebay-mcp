@@ -19,7 +19,7 @@ const errorParameterSchema = z.object({
 	value: z.string().optional(),
 });
 
-const errorSchema = z.object({
+export const errorSchema = z.object({
 	category: z.string().optional(),
 	domain: z.string().optional(),
 	errorId: z.number().int().optional(),
@@ -40,7 +40,7 @@ const userConsentSchema = z.object({
 	consentType: z.string().optional(),
 });
 
-const getUserConsentResponseSchema = z.object({
+export const getUserConsentResponseSchema = z.object({
 	consents: z.array(userConsentSchema).optional(),
 });
 
@@ -62,7 +62,7 @@ export const translateInputSchema = z.object({
 	translationContext: z.string().optional(),
 });
 
-const translateResponseSchema = z.object({
+export const translateResponseSchema = z.object({
 	translations: z.array(translationSchema).optional(),
 });
 
@@ -70,7 +70,7 @@ const translateResponseSchema = z.object({
 // Commerce VERO API Schemas
 // ============================================================================
 
-const amountSchema = z.object({
+export const amountSchema = z.object({
 	currency: z.string().optional(),
 	value: z.string().optional(),
 });
@@ -104,7 +104,7 @@ const reportedItemSchema = z.object({
 	status: z.string().optional(),
 });
 
-const veroReportStatusResponseSchema = z.object({
+export const veroReportStatusResponseSchema = z.object({
 	reportedItemDetails: z.array(reportedItemSchema).optional(),
 	veroReportId: z.string().optional(),
 	veroReportStatus: z.string().optional(),
@@ -156,7 +156,7 @@ const addressSchema = z.object({
 	countryCode: z.string().optional(),
 });
 
-const contactSchema = z.object({
+export const contactSchema = z.object({
 	companyName: z.string().optional(),
 	contactAddress: addressSchema.optional(),
 	email: z.string().optional(),
@@ -168,23 +168,23 @@ const contactSchema = z.object({
 		.optional(),
 });
 
-const dimensionsSchema = z.object({
+export const dimensionsSchema = z.object({
 	height: z.number().optional(),
 	length: z.number().optional(),
 	width: z.number().optional(),
 	unit: z.string().optional(),
 });
 
-const weightSchema = z.object({
+export const weightSchema = z.object({
 	value: z.number().optional(),
 	unit: z.string().optional(),
 });
 
 const generatedEDeliveryBodySchema = z.object({}).passthrough();
 
-const generatedEDeliveryResponseSchema = z.object({}).passthrough();
+export const generatedEDeliveryResponseSchema = z.object({}).passthrough();
 
-const emptyResponseSchema = z.object({});
+export const emptyResponseSchema = z.object({});
 
 /** Input schema for eDelivery endpoints that accept a generated request body. */
 export const edeliveryBodyInputSchema = z.object({

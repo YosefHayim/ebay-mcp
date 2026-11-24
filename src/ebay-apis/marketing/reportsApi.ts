@@ -1,4 +1,3 @@
-import type { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	createReportTaskInputSchema,
@@ -12,7 +11,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
 	requestDeleteEffect,
 	requestGetEffect,
 	requestPostEffect,
@@ -101,9 +99,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/ad_report/methods/getReport
 	 */
-	getReport: (
-		input: GetReportInput,
-	): Effect.Effect<GetReportResponse, EbayApiError> => {
+	getReport: (input: GetReportInput): Promise<GetReportResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report/${input.reportId}`;
 		return requestGetEffect<GetReportResponse>(client, path);
 	},
@@ -123,7 +119,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 */
 	getReportMetadata: (
 		input: GetReportMetadataInput = {},
-	): Effect.Effect<GetReportMetadataResponse, EbayApiError> => {
+	): Promise<GetReportMetadataResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report_metadata`;
 		const params = buildEndpointParams({
 			fundingModel: { wireName: "funding_model", value: input.fundingModel },
@@ -147,7 +143,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 */
 	getReportMetadataForReportType: (
 		input: GetReportMetadataForReportTypeInput,
-	): Effect.Effect<GetReportMetadataForReportTypeResponse, EbayApiError> => {
+	): Promise<GetReportMetadataForReportTypeResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report_metadata/${input.reportType}`;
 		const params = buildEndpointParams({
 			fundingModel: { wireName: "funding_model", value: input.fundingModel },
@@ -175,7 +171,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 */
 	getReportTasks: (
 		input: GetReportTasksInput = {},
-	): Effect.Effect<GetReportTasksResponse, EbayApiError> => {
+	): Promise<GetReportTasksResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report_task`;
 		const params = buildEndpointParams({
 			limit: { wireName: "limit", value: input.limit },
@@ -203,7 +199,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 */
 	createReportTask: (
 		input: CreateReportTaskInput,
-	): Effect.Effect<CreateReportTaskResponse, EbayApiError> => {
+	): Promise<CreateReportTaskResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report_task`;
 		return requestPostEffect<CreateReportTaskResponse>(
 			client,
@@ -227,7 +223,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 */
 	getReportTask: (
 		input: GetReportTaskInput,
-	): Effect.Effect<GetReportTaskResponse, EbayApiError> => {
+	): Promise<GetReportTaskResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report_task/${input.reportTaskId}`;
 		return requestGetEffect<GetReportTaskResponse>(client, path);
 	},
@@ -247,7 +243,7 @@ export const createMarketingReportsMethods = (client: EbayApiClient) => ({
 	 */
 	deleteReportTask: (
 		input: DeleteReportTaskInput,
-	): Effect.Effect<DeleteReportTaskResponse, EbayApiError> => {
+	): Promise<DeleteReportTaskResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_report_task/${input.reportTaskId}`;
 		return requestDeleteEffect<DeleteReportTaskResponse>(client, path);
 	},

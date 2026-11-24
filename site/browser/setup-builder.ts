@@ -21,7 +21,7 @@ export const startSetupBuilder = () => {
 	const familyTiles = [
 		...coverageBoard.querySelectorAll<HTMLElement>("[data-family]"),
 	];
-	const allToolsTotal = Number(coverageBoard.dataset.toolTotal);
+	const allToolsTotal = Number(coverageBoard.dataset["toolTotal"]);
 	let pickedClientId: SetupClientId = DEFAULT_SETUP_CHOICES.clientId;
 	let pickedEnvironment: SetupEnvironment = DEFAULT_SETUP_CHOICES.environment;
 	let latestConfigText = "";
@@ -46,10 +46,10 @@ export const startSetupBuilder = () => {
 		const { toolsMode, pickedFamilyKeys } = readSetupSelection();
 		const pickedToolTotal = familyTiles
 			.filter((familyTile) =>
-				pickedFamilyKeys.includes(familyTile.dataset.family ?? ""),
+				pickedFamilyKeys.includes(familyTile.dataset["family"] ?? ""),
 			)
 			.reduce(
-				(total, familyTile) => total + Number(familyTile.dataset.count),
+				(total, familyTile) => total + Number(familyTile.dataset["count"]),
 				0,
 			);
 		const setupConfig = createSetupConfig({
@@ -90,16 +90,17 @@ export const startSetupBuilder = () => {
 		const copyButton = clickedElement?.closest<HTMLElement>(".copybtn");
 
 		if (clientButton != null) {
-			pickedClientId = clientButton.dataset.clientId as SetupClientId;
+			pickedClientId = clientButton.dataset["clientId"] as SetupClientId;
 			showConfig();
 		}
 		if (environmentButton != null) {
-			pickedEnvironment = environmentButton.dataset
-				.environment as SetupEnvironment;
+			pickedEnvironment = environmentButton.dataset[
+				"environment"
+			] as SetupEnvironment;
 			showConfig();
 		}
 		if (toolsButton != null) {
-			const toolsMode = toolsButton.dataset.toolsMode as SetupToolsMode;
+			const toolsMode = toolsButton.dataset["toolsMode"] as SetupToolsMode;
 			writeSetupSelection({ ...readSetupSelection(), toolsMode });
 		}
 		if (copyButton != null)

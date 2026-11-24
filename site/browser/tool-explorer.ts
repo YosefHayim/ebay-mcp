@@ -28,7 +28,7 @@ export const startToolExplorer = () => {
 	const runButton = findElement(explorer, "[data-explorer-run]");
 	const responseElement = findElement(explorer, "[data-explorer-response]");
 	let loadedCatalog: ToolCatalog | undefined;
-	let selectedToolName = explorer.dataset.selectedTool ?? "";
+	let selectedToolName = explorer.dataset["selectedTool"] ?? "";
 	let fieldValues: Record<string, string> = {};
 	let isCatalogRequested = false;
 
@@ -81,7 +81,7 @@ export const startToolExplorer = () => {
 		isCatalogRequested = true;
 
 		try {
-			const catalogReply = await fetch(explorer.dataset.catalogUrl ?? "");
+			const catalogReply = await fetch(explorer.dataset["catalogUrl"] ?? "");
 			const isReplyBad = !catalogReply.ok;
 			if (isReplyBad)
 				throw new Error(`Catalog request failed with ${catalogReply.status}`);
@@ -104,7 +104,7 @@ export const startToolExplorer = () => {
 		const isToolClick = toolButton != null;
 		if (!isToolClick) return;
 
-		selectedToolName = toolButton.dataset.tool ?? "";
+		selectedToolName = toolButton.dataset["tool"] ?? "";
 		showSelectedTool();
 	});
 
@@ -116,7 +116,7 @@ export const startToolExplorer = () => {
 	explorer.addEventListener("input", (event) => {
 		const typedInput =
 			event.target instanceof HTMLInputElement ? event.target : null;
-		const fieldName = typedInput?.dataset.field;
+		const fieldName = typedInput?.dataset["field"];
 		const isFieldInput = typedInput != null && fieldName != null;
 		if (!isFieldInput) return;
 

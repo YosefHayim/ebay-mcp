@@ -15,8 +15,8 @@ const vitestIntegrationConfig = defineConfig({
 	test: {
 		globals: true,
 		environment: "node",
-		include: ["tests/integration/**/*.test.ts"],
-		exclude: ["node_modules", "build", "dist", "tests/unit/**"],
+		include: ["src/**/*.integration.test.ts"],
+		exclude: ["node_modules", "build", "dist"],
 		testTimeout: 10_000,
 		hookTimeout: 10_000,
 	},

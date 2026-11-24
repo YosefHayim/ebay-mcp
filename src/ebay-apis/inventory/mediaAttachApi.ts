@@ -1,17 +1,12 @@
-import { Data, Effect } from "effect";
-import {
-	type EbayApiError,
-	EndpointInputError,
-} from "@/ebay-client/request.js";
+import { EndpointInputError } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import type { LocalMediaFile } from "@/shared/localMedia.js";
-import type { createInventoryItemsMethods } from "./itemsApi.js";
+import type { createInventoryItemsMethods, InventoryItem } from "./itemsApi.js";
 import type { MediaApi, UploadedImage, Video } from "./mediaApi.js";
 
 type InventoryItemsMethods = ReturnType<typeof createInventoryItemsMethods>;
 
-type InventoryItem = components["schemas"]["InventoryItem"];
 type InventoryItemWithSku =
 	components["schemas"]["InventoryItemWithSkuLocaleGroupid"];
 type Product = components["schemas"]["Product"];
@@ -29,13 +24,13 @@ export interface AttachMediaInput {
 	 * families with supplied files are replaced: images-only input keeps the
 	 * item's videos, and videos-only input keeps its images.
 	 */
-	readonly replaceExisting?: boolean;
+	readonly replaceExisting?: boolean | undefined;
 	/** Update the item with the successful uploads even when some failed. */
-	readonly allowPartial?: boolean;
+	readonly allowPartial?: boolean | undefined;
 	/** Longest time to wait for each video to process. */
-	readonly maxWaitMs?: number;
+	readonly maxWaitMs?: number | undefined;
 	/** Delay between video status polls. */
-	readonly pollIntervalMs?: number;
+	readonly pollIntervalMs?: number | undefined;
 }
 
 /** Per-file outcome of an attach run. */
@@ -47,17 +42,17 @@ export interface MediaUploadOutcome {
 	/** `uploaded` is final; `processing` means eBay is still transcoding the video; `failed` was not attached. */
 	readonly status: "uploaded" | "processing" | "failed";
 	/** EPS URL for uploaded images. */
-	readonly imageUrl?: string;
+	readonly imageUrl?: string | undefined;
 	/** Media API image ID when eBay returned one. */
-	readonly imageId?: string;
+	readonly imageId?: string | undefined;
 	/** Expiry of an unused image. */
-	readonly expirationDate?: string;
+	readonly expirationDate?: string | undefined;
 	/** Video ID for uploaded or processing videos. */
-	readonly videoId?: string;
+	readonly videoId?: string | undefined;
 	/** eBay's video status. */
-	readonly videoStatus?: string;
+	readonly videoStatus?: string | undefined;
 	/** Why the upload failed. */
-	readonly error?: string;
+	readonly error?: string | undefined;
 }
 
 /** Result of attachMediaToInventoryItem. */
@@ -77,21 +72,27 @@ export interface AttachMediaResult {
 }
 
 /** Attach run that uploaded media but left the inventory item untouched. */
-export class MediaAttachError extends Data.TaggedError("MediaAttachError")<{
-	/** Human-readable summary including the per-file outcomes. */
-	readonly message: string;
+export class MediaAttachError extends Error {
+	readonly _tag = "MediaAttachError";
 	/** Per-file outcomes; `updated` is always false. */
 	readonly result: AttachMediaResult;
-}> {}
+
+	constructor(failure: {
+		/** Human-readable summary including the per-file outcomes. */
+		message: string;
+		result: AttachMediaResult;
+	}) {
+		super(failure.message);
+		this.name = "MediaAttachError";
+		this.result = failure.result;
+	}
+}
 
 /** Methods added onto {@link MediaApi} by {@link createMediaAttachMethods}. */
 export interface MediaAttachMethods {
 	attachMediaToInventoryItem: (
 		input: AttachMediaInput,
-	) => Effect.Effect<
-		AttachMediaResult,
-		EbayApiError | EndpointInputError | MediaAttachError
-	>;
+	) => Promise<AttachMediaResult>;
 }
 
 /** Media fields of `product` that the attach run rewrites. */
@@ -210,38 +211,52 @@ const attachFailure = (
 	});
 
 /** Uploads every file, turning each failure into a `failed` outcome instead of aborting. */
-const uploadAll = (
+async function uploadAll(
 	media: MediaApi,
 	input: AttachMediaInput,
-): Effect.Effect<{
+): Promise<{
 	images: MediaUploadOutcome[];
 	videos: MediaUploadOutcome[];
-}> =>
-	Effect.gen(function* () {
-		const images = yield* Effect.forEach(input.images, (file) =>
-			media.createImageFromFile(file).pipe(
-				Effect.map(imageOutcome),
-				Effect.catchAll((cause) =>
-					Effect.succeed(failedOutcome(file, "image", cause)),
-				),
-			),
-		);
-		const videos = yield* Effect.forEach(input.videos, (file) =>
-			media
-				.uploadVideoFile({
-					file,
-					maxWaitMs: input.maxWaitMs,
-					pollIntervalMs: input.pollIntervalMs,
-				})
-				.pipe(
-					Effect.map((video) => videoOutcome(file.source, video)),
-					Effect.catchAll((cause) =>
-						Effect.succeed(failedOutcome(file, "video", cause)),
-					),
-				),
-		);
-		return { images, videos };
-	});
+}> {
+	const images: MediaUploadOutcome[] = [];
+
+	for (const file of input.images) {
+		try {
+			const image = await media.createImageFromFile(file);
+			images.push(imageOutcome(image));
+		} catch (cause) {
+			images.push(failedOutcome(file, "image", cause));
+		}
+	}
+
+	const videos: MediaUploadOutcome[] = [];
+
+	for (const file of input.videos) {
+		try {
+			const video = await media.uploadVideoFile({
+				file,
+				maxWaitMs: input.maxWaitMs,
+				pollIntervalMs: input.pollIntervalMs,
+			});
+			videos.push(videoOutcome(file.source, video));
+		} catch (cause) {
+			videos.push(failedOutcome(file, "video", cause));
+		}
+	}
+
+	return { images, videos };
+}
+
+function shouldLeaveItemUntouched(
+	failedCount: number,
+	allowPartial: boolean | undefined,
+): boolean {
+	if (failedCount === 0) {
+		return false;
+	}
+
+	return allowPartial !== true;
+}
 
 /**
  * Builds the attach orchestration over the inventory-item and media primitives.
@@ -266,64 +281,70 @@ export const createMediaAttachMethods = (
 	items: InventoryItemsMethods,
 	media: MediaApi,
 ): MediaAttachMethods => ({
-	attachMediaToInventoryItem: (input) =>
-		Effect.gen(function* () {
-			const total = input.images.length + input.videos.length;
-			if (total === 0) {
-				return yield* Effect.fail(
-					new EndpointInputError({
-						parameter: "imagePaths",
-						message: "provide at least one image or video to attach",
-					}),
-				);
-			}
-			// Existence check before any upload; the write below re-reads the item.
-			const snapshot = yield* items.getInventoryItem({ sku: input.sku });
+	attachMediaToInventoryItem: async (input) => {
+		const total = input.images.length + input.videos.length;
+		const isEmpty = total === 0;
 
-			const { images, videos } = yield* uploadAll(media, input);
-			const failed = [...images, ...videos].filter(
-				(outcome) => outcome.status === "failed",
-			);
-			const uploaded = uploadedMedia(images, videos);
-			const attachResult: AttachMediaResult = {
-				sku: input.sku,
-				updated: false,
-				images,
-				videos,
-				...mergeMedia(snapshot.product ?? {}, input, uploaded),
-			};
-
-			if (failed.length > 0 && !input.allowPartial) {
-				return yield* Effect.fail(
-					attachFailure(
-						`${failed.length} of ${total} uploads failed; inventory item ${input.sku} was not updated (pass allowPartial: true to attach the successful ones)`,
-						attachResult,
-					),
-				);
-			}
-			if (uploaded.imageUrls.length + uploaded.videoIds.length === 0) {
-				return yield* Effect.fail(
-					attachFailure(
-						`no media was uploaded successfully; inventory item ${input.sku} was not updated`,
-						attachResult,
-					),
-				);
-			}
-
-			// Re-read right before the complete-replacement PUT: the uploads can take
-			// minutes, and the earlier snapshot must not overwrite edits made meanwhile.
-			const latest = yield* items.getInventoryItem({ sku: input.sku });
-			const product = latest.product ?? {};
-			const merged = mergeMedia(product, input, uploaded);
-			yield* items.createOrReplaceInventoryItem({
-				sku: input.sku,
-				contentLanguage: contentLanguageOf(latest.locale),
-				body: {
-					...toInventoryItemBody(latest),
-					product: { ...product, ...merged },
-				},
+		if (isEmpty) {
+			throw new EndpointInputError({
+				parameter: "imagePaths",
+				message: "provide at least one image or video to attach",
 			});
+		}
 
-			return { ...attachResult, ...merged, updated: true };
-		}),
+		// Existence check before any upload; the write below re-reads the item.
+		const snapshot = await items.getInventoryItem({ sku: input.sku });
+		const { images, videos } = await uploadAll(media, input);
+
+		function isFailedUpload(outcome: MediaUploadOutcome): boolean {
+			return outcome.status === "failed";
+		}
+
+		const failed = [...images, ...videos].filter(isFailedUpload);
+		const uploaded = uploadedMedia(images, videos);
+		const attachResult: AttachMediaResult = {
+			sku: input.sku,
+			updated: false,
+			images,
+			videos,
+			...mergeMedia(snapshot.product ?? {}, input, uploaded),
+		};
+		const leaveUntouched = shouldLeaveItemUntouched(
+			failed.length,
+			input.allowPartial,
+		);
+
+		if (leaveUntouched) {
+			throw attachFailure(
+				`${failed.length} of ${total} uploads failed; inventory item ${input.sku} was not updated (pass allowPartial: true to attach the successful ones)`,
+				attachResult,
+			);
+		}
+
+		const uploadedCount = uploaded.imageUrls.length + uploaded.videoIds.length;
+		const isNothingUploaded = uploadedCount === 0;
+
+		if (isNothingUploaded) {
+			throw attachFailure(
+				`no media was uploaded successfully; inventory item ${input.sku} was not updated`,
+				attachResult,
+			);
+		}
+
+		// Re-read right before the complete-replacement PUT: the uploads can take
+		// minutes, and the earlier snapshot must not overwrite edits made meanwhile.
+		const latest = await items.getInventoryItem({ sku: input.sku });
+		const product = latest.product ?? {};
+		const merged = mergeMedia(product, input, uploaded);
+		await items.createOrReplaceInventoryItem({
+			sku: input.sku,
+			contentLanguage: contentLanguageOf(latest.locale),
+			body: {
+				...toInventoryItemBody(latest),
+				product: { ...product, ...merged },
+			},
+		});
+
+		return { ...attachResult, ...merged, updated: true };
+	},
 });

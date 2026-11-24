@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { z } from "zod";
 import { categoryTreeIdInputSchema } from "@/ebay-apis/taxonomy/categoryTreeSchemas.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
@@ -41,8 +40,7 @@ export const taxonomyEntries: ToolEntry[] = [
 			},
 			description: "Default category tree ID response",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.taxonomy.getDefaultCategoryTreeId(args)),
+		handler: (api, args) => api.taxonomy.getDefaultCategoryTreeId(args),
 	}),
 	defineTool({
 		name: "ebay_get_category_tree",
@@ -57,8 +55,7 @@ export const taxonomyEntries: ToolEntry[] = [
 			},
 			description: "Category tree details",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.taxonomy.getCategoryTree(args)),
+		handler: (api, args) => api.taxonomy.getCategoryTree(args),
 	}),
 	defineTool({
 		name: "ebay_get_category_suggestions",
@@ -71,8 +68,7 @@ export const taxonomyEntries: ToolEntry[] = [
 			},
 			description: "Category suggestions response",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.taxonomy.getCategorySuggestions(args)),
+		handler: (api, args) => api.taxonomy.getCategorySuggestions(args),
 	}),
 	defineTool({
 		name: "ebay_get_item_aspects_for_category",
@@ -86,8 +82,7 @@ export const taxonomyEntries: ToolEntry[] = [
 			},
 			description: "Required and recommended item specifics for the category",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.taxonomy.getItemAspectsForCategory(args)),
+		handler: (api, args) => api.taxonomy.getItemAspectsForCategory(args),
 	}),
 	defineTool({
 		name: "ebay_fetch_item_aspects",
@@ -95,8 +90,7 @@ export const taxonomyEntries: ToolEntry[] = [
 			"Taxonomy API: download the aspects (item specifics) of every leaf category in a category tree as eBay's gzipped JSON file, returned as an embedded resource with eBay's content type (application/octet-stream); gunzip it to read the JSON. eBay notes the file can exceed 100 MB compressed: anything above 25 MiB fails with DownloadTooLargeError instead of being returned, so use ebay_get_item_aspects_for_category for per-category lookups, especially on large trees such as EBAY_US (0).",
 		inputSchema: categoryTreeIdInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.taxonomy.fetchItemAspects(args)),
+		handler: async (api, args) => await api.taxonomy.fetchItemAspects(args),
 		formatResult: (file, args) =>
 			formatFileResult(
 				file,
@@ -110,7 +104,6 @@ export const taxonomyEntries: ToolEntry[] = [
 			"Taxonomy API: list expired leaf categories in a category tree with the active categories that replaced them (fromCategoryId to toCategoryId; several may merge into one). Only mapped (merged or split) categories are returned; an empty success (HTTP 204) means the tree has none.",
 		inputSchema: categoryTreeIdInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.taxonomy.getExpiredCategories(args)),
+		handler: (api, args) => api.taxonomy.getExpiredCategories(args),
 	}),
 ];

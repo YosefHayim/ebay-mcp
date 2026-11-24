@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import {
 	bulkCreateOrReplaceSalesTaxInputSchema,
@@ -76,8 +75,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getCustomPolicies(args)),
+		handler: (api, args) => api.account.getCustomPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_create_custom_policy",
@@ -88,8 +86,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.createCustomPolicy(args)),
+		handler: (api, args) => api.account.createCustomPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_custom_policy",
@@ -100,8 +97,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getCustomPolicy(args)),
+		handler: (api, args) => api.account.getCustomPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_update_custom_policy",
@@ -109,8 +105,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: updateCustomPolicyInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.updateCustomPolicy(args)),
+		handler: (api, args) => api.account.updateCustomPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_fulfillment_policies",
@@ -122,8 +117,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getFulfillmentPolicies(args)),
+		handler: (api, args) => api.account.getFulfillmentPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_create_fulfillment_policy",
@@ -144,8 +138,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.createFulfillmentPolicy(args)),
+		handler: (api, args) => api.account.createFulfillmentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_fulfillment_policy",
@@ -156,8 +149,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getFulfillmentPolicy(args)),
+		handler: (api, args) => api.account.getFulfillmentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_fulfillment_policy_by_name",
@@ -168,8 +160,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getFulfillmentPolicyByName(args)),
+		handler: (api, args) => api.account.getFulfillmentPolicyByName(args),
 	}),
 	defineTool({
 		name: "ebay_update_fulfillment_policy",
@@ -181,8 +172,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.updateFulfillmentPolicy(args)),
+		handler: (api, args) => api.account.updateFulfillmentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_delete_fulfillment_policy",
@@ -190,8 +180,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: deleteFulfillmentPolicyInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.deleteFulfillmentPolicy(args)),
+		handler: (api, args) => api.account.deleteFulfillmentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_payment_policies",
@@ -202,8 +191,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getPaymentPolicies(args)),
+		handler: (api, args) => api.account.getPaymentPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_create_payment_policy",
@@ -214,8 +202,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.createPaymentPolicy(args)),
+		handler: (api, args) => api.account.createPaymentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_payment_policy",
@@ -226,8 +213,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getPaymentPolicy(args)),
+		handler: (api, args) => api.account.getPaymentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_payment_policy_by_name",
@@ -238,8 +224,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getPaymentPolicyByName(args)),
+		handler: (api, args) => api.account.getPaymentPolicyByName(args),
 	}),
 	defineTool({
 		name: "ebay_update_payment_policy",
@@ -250,8 +235,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.updatePaymentPolicy(args)),
+		handler: (api, args) => api.account.updatePaymentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_delete_payment_policy",
@@ -259,8 +243,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: deletePaymentPolicyInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.deletePaymentPolicy(args)),
+		handler: (api, args) => api.account.deletePaymentPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_return_policies",
@@ -271,8 +254,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getReturnPolicies(args)),
+		handler: (api, args) => api.account.getReturnPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_create_return_policy",
@@ -283,8 +265,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.createReturnPolicy(args)),
+		handler: (api, args) => api.account.createReturnPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_return_policy",
@@ -295,8 +276,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getReturnPolicy(args)),
+		handler: (api, args) => api.account.getReturnPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_return_policy_by_name",
@@ -307,8 +287,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getReturnPolicyByName(args)),
+		handler: (api, args) => api.account.getReturnPolicyByName(args),
 	}),
 	defineTool({
 		name: "ebay_update_return_policy",
@@ -319,8 +298,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.updateReturnPolicy(args)),
+		handler: (api, args) => api.account.updateReturnPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_delete_return_policy",
@@ -328,8 +306,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: deleteReturnPolicyInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.deleteReturnPolicy(args)),
+		handler: (api, args) => api.account.deleteReturnPolicy(args),
 	}),
 	defineTool({
 		name: "ebay_get_kyc",
@@ -340,7 +317,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.account.getKYC(args)),
+		handler: (api, args) => api.account.getKYC(args),
 	}),
 	defineTool({
 		name: "ebay_get_payments_program",
@@ -348,8 +325,7 @@ export const accountEntries: ToolEntry[] = [
 			"Get payments program status for a marketplace. Note: This method is deprecated as all seller accounts globally have been enabled for the new eBay payment and checkout flow.\n\nRequired OAuth Scope: sell.account.readonly or sell.account",
 		inputSchema: getPaymentsProgramInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getPaymentsProgram(args)),
+		handler: (api, args) => api.account.getPaymentsProgram(args),
 	}),
 	defineTool({
 		name: "ebay_get_payments_program_onboarding",
@@ -357,15 +333,14 @@ export const accountEntries: ToolEntry[] = [
 			"Get payments program onboarding information. Note: This method is deprecated as all seller accounts globally have been enabled for the new eBay payment and checkout flow.\n\nRequired OAuth Scope: sell.account.readonly or sell.account",
 		inputSchema: getPaymentsProgramOnboardingInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getPaymentsProgramOnboarding(args)),
+		handler: (api, args) => api.account.getPaymentsProgramOnboarding(args),
 	}),
 	defineTool({
 		name: "ebay_get_rate_tables",
 		description: "Get seller rate tables",
 		inputSchema: getRateTablesInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.account.getRateTables(args)),
+		handler: (api, args) => api.account.getRateTables(args),
 	}),
 	defineTool({
 		name: "ebay_create_or_replace_sales_tax",
@@ -373,8 +348,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: createOrReplaceSalesTaxInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.createOrReplaceSalesTax(args)),
+		handler: (api, args) => api.account.createOrReplaceSalesTax(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_create_or_replace_sales_tax",
@@ -382,8 +356,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: bulkCreateOrReplaceSalesTaxInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.bulkCreateOrReplaceSalesTax(args)),
+		handler: (api, args) => api.account.bulkCreateOrReplaceSalesTax(args),
 	}),
 	defineTool({
 		name: "ebay_delete_sales_tax",
@@ -391,7 +364,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: deleteSalesTaxInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) => Effect.runPromise(api.account.deleteSalesTax(args)),
+		handler: (api, args) => api.account.deleteSalesTax(args),
 	}),
 	defineTool({
 		name: "ebay_get_sales_tax",
@@ -402,7 +375,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.account.getSalesTax(args)),
+		handler: (api, args) => api.account.getSalesTax(args),
 	}),
 	defineTool({
 		name: "ebay_get_sales_taxes",
@@ -413,15 +386,14 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.account.getSalesTaxes(args)),
+		handler: (api, args) => api.account.getSalesTaxes(args),
 	}),
 	defineTool({
 		name: "ebay_get_subscription",
 		description: "Get seller subscription information",
 		inputSchema: getSubscriptionInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getSubscription(args)),
+		handler: (api, args) => api.account.getSubscription(args),
 	}),
 	defineTool({
 		name: "ebay_opt_in_to_program",
@@ -429,7 +401,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: optInToProgramInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) => Effect.runPromise(api.account.optInToProgram(args)),
+		handler: (api, args) => api.account.optInToProgram(args),
 	}),
 	defineTool({
 		name: "ebay_opt_out_of_program",
@@ -437,8 +409,7 @@ export const accountEntries: ToolEntry[] = [
 		inputSchema: optOutOfProgramInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.optOutOfProgram(args)),
+		handler: (api, args) => api.account.optOutOfProgram(args),
 	}),
 	defineTool({
 		name: "ebay_get_opted_in_programs",
@@ -449,8 +420,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getOptedInPrograms(args)),
+		handler: (api, args) => api.account.getOptedInPrograms(args),
 	}),
 	defineTool({
 		name: "ebay_get_privileges",
@@ -462,7 +432,7 @@ export const accountEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.account.getPrivileges(args)),
+		handler: (api, args) => api.account.getPrivileges(args),
 	}),
 	defineTool({
 		name: "ebay_get_advertising_eligibility",
@@ -470,7 +440,6 @@ export const accountEntries: ToolEntry[] = [
 			"Check the seller eligibility status for eBay advertising programs. This allows developers to determine if a seller is eligible for various advertising programs on eBay.\n\nRequired OAuth Scope: sell.account.readonly or sell.account",
 		inputSchema: getAdvertisingEligibilityInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.account.getAdvertisingEligibility(args)),
+		handler: (api, args) => api.account.getAdvertisingEligibility(args),
 	}),
 ];

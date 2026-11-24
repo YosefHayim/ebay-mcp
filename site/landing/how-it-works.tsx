@@ -56,7 +56,10 @@ export const HowItWorks = ({ catalog }: HowItWorksProps) => {
 						try every tool.
 					</p>
 					<div class="art code">
-						<pre dangerouslySetInnerHTML={{ __html: envHtml }} />
+						<pre
+							// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
+							dangerouslySetInnerHTML={{ __html: envHtml }}
+						/>
 					</div>
 				</div>
 

@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { z } from "zod";
 import { shippingMetadataInputSchema } from "@/ebay-apis/metadata/metadataShippingSchemas.js";
 import { MarketplaceId } from "@/shared/ebayEnums.js";
@@ -232,16 +231,13 @@ export const metadataEntries: ToolEntry[] = [
 			"Get automotive parts compatibility policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
 		handler: (api, args) =>
-			Effect.runPromise(
-				api.metadata.getAutomotivePartsCompatibilityPolicies(args),
-			),
+			api.metadata.getAutomotivePartsCompatibilityPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_category_policies",
 		description: "Get category policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getCategoryPolicies(args)),
+		handler: (api, args) => api.metadata.getCategoryPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_extended_producer_responsibility_policies",
@@ -249,175 +245,153 @@ export const metadataEntries: ToolEntry[] = [
 			"Get extended producer responsibility policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
 		handler: (api, args) =>
-			Effect.runPromise(
-				api.metadata.getExtendedProducerResponsibilityPolicies(args),
-			),
+			api.metadata.getExtendedProducerResponsibilityPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_hazardous_materials_labels",
 		description: "Get hazardous materials labels for a marketplace",
 		inputSchema: marketplaceOnlyMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getHazardousMaterialsLabels(args)),
+		handler: (api, args) => api.metadata.getHazardousMaterialsLabels(args),
 	}),
 	defineTool({
 		name: "ebay_get_item_condition_policies",
 		description: "Get item condition policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getItemConditionPolicies(args)),
+		handler: (api, args) => api.metadata.getItemConditionPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_listing_structure_policies",
 		description: "Get listing structure policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getListingStructurePolicies(args)),
+		handler: (api, args) => api.metadata.getListingStructurePolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_negotiated_price_policies",
 		description: "Get negotiated price policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getNegotiatedPricePolicies(args)),
+		handler: (api, args) => api.metadata.getNegotiatedPricePolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_product_safety_labels",
 		description: "Get product safety labels for a marketplace",
 		inputSchema: marketplaceOnlyMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getProductSafetyLabels(args)),
+		handler: (api, args) => api.metadata.getProductSafetyLabels(args),
 	}),
 	defineTool({
 		name: "ebay_get_regulatory_policies",
 		description: "Get regulatory policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getRegulatoryPolicies(args)),
+		handler: (api, args) => api.metadata.getRegulatoryPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_return_policy_metadata",
 		description:
 			"Get marketplace return policy requirements and guidelines. Returns eBay policies that define whether return policies are required for categories and the guidelines for creating domestic and international return policies.",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getReturnPolicies(args)),
+		handler: (api, args) => api.metadata.getReturnPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_classified_ad_policies",
 		description: "Get classified ad policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getClassifiedAdPolicies(args)),
+		handler: (api, args) => api.metadata.getClassifiedAdPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_currencies",
 		description: "Get currencies for a marketplace",
 		inputSchema: marketplaceOnlyMetadataSchema.shape,
-		handler: (api, args) => Effect.runPromise(api.metadata.getCurrencies(args)),
+		handler: (api, args) => api.metadata.getCurrencies(args),
 	}),
 	defineTool({
 		name: "ebay_get_listing_type_policies",
 		description: "Get listing type policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getListingTypePolicies(args)),
+		handler: (api, args) => api.metadata.getListingTypePolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_motors_listing_policies",
 		description: "Get motors listing policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getMotorsListingPolicies(args)),
+		handler: (api, args) => api.metadata.getMotorsListingPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_shipping_policies",
 		description: "Get shipping policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getShippingPolicies(args)),
+		handler: (api, args) => api.metadata.getShippingPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_site_visibility_policies",
 		description: "Get site visibility policies for a marketplace",
 		inputSchema: marketplaceMetadataSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getSiteVisibilityPolicies(args)),
+		handler: (api, args) => api.metadata.getSiteVisibilityPolicies(args),
 	}),
 	defineTool({
 		name: "ebay_get_exclude_shipping_locations",
 		description: `Metadata API: list the regions, countries and special locations (e.g. PO Box, APO/FPO) a seller can exclude from shipping on a marketplace. ${SHIPPING_LANGUAGE_NOTE}`,
 		inputSchema: shippingMetadataInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getExcludeShippingLocations(args)),
+		handler: (api, args) => api.metadata.getExcludeShippingLocations(args),
 	}),
 	defineTool({
 		name: "ebay_get_handling_times",
 		description: `Metadata API: list the handling times (maximum business days to ship after cleared payment, flagged when extended) a marketplace allows. ${SHIPPING_LANGUAGE_NOTE}`,
 		inputSchema: shippingMetadataInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getHandlingTimes(args)),
+		handler: (api, args) => api.metadata.getHandlingTimes(args),
 	}),
 	defineTool({
 		name: "ebay_get_shipping_carriers",
 		description: `Metadata API: list the shipping carriers supported on a marketplace. Each shippingCarrier value is the enum to use when supplying shipment tracking. ${SHIPPING_LANGUAGE_NOTE}`,
 		inputSchema: shippingMetadataInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getShippingCarriers(args)),
+		handler: (api, args) => api.metadata.getShippingCarriers(args),
 	}),
 	defineTool({
 		name: "ebay_get_shipping_locations",
 		description: `Metadata API: list the regions, countries and special locations a seller can ship to on a marketplace. ${SHIPPING_LANGUAGE_NOTE}`,
 		inputSchema: shippingMetadataInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getShippingLocations(args)),
+		handler: (api, args) => api.metadata.getShippingLocations(args),
 	}),
 	defineTool({
 		name: "ebay_get_shipping_services",
 		description: `Metadata API: list the shipping services available on a marketplace with carrier, category, domestic/international flag, shipping times, cost types and package limits. Only services with validForSellingFlow=true can be used in listings or fulfillment policies. ${SHIPPING_LANGUAGE_NOTE}`,
 		inputSchema: shippingMetadataInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getShippingServices(args)),
+		handler: (api, args) => api.metadata.getShippingServices(args),
 	}),
 	defineTool({
 		name: "ebay_get_compatibilities_by_specification",
 		description: "Get compatibilities by specification",
 		inputSchema: compatibilitySpecificationRequestSchema.shape,
 		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getCompatibilitiesBySpecification(args)),
+			api.metadata.getCompatibilitiesBySpecification(args),
 	}),
 	defineTool({
 		name: "ebay_get_compatibility_property_names",
 		description: "Get compatibility property names",
 		inputSchema: compatibilityPropertyNamesRequestSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getCompatibilityPropertyNames(args)),
+		handler: (api, args) => api.metadata.getCompatibilityPropertyNames(args),
 	}),
 	defineTool({
 		name: "ebay_get_compatibility_property_values",
 		description: "Get compatibility property values",
 		inputSchema: compatibilityPropertyValuesRequestSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getCompatibilityPropertyValues(args)),
+		handler: (api, args) => api.metadata.getCompatibilityPropertyValues(args),
 	}),
 	defineTool({
 		name: "ebay_get_multi_compatibility_property_values",
 		description: "Get multiple compatibility property values",
 		inputSchema: multiCompatibilityPropertyValuesRequestSchema.shape,
 		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getMultiCompatibilityPropertyValues(args)),
+			api.metadata.getMultiCompatibilityPropertyValues(args),
 	}),
 	defineTool({
 		name: "ebay_get_product_compatibilities",
 		description: "Get product compatibilities",
 		inputSchema: productCompatibilityRequestSchema.shape,
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getProductCompatibilities(args)),
+		handler: (api, args) => api.metadata.getProductCompatibilities(args),
 	}),
 	defineTool({
 		name: "ebay_get_sales_tax_jurisdictions",
@@ -428,7 +402,6 @@ export const metadataEntries: ToolEntry[] = [
 			properties: {},
 			description: "Success response",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.metadata.getSalesTaxJurisdictions(args)),
+		handler: (api, args) => api.metadata.getSalesTaxJurisdictions(args),
 	}),
 ];

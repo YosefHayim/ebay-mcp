@@ -5,7 +5,6 @@
  */
 
 import chalk from "chalk";
-import { Effect, Either } from "effect";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { EbayOAuthClient } from "@/auth/oauth.js";
@@ -58,28 +57,21 @@ const validateEnvFile = (projectRoot: string): ValidationResult => {
 		};
 	}
 
-	const readable = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () => readFileSync(envPath, "utf-8"),
-				catch: (error) => error,
-			}),
-		),
-	);
-
-	if (Either.isRight(readable)) {
+	try {
+		readFileSync(envPath, "utf-8");
+	} catch (error) {
 		return {
 			test: ".env File Existence",
-			passed: true,
-			message: "Configuration file exists and is readable",
+			passed: false,
+			message: "Configuration file cannot be read",
+			error: getErrorMessage(error),
 		};
 	}
 
 	return {
 		test: ".env File Existence",
-		passed: false,
-		message: "Configuration file cannot be read",
-		error: getErrorMessage(readable.left),
+		passed: true,
+		message: "Configuration file exists and is readable",
 	};
 };
 
@@ -124,7 +116,7 @@ const validateAppCredentials = (
 const validateEnvironment = (
 	envVars: Record<string, string>,
 ): ValidationResult => {
-	const env = envVars.EBAY_ENVIRONMENT || "sandbox";
+	const env = envVars["EBAY_ENVIRONMENT"] || "sandbox";
 
 	if (env !== "sandbox" && env !== "production") {
 		return {
@@ -149,8 +141,8 @@ const validateUserTokens = (
 	envVars: Record<string, string>,
 ): ValidationResult => {
 	const hasRefreshToken =
-		envVars.EBAY_USER_REFRESH_TOKEN &&
-		envVars.EBAY_USER_REFRESH_TOKEN.trim() !== "";
+		envVars["EBAY_USER_REFRESH_TOKEN"] &&
+		envVars["EBAY_USER_REFRESH_TOKEN"].trim() !== "";
 
 	if (!hasRefreshToken) {
 		return {
@@ -174,28 +166,22 @@ const validateUserTokens = (
 const validateOAuthInitialization = async (
 	config: EbayConfig,
 ): Promise<ValidationResult> => {
-	const initialized = await Effect.runPromise(
-		Effect.either(
-			Effect.gen(function* () {
-				const oauthClient = new EbayOAuthClient(config);
-				yield* oauthClient.initialize();
-			}),
-		),
-	);
-
-	if (Either.isRight(initialized)) {
+	try {
+		const oauthClient = new EbayOAuthClient(config);
+		await oauthClient.initialize();
+	} catch (error) {
 		return {
 			test: "OAuth Client Initialization",
-			passed: true,
-			message: "OAuth client initialized successfully",
+			passed: false,
+			message: "Failed to initialize OAuth client",
+			error: getErrorMessage(error),
 		};
 	}
 
 	return {
 		test: "OAuth Client Initialization",
-		passed: false,
-		message: "Failed to initialize OAuth client",
-		error: getErrorMessage(initialized.left),
+		passed: true,
+		message: "OAuth client initialized successfully",
 	};
 };
 
@@ -213,30 +199,24 @@ const validateOAuthURL = (config: EbayConfig): ValidationResult => {
 		};
 	}
 
-	const generated = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () =>
-					getOAuthAuthorizationUrl(
-						config.clientId,
-						redirectUri,
-						config.environment,
-					),
-				catch: (error) => error,
-			}),
-		),
-	);
+	let authorizationUrl: string;
 
-	if (Either.isLeft(generated)) {
+	try {
+		authorizationUrl = getOAuthAuthorizationUrl(
+			config.clientId,
+			redirectUri,
+			config.environment,
+		);
+	} catch (error) {
 		return {
 			test: "OAuth URL Generation",
 			passed: false,
 			message: "Failed to generate OAuth URL",
-			error: getErrorMessage(generated.left),
+			error: getErrorMessage(error),
 		};
 	}
 
-	if (!generated.right.startsWith("http")) {
+	if (!authorizationUrl.startsWith("http")) {
 		return {
 			test: "OAuth URL Generation",
 			passed: false,
@@ -303,12 +283,32 @@ export const validateSetup = async (
 	printResult(userTokensResult);
 
 	// If app credentials are valid, test OAuth functionality
-	if (appCredsResult.passed) {
+	const clientId = envVars["EBAY_CLIENT_ID"];
+	const clientSecret = envVars["EBAY_CLIENT_SECRET"];
+	const isClientIdMissing = clientId == null;
+	const isClientSecretMissing = clientSecret == null;
+	const hasAppCredentials = appCredsResult.passed;
+
+	async function testStoredOAuth(): Promise<void> {
+		const skippedOAuth = hasAppCredentials === false;
+
+		if (skippedOAuth) {
+			return;
+		}
+
+		if (isClientIdMissing) {
+			return;
+		}
+
+		if (isClientSecretMissing) {
+			return;
+		}
+
 		const config: EbayConfig = {
-			clientId: envVars.EBAY_CLIENT_ID,
-			clientSecret: envVars.EBAY_CLIENT_SECRET,
-			redirectUri: envVars.EBAY_REDIRECT_URI,
-			environment: (envVars.EBAY_ENVIRONMENT || "sandbox") as
+			clientId,
+			clientSecret,
+			redirectUri: envVars["EBAY_REDIRECT_URI"],
+			environment: (envVars["EBAY_ENVIRONMENT"] || "sandbox") as
 				| "sandbox"
 				| "production",
 		};
@@ -318,13 +318,19 @@ export const validateSetup = async (
 		results.push(oauthInitResult);
 		printResult(oauthInitResult);
 
-		// Test 6: OAuth URL generation
-		if (oauthInitResult.passed) {
-			const oauthURLResult = validateOAuthURL(config);
-			results.push(oauthURLResult);
-			printResult(oauthURLResult);
+		const didOAuthFail = oauthInitResult.passed === false;
+
+		if (didOAuthFail) {
+			return;
 		}
+
+		// Test 6: OAuth URL generation
+		const oauthURLResult = validateOAuthURL(config);
+		results.push(oauthURLResult);
+		printResult(oauthURLResult);
 	}
+
+	await testStoredOAuth();
 
 	// Calculate summary
 	const passed = results.filter((check) => check.passed).length;

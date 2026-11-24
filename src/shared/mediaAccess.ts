@@ -12,7 +12,7 @@ export interface MediaAccessConfig {
 	/** Absolute directories the media tools may read from (the root is included when set). */
 	readonly allowedDirs: readonly string[];
 	/** Absolute directory that `media://<relative>` references resolve under. */
-	readonly mediaRoot?: string;
+	readonly mediaRoot?: string | undefined;
 	/** Configuration problems, reported by startup validation and by the tools themselves. */
 	readonly errors: readonly string[];
 }

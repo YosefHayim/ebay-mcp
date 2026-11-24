@@ -31,7 +31,8 @@ const BASELINE = PAD.top + PLOT_H;
 
 /** Returns the colour for a series, falling back to the palette by index. */
 function seriesColor(series: ChartSeries, index: number): string {
-	return series.color ?? PALETTE[index % PALETTE.length];
+	const fallbackColor = PALETTE[index % PALETTE.length] ?? "#64748b";
+	return series.color ?? fallbackColor;
 }
 
 /** Picks a label stride so at most ~12 x-axis labels render without crowding. */
@@ -91,6 +92,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 				{view.kind === "line"
 					? view.series.map((series, seriesIndex) => (
 							<polyline
+								// biome-ignore lint/suspicious/noArrayIndexKey: series names can repeat
 								key={`${series.name}-${seriesIndex}`}
 								fill="none"
 								stroke={seriesColor(series, seriesIndex)}
@@ -108,6 +110,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 								const y = yFor(point.y);
 								return (
 									<rect
+										// biome-ignore lint/suspicious/noArrayIndexKey: series names can repeat
 										key={`${series.name}-${groupIndex}`}
 										x={x}
 										y={y}
@@ -122,6 +125,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 				{labels.map((label, index) =>
 					index % stride === 0 ? (
 						<text
+							// biome-ignore lint/suspicious/noArrayIndexKey: axis labels can repeat
 							key={`${label}-${index}`}
 							className="chart-label"
 							x={
@@ -140,6 +144,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 
 			<div className="chart-legend">
 				{view.series.map((series, index) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: series names can repeat
 					<span key={`${series.name}-${index}`}>
 						<span
 							className="chart-swatch"

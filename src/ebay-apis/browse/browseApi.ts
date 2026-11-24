@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import {
 	buildBrowseFilter,
 	requireNoPriceFilterConflict,
@@ -27,7 +26,6 @@ import type {
 	EbayRequestConfig,
 } from "@/ebay-client/ebayApiClient.js";
 import {
-	type EbayApiError,
 	EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
@@ -68,105 +66,94 @@ export class BrowseApi {
 	 * under the basic `api_scope`. Returns live listings only.
 	 *
 	 * @param input - Query plus optional pagination, sort, and filters.
-	 * @returns An Effect that succeeds with cleaned active-listing summaries.
+	 * @returns cleaned active-listing summaries.
 	 *
 	 * @example
 	 * ```ts
-	 * const results = await Effect.runPromise(
-	 *   browseApi.searchActiveItems({ query: 'nike dunk low', conditions: ['NEW'], limit: 25 }),
-	 * );
+	 * const results = await browseApi.searchActiveItems({ query: 'nike dunk low', conditions: ['NEW'], limit: 25 });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/buy/browse/resources/item_summary/methods/search
 	 */
-	searchActiveItems = (
+	searchActiveItems = async (
 		input: SearchActiveItemsInput,
-	): Effect.Effect<
-		SearchActiveItemsResult,
-		EbayApiError | EndpointInputError
-	> => {
-		const client = this.#client;
+	): Promise<SearchActiveItemsResult> => {
+		const validatedInput = requireObjectEffect<SearchActiveItemsInput>(
+			input,
+			"input",
+		);
+		const query = requireStringEffect(validatedInput.query, "query");
+		const limitRaw = optionalPositiveNumberEffect(
+			validatedInput.limit,
+			"limit",
+		);
+		const offsetRaw = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		const sort = requireSupportedSort(validatedInput.sort);
+		const categoryIds = optionalNonBlankStringEffect(
+			validatedInput.categoryIds,
+			"categoryIds",
+		);
+		const conditions = optionalStringArrayEffect(
+			validatedInput.conditions,
+			"conditions",
+		);
+		const buyingOptions = optionalStringArrayEffect(
+			validatedInput.buyingOptions,
+			"buyingOptions",
+		);
+		const priceMin = optionalNonNegativeNumberEffect(
+			validatedInput.priceMin,
+			"priceMin",
+		);
+		const priceMax = optionalNonNegativeNumberEffect(
+			validatedInput.priceMax,
+			"priceMax",
+		);
+		const priceCurrency = optionalNonBlankStringEffect(
+			validatedInput.priceCurrency,
+			"priceCurrency",
+		);
+		const rawFilter = optionalNonBlankStringEffect(
+			validatedInput.filter,
+			"filter",
+		);
+		const limit = requireLimitInRange(limitRaw ?? DEFAULT_LIMIT);
+		const offset = requireOffsetInRange(offsetRaw ?? 0, limit);
+		requireCoherentPriceRange(priceMin, priceMax);
+		const hasPriceBounds = priceMin !== undefined || priceMax !== undefined;
+		requireNoPriceFilterConflict(rawFilter, hasPriceBounds);
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<SearchActiveItemsInput>(
-				input,
-				"input",
-			);
-			const query = yield* requireStringEffect(validatedInput.query, "query");
-			const limitRaw = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offsetRaw = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			const sort = yield* requireSupportedSort(validatedInput.sort);
-			const categoryIds = yield* optionalNonBlankStringEffect(
-				validatedInput.categoryIds,
-				"categoryIds",
-			);
-			const conditions = yield* optionalStringArrayEffect(
-				validatedInput.conditions,
-				"conditions",
-			);
-			const buyingOptions = yield* optionalStringArrayEffect(
-				validatedInput.buyingOptions,
-				"buyingOptions",
-			);
-			const priceMin = yield* optionalNonNegativeNumberEffect(
-				validatedInput.priceMin,
-				"priceMin",
-			);
-			const priceMax = yield* optionalNonNegativeNumberEffect(
-				validatedInput.priceMax,
-				"priceMax",
-			);
-			const priceCurrency = yield* optionalNonBlankStringEffect(
-				validatedInput.priceCurrency,
-				"priceCurrency",
-			);
-			const rawFilter = yield* optionalNonBlankStringEffect(
-				validatedInput.filter,
-				"filter",
-			);
-			const limit = yield* requireLimitInRange(limitRaw ?? DEFAULT_LIMIT);
-			const offset = yield* requireOffsetInRange(offsetRaw ?? 0, limit);
-			yield* requireCoherentPriceRange(priceMin, priceMax);
-			yield* requireNoPriceFilterConflict(
-				rawFilter,
-				priceMin !== undefined || priceMax !== undefined,
-			);
+		// Built from the validated values, never the raw input, so the public
+		// API surface enforces the same contract the MCP schema advertises.
+		const filter = buildBrowseFilter(
+			defined({
+				conditions,
+				buyingOptions,
+				priceMin,
+				priceMax,
+				priceCurrency,
+				filter: rawFilter,
+			}),
+		);
 
-			// Built from the validated values, never the raw input, so the public
-			// API surface enforces the same contract the MCP schema advertises.
-			const filter = buildBrowseFilter(
-				defined({
-					conditions,
-					buyingOptions,
-					priceMin,
-					priceMax,
-					priceCurrency,
-					filter: rawFilter,
-				}),
-			);
+		const params: Record<string, string | number> = {
+			q: query,
+			limit,
+			offset,
+			...defined({ sort, category_ids: categoryIds, filter }),
+		};
 
-			const params: Record<string, string | number> = {
-				q: query,
-				limit,
-				offset,
-				...defined({ sort, category_ids: categoryIds, filter }),
-			};
+		const raw = await requestGetEffect<unknown>(
+			this.#client,
+			SEARCH_PATH,
+			params,
+			BROWSE_REQUEST_CONFIG,
+		);
 
-			const raw = yield* requestGetEffect<unknown>(
-				client,
-				SEARCH_PATH,
-				params,
-				BROWSE_REQUEST_CONFIG,
-			);
-
-			return mapSearchActiveItemsResponse(raw, { query, offset, limit });
-		});
+		return mapSearchActiveItemsResponse(raw, { query, offset, limit });
 	};
 
 	/**
@@ -177,51 +164,38 @@ export class BrowseApi {
 	 * (e.g. "v1|110587051479|0").
 	 *
 	 * @param input - Browse RESTful item id.
-	 * @returns An Effect that succeeds with cleaned item details.
+	 * @returns cleaned item details.
 	 *
 	 * @example
 	 * ```ts
-	 * const details = await Effect.runPromise(
-	 *   browseApi.getItemDetails({ itemId: 'v1|110587051479|0' }),
-	 * );
+	 * const details = await browseApi.getItemDetails({ itemId: 'v1|110587051479|0' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/buy/browse/resources/item/methods/getItem
 	 */
-	getItemDetails = (
-		input: GetItemDetailsInput,
-	): Effect.Effect<ItemDetails, EbayApiError | EndpointInputError> => {
-		const client = this.#client;
+	getItemDetails = async (input: GetItemDetailsInput): Promise<ItemDetails> => {
+		const validatedInput = requireObjectEffect<GetItemDetailsInput>(
+			input,
+			"input",
+		);
+		const itemId = requireStringEffect(validatedInput.itemId, "itemId");
+		const path = `${ITEM_PATH}/${encodeURIComponent(itemId)}`;
+		const raw = await requestGetEffect<unknown>(
+			this.#client,
+			path,
+			undefined,
+			BROWSE_REQUEST_CONFIG,
+		);
+		const details = mapItemDetailsResponse(raw);
+		const isItemMissing = details === undefined;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetItemDetailsInput>(
-				input,
-				"input",
-			);
-			const itemId = yield* requireStringEffect(
-				validatedInput.itemId,
-				"itemId",
-			);
+		if (isItemMissing) {
+			throw new EndpointInputError({
+				parameter: "itemId",
+				message: `No item found for itemId "${itemId}"`,
+			});
+		}
 
-			const path = `${ITEM_PATH}/${encodeURIComponent(itemId)}`;
-			const raw = yield* requestGetEffect<unknown>(
-				client,
-				path,
-				undefined,
-				BROWSE_REQUEST_CONFIG,
-			);
-
-			const details = mapItemDetailsResponse(raw);
-			if (!details) {
-				return yield* Effect.fail(
-					new EndpointInputError({
-						parameter: "itemId",
-						message: `No item found for itemId "${itemId}"`,
-					}),
-				);
-			}
-
-			return details;
-		});
+		return details;
 	};
 }

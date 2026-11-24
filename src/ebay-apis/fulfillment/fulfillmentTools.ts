@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import {
 	filterOrdersWithCancellationRequests,
@@ -55,7 +54,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "GetOrdersResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.fulfillment.getOrders(args)),
+		handler: (api, args) => api.fulfillment.getOrders(args),
 		ui: { archetype: "table", map: mapOrdersToTable },
 	}),
 	defineTool({
@@ -67,7 +66,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "GetOrderResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) => Effect.runPromise(api.fulfillment.getOrder(args)),
+		handler: (api, args) => api.fulfillment.getOrder(args),
 		ui: { archetype: "card", map: mapOrderToCard },
 	}),
 	defineTool({
@@ -79,8 +78,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "CreateShippingFulfillmentResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.fulfillment.createShippingFulfillment(args)),
+		handler: (api, args) => api.fulfillment.createShippingFulfillment(args),
 	}),
 	defineTool({
 		name: "ebay_get_shipping_fulfillments",
@@ -91,8 +89,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "GetShippingFulfillmentsResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.fulfillment.getShippingFulfillments(args)),
+		handler: (api, args) => api.fulfillment.getShippingFulfillments(args),
 		ui: { archetype: "table", map: mapFulfillmentsToTable },
 	}),
 	defineTool({
@@ -104,8 +101,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "GetShippingFulfillmentResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.fulfillment.getShippingFulfillment(args)),
+		handler: (api, args) => api.fulfillment.getShippingFulfillment(args),
 	}),
 	defineTool({
 		name: "ebay_issue_refund",
@@ -116,8 +112,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "IssueRefundResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.fulfillment.issueRefund(args)),
+		handler: (api, args) => api.fulfillment.issueRefund(args),
 	}),
 	defineTool({
 		name: "ebay_get_cancellation_requests",
@@ -125,25 +120,20 @@ export const fulfillmentEntries: ToolEntry[] = [
 			"Scan recent seller orders for cancellation requests. Calls Fulfillment API getOrders and returns orders whose cancelState is not NONE_REQUESTED (or that list cancel requests). Read-only helper — does not use the deprecated Post-Order API.\n\nRequired OAuth Scope: sell.fulfillment.readonly or sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
 		inputSchema: getCancellationRequestsInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(
-				api.fulfillment
-					.getOrders({
-						filter: args.filter,
-						limit: args.maxResults ?? DEFAULT_ORDER_SCAN_LIMIT,
-					})
-					.pipe(
-						Effect.map((orderPage) => {
-							const orders = orderPage.orders ?? [];
-							const matches = filterOrdersWithCancellationRequests(orders);
-							return {
-								totalScanned: orders.length,
-								totalMatched: matches.length,
-								orders: matches,
-							};
-						}),
-					),
-			),
+		handler: async (api, args) => {
+			const orderPage = await api.fulfillment.getOrders({
+				filter: args.filter,
+				limit: args.maxResults ?? DEFAULT_ORDER_SCAN_LIMIT,
+			});
+			const orders = orderPage.orders ?? [];
+			const matches = filterOrdersWithCancellationRequests(orders);
+
+			return {
+				totalScanned: orders.length,
+				totalMatched: matches.length,
+				orders: matches,
+			};
+		},
 	}),
 	defineTool({
 		name: "ebay_get_refunded_orders",
@@ -151,25 +141,20 @@ export const fulfillmentEntries: ToolEntry[] = [
 			"Scan recent seller orders for refunds. Calls Fulfillment API getOrders and returns orders with a non-empty paymentSummary.refunds array. Read-only helper — does not issue refunds or call the Post-Order API.\n\nRequired OAuth Scope: sell.fulfillment.readonly or sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
 		inputSchema: getRefundedOrdersInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(
-				api.fulfillment
-					.getOrders({
-						filter: args.filter,
-						limit: args.maxResults ?? DEFAULT_ORDER_SCAN_LIMIT,
-					})
-					.pipe(
-						Effect.map((orderPage) => {
-							const orders = orderPage.orders ?? [];
-							const matches = filterRefundedOrders(orders);
-							return {
-								totalScanned: orders.length,
-								totalMatched: matches.length,
-								orders: matches,
-							};
-						}),
-					),
-			),
+		handler: async (api, args) => {
+			const orderPage = await api.fulfillment.getOrders({
+				filter: args.filter,
+				limit: args.maxResults ?? DEFAULT_ORDER_SCAN_LIMIT,
+			});
+			const orders = orderPage.orders ?? [];
+			const matches = filterRefundedOrders(orders);
+
+			return {
+				totalScanned: orders.length,
+				totalMatched: matches.length,
+				orders: matches,
+			};
+		},
 	}),
 	// Payment Dispute Tools
 	defineTool({
@@ -181,8 +166,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			name: "GetPaymentDisputeSummariesResponse",
 			$refStrategy: "none",
 		}) as OutputArgs,
-		handler: (api, args) =>
-			Effect.runPromise(api.dispute.getPaymentDisputeSummaries(args)),
+		handler: (api, args) => api.dispute.getPaymentDisputeSummaries(args),
 		ui: { archetype: "table", map: mapDisputeSummariesToTable },
 	}),
 	defineTool({
@@ -201,8 +185,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			},
 			description: "Payment dispute details",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.dispute.getPaymentDispute(args)),
+		handler: (api, args) => api.dispute.getPaymentDispute(args),
 		ui: { archetype: "card", map: mapDisputeToCard },
 	}),
 	defineTool({
@@ -217,7 +200,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			},
 			description: "Payment dispute activity history",
 		},
-		handler: (api, args) => Effect.runPromise(api.dispute.getActivities(args)),
+		handler: (api, args) => api.dispute.getActivities(args),
 	}),
 	defineTool({
 		name: "ebay_accept_payment_dispute",
@@ -229,8 +212,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			properties: {},
 			description: "Empty response on successful acceptance (HTTP 204)",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.dispute.acceptPaymentDispute(args)),
+		handler: (api, args) => api.dispute.acceptPaymentDispute(args),
 	}),
 	defineTool({
 		name: "ebay_contest_payment_dispute",
@@ -242,8 +224,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			properties: {},
 			description: "Empty response on successful contest (HTTP 204)",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.dispute.contestPaymentDispute(args)),
+		handler: (api, args) => api.dispute.contestPaymentDispute(args),
 	}),
 	defineTool({
 		name: "ebay_add_payment_dispute_evidence",
@@ -258,7 +239,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			description:
 				"Evidence set response returned after adding payment dispute evidence",
 		},
-		handler: (api, args) => Effect.runPromise(api.dispute.addEvidence(args)),
+		handler: (api, args) => api.dispute.addEvidence(args),
 	}),
 	defineTool({
 		name: "ebay_update_payment_dispute_evidence",
@@ -270,7 +251,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			properties: {},
 			description: "Empty response on successful evidence update (HTTP 204)",
 		},
-		handler: (api, args) => Effect.runPromise(api.dispute.updateEvidence(args)),
+		handler: (api, args) => api.dispute.updateEvidence(args),
 	}),
 	defineTool({
 		name: "ebay_upload_payment_dispute_evidence_file",
@@ -284,8 +265,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 			},
 			description: "File upload response with file ID",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.dispute.uploadEvidenceFile(args)),
+		handler: (api, args) => api.dispute.uploadEvidenceFile(args),
 	}),
 	defineTool({
 		name: "ebay_fetch_payment_dispute_evidence_content",
@@ -300,7 +280,6 @@ export const fulfillmentEntries: ToolEntry[] = [
 			},
 			description: "File content and content type",
 		},
-		handler: (api, args) =>
-			Effect.runPromise(api.dispute.fetchEvidenceContent(args)),
+		handler: (api, args) => api.dispute.fetchEvidenceContent(args),
 	}),
 ];

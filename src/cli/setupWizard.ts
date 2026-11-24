@@ -201,7 +201,7 @@ const promptStep = async (
 		return { cancelled: true, value: undefined };
 	}
 
-	const answer = promptAnswers.value;
+	const answer = promptAnswers["value"];
 	if (typeof answer === "string" || answer === undefined) {
 		return { cancelled: false, value: answer };
 	}
@@ -255,6 +255,11 @@ export const runWizard = async (
 
 	while (currentIndex < config.steps.length) {
 		const step = config.steps[currentIndex];
+		const isStepMissing = step == null;
+
+		if (isStepMissing) {
+			break;
+		}
 
 		if (step.when) {
 			const expected = answers[step.when.field];

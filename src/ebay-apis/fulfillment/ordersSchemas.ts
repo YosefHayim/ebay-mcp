@@ -397,7 +397,7 @@ export const issueRefundOutputSchema = z.object({
 // Payment Dispute Schemas
 // ============================================================================
 
-const paymentDisputeSchema = z.object({
+export const paymentDisputeSchema = z.object({
 	paymentDisputeId: z.string().optional(),
 	orderId: z.string().optional(),
 	openDate: z.string().optional(),

@@ -1,4 +1,3 @@
-import { Cause, Runtime } from "effect";
 import type { EbayClientRequestErrorKind } from "@/ebay-client/ebayClientRequestError.js";
 
 /**
@@ -47,14 +46,77 @@ const asRecord = (value: unknown): Record<string, unknown> | undefined =>
 		? (value as Record<string, unknown>)
 		: undefined;
 
-const nextErrorNode = (node: Record<string, unknown>): unknown => {
-	const fiberCause = (node as Record<symbol, unknown>)[
-		Runtime.FiberFailureCauseId
-	];
-	if (fiberCause !== undefined) {
-		return Cause.squash(fiberCause as Cause.Cause<unknown>);
+const noTaggedCause = Symbol("noTaggedCause");
+
+const fiberFailureCauseId = Symbol.for("effect/Runtime/FiberFailure/Cause");
+
+function readBranchedTaggedCause(
+	node: Record<string, unknown>,
+	tag: string,
+	field: string,
+): unknown {
+	const leftFailure = readTaggedCause(node["left"], tag, field);
+	const hasLeftFailure = leftFailure !== noTaggedCause;
+
+	if (hasLeftFailure) {
+		return leftFailure;
 	}
-	return node.cause;
+
+	return readTaggedCause(node["right"], tag, field);
+}
+
+function readTaggedCause(cause: unknown, tag: string, field: string): unknown {
+	const node = asRecord(cause);
+	const isMissingNode = node === undefined;
+
+	if (isMissingNode) {
+		return noTaggedCause;
+	}
+
+	const isMatch = node["_tag"] === tag;
+
+	if (isMatch) {
+		return node[field];
+	}
+
+	const isSequential = node["_tag"] === "Sequential";
+
+	if (isSequential) {
+		return readBranchedTaggedCause(node, tag, field);
+	}
+
+	const isParallel = node["_tag"] === "Parallel";
+
+	if (isParallel) {
+		return readBranchedTaggedCause(node, tag, field);
+	}
+
+	return noTaggedCause;
+}
+
+const nextErrorNode = (node: Record<string, unknown>): unknown => {
+	const fiberCause = (node as Record<symbol, unknown>)[fiberFailureCauseId];
+	const hasNoFiberCause = fiberCause === undefined;
+
+	if (hasNoFiberCause) {
+		return node["cause"];
+	}
+
+	const failure = readTaggedCause(fiberCause, "Fail", "error");
+	const hasFailure = failure !== noTaggedCause;
+
+	if (hasFailure) {
+		return failure;
+	}
+
+	const defect = readTaggedCause(fiberCause, "Die", "defect");
+	const hasDefect = defect !== noTaggedCause;
+
+	if (hasDefect) {
+		return defect;
+	}
+
+	return node["cause"];
 };
 
 const firstEbayErrorMessage = (errors: unknown[]): string | undefined => {
@@ -62,7 +124,7 @@ const firstEbayErrorMessage = (errors: unknown[]): string | undefined => {
 	if (!first) {
 		return;
 	}
-	const detail = first.longMessage ?? first.message;
+	const detail = first["longMessage"] ?? first["message"];
 	return typeof detail === "string" ? detail : undefined;
 };
 
@@ -87,23 +149,23 @@ const collectEbayErrorNode = (
 	acc: EbayErrorAccumulator,
 ): void => {
 	const message =
-		typeof node.message === "string" && node.message.length > 0
-			? node.message
+		typeof node["message"] === "string" && node["message"].length > 0
+			? node["message"]
 			: undefined;
 	if (message !== undefined && !acc.messageLocked) {
 		acc.message = message;
-		if (typeof node.kind === "string" && isGuidanceKind(node.kind)) {
+		if (typeof node["kind"] === "string" && isGuidanceKind(node["kind"])) {
 			acc.messageLocked = true;
 		}
 	}
-	if (typeof node.status === "number") {
-		acc.status = node.status;
+	if (typeof node["status"] === "number") {
+		acc.status = node["status"];
 	}
 
-	const errorBody = asRecord(node.data);
-	if (errorBody && Array.isArray(errorBody.errors)) {
-		acc.errors = errorBody.errors;
-		const detail = firstEbayErrorMessage(errorBody.errors);
+	const errorBody = asRecord(node["data"]);
+	if (errorBody && Array.isArray(errorBody["errors"])) {
+		acc.errors = errorBody["errors"];
+		const detail = firstEbayErrorMessage(errorBody["errors"]);
 		if (detail && !acc.messageLocked) {
 			acc.message = detail;
 		}
@@ -113,10 +175,10 @@ const collectEbayErrorNode = (
 	// Trading XML failures store their structured entries directly on `cause`.
 	if (
 		acc.errors === undefined &&
-		Array.isArray(node.cause) &&
-		node.cause.length > 0
+		Array.isArray(node["cause"]) &&
+		node["cause"].length > 0
 	) {
-		acc.errors = node.cause;
+		acc.errors = node["cause"];
 	}
 };
 

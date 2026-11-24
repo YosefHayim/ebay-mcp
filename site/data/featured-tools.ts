@@ -38,11 +38,11 @@ export const FEATURED_TOOLS: FeaturedTool[] = [
 			body: {
 				requests: [
 					{
-						sku: fieldValues.sku,
+						sku: fieldValues["sku"],
 						offers: [
 							{
-								offerId: fieldValues.offerId,
-								price: { value: fieldValues.price, currency: "USD" },
+								offerId: fieldValues["offerId"],
+								price: { value: fieldValues["price"], currency: "USD" },
 							},
 						],
 					},
@@ -68,11 +68,11 @@ export const FEATURED_TOOLS: FeaturedTool[] = [
 			{ name: "offset", type: "number", defaultValue: "0" },
 		],
 		createArguments: (fieldValues) => ({
-			limit: Number(fieldValues.limit),
-			offset: Number(fieldValues.offset),
+			limit: Number(fieldValues["limit"]),
+			offset: Number(fieldValues["offset"]),
 		}),
 		createQueryString: (fieldValues) =>
-			`?limit=${fieldValues.limit}&offset=${fieldValues.offset}`,
+			`?limit=${fieldValues["limit"]}&offset=${fieldValues["offset"]}`,
 		exampleResponse: {
 			total: 142,
 			size: 25,
@@ -93,8 +93,8 @@ export const FEATURED_TOOLS: FeaturedTool[] = [
 		method: "GET",
 		path: "/sell/inventory/v1/offer",
 		fields: [{ name: "sku", type: "string", defaultValue: "JKT-WOOL-M" }],
-		createArguments: (fieldValues) => ({ sku: fieldValues.sku }),
-		createQueryString: (fieldValues) => `?sku=${fieldValues.sku}`,
+		createArguments: (fieldValues) => ({ sku: fieldValues["sku"] }),
+		createQueryString: (fieldValues) => `?sku=${fieldValues["sku"]}`,
 		exampleResponse: {
 			total: 1,
 			offers: [
@@ -123,11 +123,11 @@ export const FEATURED_TOOLS: FeaturedTool[] = [
 			{ name: "limit", type: "number", defaultValue: "10" },
 		],
 		createArguments: (fieldValues) => ({
-			filter: fieldValues.filter,
-			limit: Number(fieldValues.limit),
+			filter: fieldValues["filter"],
+			limit: Number(fieldValues["limit"]),
 		}),
 		createQueryString: (fieldValues) =>
-			`?filter=${fieldValues.filter}&limit=${fieldValues.limit}`,
+			`?filter=${fieldValues["filter"]}&limit=${fieldValues["limit"]}`,
 		exampleResponse: {
 			total: 4,
 			orders: [
@@ -161,12 +161,12 @@ export const FEATURED_TOOLS: FeaturedTool[] = [
 			},
 		],
 		createArguments: (fieldValues) => ({
-			dimension: fieldValues.dimension,
-			metric: fieldValues.metric,
-			filter: fieldValues.filter,
+			dimension: fieldValues["dimension"],
+			metric: fieldValues["metric"],
+			filter: fieldValues["filter"],
 		}),
 		createQueryString: (fieldValues) =>
-			`?dimension=${fieldValues.dimension}&metric=${fieldValues.metric}`,
+			`?dimension=${fieldValues["dimension"]}&metric=${fieldValues["metric"]}`,
 		exampleResponse: {
 			header: { dimensionKeys: [{ key: "LISTING_ID" }] },
 			records: [

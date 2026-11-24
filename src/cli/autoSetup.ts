@@ -12,7 +12,6 @@
 
 import process from "node:process";
 import { config } from "dotenv";
-import { Effect, Either } from "effect";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir, platform } from "os";
 import { dirname, join } from "path";
@@ -113,27 +112,17 @@ function readExistingClientConfig(client: MCPClient): Record<string, unknown> {
 		return {};
 	}
 
-	const parsed = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () =>
-					readRecord(JSON.parse(readFileSync(client.configPath, "utf-8"))),
-				catch: (error) => error,
-			}),
-		),
-	);
-
-	if (Either.isRight(parsed)) {
-		return parsed.right;
+	try {
+		return readRecord(JSON.parse(readFileSync(client.configPath, "utf-8")));
+	} catch {
+		printWarning(
+			`Invalid JSON in ${client.configPath}, creating backup and new config`,
+		);
+		const backup = `${client.configPath}.backup.${Date.now()}`;
+		writeFileSync(backup, readFileSync(client.configPath));
+		printInfo(`Backup saved to: ${backup}`);
+		return {};
 	}
-
-	printWarning(
-		`Invalid JSON in ${client.configPath}, creating backup and new config`,
-	);
-	const backup = `${client.configPath}.backup.${Date.now()}`;
-	writeFileSync(backup, readFileSync(client.configPath));
-	printInfo(`Backup saved to: ${backup}`);
-	return {};
 }
 
 function getAutoSetupConfigPaths(): Record<string, string> {
@@ -144,78 +133,78 @@ function getAutoSetupConfigPaths(): Record<string, string> {
 
 	// Claude Desktop config paths
 	if (os === "darwin") {
-		paths.claude = join(
+		paths["claude"] = join(
 			home,
 			"Library/Application Support/Claude/claude_desktop_config.json",
 		);
 	} else if (os === "win32") {
-		paths.claude = join(
+		paths["claude"] = join(
 			home,
 			"AppData/Roaming/Claude/claude_desktop_config.json",
 		);
 	} else {
-		paths.claude = join(home, ".config/Claude/claude_desktop_config.json");
+		paths["claude"] = join(home, ".config/Claude/claude_desktop_config.json");
 	}
 
 	// Cline (VSCode Extension) config paths
 	if (os === "darwin") {
-		paths.cline = join(
+		paths["cline"] = join(
 			home,
 			"Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
 		);
 	} else if (os === "win32") {
-		paths.cline = join(
+		paths["cline"] = join(
 			home,
 			"AppData/Roaming/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
 		);
 	} else {
-		paths.cline = join(
+		paths["cline"] = join(
 			home,
 			".config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
 		);
 	}
 
 	// Continue.dev config path
-	paths.continue = join(home, ".continue/config.json");
+	paths["continue"] = join(home, ".continue/config.json");
 
 	// Zed editor config paths
 	if (os === "darwin") {
-		paths.zed = join(home, ".config/zed/settings.json");
+		paths["zed"] = join(home, ".config/zed/settings.json");
 	} else if (os === "win32") {
-		paths.zed = join(home, "AppData/Roaming/Zed/settings.json");
+		paths["zed"] = join(home, "AppData/Roaming/Zed/settings.json");
 	} else {
-		paths.zed = join(home, ".config/zed/settings.json");
+		paths["zed"] = join(home, ".config/zed/settings.json");
 	}
 
 	// Cursor IDE config path
-	paths.cursor = join(home, ".cursor/mcp.json");
+	paths["cursor"] = join(home, ".cursor/mcp.json");
 
 	// Windsurf (Codeium) config path
-	paths.windsurf = join(home, ".codeium/windsurf/mcp_config.json");
+	paths["windsurf"] = join(home, ".codeium/windsurf/mcp_config.json");
 
 	// Roo Code (VSCode Extension) config paths
 	if (os === "darwin") {
-		paths.roocode = join(
+		paths["roocode"] = join(
 			home,
 			"Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
 		);
 	} else if (os === "win32") {
-		paths.roocode = join(
+		paths["roocode"] = join(
 			home,
 			"AppData/Roaming/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
 		);
 	} else {
-		paths.roocode = join(
+		paths["roocode"] = join(
 			home,
 			".config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
 		);
 	}
 
 	// Claude Code CLI config path
-	paths.claudecode = join(home, ".claude.json");
+	paths["claudecode"] = join(home, ".claude.json");
 
 	// Amazon Q Developer config path
-	paths.amazonq = join(home, ".aws/amazonq/mcp.json");
+	paths["amazonq"] = join(home, ".aws/amazonq/mcp.json");
 
 	return paths;
 }
@@ -244,9 +233,9 @@ function generateMCPServerConfig(): MCPServerConfig {
 	const buildPath = join(PROJECT_ROOT, "build/index.js");
 
 	const envConfig: Record<string, string> = {
-		EBAY_CLIENT_ID: process.env.EBAY_CLIENT_ID || "",
-		EBAY_CLIENT_SECRET: process.env.EBAY_CLIENT_SECRET || "",
-		EBAY_ENVIRONMENT: process.env.EBAY_ENVIRONMENT || "sandbox",
+		EBAY_CLIENT_ID: process.env["EBAY_CLIENT_ID"] || "",
+		EBAY_CLIENT_SECRET: process.env["EBAY_CLIENT_SECRET"] || "",
+		EBAY_ENVIRONMENT: process.env["EBAY_ENVIRONMENT"] || "sandbox",
 	};
 	const config: MCPServerConfig = {
 		command: "node",
@@ -255,26 +244,27 @@ function generateMCPServerConfig(): MCPServerConfig {
 	};
 
 	// Add optional environment variables if they exist
-	if (process.env.EBAY_REDIRECT_URI) {
-		envConfig.EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI;
+	if (process.env["EBAY_REDIRECT_URI"]) {
+		envConfig["EBAY_REDIRECT_URI"] = process.env["EBAY_REDIRECT_URI"];
 	}
-	if (process.env.EBAY_MARKETPLACE_ID) {
-		envConfig.EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID;
+	if (process.env["EBAY_MARKETPLACE_ID"]) {
+		envConfig["EBAY_MARKETPLACE_ID"] = process.env["EBAY_MARKETPLACE_ID"];
 	}
-	if (process.env.EBAY_CONTENT_LANGUAGE) {
-		envConfig.EBAY_CONTENT_LANGUAGE = process.env.EBAY_CONTENT_LANGUAGE;
-	}
-
-	if (process.env.EBAY_USER_ACCESS_TOKEN) {
-		envConfig.EBAY_USER_ACCESS_TOKEN = process.env.EBAY_USER_ACCESS_TOKEN;
+	if (process.env["EBAY_CONTENT_LANGUAGE"]) {
+		envConfig["EBAY_CONTENT_LANGUAGE"] = process.env["EBAY_CONTENT_LANGUAGE"];
 	}
 
-	if (process.env.EBAY_USER_REFRESH_TOKEN) {
-		envConfig.EBAY_USER_REFRESH_TOKEN = process.env.EBAY_USER_REFRESH_TOKEN;
+	if (process.env["EBAY_USER_ACCESS_TOKEN"]) {
+		envConfig["EBAY_USER_ACCESS_TOKEN"] = process.env["EBAY_USER_ACCESS_TOKEN"];
 	}
 
-	if (process.env.EBAY_APP_ACCESS_TOKEN) {
-		envConfig.EBAY_APP_ACCESS_TOKEN = process.env.EBAY_APP_ACCESS_TOKEN;
+	if (process.env["EBAY_USER_REFRESH_TOKEN"]) {
+		envConfig["EBAY_USER_REFRESH_TOKEN"] =
+			process.env["EBAY_USER_REFRESH_TOKEN"];
+	}
+
+	if (process.env["EBAY_APP_ACCESS_TOKEN"]) {
+		envConfig["EBAY_APP_ACCESS_TOKEN"] = process.env["EBAY_APP_ACCESS_TOKEN"];
 	}
 
 	return config;
@@ -284,101 +274,91 @@ function updateClientConfig(
 	client: MCPClient,
 	serverConfig: MCPServerConfig,
 ): boolean {
-	const updated = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () => {
-					// Ensure directory exists
-					const configDir = dirname(client.configPath);
-					if (!existsSync(configDir)) {
-						mkdirSync(configDir, { recursive: true });
-					}
+	try {
+		// Ensure directory exists
+		const configDir = dirname(client.configPath);
+		if (!existsSync(configDir)) {
+			mkdirSync(configDir, { recursive: true });
+		}
 
-					const config = readExistingClientConfig(client);
+		const config = readExistingClientConfig(client);
 
-					// Handle different config formats for different clients
-					switch (client.name) {
-						case "zed": {
-							// Zed uses context_servers with a different structure
-							if (
-								!config.context_servers ||
-								typeof config.context_servers !== "object"
-							) {
-								config.context_servers = {};
-							}
-							const contextServers = readRecord(config.context_servers);
-							contextServers["ebay-mcp-server"] = {
-								command: {
-									path: serverConfig.command,
-									args: serverConfig.args,
-									env: serverConfig.env,
-								},
-								settings: {},
-							};
-							config.context_servers = contextServers;
-							break;
-						}
+		// Handle different config formats for different clients
+		switch (client.name) {
+			case "zed": {
+				// Zed uses context_servers with a different structure
+				if (
+					!config["context_servers"] ||
+					typeof config["context_servers"] !== "object"
+				) {
+					config["context_servers"] = {};
+				}
+				const contextServers = readRecord(config["context_servers"]);
+				contextServers["ebay-mcp-server"] = {
+					command: {
+						path: serverConfig.command,
+						args: serverConfig.args,
+						env: serverConfig.env,
+					},
+					settings: {},
+				};
+				config["context_servers"] = contextServers;
+				break;
+			}
 
-						case "continue": {
-							// Continue.dev uses experimental.modelContextProtocolServers as an array
-							if (
-								!config.experimental ||
-								typeof config.experimental !== "object"
-							) {
-								config.experimental = {};
-							}
-							const experimental = readRecord(config.experimental);
-							if (
-								!(
-									experimental.modelContextProtocolServers &&
-									Array.isArray(experimental.modelContextProtocolServers)
-								)
-							) {
-								experimental.modelContextProtocolServers = [];
-							}
-							const mcpServers = readMcpServerConfigArray(
-								experimental.modelContextProtocolServers,
-							);
+			case "continue": {
+				// Continue.dev uses experimental.modelContextProtocolServers as an array
+				if (
+					!config["experimental"] ||
+					typeof config["experimental"] !== "object"
+				) {
+					config["experimental"] = {};
+				}
+				const experimental = readRecord(config["experimental"]);
+				if (
+					!(
+						experimental["modelContextProtocolServers"] &&
+						Array.isArray(experimental["modelContextProtocolServers"])
+					)
+				) {
+					experimental["modelContextProtocolServers"] = [];
+				}
+				const mcpServers = readMcpServerConfigArray(
+					experimental["modelContextProtocolServers"],
+				);
 
-							// Check if eBay server already exists and update/add
-							const existingIndex = mcpServers.findIndex(
-								(server) =>
-									server.command === "node" &&
-									server.args?.[0]?.includes("ebay-mcp"),
-							);
-							if (existingIndex >= 0) {
-								mcpServers[existingIndex] = serverConfig;
-							} else {
-								mcpServers.push(serverConfig);
-							}
-							experimental.modelContextProtocolServers = mcpServers;
-							config.experimental = experimental;
-							break;
-						}
+				// Check if eBay server already exists and update/add
+				const existingIndex = mcpServers.findIndex(
+					(server) =>
+						server.command === "node" && server.args?.[0]?.includes("ebay-mcp"),
+				);
+				if (existingIndex >= 0) {
+					mcpServers[existingIndex] = serverConfig;
+				} else {
+					mcpServers.push(serverConfig);
+				}
+				experimental["modelContextProtocolServers"] = mcpServers;
+				config["experimental"] = experimental;
+				break;
+			}
 
-						default: {
-							// Standard mcpServers format for Claude Desktop, Cline, Cursor, Windsurf, Roo Code, Claude Code CLI, Amazon Q
-							if (!config.mcpServers || typeof config.mcpServers !== "object") {
-								config.mcpServers = {};
-							}
-							const mcpServers = readRecord(config.mcpServers);
-							mcpServers["ebay-mcp-server"] = serverConfig;
-							config.mcpServers = mcpServers;
-							break;
-						}
-					}
+			default: {
+				// Standard mcpServers format for Claude Desktop, Cline, Cursor, Windsurf, Roo Code, Claude Code CLI, Amazon Q
+				if (!config["mcpServers"] || typeof config["mcpServers"] !== "object") {
+					config["mcpServers"] = {};
+				}
+				const mcpServers = readRecord(config["mcpServers"]);
+				mcpServers["ebay-mcp-server"] = serverConfig;
+				config["mcpServers"] = mcpServers;
+				break;
+			}
+		}
 
-					// Write config
-					writeFileSync(client.configPath, JSON.stringify(config, null, 2));
-				},
-				catch: (error) => error,
-			}),
-		),
-	);
-
-	if (Either.isLeft(updated)) {
+		// Write config
+		writeFileSync(client.configPath, JSON.stringify(config, null, 2));
+	} catch (error) {
 		printError(
-			`Failed to update ${client.name} config: ${getErrorMessage(updated.left)}`,
+			`Failed to update ${client.name} config: ${getErrorMessage(error)}`,
 		);
 		return false;
 	}
@@ -392,7 +372,7 @@ function updateClientConfig(
 
 function validateTokens(): boolean {
 	// Check if user refresh token is provided in .env
-	const hasUserRefreshToken = process.env.EBAY_USER_REFRESH_TOKEN;
+	const hasUserRefreshToken = process.env["EBAY_USER_REFRESH_TOKEN"];
 
 	if (!hasUserRefreshToken) {
 		printInfo(
@@ -430,15 +410,15 @@ function validateAutoSetupEnvironment(): {
 	}
 
 	// Check required variables
-	if (!process.env.EBAY_CLIENT_ID) {
+	if (!process.env["EBAY_CLIENT_ID"]) {
 		errors.push("EBAY_CLIENT_ID is not set in .env");
 	}
 
-	if (!process.env.EBAY_CLIENT_SECRET) {
+	if (!process.env["EBAY_CLIENT_SECRET"]) {
 		errors.push("EBAY_CLIENT_SECRET is not set in .env");
 	}
 
-	const environment = process.env.EBAY_ENVIRONMENT;
+	const environment = process.env["EBAY_ENVIRONMENT"];
 	if (
 		environment &&
 		environment !== "production" &&
@@ -449,7 +429,7 @@ function validateAutoSetupEnvironment(): {
 		);
 	}
 
-	if (!process.env.EBAY_REDIRECT_URI) {
+	if (!process.env["EBAY_REDIRECT_URI"]) {
 		warnings.push(
 			"EBAY_REDIRECT_URI is not set - user OAuth flow will not work. This is required for 10k-50k req/day rate limits.",
 		);
@@ -481,13 +461,17 @@ function main(): void {
 
 	if (validation.errors.length > 0) {
 		printError("Environment validation failed:");
-		validation.errors.forEach((error) => print(`  • ${error}`, "red"));
+		for (const error of validation.errors) {
+			print(`  • ${error}`, "red");
+		}
 		print("\nPlease fix these errors and run again.", "yellow");
 		process.exit(1);
 	}
 
 	if (validation.warnings.length > 0) {
-		validation.warnings.forEach((warning) => printWarning(warning));
+		for (const warning of validation.warnings) {
+			printWarning(warning);
+		}
 	}
 
 	printSuccess("Environment validation passed");

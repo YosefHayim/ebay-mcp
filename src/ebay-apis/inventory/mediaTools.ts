@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import {
 	createDocumentFromUrlInputSchema,
@@ -29,6 +28,14 @@ const MEDIA_ACCESS_NOTE =
 const toMilliseconds = (seconds: number | undefined): number | undefined =>
 	seconds === undefined ? undefined : seconds * 1000;
 
+function thrownError(cause: unknown): Error {
+	if (cause instanceof Error) {
+		return cause;
+	}
+
+	return new Error(String(cause));
+}
+
 /**
  * Media tools. These are the only tools that read the local filesystem, and the
  * attach tool is the one deliberate composite (read item → upload → rewrite media
@@ -41,8 +48,7 @@ export const mediaEntries: ToolEntry[] = [
 			"Create an EPS image from an HTTPS URL. Returns imageId, Location and the complete image payload, including EPS URLs. Requires sell.inventory.",
 		inputSchema: createImageFromUrlInputSchema.shape,
 		annotations: { readOnlyHint: false, destructiveHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.media.createImageFromUrl(args)),
+		handler: (api, args) => api.media.createImageFromUrl(args),
 	}),
 	defineTool({
 		name: "ebay_create_document",
@@ -50,7 +56,7 @@ export const mediaEntries: ToolEntry[] = [
 			"Stage a listing document with documentType and languages. Returns documentId for ebay_upload_document. Requires sell.inventory.",
 		inputSchema: createDocumentInputSchema.shape,
 		annotations: { readOnlyHint: false, destructiveHint: false },
-		handler: (api, args) => Effect.runPromise(api.media.createDocument(args)),
+		handler: (api, args) => api.media.createDocument(args),
 	}),
 	defineTool({
 		name: "ebay_create_document_from_url",
@@ -58,8 +64,7 @@ export const mediaEntries: ToolEntry[] = [
 			"Create a listing document from an HTTPS URL: PDF, JPEG/JPG or PNG up to 10 MiB. Check ebay_get_document for ACCEPTED before attaching it to a listing. Requires sell.inventory.",
 		inputSchema: createDocumentFromUrlInputSchema.shape,
 		annotations: { readOnlyHint: false, destructiveHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.media.createDocumentFromUrl(args)),
+		handler: (api, args) => api.media.createDocumentFromUrl(args),
 	}),
 	defineTool({
 		name: "ebay_get_document",
@@ -67,44 +72,53 @@ export const mediaEntries: ToolEntry[] = [
 			"Get listing document metadata and processing status. Only ACCEPTED documents may be attached to listings. Does not download document bytes. Requires sell.inventory.",
 		inputSchema: documentIdInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.media.getDocument(args)),
+		handler: (api, args) => api.media.getDocument(args),
 	}),
 	defineTool({
 		name: "ebay_upload_document",
 		description: `Upload a local PDF, JPEG/JPG or PNG (up to 10 MiB) to a staged documentId. Animated/multi-page PNG is unsupported. Check ebay_get_document for ACCEPTED. Requires sell.inventory. ${MEDIA_ACCESS_NOTE}`,
 		inputSchema: uploadDocumentInputSchema.shape,
 		annotations: { readOnlyHint: false, destructiveHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(
-				loadLocalMedia(args.path, "document", getMediaAccessConfig()).pipe(
-					Effect.flatMap((file) =>
-						api.media.uploadDocument({ documentId: args.documentId, file }),
-					),
-				),
-			),
+		handler: async (api, args) => {
+			const file = await loadLocalMedia(
+				args.path,
+				"document",
+				getMediaAccessConfig(),
+			);
+
+			try {
+				return await api.media.uploadDocument({
+					documentId: args.documentId,
+					file,
+				});
+			} catch (error) {
+				throw thrownError(error);
+			}
+		},
 	}),
 	defineTool({
 		name: "ebay_upload_post_order_document",
 		description: `Upload a PDF, JPEG/JPG, BMP, GIF or PNG (up to 5 MiB) for a post-order entity. Returns documentId and Location; initial state is SUBMITTED. Publishing requires a separate eBay GraphQL mutation. Animated/multi-page PNG is unsupported; PDF page limits depend on usage. Requires commerce.post_order.document consent and keyset eligibility. ${MEDIA_ACCESS_NOTE}`,
 		inputSchema: uploadPostOrderDocumentInputSchema.shape,
 		annotations: { readOnlyHint: false, destructiveHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(
-				loadLocalMedia(
-					args.path,
-					"postOrderDocument",
-					getMediaAccessConfig(),
-				).pipe(
-					Effect.flatMap((file) =>
-						api.media.uploadPostOrderDocument({
-							file,
-							documentUsageType: args.documentUsageType,
-							entityType: args.entityType,
-							entityId: args.entityId,
-						}),
-					),
-				),
-			),
+		handler: async (api, args) => {
+			const file = await loadLocalMedia(
+				args.path,
+				"postOrderDocument",
+				getMediaAccessConfig(),
+			);
+
+			try {
+				return await api.media.uploadPostOrderDocument({
+					file,
+					documentUsageType: args.documentUsageType,
+					entityType: args.entityType,
+					entityId: args.entityId,
+				});
+			} catch (error) {
+				throw thrownError(error);
+			}
+		},
 	}),
 	defineTool({
 		name: "ebay_download_post_order_document",
@@ -112,8 +126,7 @@ export const mediaEntries: ToolEntry[] = [
 			"Download a post-order document as an embedded PDF resource. SUBMITTED documents are owner-only; PUBLISHED documents require authorization in the post-order flow. Expired documents are unavailable. Requires commerce.post_order.document.",
 		inputSchema: documentIdInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.media.downloadPostOrderDocument(args)),
+		handler: (api, args) => api.media.downloadPostOrderDocument(args),
 		formatResult: (bytes, args) => ({
 			content: [
 				{
@@ -137,8 +150,7 @@ export const mediaEntries: ToolEntry[] = [
 			"Delete a SUBMITTED post-order document. PUBLISHED documents cannot be deleted; eBay enforces state and access restrictions. Requires commerce.post_order.document.",
 		inputSchema: documentIdInputSchema.shape,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.media.removePostOrderDocument(args)),
+		handler: (api, args) => api.media.removePostOrderDocument(args),
 	}),
 
 	defineTool({
@@ -150,12 +162,19 @@ export const mediaEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(
-				loadLocalMediaList(args.paths, "image", getMediaAccessConfig()).pipe(
-					Effect.flatMap((files) => api.media.uploadImageFiles(files)),
-				),
-			),
+		handler: async (api, args) => {
+			const files = await loadLocalMediaList(
+				args.paths,
+				"image",
+				getMediaAccessConfig(),
+			);
+
+			try {
+				return await api.media.uploadImageFiles(files);
+			} catch (error) {
+				throw thrownError(error);
+			}
+		},
 	}),
 	defineTool({
 		name: "ebay_upload_video",
@@ -166,19 +185,24 @@ export const mediaEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(
-				loadLocalMedia(args.path, "video", getMediaAccessConfig()).pipe(
-					Effect.flatMap((file) =>
-						api.media.uploadVideoFile({
-							file,
-							title: args.title,
-							description: args.description,
-							maxWaitMs: toMilliseconds(args.waitForProcessingSeconds),
-						}),
-					),
-				),
-			),
+		handler: async (api, args) => {
+			const file = await loadLocalMedia(
+				args.path,
+				"video",
+				getMediaAccessConfig(),
+			);
+
+			try {
+				return await api.media.uploadVideoFile({
+					file,
+					title: args.title,
+					description: args.description,
+					maxWaitMs: toMilliseconds(args.waitForProcessingSeconds),
+				});
+			} catch (error) {
+				throw thrownError(error);
+			}
+		},
 	}),
 	defineTool({
 		name: "ebay_get_video",
@@ -190,7 +214,7 @@ export const mediaEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.media.getVideo(args)),
+		handler: (api, args) => api.media.getVideo(args),
 	}),
 	defineTool({
 		name: "ebay_attach_media_to_inventory_item",
@@ -201,29 +225,31 @@ export const mediaEntries: ToolEntry[] = [
 			$refStrategy: "none",
 		}) as OutputArgs,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(
-				Effect.gen(function* () {
-					const access = getMediaAccessConfig();
-					const images = yield* loadLocalMediaList(
-						args.imagePaths ?? [],
-						"image",
-						access,
-					);
-					const videos = yield* loadLocalMediaList(
-						args.videoPaths ?? [],
-						"video",
-						access,
-					);
-					return yield* api.media.attachMediaToInventoryItem({
-						sku: args.sku,
-						images,
-						videos,
-						replaceExisting: args.replaceExisting,
-						allowPartial: args.allowPartial,
-						maxWaitMs: toMilliseconds(args.waitForProcessingSeconds),
-					});
-				}),
-			),
+		handler: async (api, args) => {
+			const access = getMediaAccessConfig();
+			const images = await loadLocalMediaList(
+				args.imagePaths ?? [],
+				"image",
+				access,
+			);
+			const videos = await loadLocalMediaList(
+				args.videoPaths ?? [],
+				"video",
+				access,
+			);
+
+			try {
+				return await api.media.attachMediaToInventoryItem({
+					sku: args.sku,
+					images,
+					videos,
+					replaceExisting: args.replaceExisting,
+					allowPartial: args.allowPartial,
+					maxWaitMs: toMilliseconds(args.waitForProcessingSeconds),
+				});
+			} catch (error) {
+				throw thrownError(error);
+			}
+		},
 	}),
 ];

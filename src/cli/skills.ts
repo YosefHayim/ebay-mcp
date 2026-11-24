@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import process from "node:process";
-import { Effect, Either } from "effect";
 import prompts from "prompts";
 import {
 	ALL_PROVIDERS,
@@ -41,9 +40,9 @@ interface SkillsFlags {
 	/** Installs supported providers into user-level locations when possible. */
 	global: boolean;
 	/** Provider list requested through `--providers`. */
-	providers?: SkillProvider[];
+	providers?: SkillProvider[] | undefined;
 	/** Skill layer list requested through `--layer` or `--layers`. */
-	layers?: SkillLayer[];
+	layers?: SkillLayer[] | undefined;
 }
 
 /** Runtime options for invoking the skills installer from scripts or setup. */
@@ -69,6 +68,7 @@ const readFlagValue = (argv: string[], flag: string): string | undefined => {
 	if (inline) return inline.slice(flag.length + 1);
 	const index = argv.indexOf(flag);
 	if (index !== -1 && index + 1 < argv.length) return argv[index + 1];
+	return undefined;
 };
 
 /** Parses skills CLI flags, ignoring the leading `skills` subcommand token. */
@@ -182,7 +182,7 @@ export const runSkillsWizard = async (
 	}
 
 	const cwd = process.cwd();
-	const home = process.env.HOME ?? process.env.USERPROFILE ?? cwd;
+	const home = process.env["HOME"] ?? process.env["USERPROFILE"] ?? cwd;
 	const snapshot = buildRegistrySnapshot();
 	const nonInteractive = flags.yes || !process.stdin.isTTY;
 
@@ -363,20 +363,13 @@ export const runSkillsWizard = async (
 };
 
 if (isEntryModule(import.meta.url)) {
-	void Effect.runPromise(
-		Effect.either(
-			Effect.tryPromise({
-				try: () => runSkillsWizard(),
-				catch: (error) => error,
-			}),
-		),
-	).then((skillsOutcome) => {
-		if (Either.isLeft(skillsOutcome)) {
-			console.error(
-				ui.error("\n  Skills install failed:"),
-				getErrorMessage(skillsOutcome.left),
-			);
-			process.exitCode = 1;
-		}
-	});
+	try {
+		await runSkillsWizard();
+	} catch (error) {
+		console.error(
+			ui.error("\n  Skills install failed:"),
+			getErrorMessage(error),
+		);
+		process.exitCode = 1;
+	}
 }

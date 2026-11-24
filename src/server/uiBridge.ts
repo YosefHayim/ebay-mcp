@@ -274,7 +274,10 @@ export const createUiBridge = (
 			const priorOnInitialized = server.server.oninitialized;
 			server.server.oninitialized = () => {
 				priorOnInitialized?.();
-				uiEnabled = resolveUiEnabled(server.server.getClientCapabilities());
+				const clientCapabilities = server.server.getClientCapabilities();
+				const extensions = clientCapabilities?.extensions;
+				const uiCapabilities = extensions == null ? undefined : { extensions };
+				uiEnabled = resolveUiEnabled(uiCapabilities);
 				if (!uiEnabled) {
 					return;
 				}

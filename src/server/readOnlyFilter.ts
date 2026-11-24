@@ -81,6 +81,6 @@ export const isReadOnlyTool = (definition: ReadOnlyToolDefinition): boolean => {
 export const isReadOnlyModeEnabled = (
 	env: NodeJS.ProcessEnv = process.env,
 ): boolean => {
-	const raw = env.EBAY_READ_ONLY?.trim().toLowerCase();
+	const raw = env["EBAY_READ_ONLY"]?.trim().toLowerCase();
 	return raw === "true" || raw === "1" || raw === "yes";
 };

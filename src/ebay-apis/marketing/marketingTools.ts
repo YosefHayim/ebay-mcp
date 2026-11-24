@@ -1,7 +1,7 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import * as marketingSchemas from "@/ebay-apis/marketing/marketingSchemas.js";
+import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 import type { OutputArgs } from "@/tool-registry/types.js";
@@ -14,6 +14,30 @@ const emptyResponseSchema: OutputArgs = {
 
 const toOutputSchema = (schema: z.ZodTypeAny, name: string): OutputArgs =>
 	zodToJsonSchema(schema, { name, $refStrategy: "none" }) as OutputArgs;
+
+function isMissing<Field>(
+	field: Field | null | undefined,
+): field is null | undefined {
+	return field == null;
+}
+
+function omitUndefinedListingIds(
+	requestBody:
+		| {
+				readonly listingIds?: string[] | undefined;
+		  }
+		| undefined,
+) {
+	if (isMissing(requestBody)) {
+		return undefined;
+	}
+
+	if (isMissing(requestBody.listingIds)) {
+		return undefined;
+	}
+
+	return defined({ listingIds: requestBody.listingIds });
+}
 
 /** Marketing API tools for campaigns, ads, promotions, reports, and email campaigns. */
 export const marketingEntries: ToolEntry[] = [
@@ -29,7 +53,7 @@ export const marketingEntries: ToolEntry[] = [
 		),
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkCreateAdsByInventoryReference(args)),
+			api.marketing.bulkCreateAdsByInventoryReference(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_create_ads_by_listing_id",
@@ -41,8 +65,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkCreateAdsByListingIdResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkCreateAdsByListingId(args)),
+		handler: (api, args) => api.marketing.bulkCreateAdsByListingId(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_delete_ads_by_inventory_reference",
@@ -56,7 +79,7 @@ export const marketingEntries: ToolEntry[] = [
 		),
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkDeleteAdsByInventoryReference(args)),
+			api.marketing.bulkDeleteAdsByInventoryReference(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_delete_ads_by_listing_id",
@@ -68,8 +91,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkDeleteAdsByListingIdResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkDeleteAdsByListingId(args)),
+		handler: (api, args) => api.marketing.bulkDeleteAdsByListingId(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_ads_bid_by_inventory_reference",
@@ -83,9 +105,7 @@ export const marketingEntries: ToolEntry[] = [
 		),
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
-			Effect.runPromise(
-				api.marketing.bulkUpdateAdsBidByInventoryReference(args),
-			),
+			api.marketing.bulkUpdateAdsBidByInventoryReference(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_ads_bid_by_listing_id",
@@ -97,8 +117,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkUpdateAdsBidByListingIdResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkUpdateAdsBidByListingId(args)),
+		handler: (api, args) => api.marketing.bulkUpdateAdsBidByListingId(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_ads_status",
@@ -109,8 +128,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkUpdateAdsStatusResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkUpdateAdsStatus(args)),
+		handler: (api, args) => api.marketing.bulkUpdateAdsStatus(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_ads_status_by_listing_id",
@@ -123,8 +141,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkUpdateAdsStatusByListingIdResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkUpdateAdsStatusByListingId(args)),
+		handler: (api, args) => api.marketing.bulkUpdateAdsStatusByListingId(args),
 	}),
 	defineTool({
 		name: "ebay_get_ads",
@@ -135,7 +152,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetAdsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getAds(args)),
+		handler: (api, args) => api.marketing.getAds(args),
 	}),
 	defineTool({
 		name: "ebay_create_ad_by_listing_id",
@@ -143,8 +160,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.createAdByListingIdInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createAdByListingId(args)),
+		handler: (api, args) => api.marketing.createAdByListingId(args),
 	}),
 	defineTool({
 		name: "ebay_create_ads_by_inventory_reference",
@@ -157,8 +173,7 @@ export const marketingEntries: ToolEntry[] = [
 			"CreateAdsByInventoryReferenceResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createAdsByInventoryReference(args)),
+		handler: (api, args) => api.marketing.createAdsByInventoryReference(args),
 	}),
 	defineTool({
 		name: "ebay_get_ad",
@@ -166,7 +181,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.getAdInputSchema.shape,
 		outputSchema: toOutputSchema(marketingSchemas.adSchema, "GetAdResponse"),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getAd(args)),
+		handler: (api, args) => api.marketing.getAd(args),
 	}),
 	defineTool({
 		name: "ebay_delete_ad",
@@ -174,7 +189,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.deleteAdInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.deleteAd(args)),
+		handler: (api, args) => api.marketing.deleteAd(args),
 	}),
 	defineTool({
 		name: "ebay_delete_ads_by_inventory_reference",
@@ -187,8 +202,7 @@ export const marketingEntries: ToolEntry[] = [
 			"DeleteAdsByInventoryReferenceResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.deleteAdsByInventoryReference(args)),
+		handler: (api, args) => api.marketing.deleteAdsByInventoryReference(args),
 	}),
 	defineTool({
 		name: "ebay_get_ads_by_inventory_reference",
@@ -200,8 +214,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetAdsByInventoryReferenceResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getAdsByInventoryReference(args)),
+		handler: (api, args) => api.marketing.getAdsByInventoryReference(args),
 	}),
 	defineTool({
 		name: "ebay_update_bid",
@@ -209,7 +222,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateBidInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) => Effect.runPromise(api.marketing.updateBid(args)),
+		handler: (api, args) => api.marketing.updateBid(args),
 	}),
 	defineTool({
 		name: "ebay_get_ad_groups",
@@ -220,7 +233,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetAdGroupsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getAdGroups(args)),
+		handler: (api, args) => api.marketing.getAdGroups(args),
 	}),
 	defineTool({
 		name: "ebay_create_ad_group",
@@ -228,8 +241,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.createAdGroupInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createAdGroup(args)),
+		handler: (api, args) => api.marketing.createAdGroup(args),
 	}),
 	defineTool({
 		name: "ebay_get_ad_group",
@@ -240,7 +252,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetAdGroupResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getAdGroup(args)),
+		handler: (api, args) => api.marketing.getAdGroup(args),
 	}),
 	defineTool({
 		name: "ebay_update_ad_group",
@@ -248,8 +260,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateAdGroupInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateAdGroup(args)),
+		handler: (api, args) => api.marketing.updateAdGroup(args),
 	}),
 	defineTool({
 		name: "ebay_suggest_bids",
@@ -260,7 +271,7 @@ export const marketingEntries: ToolEntry[] = [
 			"SuggestBidsResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) => Effect.runPromise(api.marketing.suggestBids(args)),
+		handler: (api, args) => api.marketing.suggestBids(args),
 	}),
 	defineTool({
 		name: "ebay_suggest_keywords",
@@ -271,8 +282,7 @@ export const marketingEntries: ToolEntry[] = [
 			"SuggestKeywordsResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.suggestKeywords(args)),
+		handler: (api, args) => api.marketing.suggestKeywords(args),
 	}),
 	defineTool({
 		name: "ebay_clone_campaign",
@@ -280,8 +290,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.cloneCampaignInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.cloneCampaign(args)),
+		handler: (api, args) => api.marketing.cloneCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_get_campaigns",
@@ -292,7 +301,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetCampaignsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getCampaigns(args)),
+		handler: (api, args) => api.marketing.getCampaigns(args),
 	}),
 	defineTool({
 		name: "ebay_create_campaign",
@@ -300,8 +309,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.createCampaignInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createCampaign(args)),
+		handler: (api, args) => api.marketing.createCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_get_campaign",
@@ -312,7 +320,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetCampaignResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getCampaign(args)),
+		handler: (api, args) => api.marketing.getCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_delete_campaign",
@@ -320,8 +328,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.deleteCampaignInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.deleteCampaign(args)),
+		handler: (api, args) => api.marketing.deleteCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_end_campaign",
@@ -329,7 +336,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.endCampaignInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) => Effect.runPromise(api.marketing.endCampaign(args)),
+		handler: (api, args) => api.marketing.endCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_find_campaign_by_ad_reference",
@@ -341,8 +348,7 @@ export const marketingEntries: ToolEntry[] = [
 			"FindCampaignByAdReferenceResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.findCampaignByAdReference(args)),
+		handler: (api, args) => api.marketing.findCampaignByAdReference(args),
 	}),
 	defineTool({
 		name: "ebay_get_campaign_by_name",
@@ -353,8 +359,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetCampaignByNameResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getCampaignByName(args)),
+		handler: (api, args) => api.marketing.getCampaignByName(args),
 	}),
 	defineTool({
 		name: "ebay_pause_campaign",
@@ -362,8 +367,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.pauseCampaignInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.pauseCampaign(args)),
+		handler: (api, args) => api.marketing.pauseCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_resume_campaign",
@@ -371,8 +375,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.resumeCampaignInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.resumeCampaign(args)),
+		handler: (api, args) => api.marketing.resumeCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_suggest_budget",
@@ -383,8 +386,7 @@ export const marketingEntries: ToolEntry[] = [
 			"SuggestBudgetResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.suggestBudget(args)),
+		handler: (api, args) => api.marketing.suggestBudget(args),
 	}),
 	defineTool({
 		name: "ebay_suggest_items",
@@ -395,7 +397,7 @@ export const marketingEntries: ToolEntry[] = [
 			"SuggestItemsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.suggestItems(args)),
+		handler: (api, args) => api.marketing.suggestItems(args),
 	}),
 	defineTool({
 		name: "ebay_suggest_max_cpc",
@@ -406,8 +408,7 @@ export const marketingEntries: ToolEntry[] = [
 			"SuggestMaxCpcResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.suggestMaxCpc(args)),
+		handler: (api, args) => api.marketing.suggestMaxCpc(args),
 	}),
 	defineTool({
 		name: "ebay_update_ad_rate_strategy",
@@ -415,8 +416,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateAdRateStrategyInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateAdRateStrategy(args)),
+		handler: (api, args) => api.marketing.updateAdRateStrategy(args),
 	}),
 	defineTool({
 		name: "ebay_update_bidding_strategy",
@@ -424,8 +424,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateBiddingStrategyInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateBiddingStrategy(args)),
+		handler: (api, args) => api.marketing.updateBiddingStrategy(args),
 	}),
 	defineTool({
 		name: "ebay_update_campaign_budget",
@@ -433,8 +432,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateCampaignBudgetInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateCampaignBudget(args)),
+		handler: (api, args) => api.marketing.updateCampaignBudget(args),
 	}),
 	defineTool({
 		name: "ebay_update_campaign_identification",
@@ -443,8 +441,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateCampaignIdentificationInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateCampaignIdentification(args)),
+		handler: (api, args) => api.marketing.updateCampaignIdentification(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_create_keyword",
@@ -455,8 +452,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkCreateKeywordResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkCreateKeyword(args)),
+		handler: (api, args) => api.marketing.bulkCreateKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_keyword",
@@ -467,8 +463,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkUpdateKeywordResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkUpdateKeyword(args)),
+		handler: (api, args) => api.marketing.bulkUpdateKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_get_keywords",
@@ -479,7 +474,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetKeywordsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getKeywords(args)),
+		handler: (api, args) => api.marketing.getKeywords(args),
 	}),
 	defineTool({
 		name: "ebay_create_keyword",
@@ -487,8 +482,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.createKeywordInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createKeyword(args)),
+		handler: (api, args) => api.marketing.createKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_get_keyword",
@@ -499,7 +493,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetKeywordResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getKeyword(args)),
+		handler: (api, args) => api.marketing.getKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_update_keyword",
@@ -510,8 +504,7 @@ export const marketingEntries: ToolEntry[] = [
 			"UpdateKeywordResponse",
 		),
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateKeyword(args)),
+		handler: (api, args) => api.marketing.updateKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_create_negative_keyword",
@@ -522,8 +515,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkCreateNegativeKeywordResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkCreateNegativeKeyword(args)),
+		handler: (api, args) => api.marketing.bulkCreateNegativeKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_negative_keyword",
@@ -534,8 +526,7 @@ export const marketingEntries: ToolEntry[] = [
 			"BulkUpdateNegativeKeywordResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.bulkUpdateNegativeKeyword(args)),
+		handler: (api, args) => api.marketing.bulkUpdateNegativeKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_get_negative_keywords",
@@ -546,8 +537,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetNegativeKeywordsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getNegativeKeywords(args)),
+		handler: (api, args) => api.marketing.getNegativeKeywords(args),
 	}),
 	defineTool({
 		name: "ebay_create_negative_keyword",
@@ -555,8 +545,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.createNegativeKeywordInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createNegativeKeyword(args)),
+		handler: (api, args) => api.marketing.createNegativeKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_get_negative_keyword",
@@ -567,8 +556,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetNegativeKeywordResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getNegativeKeyword(args)),
+		handler: (api, args) => api.marketing.getNegativeKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_update_negative_keyword",
@@ -576,8 +564,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.updateNegativeKeywordInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateNegativeKeyword(args)),
+		handler: (api, args) => api.marketing.updateNegativeKeyword(args),
 	}),
 	defineTool({
 		name: "ebay_get_report",
@@ -585,7 +572,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.getReportInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getReport(args)),
+		handler: (api, args) => api.marketing.getReport(args),
 	}),
 	defineTool({
 		name: "ebay_get_report_metadata",
@@ -596,8 +583,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetReportMetadataResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getReportMetadata(args)),
+		handler: (api, args) => api.marketing.getReportMetadata(args),
 	}),
 	defineTool({
 		name: "ebay_get_report_metadata_for_report_type",
@@ -610,8 +596,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetReportMetadataForReportTypeResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getReportMetadataForReportType(args)),
+		handler: (api, args) => api.marketing.getReportMetadataForReportType(args),
 	}),
 	defineTool({
 		name: "ebay_get_report_tasks",
@@ -622,8 +607,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetReportTasksResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getReportTasks(args)),
+		handler: (api, args) => api.marketing.getReportTasks(args),
 	}),
 	defineTool({
 		name: "ebay_create_report_task",
@@ -631,8 +615,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.createReportTaskInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createReportTask(args)),
+		handler: (api, args) => api.marketing.createReportTask(args),
 	}),
 	defineTool({
 		name: "ebay_get_report_task",
@@ -643,8 +626,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetReportTaskResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getReportTask(args)),
+		handler: (api, args) => api.marketing.getReportTask(args),
 	}),
 	defineTool({
 		name: "ebay_delete_report_task",
@@ -652,8 +634,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.deleteReportTaskInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.deleteReportTask(args)),
+		handler: (api, args) => api.marketing.deleteReportTask(args),
 	}),
 	defineTool({
 		name: "ebay_create_item_price_markdown_promotion",
@@ -664,7 +645,7 @@ export const marketingEntries: ToolEntry[] = [
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createItemPriceMarkdownPromotion(args)),
+			api.marketing.createItemPriceMarkdownPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_get_item_price_markdown_promotion",
@@ -677,8 +658,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetItemPriceMarkdownPromotionResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getItemPriceMarkdownPromotion(args)),
+		handler: (api, args) => api.marketing.getItemPriceMarkdownPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_update_item_price_markdown_promotion",
@@ -689,7 +669,7 @@ export const marketingEntries: ToolEntry[] = [
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
 		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateItemPriceMarkdownPromotion(args)),
+			api.marketing.updateItemPriceMarkdownPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_delete_item_price_markdown_promotion",
@@ -700,7 +680,7 @@ export const marketingEntries: ToolEntry[] = [
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
 		handler: (api, args) =>
-			Effect.runPromise(api.marketing.deleteItemPriceMarkdownPromotion(args)),
+			api.marketing.deleteItemPriceMarkdownPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_create_item_promotion",
@@ -711,8 +691,7 @@ export const marketingEntries: ToolEntry[] = [
 			"CreateItemPromotionResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createItemPromotion(args)),
+		handler: (api, args) => api.marketing.createItemPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_get_item_promotion",
@@ -723,8 +702,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetItemPromotionResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getItemPromotion(args)),
+		handler: (api, args) => api.marketing.getItemPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_update_item_promotion",
@@ -735,8 +713,7 @@ export const marketingEntries: ToolEntry[] = [
 			"UpdateItemPromotionResponse",
 		),
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateItemPromotion(args)),
+		handler: (api, args) => api.marketing.updateItemPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_delete_item_promotion",
@@ -744,8 +721,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.deleteItemPromotionInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.deleteItemPromotion(args)),
+		handler: (api, args) => api.marketing.deleteItemPromotion(args),
 	}),
 	defineTool({
 		name: "ebay_get_listing_set",
@@ -756,8 +732,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetListingSetResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getListingSet(args)),
+		handler: (api, args) => api.marketing.getListingSet(args),
 	}),
 	defineTool({
 		name: "ebay_get_promotions",
@@ -768,8 +743,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetPromotionsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getPromotions(args)),
+		handler: (api, args) => api.marketing.getPromotions(args),
 	}),
 	defineTool({
 		name: "ebay_pause_promotion",
@@ -777,8 +751,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.pausePromotionInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.pausePromotion(args)),
+		handler: (api, args) => api.marketing.pausePromotion(args),
 	}),
 	defineTool({
 		name: "ebay_resume_promotion",
@@ -786,8 +759,7 @@ export const marketingEntries: ToolEntry[] = [
 		inputSchema: marketingSchemas.resumePromotionInputSchema.shape,
 		outputSchema: emptyResponseSchema,
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.resumePromotion(args)),
+		handler: (api, args) => api.marketing.resumePromotion(args),
 	}),
 	defineTool({
 		name: "ebay_get_promotion_reports",
@@ -798,8 +770,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetPromotionReportsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getPromotionReports(args)),
+		handler: (api, args) => api.marketing.getPromotionReports(args),
 	}),
 	defineTool({
 		name: "ebay_get_promotion_summary_report",
@@ -810,8 +781,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetPromotionSummaryReportResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getPromotionSummaryReport(args)),
+		handler: (api, args) => api.marketing.getPromotionSummaryReport(args),
 	}),
 	defineTool({
 		name: "ebay_get_email_campaigns",
@@ -822,8 +792,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetEmailCampaignsResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getEmailCampaigns(args)),
+		handler: (api, args) => api.marketing.getEmailCampaigns(args),
 	}),
 	defineTool({
 		name: "ebay_create_email_campaign",
@@ -834,8 +803,7 @@ export const marketingEntries: ToolEntry[] = [
 			"CreateEmailCampaignResponse",
 		),
 		annotations: { readOnlyHint: false },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.createEmailCampaign(args)),
+		handler: (api, args) => api.marketing.createEmailCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_get_email_campaign",
@@ -846,8 +814,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetEmailCampaignResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getEmailCampaign(args)),
+		handler: (api, args) => api.marketing.getEmailCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_update_email_campaign",
@@ -858,8 +825,7 @@ export const marketingEntries: ToolEntry[] = [
 			"UpdateEmailCampaignResponse",
 		),
 		annotations: { readOnlyHint: false, idempotentHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.updateEmailCampaign(args)),
+		handler: (api, args) => api.marketing.updateEmailCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_delete_email_campaign",
@@ -870,8 +836,7 @@ export const marketingEntries: ToolEntry[] = [
 			"DeleteEmailCampaignResponse",
 		),
 		annotations: { readOnlyHint: false, destructiveHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.deleteEmailCampaign(args)),
+		handler: (api, args) => api.marketing.deleteEmailCampaign(args),
 	}),
 	defineTool({
 		name: "ebay_get_audiences",
@@ -882,7 +847,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetAudiencesResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.marketing.getAudiences(args)),
+		handler: (api, args) => api.marketing.getAudiences(args),
 	}),
 	defineTool({
 		name: "ebay_get_email_preview",
@@ -893,8 +858,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetEmailPreviewResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getEmailPreview(args)),
+		handler: (api, args) => api.marketing.getEmailPreview(args),
 	}),
 	defineTool({
 		name: "ebay_get_email_report",
@@ -905,8 +869,7 @@ export const marketingEntries: ToolEntry[] = [
 			"GetEmailReportResponse",
 		),
 		annotations: { readOnlyHint: true },
-		handler: (api, args) =>
-			Effect.runPromise(api.marketing.getEmailReport(args)),
+		handler: (api, args) => api.marketing.getEmailReport(args),
 	}),
 	defineTool({
 		name: "ebay_find_listing_recommendations",
@@ -919,6 +882,14 @@ export const marketingEntries: ToolEntry[] = [
 		),
 		annotations: { readOnlyHint: true },
 		handler: (api, args) =>
-			Effect.runPromise(api.recommendation.findListingRecommendations(args)),
+			api.recommendation.findListingRecommendations({
+				marketplaceId: args.marketplaceId,
+				...defined({
+					filter: args.filter,
+					limit: args.limit,
+					offset: args.offset,
+					requestBody: omitUndefinedListingIds(args.requestBody),
+				}),
+			}),
 	}),
 ];

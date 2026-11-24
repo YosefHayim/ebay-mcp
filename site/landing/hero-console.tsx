@@ -27,6 +27,7 @@ export const HeroConsole = () => (
 		<div
 			class="conbody"
 			data-console-body={true}
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 			dangerouslySetInnerHTML={{
 				__html: renderHeroConsoleBody(HERO_CONSOLE_FINAL_TICK),
 			}}
@@ -35,6 +36,7 @@ export const HeroConsole = () => (
 			<span
 				data-console-composer={true}
 				style="display:contents"
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: markup comes from this site
 				dangerouslySetInnerHTML={{
 					__html: renderHeroConsoleComposer(HERO_CONSOLE_FINAL_TICK),
 				}}

@@ -1,11 +1,10 @@
-import { Effect } from "effect";
+import type { z } from "zod";
 import type {
 	EbayApiClient,
 	EbayRequestConfig,
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
 	EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
@@ -21,6 +20,12 @@ import type {
 } from "@/ebay-openapi-types/sellFulfillmentV1Oas3.js";
 import { getIdentityBaseUrl } from "@/shared/environment.js";
 import { isRecord } from "@/shared/typeGuards.js";
+import type {
+	acceptPaymentDisputeInputSchema,
+	addEvidenceInputSchema,
+	contestPaymentDisputeInputSchema,
+	updateEvidenceInputSchema,
+} from "./ordersSchemas.js";
 
 /**
  * Response returned by eBay Fulfillment API getPaymentDisputeSummaries.
@@ -51,22 +56,6 @@ export type PaymentDisputeActivityHistory =
  * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/fetchEvidenceContent
  */
 export type FetchEvidenceContentResponse = Buffer;
-
-/**
- * Request payload accepted by eBay Fulfillment API acceptPaymentDispute.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/acceptPaymentDispute
- */
-export type AcceptPaymentDisputeRequest =
-	components["schemas"]["AcceptPaymentDisputeRequest"];
-
-/**
- * Request payload accepted by eBay Fulfillment API contestPaymentDispute.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/contestPaymentDispute
- */
-export type ContestPaymentDisputeRequest =
-	components["schemas"]["ContestPaymentDisputeRequest"];
 
 /**
  * Response returned by eBay Fulfillment API uploadEvidenceFile.
@@ -132,36 +121,28 @@ export interface GetActivitiesInput {
 /** Filters accepted by getPaymentDisputeSummaries. */
 export interface GetPaymentDisputeSummariesInput {
 	/** eBay order identifier used to find disputes for one order. */
-	readonly orderId?: string;
+	readonly orderId?: string | undefined;
 	/** Buyer username used to find disputes opened by one buyer. */
-	readonly buyerUsername?: string;
+	readonly buyerUsername?: string | undefined;
 	/** ISO-8601 lower bound for the dispute open date. */
-	readonly openDateFrom?: string;
+	readonly openDateFrom?: string | undefined;
 	/** ISO-8601 upper bound for the dispute open date. */
-	readonly openDateTo?: string;
+	readonly openDateTo?: string | undefined;
 	/** Dispute status filter such as OPEN, ACTION_NEEDED, or CLOSED. */
-	readonly paymentDisputeStatus?: string;
+	readonly paymentDisputeStatus?: string | undefined;
 	/** Maximum number of disputes to return. */
-	readonly limit?: number;
+	readonly limit?: number | undefined;
 	/** Number of disputes to skip before returning the first result. */
-	readonly offset?: number;
+	readonly offset?: number | undefined;
 }
 
-/** Input accepted by acceptPaymentDispute. */
-export interface AcceptPaymentDisputeInput {
-	/** eBay payment dispute identifier to accept. */
-	readonly paymentDisputeId: string;
-	/** Optional generated request payload for accepting the dispute. */
-	readonly body?: AcceptPaymentDisputeRequest;
-}
+export type AcceptPaymentDisputeInput = z.infer<
+	typeof acceptPaymentDisputeInputSchema
+>;
 
-/** Input accepted by contestPaymentDispute. */
-export interface ContestPaymentDisputeInput {
-	/** eBay payment dispute identifier to contest. */
-	readonly paymentDisputeId: string;
-	/** Optional generated request payload for contesting the dispute. */
-	readonly body?: ContestPaymentDisputeRequest;
-}
+export type ContestPaymentDisputeInput = z.infer<
+	typeof contestPaymentDisputeInputSchema
+>;
 
 /** Multipart-compatible body accepted by uploadEvidenceFile. */
 export type UploadEvidenceFileBody =
@@ -177,41 +158,37 @@ export interface UploadEvidenceFileInput {
 	readonly body: UploadEvidenceFileBody;
 }
 
-/** Input accepted by addEvidence. */
-export interface AddEvidenceInput {
-	/** eBay payment dispute identifier receiving the evidence. */
-	readonly paymentDisputeId: string;
-	/** Generated request payload describing the evidence set to add. */
-	readonly body: AddEvidencePaymentDisputeRequest;
-}
+export type AddEvidenceInput = z.infer<typeof addEvidenceInputSchema>;
 
-/** Input accepted by updateEvidence. */
-export interface UpdateEvidenceInput {
-	/** eBay payment dispute identifier whose evidence set is updated. */
-	readonly paymentDisputeId: string;
-	/** Generated request payload describing the evidence set update. */
-	readonly body: UpdateEvidencePaymentDisputeRequest;
-}
+export type UpdateEvidenceInput = z.infer<typeof updateEvidenceInputSchema>;
 
-const requireUploadEvidenceFileBodyEffect = (
+function requireUploadEvidenceFileBody(
 	evidenceFile: unknown,
-): Effect.Effect<UploadEvidenceFileBody, EndpointInputError> => {
-	if (
-		evidenceFile instanceof ArrayBuffer ||
-		evidenceFile instanceof Uint8Array ||
-		isRecord(evidenceFile)
-	) {
-		return Effect.succeed(evidenceFile);
+): UploadEvidenceFileBody {
+	const isArrayBuffer = evidenceFile instanceof ArrayBuffer;
+
+	if (isArrayBuffer) {
+		return evidenceFile;
 	}
 
-	return Effect.fail(
-		new EndpointInputError({
-			parameter: "body",
-			message:
-				"body is required and must be binary data or a multipart-compatible object",
-		}),
-	);
-};
+	const isByteArray = evidenceFile instanceof Uint8Array;
+
+	if (isByteArray) {
+		return evidenceFile;
+	}
+
+	const isMultipartObject = isRecord(evidenceFile);
+
+	if (isMultipartObject) {
+		return evidenceFile;
+	}
+
+	throw new EndpointInputError({
+		parameter: "body",
+		message:
+			"body is required and must be binary data or a multipart-compatible object",
+	});
+}
 
 const FULFILLMENT_BASE_PATH = "/sell/fulfillment/v1";
 
@@ -242,23 +219,22 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDispute
 	 */
-	public getPaymentDispute = (
+	public getPaymentDispute = async (
 		input: GetPaymentDisputeInput,
-	): Effect.Effect<PaymentDispute, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}`);
+	): Promise<PaymentDispute> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const url = apizUrl(this.client, `/payment_dispute/${paymentDisputeId}`);
 
-			return yield* requestGetEffect<PaymentDispute>(
-				this.client,
-				url,
-				undefined,
-				APIZ_REQUEST,
-			);
-		});
+		return await requestGetEffect<PaymentDispute>(
+			this.client,
+			url,
+			undefined,
+			APIZ_REQUEST,
+		);
+	};
 
 	/**
 	 * Downloads one evidence file attached to a payment dispute.
@@ -279,42 +255,35 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/fetchEvidenceContent
 	 */
-	public fetchEvidenceContent = (
+	public fetchEvidenceContent = async (
 		input: FetchEvidenceContentInput,
-	): Effect.Effect<
-		FetchEvidenceContentResponse,
-		EbayApiError | EndpointInputError
-	> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const evidenceId = yield* requireStringEffect(
-				input.evidenceId,
-				"evidenceId",
-			);
-			const fileId = yield* requireStringEffect(input.fileId, "fileId");
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/fetch_evidence_content`,
-			);
-			const params = buildEndpointParams({
-				evidenceId: { wireName: "evidence_id", value: evidenceId },
-				fileId: { wireName: "file_id", value: fileId },
-			});
-
-			return yield* requestGetEffect<FetchEvidenceContentResponse>(
-				this.client,
-				url,
-				params,
-				{
-					absolute: true,
-					headers: { Accept: "application/octet-stream" },
-					responseType: "arraybuffer",
-				},
-			);
+	): Promise<FetchEvidenceContentResponse> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const evidenceId = requireStringEffect(input.evidenceId, "evidenceId");
+		const fileId = requireStringEffect(input.fileId, "fileId");
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/fetch_evidence_content`,
+		);
+		const params = buildEndpointParams({
+			evidenceId: { wireName: "evidence_id", value: evidenceId },
+			fileId: { wireName: "file_id", value: fileId },
 		});
+
+		return await requestGetEffect<FetchEvidenceContentResponse>(
+			this.client,
+			url,
+			params,
+			{
+				absolute: true,
+				headers: { Accept: "application/octet-stream" },
+				responseType: "arraybuffer",
+			},
+		);
+	};
 
 	/**
 	 * Retrieves the activity history for one payment dispute.
@@ -331,29 +300,25 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getActivities
 	 */
-	public getActivities = (
+	public getActivities = async (
 		input: GetActivitiesInput,
-	): Effect.Effect<
-		PaymentDisputeActivityHistory,
-		EbayApiError | EndpointInputError
-	> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/activity`,
-			);
+	): Promise<PaymentDisputeActivityHistory> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/activity`,
+		);
 
-			return yield* requestGetEffect<PaymentDisputeActivityHistory>(
-				this.client,
-				url,
-				undefined,
-				APIZ_REQUEST,
-			);
-		});
+		return await requestGetEffect<PaymentDisputeActivityHistory>(
+			this.client,
+			url,
+			undefined,
+			APIZ_REQUEST,
+		);
+	};
 
 	/**
 	 * Searches payment disputes using the filters supported by eBay.
@@ -370,59 +335,52 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDisputeSummaries
 	 */
-	public getPaymentDisputeSummaries = (
+	public getPaymentDisputeSummaries = async (
 		input: GetPaymentDisputeSummariesInput = {},
-	): Effect.Effect<DisputeSummaryResponse, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const orderId = yield* optionalStringEffect(input.orderId, "orderId");
-			const buyerUsername = yield* optionalStringEffect(
-				input.buyerUsername,
-				"buyerUsername",
-			);
-			const openDateFrom = yield* optionalStringEffect(
-				input.openDateFrom,
-				"openDateFrom",
-			);
-			const openDateTo = yield* optionalStringEffect(
-				input.openDateTo,
-				"openDateTo",
-			);
-			const paymentDisputeStatus = yield* optionalStringEffect(
-				input.paymentDisputeStatus,
-				"paymentDisputeStatus",
-			);
-			const limit = yield* optionalPositiveNumberEffect(input.limit, "limit");
-			const offset = yield* optionalNonNegativeNumberEffect(
-				input.offset,
-				"offset",
-			);
-			const url = apizUrl(this.client, "/payment_dispute_summary");
-			const params = buildEndpointParams({
-				orderId: { wireName: "order_id", value: orderId },
-				buyerUsername: { wireName: "buyer_username", value: buyerUsername },
-				openDateFrom: { wireName: "open_date_from", value: openDateFrom },
-				openDateTo: { wireName: "open_date_to", value: openDateTo },
-				paymentDisputeStatus: {
-					wireName: "payment_dispute_status",
-					value: paymentDisputeStatus,
-				},
-				limit: {
-					wireName: "limit",
-					value: limit === undefined ? undefined : String(limit),
-				},
-				offset: {
-					wireName: "offset",
-					value: offset === undefined ? undefined : String(offset),
-				},
-			});
-
-			return yield* requestGetEffect<DisputeSummaryResponse>(
-				this.client,
-				url,
-				params,
-				APIZ_REQUEST,
-			);
+	): Promise<DisputeSummaryResponse> => {
+		const orderId = optionalStringEffect(input.orderId, "orderId");
+		const buyerUsername = optionalStringEffect(
+			input.buyerUsername,
+			"buyerUsername",
+		);
+		const openDateFrom = optionalStringEffect(
+			input.openDateFrom,
+			"openDateFrom",
+		);
+		const openDateTo = optionalStringEffect(input.openDateTo, "openDateTo");
+		const paymentDisputeStatus = optionalStringEffect(
+			input.paymentDisputeStatus,
+			"paymentDisputeStatus",
+		);
+		const limit = optionalPositiveNumberEffect(input.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(input.offset, "offset");
+		const url = apizUrl(this.client, "/payment_dispute_summary");
+		const params = buildEndpointParams({
+			orderId: { wireName: "order_id", value: orderId },
+			buyerUsername: { wireName: "buyer_username", value: buyerUsername },
+			openDateFrom: { wireName: "open_date_from", value: openDateFrom },
+			openDateTo: { wireName: "open_date_to", value: openDateTo },
+			paymentDisputeStatus: {
+				wireName: "payment_dispute_status",
+				value: paymentDisputeStatus,
+			},
+			limit: {
+				wireName: "limit",
+				value: limit === undefined ? undefined : String(limit),
+			},
+			offset: {
+				wireName: "offset",
+				value: offset === undefined ? undefined : String(offset),
+			},
 		});
+
+		return await requestGetEffect<DisputeSummaryResponse>(
+			this.client,
+			url,
+			params,
+			APIZ_REQUEST,
+		);
+	};
 
 	/**
 	 * Accepts one payment dispute.
@@ -442,26 +400,25 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/acceptPaymentDispute
 	 */
-	public acceptPaymentDispute = (
+	public acceptPaymentDispute = async (
 		input: AcceptPaymentDisputeInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/accept`,
-			);
+	): Promise<void> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/accept`,
+		);
 
-			return yield* requestPostEffect<void>(
-				this.client,
-				url,
-				input.body,
-				APIZ_REQUEST,
-			);
-		});
+		return await requestPostEffect<void>(
+			this.client,
+			url,
+			input.body,
+			APIZ_REQUEST,
+		);
+	};
 
 	/**
 	 * Contests one payment dispute.
@@ -481,26 +438,25 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/contestPaymentDispute
 	 */
-	public contestPaymentDispute = (
+	public contestPaymentDispute = async (
 		input: ContestPaymentDisputeInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/contest`,
-			);
+	): Promise<void> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/contest`,
+		);
 
-			return yield* requestPostEffect<void>(
-				this.client,
-				url,
-				input.body,
-				APIZ_REQUEST,
-			);
-		});
+		return await requestPostEffect<void>(
+			this.client,
+			url,
+			input.body,
+			APIZ_REQUEST,
+		);
+	};
 
 	/**
 	 * Uploads one evidence file for a payment dispute.
@@ -520,32 +476,29 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/uploadEvidenceFile
 	 */
-	public uploadEvidenceFile = (
+	public uploadEvidenceFile = async (
 		input: UploadEvidenceFileInput,
-	): Effect.Effect<FileEvidence, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const evidenceFile = yield* requireUploadEvidenceFileBodyEffect(
-				input.body,
-			);
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/upload_evidence_file`,
-			);
+	): Promise<FileEvidence> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const evidenceFile = requireUploadEvidenceFileBody(input.body);
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/upload_evidence_file`,
+		);
 
-			return yield* requestPostEffect<FileEvidence>(
-				this.client,
-				url,
-				evidenceFile,
-				{
-					absolute: true,
-					headers: { "Content-Type": "multipart/form-data" },
-				},
-			);
-		});
+		return await requestPostEffect<FileEvidence>(
+			this.client,
+			url,
+			evidenceFile,
+			{
+				absolute: true,
+				headers: { "Content-Type": "multipart/form-data" },
+			},
+		);
+	};
 
 	/**
 	 * Adds evidence to one payment dispute.
@@ -565,34 +518,27 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
 	 */
-	public addEvidence = (
+	public addEvidence = async (
 		input: AddEvidenceInput,
-	): Effect.Effect<
-		AddEvidencePaymentDisputeResponse,
-		EbayApiError | EndpointInputError
-	> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
-			);
-			const addEvidenceRequest =
-				yield* requireObjectEffect<AddEvidencePaymentDisputeRequest>(
-					input.body,
-					"body",
-				);
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/add_evidence`,
-			);
+	): Promise<AddEvidencePaymentDisputeResponse> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const addEvidenceRequest =
+			requireObjectEffect<AddEvidencePaymentDisputeRequest>(input.body, "body");
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/add_evidence`,
+		);
 
-			return yield* requestPostEffect<AddEvidencePaymentDisputeResponse>(
-				this.client,
-				url,
-				addEvidenceRequest,
-				APIZ_REQUEST,
-			);
-		});
+		return await requestPostEffect<AddEvidencePaymentDisputeResponse>(
+			this.client,
+			url,
+			addEvidenceRequest,
+			APIZ_REQUEST,
+		);
+	};
 
 	/**
 	 * Updates evidence on one payment dispute.
@@ -612,29 +558,28 @@ export class DisputeApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/updateEvidence
 	 */
-	public updateEvidence = (
+	public updateEvidence = async (
 		input: UpdateEvidenceInput,
-	): Effect.Effect<UpdateEvidenceResponse, EbayApiError | EndpointInputError> =>
-		Effect.gen(this, function* () {
-			const paymentDisputeId = yield* requireStringEffect(
-				input.paymentDisputeId,
-				"paymentDisputeId",
+	): Promise<UpdateEvidenceResponse> => {
+		const paymentDisputeId = requireStringEffect(
+			input.paymentDisputeId,
+			"paymentDisputeId",
+		);
+		const updateEvidenceRequest =
+			requireObjectEffect<UpdateEvidencePaymentDisputeRequest>(
+				input.body,
+				"body",
 			);
-			const updateEvidenceRequest =
-				yield* requireObjectEffect<UpdateEvidencePaymentDisputeRequest>(
-					input.body,
-					"body",
-				);
-			const url = apizUrl(
-				this.client,
-				`/payment_dispute/${paymentDisputeId}/update_evidence`,
-			);
+		const url = apizUrl(
+			this.client,
+			`/payment_dispute/${paymentDisputeId}/update_evidence`,
+		);
 
-			return yield* requestPostEffect<UpdateEvidenceResponse>(
-				this.client,
-				url,
-				updateEvidenceRequest,
-				APIZ_REQUEST,
-			);
-		});
+		return await requestPostEffect<UpdateEvidenceResponse>(
+			this.client,
+			url,
+			updateEvidenceRequest,
+			APIZ_REQUEST,
+		);
+	};
 }

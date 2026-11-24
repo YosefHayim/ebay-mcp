@@ -1,5 +1,8 @@
-import { Data, Effect } from "effect";
-import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
+import { setTimeout as sleep } from "node:timers/promises";
+import type {
+	EbayApiClient,
+	EbayResponse,
+} from "@/ebay-client/ebayApiClient.js";
 import {
 	EbayApiError,
 	EndpointInputError,
@@ -59,7 +62,13 @@ export type Video = components["schemas"]["Video"];
  *
  * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/createVideo
  */
-export type CreateVideoRequest = components["schemas"]["CreateVideoRequest"];
+/** Body sent to createVideo. Optional members may be omitted or undefined. */
+export interface CreateVideoRequest {
+	readonly classification?: readonly string[] | undefined;
+	readonly description?: string | undefined;
+	readonly size?: number | undefined;
+	readonly title?: string | undefined;
+}
 
 /** One file to upload, already read into memory. */
 export interface MediaUpload {
@@ -78,11 +87,11 @@ export interface UploadedImage {
 	/** Caller-supplied reference of the uploaded file. */
 	readonly source: string;
 	/** Media API image ID parsed from the `Location` header, when eBay sent one. */
-	readonly imageId?: string;
+	readonly imageId?: string | undefined;
 	/** EPS URL to place in `product.imageUrls`. */
 	readonly imageUrl: string;
 	/** When the unused image expires; it becomes permanent once a listing uses it. */
-	readonly expirationDate?: string;
+	readonly expirationDate?: string | undefined;
 }
 
 /** Input accepted by getImage. */
@@ -98,7 +107,7 @@ export interface CreateVideoInput {
 	/** Exact size in bytes of the file that will be uploaded. */
 	readonly size: number;
 	/** Optional description. */
-	readonly description?: string;
+	readonly description?: string | undefined;
 }
 
 /** Input accepted by uploadVideo. */
@@ -118,9 +127,9 @@ export interface VideoIdInput {
 /** Input accepted by waitForVideo. */
 export interface WaitForVideoInput extends VideoIdInput {
 	/** Longest time to wait before returning the latest status. */
-	readonly maxWaitMs?: number;
+	readonly maxWaitMs?: number | undefined;
 	/** Delay between status polls. */
-	readonly pollIntervalMs?: number;
+	readonly pollIntervalMs?: number | undefined;
 }
 
 /** Input accepted by uploadVideoFile. */
@@ -128,13 +137,13 @@ export interface UploadVideoFileInput {
 	/** File to upload. */
 	readonly file: MediaUpload;
 	/** Video title; defaults to the file name. */
-	readonly title?: string;
+	readonly title?: string | undefined;
 	/** Optional description. */
-	readonly description?: string;
+	readonly description?: string | undefined;
 	/** Longest time to wait for processing before returning. */
-	readonly maxWaitMs?: number;
+	readonly maxWaitMs?: number | undefined;
 	/** Delay between status polls. */
-	readonly pollIntervalMs?: number;
+	readonly pollIntervalMs?: number | undefined;
 }
 
 /** Result of uploading several images in order. */
@@ -144,7 +153,8 @@ export interface UploadImagesResult {
 }
 
 /** Failure of one upload in a sequence, carrying what already succeeded. */
-export class MediaUploadError extends Data.TaggedError("MediaUploadError")<{
+export class MediaUploadError extends Error {
+	readonly _tag = "MediaUploadError";
 	/** Reference of the file whose upload failed. */
 	readonly source: string;
 	/** Zero-based position of the failed file. */
@@ -152,10 +162,23 @@ export class MediaUploadError extends Data.TaggedError("MediaUploadError")<{
 	/** Images uploaded before the failure, in order. */
 	readonly uploaded: readonly UploadedImage[];
 	/** Underlying failure. */
-	readonly cause: unknown;
-	/** Human-readable summary. */
-	readonly message: string;
-}> {}
+	override readonly cause: unknown;
+
+	constructor(failure: {
+		source: string;
+		index: number;
+		uploaded: readonly UploadedImage[];
+		cause: unknown;
+		message: string;
+	}) {
+		super(failure.message);
+		this.name = "MediaUploadError";
+		this.source = failure.source;
+		this.index = failure.index;
+		this.uploaded = failure.uploaded;
+		this.cause = failure.cause;
+	}
+}
 
 const idFromLocation = (location: string | undefined): string | undefined =>
 	location?.split("/").filter(Boolean).at(-1);
@@ -186,29 +209,38 @@ const videoStatusFinal = (video: Video): boolean =>
  * @param fallback - Duration used when the caller supplied none.
  * @param name - Parameter name used in the validation message.
  * @param minimum - Smallest accepted value.
- * @returns An Effect with the duration to use, or a tagged input error.
+ * @returns The duration to use. Throws a tagged input error when the value is unusable.
  */
-const requireDurationMs = (
+function requireDurationMs(
 	durationMs: number | undefined,
 	fallback: number,
 	name: string,
 	minimum: number,
-): Effect.Effect<number, EndpointInputError> => {
+): number {
 	if (durationMs === undefined) {
-		return Effect.succeed(fallback);
+		return fallback;
 	}
 
-	if (!Number.isFinite(durationMs) || durationMs < minimum) {
-		return Effect.fail(
-			new EndpointInputError({
-				parameter: name,
-				message: `${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
-			}),
-		);
+	const isNotFinite = !Number.isFinite(durationMs);
+
+	if (isNotFinite) {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
+		});
 	}
 
-	return Effect.succeed(durationMs);
-};
+	const isBelowMinimum = durationMs < minimum;
+
+	if (isBelowMinimum) {
+		throw new EndpointInputError({
+			parameter: name,
+			message: `${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
+		});
+	}
+
+	return durationMs;
+}
 
 /**
  * Media API client. Image and video uploads go to eBay's `apim` host and return
@@ -277,52 +309,53 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/createImageFromFile
 	 */
-	public createImageFromFile = (
+	public createImageFromFile = async (
 		input: MediaUpload,
-	): Effect.Effect<UploadedImage, EbayApiError | EndpointInputError> => {
+	): Promise<UploadedImage> => {
 		const client = this.client;
 		const path = `${MEDIA_BASE_PATH}/image/create_image_from_file`;
 		const url = this.url("/image/create_image_from_file");
+		const upload = requireObjectEffect<MediaUpload>(input, "input");
+		const fileName = requireStringEffect(upload.fileName, "fileName");
+		const form = new FormData();
+		// Copy into a fresh ArrayBuffer-backed view: Blob rejects Node's ArrayBufferLike-typed views.
+		form.append(
+			"image",
+			new Blob([new Uint8Array(upload.bytes)], { type: upload.mimeType }),
+			fileName,
+		);
 
-		return Effect.gen(function* () {
-			const upload = yield* requireObjectEffect<MediaUpload>(input, "input");
-			const fileName = yield* requireStringEffect(upload.fileName, "fileName");
-			const form = new FormData();
-			// Copy into a fresh ArrayBuffer-backed view: Blob rejects Node's ArrayBufferLike-typed views.
-			form.append(
-				"image",
-				new Blob([new Uint8Array(upload.bytes)], { type: upload.mimeType }),
-				fileName,
+		var imageResponse: EbayResponse<ImageResponse | undefined>;
+
+		try {
+			imageResponse = await client.postForResponse<ImageResponse | undefined>(
+				url,
+				form,
+				{
+					absolute: true,
+					timeoutMs: UPLOAD_TIMEOUT_MS,
+				},
 			);
+		} catch (cause) {
+			throw apiFailure("POST", path)(cause);
+		}
 
-			const imageResponse = yield* Effect.tryPromise({
-				try: () =>
-					client.postForResponse<ImageResponse | undefined>(url, form, {
-						absolute: true,
-						timeoutMs: UPLOAD_TIMEOUT_MS,
-					}),
-				catch: apiFailure("POST", path),
+		const imageUrl = imageResponse.data?.imageUrl;
+
+		if (!imageUrl) {
+			throw new EbayApiError({
+				method: "POST",
+				path,
+				cause: new Error("eBay returned no imageUrl for the uploaded picture"),
 			});
-			const imageUrl = imageResponse.data?.imageUrl;
-			if (!imageUrl) {
-				return yield* Effect.fail(
-					new EbayApiError({
-						method: "POST",
-						path,
-						cause: new Error(
-							"eBay returned no imageUrl for the uploaded picture",
-						),
-					}),
-				);
-			}
+		}
 
-			return {
-				source: upload.source,
-				imageId: idFromLocation(imageResponse.headers.location),
-				imageUrl,
-				expirationDate: imageResponse.data?.expirationDate,
-			};
-		});
+		return {
+			source: upload.source,
+			imageId: idFromLocation(imageResponse.headers["location"]),
+			imageUrl,
+			expirationDate: imageResponse.data?.expirationDate,
+		};
 	};
 
 	/**
@@ -338,30 +371,37 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/createImageFromFile
 	 */
-	public uploadImageFiles = (
+	public uploadImageFiles = async (
 		files: readonly MediaUpload[],
-	): Effect.Effect<UploadImagesResult, MediaUploadError> => {
+	): Promise<UploadImagesResult> => {
 		const createImageFromFile = this.createImageFromFile;
+		const uploaded: UploadedImage[] = [];
 
-		return Effect.gen(function* () {
-			const uploaded: UploadedImage[] = [];
-			for (const [index, file] of files.entries()) {
-				const image = yield* createImageFromFile(file).pipe(
-					Effect.mapError(
-						(cause) =>
-							new MediaUploadError({
-								source: file.source,
-								index,
-								uploaded: [...uploaded],
-								cause,
-								message: `upload of ${file.source} (file ${index + 1} of ${files.length}) failed: ${getErrorMessage(cause)}${uploaded.length > 0 ? `; already uploaded: ${uploaded.map((uploadedImage) => uploadedImage.imageUrl).join(", ")}` : ""}`,
-							}),
-					),
-				);
+		function imageUrlOf(uploadedImage: UploadedImage): string {
+			return uploadedImage.imageUrl;
+		}
+
+		for (const [index, file] of files.entries()) {
+			try {
+				const image = await createImageFromFile(file);
 				uploaded.push(image);
+			} catch (cause) {
+				const hasUploadedImages = uploaded.length > 0;
+				const alreadyUploaded = hasUploadedImages
+					? `; already uploaded: ${uploaded.map(imageUrlOf).join(", ")}`
+					: "";
+
+				throw new MediaUploadError({
+					source: file.source,
+					index,
+					uploaded: [...uploaded],
+					cause,
+					message: `upload of ${file.source} (file ${index + 1} of ${files.length}) failed: ${getErrorMessage(cause)}${alreadyUploaded}`,
+				});
 			}
-			return { images: uploaded };
-		});
+		}
+
+		return { images: uploaded };
 	};
 
 	/**
@@ -377,29 +417,22 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/getImage
 	 */
-	public getImage = (
-		input: ImageIdInput,
-	): Effect.Effect<ImageResponse, EbayApiError | EndpointInputError> => {
+	public getImage = async (input: ImageIdInput): Promise<ImageResponse> => {
 		const client = this.client;
 		const url = (imageId: string) => this.url(resourcePath("image", imageId));
+		const validated = requireObjectEffect<ImageIdInput>(input, "input");
+		const imageId = requireStringEffect(validated.imageId, "imageId");
 
-		return Effect.gen(function* () {
-			const validated = yield* requireObjectEffect<ImageIdInput>(
-				input,
-				"input",
-			);
-			const imageId = yield* requireStringEffect(validated.imageId, "imageId");
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.get<ImageResponse>(url(imageId), undefined, {
-						absolute: true,
-					}),
-				catch: apiFailure(
-					"GET",
-					`${MEDIA_BASE_PATH}${resourcePath("image", imageId)}`,
-				),
+		try {
+			return await client.get<ImageResponse>(url(imageId), undefined, {
+				absolute: true,
 			});
-		});
+		} catch (cause) {
+			throw apiFailure(
+				"GET",
+				`${MEDIA_BASE_PATH}${resourcePath("image", imageId)}`,
+			)(cause);
+		}
 	};
 
 	/**
@@ -415,46 +448,46 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/createVideo
 	 */
-	public createVideo = (
+	public createVideo = async (
 		input: CreateVideoInput,
-	): Effect.Effect<VideoIdInput, EbayApiError | EndpointInputError> => {
+	): Promise<VideoIdInput> => {
 		const client = this.client;
 		const path = `${MEDIA_BASE_PATH}/video`;
 		const url = this.url("/video");
+		const validated = requireObjectEffect<CreateVideoInput>(input, "input");
+		const title = requireStringEffect(validated.title, "title");
+		const videoRequest: CreateVideoRequest = {
+			title,
+			size: validated.size,
+			description: validated.description,
+			classification: ["ITEM"],
+		};
 
-		return Effect.gen(function* () {
-			const validated = yield* requireObjectEffect<CreateVideoInput>(
-				input,
-				"input",
+		var videoResponse: EbayResponse<undefined>;
+
+		try {
+			videoResponse = await client.postForResponse<undefined>(
+				url,
+				videoRequest,
+				{ absolute: true },
 			);
-			const title = yield* requireStringEffect(validated.title, "title");
-			const videoRequest: CreateVideoRequest = {
-				title,
-				size: validated.size,
-				description: validated.description,
-				classification: ["ITEM"],
-			};
-			const videoResponse = yield* Effect.tryPromise({
-				try: () =>
-					client.postForResponse<undefined>(url, videoRequest, {
-						absolute: true,
-					}),
-				catch: apiFailure("POST", path),
+		} catch (cause) {
+			throw apiFailure("POST", path)(cause);
+		}
+
+		const videoId = idFromLocation(videoResponse.headers["location"]);
+
+		if (!videoId) {
+			throw new EbayApiError({
+				method: "POST",
+				path,
+				cause: new Error(
+					"eBay returned no Location header with the new video ID",
+				),
 			});
-			const videoId = idFromLocation(videoResponse.headers.location);
-			if (!videoId) {
-				return yield* Effect.fail(
-					new EbayApiError({
-						method: "POST",
-						path,
-						cause: new Error(
-							"eBay returned no Location header with the new video ID",
-						),
-					}),
-				);
-			}
-			return { videoId };
-		});
+		}
+
+		return { videoId };
 	};
 
 	/**
@@ -470,35 +503,28 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/uploadVideo
 	 */
-	public uploadVideo = (
-		input: UploadVideoInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> => {
+	public uploadVideo = async (input: UploadVideoInput): Promise<void> => {
 		const client = this.client;
 		const url = (videoId: string) =>
 			this.url(resourcePath("video", videoId, "/upload"));
+		const validated = requireObjectEffect<UploadVideoInput>(input, "input");
+		const videoId = requireStringEffect(validated.videoId, "videoId");
 
-		return Effect.gen(function* () {
-			const validated = yield* requireObjectEffect<UploadVideoInput>(
-				input,
-				"input",
-			);
-			const videoId = yield* requireStringEffect(validated.videoId, "videoId");
-			yield* Effect.tryPromise({
-				try: () =>
-					client.post<undefined>(url(videoId), validated.bytes, {
-						absolute: true,
-						timeoutMs: UPLOAD_TIMEOUT_MS,
-						headers: {
-							"Content-Type": "application/octet-stream",
-							"Content-Length": String(validated.bytes.byteLength),
-						},
-					}),
-				catch: apiFailure(
-					"POST",
-					`${MEDIA_BASE_PATH}${resourcePath("video", videoId, "/upload")}`,
-				),
+		try {
+			await client.post<undefined>(url(videoId), validated.bytes, {
+				absolute: true,
+				timeoutMs: UPLOAD_TIMEOUT_MS,
+				headers: {
+					"Content-Type": "application/octet-stream",
+					"Content-Length": String(validated.bytes.byteLength),
+				},
 			});
-		});
+		} catch (cause) {
+			throw apiFailure(
+				"POST",
+				`${MEDIA_BASE_PATH}${resourcePath("video", videoId, "/upload")}`,
+			)(cause);
+		}
 	};
 
 	/**
@@ -514,27 +540,22 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/getVideo
 	 */
-	public getVideo = (
-		input: VideoIdInput,
-	): Effect.Effect<Video, EbayApiError | EndpointInputError> => {
+	public getVideo = async (input: VideoIdInput): Promise<Video> => {
 		const client = this.client;
 		const url = (videoId: string) => this.url(resourcePath("video", videoId));
+		const validated = requireObjectEffect<VideoIdInput>(input, "input");
+		const videoId = requireStringEffect(validated.videoId, "videoId");
 
-		return Effect.gen(function* () {
-			const validated = yield* requireObjectEffect<VideoIdInput>(
-				input,
-				"input",
-			);
-			const videoId = yield* requireStringEffect(validated.videoId, "videoId");
-			return yield* Effect.tryPromise({
-				try: () =>
-					client.get<Video>(url(videoId), undefined, { absolute: true }),
-				catch: apiFailure(
-					"GET",
-					`${MEDIA_BASE_PATH}${resourcePath("video", videoId)}`,
-				),
+		try {
+			return await client.get<Video>(url(videoId), undefined, {
+				absolute: true,
 			});
-		});
+		} catch (cause) {
+			throw apiFailure(
+				"GET",
+				`${MEDIA_BASE_PATH}${resourcePath("video", videoId)}`,
+			)(cause);
+		}
 	};
 
 	/**
@@ -553,35 +574,43 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/getVideo
 	 */
-	public waitForVideo = (
-		input: WaitForVideoInput,
-	): Effect.Effect<Video, EbayApiError | EndpointInputError> => {
+	public waitForVideo = async (input: WaitForVideoInput): Promise<Video> => {
 		const getVideo = this.getVideo;
+		const maxWaitMs = requireDurationMs(
+			input.maxWaitMs,
+			DEFAULT_VIDEO_WAIT_MS,
+			"maxWaitMs",
+			0,
+		);
+		const pollIntervalMs = requireDurationMs(
+			input.pollIntervalMs,
+			DEFAULT_POLL_INTERVAL_MS,
+			"pollIntervalMs",
+			1,
+		);
+		let waitedMs = 0;
+		let video = await getVideo({ videoId: input.videoId });
 
-		return Effect.gen(function* () {
-			const maxWaitMs = yield* requireDurationMs(
-				input.maxWaitMs,
-				DEFAULT_VIDEO_WAIT_MS,
-				"maxWaitMs",
-				0,
-			);
-			const pollIntervalMs = yield* requireDurationMs(
-				input.pollIntervalMs,
-				DEFAULT_POLL_INTERVAL_MS,
-				"pollIntervalMs",
-				1,
-			);
+		while (true) {
+			const isFinal = videoStatusFinal(video);
 
-			let waitedMs = 0;
-			let video = yield* getVideo({ videoId: input.videoId });
-			while (!videoStatusFinal(video) && waitedMs < maxWaitMs) {
-				const sleepMs = Math.min(pollIntervalMs, maxWaitMs - waitedMs);
-				yield* Effect.sleep(sleepMs);
-				waitedMs += sleepMs;
-				video = yield* getVideo({ videoId: input.videoId });
+			if (isFinal) {
+				break;
 			}
-			return video;
-		});
+
+			const isBudgetSpent = waitedMs >= maxWaitMs;
+
+			if (isBudgetSpent) {
+				break;
+			}
+
+			const sleepMs = Math.min(pollIntervalMs, maxWaitMs - waitedMs);
+			await sleep(sleepMs);
+			waitedMs += sleepMs;
+			video = await getVideo({ videoId: input.videoId });
+		}
+
+		return video;
 	};
 
 	/**
@@ -597,24 +626,22 @@ export class MediaApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/uploadVideo
 	 */
-	public uploadVideoFile = (
+	public uploadVideoFile = async (
 		input: UploadVideoFileInput,
-	): Effect.Effect<Video, EbayApiError | EndpointInputError> => {
+	): Promise<Video> => {
 		const { createVideo, uploadVideo, waitForVideo } = this;
-
-		return Effect.gen(function* () {
-			const { videoId } = yield* createVideo({
-				title: input.title ?? input.file.fileName,
-				size: input.file.bytes.byteLength,
-				description: input.description,
-			});
-			yield* uploadVideo({ videoId, bytes: input.file.bytes });
-			const video = yield* waitForVideo({
-				videoId,
-				maxWaitMs: input.maxWaitMs,
-				pollIntervalMs: input.pollIntervalMs,
-			});
-			return { ...video, videoId: video.videoId ?? videoId };
+		const { videoId } = await createVideo({
+			title: input.title ?? input.file.fileName,
+			size: input.file.bytes.byteLength,
+			description: input.description,
 		});
+		await uploadVideo({ videoId, bytes: input.file.bytes });
+		const video = await waitForVideo({
+			videoId,
+			maxWaitMs: input.maxWaitMs,
+			pollIntervalMs: input.pollIntervalMs,
+		});
+
+		return { ...video, videoId: video.videoId ?? videoId };
 	};
 }

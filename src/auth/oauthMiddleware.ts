@@ -3,7 +3,6 @@
  * Implements RFC 6750 Bearer Token authentication
  */
 
-import { Effect, Either } from "effect";
 import type { NextFunction, Request, Response } from "express";
 import { getErrorMessage } from "@/shared/errors.js";
 import type { VerifiedToken } from "./oauthTypes.js";
@@ -81,24 +80,30 @@ export const createBearerAuthMiddleware = (
 		}
 
 		const token = parts[1];
-		const verified = await Effect.runPromise(
-			Effect.either(config.verifier.verifyToken(token)),
-		);
+		const isTokenMissing = token == null;
 
-		if (Either.isLeft(verified)) {
-			const errorMessage = getErrorMessage(
-				verified.left,
-				"Token verification failed",
-			);
-
+		if (isTokenMissing) {
 			sendUnauthorized(response, realm, config.resourceMetadataUrl, {
 				error: "invalid_token",
-				error_description: errorMessage,
+				error_description:
+					"Invalid authorization header format. Expected: Bearer <token>",
 			});
 			return;
 		}
 
-		request.auth = verified.right;
+		let verified: VerifiedToken;
+
+		try {
+			verified = await config.verifier.verifyToken(token);
+		} catch (error) {
+			sendUnauthorized(response, realm, config.resourceMetadataUrl, {
+				error: "invalid_token",
+				error_description: getErrorMessage(error, "Token verification failed"),
+			});
+			return;
+		}
+
+		request.auth = verified;
 		next();
 	};
 };

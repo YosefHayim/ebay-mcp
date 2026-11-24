@@ -1,8 +1,8 @@
-import { Effect } from "effect";
 import {
 	findActiveItemsInputSchema,
 	getItemDetailsInputSchema,
 } from "@/ebay-apis/browse/browseSchemas.js";
+import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 
@@ -19,7 +19,21 @@ export const browseEntries: ToolEntry[] = [
 		inputSchema: findActiveItemsInputSchema.shape,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) =>
-			Effect.runPromise(api.browse.searchActiveItems(args)),
+			api.browse.searchActiveItems({
+				query: args.query,
+				...defined({
+					filter: args.filter,
+					sort: args.sort,
+					limit: args.limit,
+					offset: args.offset,
+					buyingOptions: args.buyingOptions,
+					categoryIds: args.categoryIds,
+					conditions: args.conditions,
+					priceCurrency: args.priceCurrency,
+					priceMax: args.priceMax,
+					priceMin: args.priceMin,
+				}),
+			}),
 	}),
 	defineTool({
 		name: "ebay_get_item_details",
@@ -27,6 +41,6 @@ export const browseEntries: ToolEntry[] = [
 			'Get full detail for one active eBay listing by its Browse RESTful item id (from ebay_find_active_items, e.g. "v1|110587051479|0"). Uses the Buy Browse API item resource. Returns cleaned details: title, price, condition and condition description, short description, category path, buying options, seller and feedback, estimated available quantity, returns-accepted flag, item location, auction end date, images, and listing URL. For the seller\'s own listings use ebay_get_listing (Trading) instead.',
 		inputSchema: getItemDetailsInputSchema.shape,
 		annotations: { readOnlyHint: true },
-		handler: (api, args) => Effect.runPromise(api.browse.getItemDetails(args)),
+		handler: (api, args) => api.browse.getItemDetails(args),
 	}),
 ];

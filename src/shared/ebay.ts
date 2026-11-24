@@ -10,13 +10,13 @@ import type { LocaleEnum } from "./ebayEnums.js";
 export interface EbayConfig {
 	clientId: string;
 	clientSecret: string;
-	redirectUri?: string;
+	redirectUri?: string | undefined;
 	locale?: LocaleEnum;
 	marketplaceId?: string;
 	contentLanguage?: string;
 	environment: "production" | "sandbox";
-	accessToken?: string;
-	refreshToken?: string;
+	accessToken?: string | undefined;
+	refreshToken?: string | undefined;
 	appAccessToken?: string;
 	/**
 	 * Overrides eBay's base host for ALL live API traffic — REST, Identity, Trading,
@@ -103,14 +103,14 @@ export interface StoredTokenData {
 	tokenType: string;
 	clientId: string;
 	clientSecret: string;
-	redirectUri?: string;
-	locale?: LocaleEnum;
-	marketplaceId?: string;
-	contentLanguage?: string;
-	envAppToken?: string;
+	redirectUri?: string | undefined;
+	locale?: LocaleEnum | undefined;
+	marketplaceId?: string | undefined;
+	contentLanguage?: string | undefined;
+	envAppToken?: string | undefined;
 	userAccessTokenExpiry?: number; // Unix timestamp in milliseconds
 	userRefreshTokenExpiry?: number; // Unix timestamp in milliseconds
-	scope?: string; // Optional scope string
+	scope?: string | undefined; // Optional scope string
 }
 
 /**

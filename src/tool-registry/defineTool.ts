@@ -1,5 +1,4 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Data } from "effect";
 import { z } from "zod";
 import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import { formatZodIssues } from "@/shared/zodIssues.js";
@@ -19,12 +18,20 @@ import type {
 } from "@/tool-registry/ui/viewModels.js";
 
 /** Tagged failure thrown when tool arguments do not match the tool's input schema. */
-export class ToolInputError extends Data.TaggedError("ToolInputError")<{
+export class ToolInputError extends Error {
+	readonly _tag = "ToolInputError";
 	/** Tool whose arguments failed validation. */
 	readonly toolName: string;
-	/** Human-readable list of the failed fields. */
-	readonly message: string;
-}> {}
+
+	constructor(failure: {
+		readonly toolName: string;
+		readonly message: string;
+	}) {
+		super(failure.message);
+		this.name = "ToolInputError";
+		this.toolName = failure.toolName;
+	}
+}
 
 /**
  * Declarative opt-in for the interactive MCP Apps layer, co-located on the tool
@@ -81,6 +88,55 @@ export interface ToolSpec<Shape extends z.ZodRawShape, Result = unknown> {
 	ui?: ToolUiSpec<Awaited<Result>>;
 }
 
+function createToolEntry(
+	definition: ToolEntry["definition"],
+	handler: ToolHandler,
+	ui: ResolvedToolUi | undefined,
+	formatResult: ToolEntry["formatResult"],
+): ToolEntry {
+	const entry: ToolEntry = { definition, handler };
+
+	if (ui != null) {
+		entry.ui = ui;
+	}
+
+	if (formatResult != null) {
+		entry.formatResult = formatResult;
+	}
+
+	return entry;
+}
+
+function bindToolUi<Shape extends z.ZodRawShape, Result>(
+	spec: ToolSpec<Shape, Result>,
+): ResolvedToolUi | undefined {
+	const ui = spec.ui;
+
+	if (ui == null) {
+		return undefined;
+	}
+
+	return resolveToolUi(ui);
+}
+
+function bindFormatResult<Shape extends z.ZodRawShape, Result>(
+	spec: ToolSpec<Shape, Result>,
+): ToolEntry["formatResult"] {
+	const formatResult = spec.formatResult;
+
+	if (formatResult == null) {
+		return undefined;
+	}
+
+	// Registry erases the result and argument types; the spec checks them here.
+	return function formatRegisteredResult(handlerOutput, args): CallToolResult {
+		return formatResult(
+			handlerOutput as Awaited<Result>,
+			args as z.infer<z.ZodObject<Shape>>,
+		);
+	};
+}
+
 /**
  * Erases the compile-time result type from a {@link ToolUiSpec} so the binding can
  * live on the non-generic {@link ToolEntry}, and resolves the archetype's
@@ -102,15 +158,36 @@ function resolveToolUi<Result>(ui: ToolUiSpec<Result>): ResolvedToolUi {
 function toDefinition<Shape extends z.ZodRawShape, Result>(
 	spec: ToolSpec<Shape, Result>,
 ): ToolEntry["definition"] {
-	return {
+	const definition: ToolEntry["definition"] = {
 		name: spec.name,
 		description: spec.description,
 		inputSchema: spec.inputSchema,
-		title: spec.title,
-		outputSchema: spec.outputSchema,
-		annotations: spec.annotations,
-		_meta: spec._meta,
 	};
+	const title = spec.title;
+
+	if (title != null) {
+		definition.title = title;
+	}
+
+	const outputSchema = spec.outputSchema;
+
+	if (outputSchema != null) {
+		definition.outputSchema = outputSchema;
+	}
+
+	const annotations = spec.annotations;
+
+	if (annotations != null) {
+		definition.annotations = annotations;
+	}
+
+	const meta = spec._meta;
+
+	if (meta != null) {
+		definition._meta = meta;
+	}
+
+	return definition;
 }
 
 /**
@@ -133,7 +210,7 @@ function toDefinition<Shape extends z.ZodRawShape, Result>(
  *   name: 'ebay_get_custom_policies',
  *   description: 'Retrieve custom policies defined for the seller account',
  *   inputSchema: getCustomPoliciesInputSchema.shape,
- *   handler: (api, args) => Effect.runPromise(api.account.getCustomPolicies(args)),
+ *   handler: (api, args) => api.account.getCustomPolicies(args),
  * });
  * ```
  */
@@ -155,20 +232,12 @@ export const defineTool = <Shape extends z.ZodRawShape, Result>(
 		return spec.handler(api, parsedArgs.data);
 	};
 
-	const formatResult = spec.formatResult;
-	return {
-		definition: toDefinition(spec),
+	return createToolEntry(
+		toDefinition(spec),
 		handler,
-		ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
-		// Registry erases the result/argument types; defineTool checks their relationship here.
-		formatResult: formatResult
-			? (handlerOutput, args) =>
-					formatResult(
-						handlerOutput as Awaited<Result>,
-						args as z.infer<z.ZodObject<Shape>>,
-					)
-			: undefined,
-	};
+		bindToolUi(spec),
+		bindFormatResult(spec),
+	);
 };
 
 /**
@@ -205,18 +274,10 @@ export const rawTool = <Shape extends z.ZodRawShape, Result>(
 	const handler: ToolHandler = (api, args) =>
 		spec.handler(api, args as z.infer<z.ZodObject<Shape>>);
 
-	const formatResult = spec.formatResult;
-	return {
-		definition: toDefinition(spec),
+	return createToolEntry(
+		toDefinition(spec),
 		handler,
-		ui: spec.ui ? resolveToolUi(spec.ui) : undefined,
-		// Registry erases the result/argument types; defineTool checks their relationship here.
-		formatResult: formatResult
-			? (handlerOutput, args) =>
-					formatResult(
-						handlerOutput as Awaited<Result>,
-						args as z.infer<z.ZodObject<Shape>>,
-					)
-			: undefined,
-	};
+		bindToolUi(spec),
+		bindFormatResult(spec),
+	);
 };

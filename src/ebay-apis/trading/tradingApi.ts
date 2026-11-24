@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	createListingSchema,
@@ -9,8 +8,6 @@ import type {
 	reviseListingSchema,
 } from "@/ebay-apis/trading/tradingHelpers.js";
 import {
-	type EbayApiError,
-	type EndpointInputError,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
 	requireObjectEffect,
@@ -70,51 +67,41 @@ export class TradingApi {
 	 * Fetches active seller listings with Trading API pagination metadata.
 	 *
 	 * @param input - Optional page number and entries-per-page values.
-	 * @returns An Effect that succeeds with the parsed GetMyeBaySelling response payload.
+	 * @returns The parsed GetMyeBaySelling response payload.
 	 *
 	 * @example
 	 * ```ts
-	 * const tradingRecord = await Effect.runPromise(
-	 *   tradingApi.getActiveListings({ page: 2, entriesPerPage: 25 }),
-	 * );
+	 * const tradingRecord = await tradingApi.getActiveListings({
+	 *   page: 2,
+	 *   entriesPerPage: 25,
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/getmyebayselling.html
 	 */
-	getActiveListings = (
+	getActiveListings = async (
 		input: GetActiveListingsInput = {},
-	): Effect.Effect<
-		TradingRecordResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const tradingClient = this.client;
+	): Promise<TradingRecordResponse> => {
+		const validatedInput = requireObjectEffect<GetActiveListingsInput>(
+			input,
+			"input",
+		);
+		const inputPage = optionalPositiveNumberEffect(validatedInput.page, "page");
+		const inputEntriesPerPage = optionalPositiveNumberEffect(
+			validatedInput.entriesPerPage,
+			"entriesPerPage",
+		);
+		const page = inputPage ?? 1;
+		const entriesPerPage = inputEntriesPerPage ?? 50;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetActiveListingsInput>(
-				input,
-				"input",
-			);
-			const inputPage = yield* optionalPositiveNumberEffect(
-				validatedInput.page,
-				"page",
-			);
-			const inputEntriesPerPage = yield* optionalPositiveNumberEffect(
-				validatedInput.entriesPerPage,
-				"entriesPerPage",
-			);
-			const page = inputPage === undefined ? 1 : inputPage;
-			const entriesPerPage =
-				inputEntriesPerPage === undefined ? 50 : inputEntriesPerPage;
-
-			return yield* tradingClient.execute("GetMyeBaySelling", {
-				ActiveList: {
-					Sort: "TimeLeft",
-					Pagination: {
-						EntriesPerPage: entriesPerPage,
-						PageNumber: page,
-					},
+		return await this.client.execute("GetMyeBaySelling", {
+			ActiveList: {
+				Sort: "TimeLeft",
+				Pagination: {
+					EntriesPerPage: entriesPerPage,
+					PageNumber: page,
 				},
-			});
+			},
 		});
 	};
 
@@ -122,40 +109,28 @@ export class TradingApi {
 	 * Fetches a single listing by eBay item ID with full Trading API detail.
 	 *
 	 * @param input - eBay item identifier.
-	 * @returns An Effect that succeeds with the parsed Trading API item payload.
+	 * @returns The parsed Trading API item payload.
 	 *
 	 * @example
 	 * ```ts
-	 * const listing = await Effect.runPromise(tradingApi.getListing({ itemId: '12345' }));
+	 * const listing = await tradingApi.getListing({ itemId: '12345' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/getitem.html
 	 */
-	getListing = (
+	getListing = async (
 		input: GetListingInput,
-	): Effect.Effect<
-		TradingRecordResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const tradingClient = this.client;
-
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<GetListingInput>(
-				input,
-				"input",
-			);
-			const itemId = yield* requireStringEffect(
-				validatedInput.itemId,
-				"itemId",
-			);
-			const getItemResponse = yield* tradingClient.execute("GetItem", {
-				ItemID: itemId,
-				DetailLevel: "ReturnAll",
-			});
-			const items = asRecordArray(getItemResponse.Item);
-
-			return items.length > 0 ? items[0] : getItemResponse;
+	): Promise<TradingRecordResponse> => {
+		const validatedInput = requireObjectEffect<GetListingInput>(input, "input");
+		const itemId = requireStringEffect(validatedInput.itemId, "itemId");
+		const getItemResponse = await this.client.execute("GetItem", {
+			ItemID: itemId,
+			DetailLevel: "ReturnAll",
 		});
+		const items = asRecordArray(getItemResponse["Item"]);
+		const firstItem = items[0];
+
+		return firstItem ?? getItemResponse;
 	};
 
 	/**
@@ -168,53 +143,46 @@ export class TradingApi {
 	 * It Now price at least 30% above it, and Best Offer only without Buy It Now.
 	 *
 	 * @param input - Trading API Item payload nested under `item`, plus the optional listing format.
-	 * @returns An Effect that succeeds with the parsed AddFixedPriceItem or AddItem response.
+	 * @returns The parsed AddFixedPriceItem or AddItem response.
 	 *
 	 * @example
 	 * ```ts
-	 * const auction = await Effect.runPromise(
-	 *   tradingApi.createListing({
-	 *     format: FormatType.AUCTION,
-	 *     item: { Title: 'Rare coin', StartPrice: 9.99, ListingDuration: 'Days_7' },
-	 *   }),
-	 * );
+	 * const auction = await tradingApi.createListing({
+	 *   format: FormatType.AUCTION,
+	 *   item: { Title: 'Rare coin', StartPrice: 9.99, ListingDuration: 'Days_7' },
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/AddFixedPriceItem.html
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/AddItem.html
 	 */
-	createListing = (
+	createListing = async (
 		input: CreateListingInput,
-	): Effect.Effect<
-		TradingRecordResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const tradingClient = this.client;
+	): Promise<TradingRecordResponse> => {
+		const validatedInput = requireObjectEffect<CreateListingInput>(
+			input,
+			"input",
+		);
+		const format = resolveTradingFormat(validatedInput.format);
+		const tradingItem = requireObjectEffect<TradingItemFields>(
+			validatedInput.item,
+			"item",
+		);
+		validateTradingListingFormatEffect({
+			item: tradingItem,
+			format,
+			parameter: "item",
+			isCreate: true,
+		});
+		const isAuction = format === FormatType.AUCTION;
+		const auctionItem = {
+			...tradingItem,
+			ListingType: TRADING_AUCTION_LISTING_TYPE,
+		};
+		const listingItem = isAuction ? auctionItem : tradingItem;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<CreateListingInput>(
-				input,
-				"input",
-			);
-			const format = resolveTradingFormat(validatedInput.format);
-			const tradingItem = yield* requireObjectEffect<TradingItemFields>(
-				validatedInput.item,
-				"item",
-			);
-			yield* validateTradingListingFormatEffect({
-				item: tradingItem,
-				format,
-				parameter: "item",
-				isCreate: true,
-			});
-			const listingItem =
-				format === FormatType.AUCTION
-					? { ...tradingItem, ListingType: TRADING_AUCTION_LISTING_TYPE }
-					: tradingItem;
-
-			return yield* tradingClient.execute(tradingCallName("create", format), {
-				Item: listingItem,
-			});
+		return await this.client.execute(tradingCallName("create", format), {
+			Item: listingItem,
 		});
 	};
 
@@ -225,50 +193,41 @@ export class TradingApi {
 	 * ReviseItem after the auction field rules pass.
 	 *
 	 * @param input - eBay item identifier plus Trading API Item fields to update and the optional listing format.
-	 * @returns An Effect that succeeds with the parsed ReviseFixedPriceItem or ReviseItem response.
+	 * @returns The parsed ReviseFixedPriceItem or ReviseItem response.
 	 *
 	 * @example
 	 * ```ts
-	 * const listing = await Effect.runPromise(
-	 *   tradingApi.reviseListing({ itemId: '12345', fields: { Quantity: 10 } }),
-	 * );
+	 * const listing = await tradingApi.reviseListing({
+	 *   itemId: '12345',
+	 *   fields: { Quantity: 10 },
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/ReviseFixedPriceItem.html
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/ReviseItem.html
 	 */
-	reviseListing = (
+	reviseListing = async (
 		input: ReviseListingInput,
-	): Effect.Effect<
-		TradingRecordResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const tradingClient = this.client;
+	): Promise<TradingRecordResponse> => {
+		const validatedInput = requireObjectEffect<ReviseListingInput>(
+			input,
+			"input",
+		);
+		const format = resolveTradingFormat(validatedInput.format);
+		const itemId = requireStringEffect(validatedInput.itemId, "itemId");
+		const fields = requireObjectEffect<TradingItemFields>(
+			validatedInput.fields,
+			"fields",
+		);
+		validateTradingListingFormatEffect({
+			item: fields,
+			format,
+			parameter: "fields",
+			isCreate: false,
+		});
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<ReviseListingInput>(
-				input,
-				"input",
-			);
-			const format = resolveTradingFormat(validatedInput.format);
-			const itemId = yield* requireStringEffect(
-				validatedInput.itemId,
-				"itemId",
-			);
-			const fields = yield* requireObjectEffect<TradingItemFields>(
-				validatedInput.fields,
-				"fields",
-			);
-			yield* validateTradingListingFormatEffect({
-				item: fields,
-				format,
-				parameter: "fields",
-				isCreate: false,
-			});
-
-			return yield* tradingClient.execute(tradingCallName("revise", format), {
-				Item: { ...fields, ItemID: itemId },
-			});
+		return await this.client.execute(tradingCallName("revise", format), {
+			Item: { ...fields, ItemID: itemId },
 		});
 	};
 
@@ -279,47 +238,29 @@ export class TradingApi {
 	 * the only call that accepts the SellToHighBidder reason.
 	 *
 	 * @param input - eBay item identifier plus optional Trading API ending reason and listing format.
-	 * @returns An Effect that succeeds with the parsed EndFixedPriceItem or EndItem response.
+	 * @returns The parsed EndFixedPriceItem or EndItem response.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   tradingApi.endListing({ itemId: '12345', reason: 'NotAvailable' }),
-	 * );
+	 * await tradingApi.endListing({ itemId: '12345', reason: 'NotAvailable' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/endfixedpriceitem.html
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/EndItem.html
 	 */
-	endListing = (
+	endListing = async (
 		input: EndListingInput,
-	): Effect.Effect<
-		TradingRecordResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const tradingClient = this.client;
+	): Promise<TradingRecordResponse> => {
+		const validatedInput = requireObjectEffect<EndListingInput>(input, "input");
+		const format = resolveTradingFormat(validatedInput.format);
+		const itemId = requireStringEffect(validatedInput.itemId, "itemId");
+		const inputReason = optionalStringEffect(validatedInput.reason, "reason");
+		validateTradingEndingReasonEffect(inputReason, format, "reason");
+		const reason = inputReason ?? "NotAvailable";
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<EndListingInput>(
-				input,
-				"input",
-			);
-			const format = resolveTradingFormat(validatedInput.format);
-			const itemId = yield* requireStringEffect(
-				validatedInput.itemId,
-				"itemId",
-			);
-			const inputReason = yield* optionalStringEffect(
-				validatedInput.reason,
-				"reason",
-			);
-			yield* validateTradingEndingReasonEffect(inputReason, format, "reason");
-			const reason = inputReason === undefined ? "NotAvailable" : inputReason;
-
-			return yield* tradingClient.execute(tradingCallName("end", format), {
-				ItemID: itemId,
-				EndingReason: reason,
-			});
+		return await this.client.execute(tradingCallName("end", format), {
+			ItemID: itemId,
+			EndingReason: reason,
 		});
 	};
 
@@ -330,54 +271,44 @@ export class TradingApi {
 	 * RelistItem after the auction field rules pass on the modifications.
 	 *
 	 * @param input - eBay item identifier plus optional Trading API Item modifications and listing format.
-	 * @returns An Effect that succeeds with the parsed RelistFixedPriceItem or RelistItem response.
+	 * @returns The parsed RelistFixedPriceItem or RelistItem response.
 	 *
 	 * @example
 	 * ```ts
-	 * const listing = await Effect.runPromise(
-	 *   tradingApi.relistItem({ itemId: '12345', modifications: { Quantity: 20 } }),
-	 * );
+	 * const listing = await tradingApi.relistItem({
+	 *   itemId: '12345',
+	 *   modifications: { Quantity: 20 },
+	 * });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/relistfixedpriceitem.html
 	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/RelistItem.html
 	 */
-	relistItem = (
+	relistItem = async (
 		input: RelistItemInput,
-	): Effect.Effect<
-		TradingRecordResponse,
-		EbayApiError | EndpointInputError
-	> => {
-		const tradingClient = this.client;
+	): Promise<TradingRecordResponse> => {
+		const validatedInput = requireObjectEffect<RelistItemInput>(input, "input");
+		const format = resolveTradingFormat(validatedInput.format);
+		const itemId = requireStringEffect(validatedInput.itemId, "itemId");
+		let modifications: TradingItemFields = {};
+		const hasModifications = validatedInput.modifications !== undefined;
 
-		return Effect.gen(function* () {
-			const validatedInput = yield* requireObjectEffect<RelistItemInput>(
-				input,
-				"input",
+		if (hasModifications) {
+			modifications = requireObjectEffect<TradingItemFields>(
+				validatedInput.modifications,
+				"modifications",
 			);
-			const format = resolveTradingFormat(validatedInput.format);
-			const itemId = yield* requireStringEffect(
-				validatedInput.itemId,
-				"itemId",
-			);
-			let modifications: TradingItemFields = {};
+		}
 
-			if (validatedInput.modifications !== undefined) {
-				modifications = yield* requireObjectEffect<TradingItemFields>(
-					validatedInput.modifications,
-					"modifications",
-				);
-			}
-			yield* validateTradingListingFormatEffect({
-				item: modifications,
-				format,
-				parameter: "modifications",
-				isCreate: false,
-			});
+		validateTradingListingFormatEffect({
+			item: modifications,
+			format,
+			parameter: "modifications",
+			isCreate: false,
+		});
 
-			return yield* tradingClient.execute(tradingCallName("relist", format), {
-				Item: { ...modifications, ItemID: itemId },
-			});
+		return await this.client.execute(tradingCallName("relist", format), {
+			Item: { ...modifications, ItemID: itemId },
 		});
 	};
 }

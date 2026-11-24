@@ -46,7 +46,7 @@ const extractView = <A extends ViewArchetype>(
 		structured &&
 		typeof structured === "object" &&
 		"archetype" in structured &&
-		structured.archetype === archetype
+		structured["archetype"] === archetype
 	) {
 		// Wire data is an open record; the discriminant check above confirms the
 		// archetype, so the `unknown` hop is the safe bridge to the concrete model.

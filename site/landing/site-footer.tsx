@@ -41,9 +41,7 @@ export const SiteFooter = () => (
 						</a>
 					</li>
 					<li>
-						<a href="https://github.com/YosefHayim/ebay-mcp/blob/main/LICENSE">
-							MIT license
-						</a>
+						<span>MIT license</span>
 					</li>
 				</ul>
 			</div>

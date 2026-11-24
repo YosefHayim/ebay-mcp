@@ -25,7 +25,6 @@
 
 import process from "node:process";
 import chalk from "chalk";
-import { Effect, Either } from "effect";
 import { writeFileSync } from "fs";
 import { dirname, join } from "path";
 import prompts from "prompts";
@@ -81,7 +80,7 @@ interface CLIArgs {
 	diagnose: boolean;
 	firstTime: boolean;
 	skipChecks: boolean;
-	environment?: "sandbox" | "production";
+	environment?: "sandbox" | "production" | undefined;
 }
 
 function readOptionalEnvironment(
@@ -207,19 +206,19 @@ function generateEnvFile(
 # eBay App Credentials (Required)
 # ═══════════════════════════════════════════════════════════════════
 
-EBAY_CLIENT_ID=${config.EBAY_CLIENT_ID || "your_client_id_here"}
-EBAY_CLIENT_SECRET=${config.EBAY_CLIENT_SECRET || "your_client_secret_here"}
-EBAY_REDIRECT_URI=${config.EBAY_REDIRECT_URI || "http://localhost:3000/oauth/callback"}
+EBAY_CLIENT_ID=${config["EBAY_CLIENT_ID"] || "your_client_id_here"}
+EBAY_CLIENT_SECRET=${config["EBAY_CLIENT_SECRET"] || "your_client_secret_here"}
+EBAY_REDIRECT_URI=${config["EBAY_REDIRECT_URI"] || "http://localhost:3000/oauth/callback"}
 
 # ═══════════════════════════════════════════════════════════════════
 # Environment (sandbox or production)
 # ═══════════════════════════════════════════════════════════════════
 
-EBAY_ENVIRONMENT=${config.EBAY_ENVIRONMENT || "sandbox"}
+EBAY_ENVIRONMENT=${config["EBAY_ENVIRONMENT"] || "sandbox"}
 # Optional: e.g. EBAY_US, EBAY_DE, EBAY_FR
-EBAY_MARKETPLACE_ID=${config.EBAY_MARKETPLACE_ID || ""}
+EBAY_MARKETPLACE_ID=${config["EBAY_MARKETPLACE_ID"] || ""}
 # Optional: e.g. en-US, de-DE, fr-FR
-EBAY_CONTENT_LANGUAGE=${config.EBAY_CONTENT_LANGUAGE || ""}
+EBAY_CONTENT_LANGUAGE=${config["EBAY_CONTENT_LANGUAGE"] || ""}
 
 # ═══════════════════════════════════════════════════════════════════
 # User Tokens (Auto-generated from refresh token)
@@ -227,14 +226,14 @@ EBAY_CONTENT_LANGUAGE=${config.EBAY_CONTENT_LANGUAGE || ""}
 # The refresh token is the only token you need to provide manually.
 # Access tokens are automatically generated and refreshed.
 
-EBAY_USER_REFRESH_TOKEN=${config.EBAY_USER_REFRESH_TOKEN || ""}
-EBAY_USER_ACCESS_TOKEN=${config.EBAY_USER_ACCESS_TOKEN || ""}
-EBAY_APP_ACCESS_TOKEN=${config.EBAY_APP_ACCESS_TOKEN || ""}
+EBAY_USER_REFRESH_TOKEN=${config["EBAY_USER_REFRESH_TOKEN"] || ""}
+EBAY_USER_ACCESS_TOKEN=${config["EBAY_USER_ACCESS_TOKEN"] || ""}
+EBAY_APP_ACCESS_TOKEN=${config["EBAY_APP_ACCESS_TOKEN"] || ""}
 
 # ═══════════════════════════════════════════════════════════════════
 # Logging (Optional)
 # ═══════════════════════════════════════════════════════════════════
-LOG_LEVEL=${config.LOG_LEVEL || "info"}
+LOG_LEVEL=${config["LOG_LEVEL"] || "info"}
 `;
 
 	writeFileSync(envPath, content, "utf-8");
@@ -264,26 +263,19 @@ async function acquireRefreshToken(
 			chalk.cyan("\n🔄 Exchanging authorization code for tokens...\n"),
 		);
 
-		const tokenData = await Effect.runPromise(
-			Effect.either(
-				Effect.gen(function* () {
-					const oauthClient = new EbayOAuthClient(config);
-					return yield* oauthClient.exchangeCodeForToken(authCode);
-				}),
-			),
-		);
-
-		if (Either.isLeft(tokenData)) {
+		try {
+			const oauthClient = new EbayOAuthClient(config);
+			const tokenData = await oauthClient.exchangeCodeForToken(authCode);
+			console.log(chalk.green("✓ Successfully obtained tokens!\n"));
+			return tokenData.refresh_token;
+		} catch (error) {
 			console.log(
 				chalk.red(
-					`✗ Failed to exchange code: ${getErrorMessage(tokenData.left, String(tokenData.left))}\n`,
+					`✗ Failed to exchange code: ${getErrorMessage(error, String(error))}\n`,
 				),
 			);
 			return null;
 		}
-
-		console.log(chalk.green("✓ Successfully obtained tokens!\n"));
-		return tokenData.right.refresh_token;
 	}
 	// Manual flow
 	displayManualOAuthInstructions(
@@ -323,115 +315,109 @@ async function validateAndGenerateTokens(
 		chalk.bold.cyan("\n🔄 Validating Credentials & Generating Tokens...\n"),
 	);
 
-	const validated = await Effect.runPromise(
-		Effect.either(
-			Effect.gen(function* () {
-				const ebayConfig: EbayConfig = {
-					clientId: config.EBAY_CLIENT_ID,
-					clientSecret: config.EBAY_CLIENT_SECRET,
-					redirectUri: config.EBAY_REDIRECT_URI,
-					environment: readEnvironment(config.EBAY_ENVIRONMENT),
-					accessToken: config.EBAY_USER_ACCESS_TOKEN,
-					refreshToken: config.EBAY_USER_REFRESH_TOKEN,
-				};
+	try {
+		const clientId = config["EBAY_CLIENT_ID"];
+		const clientSecret = config["EBAY_CLIENT_SECRET"];
+		const isClientIdMissing = clientId == null;
 
-				// Set up OAuth client with refresh token
-				const oauthClient = new EbayOAuthClient(ebayConfig);
+		if (isClientIdMissing) {
+			return false;
+		}
 
-				// Set the refresh token
-				if (config.EBAY_USER_REFRESH_TOKEN) {
-					console.log(chalk.cyan("  → Initializing OAuth client..."));
-					yield* oauthClient.initialize();
+		const isClientSecretMissing = clientSecret == null;
 
-					// Get tokens (this will auto-refresh if needed)
-					console.log(
-						chalk.cyan("  → Refreshing access token from refresh token..."),
-					);
-					const accessToken = yield* oauthClient.getAccessToken();
+		if (isClientSecretMissing) {
+			return false;
+		}
 
-					// Store the generated access token
-					config.EBAY_USER_ACCESS_TOKEN = accessToken;
-					console.log(chalk.green("  ✓ Access token generated successfully"));
+		const ebayConfig: EbayConfig = {
+			clientId,
+			clientSecret,
+			redirectUri: config["EBAY_REDIRECT_URI"],
+			environment: readEnvironment(config["EBAY_ENVIRONMENT"]),
+			accessToken: config["EBAY_USER_ACCESS_TOKEN"],
+			refreshToken: config["EBAY_USER_REFRESH_TOKEN"],
+		};
 
-					// Generate app access token
-					console.log(chalk.cyan("  → Generating app access token..."));
-					const appToken = yield* oauthClient.getOrRefreshAppAccessToken();
-					config.EBAY_APP_ACCESS_TOKEN = appToken;
-					console.log(
-						chalk.green("  ✓ App access token generated successfully"),
-					);
+		const oauthClient = new EbayOAuthClient(ebayConfig);
 
-					// Test with Identity API
-					console.log(
-						chalk.cyan("  → Verifying credentials with eBay Identity API..."),
-					);
-					const api = new EbaySellerApi({
-						...ebayConfig,
-						accessToken,
-						appAccessToken: appToken,
-					});
-					yield* api.initialize();
+		if (config["EBAY_USER_REFRESH_TOKEN"]) {
+			console.log(chalk.cyan("  → Initializing OAuth client..."));
+			await oauthClient.initialize();
 
-					const userInfo = yield* api.identity.getUser();
-					if (userInfo) {
-						console.log(
-							chalk.green("\n✓ Successfully validated credentials!\n"),
-						);
-						console.log(
-							chalk.bold.white("📋 Your eBay Account Information:\n"),
-						);
-						console.log(userInfo);
-						console.log("");
-					}
+			console.log(
+				chalk.cyan("  → Refreshing access token from refresh token..."),
+			);
+			const accessToken = await oauthClient.getAccessToken();
 
-					// Display scope verification
-					const authClient = api.getAuthClient();
-					const tokenInfo = authClient.getTokenInfo();
-					if (tokenInfo.scopeInfo) {
-						displayScopeVerification(
-							tokenInfo.scopeInfo.tokenScopes,
-							ebayConfig.environment,
-						);
-					}
+			config["EBAY_USER_ACCESS_TOKEN"] = accessToken;
+			console.log(chalk.green("  ✓ Access token generated successfully"));
 
-					return true;
-				}
-				console.log(
-					chalk.yellow("⚠️  No refresh token provided, skipping validation\n"),
+			console.log(chalk.cyan("  → Generating app access token..."));
+			const appToken = await oauthClient.getOrRefreshAppAccessToken();
+			config["EBAY_APP_ACCESS_TOKEN"] = appToken;
+			console.log(chalk.green("  ✓ App access token generated successfully"));
+
+			console.log(
+				chalk.cyan("  → Verifying credentials with eBay Identity API..."),
+			);
+			const api = new EbaySellerApi({
+				...ebayConfig,
+				accessToken,
+				appAccessToken: appToken,
+			});
+			await api.initialize();
+
+			const userInfo = await api.identity.getUser();
+			if (userInfo) {
+				console.log(chalk.green("\n✓ Successfully validated credentials!\n"));
+				console.log(chalk.bold.white("📋 Your eBay Account Information:\n"));
+				console.log(userInfo);
+				console.log("");
+			}
+
+			const authClient = api.getAuthClient();
+			const tokenInfo = authClient.getTokenInfo();
+			if (tokenInfo.scopeInfo) {
+				displayScopeVerification(
+					tokenInfo.scopeInfo.tokenScopes,
+					ebayConfig.environment,
 				);
-				return false;
-			}),
-		),
-	);
+			}
 
-	if (Either.isRight(validated)) {
-		return validated.right;
-	}
+			return true;
+		}
 
-	const message = getErrorMessage(validated.left, String(validated.left));
-
-	console.log(chalk.red("\n✗ Validation failed\n"));
-	console.log(chalk.yellow(`  Error: ${message}\n`));
-
-	if (message.includes("401") || message.includes("Unauthorized")) {
-		console.log(chalk.gray("  Possible causes:"));
-		console.log(chalk.gray("    • Invalid or expired refresh token"));
 		console.log(
-			chalk.gray(
-				"    • Token from different environment (sandbox vs production)",
-			),
+			chalk.yellow("⚠️  No refresh token provided, skipping validation\n"),
 		);
-		console.log(chalk.gray("    • Incorrect client credentials\n"));
+		return false;
+	} catch (error) {
+		const message = getErrorMessage(error, String(error));
+
+		console.log(chalk.red("\n✗ Validation failed\n"));
+		console.log(chalk.yellow(`  Error: ${message}\n`));
+
+		if (message.includes("401") || message.includes("Unauthorized")) {
+			console.log(chalk.gray("  Possible causes:"));
+			console.log(chalk.gray("    • Invalid or expired refresh token"));
+			console.log(
+				chalk.gray(
+					"    • Token from different environment (sandbox vs production)",
+				),
+			);
+			console.log(chalk.gray("    • Incorrect client credentials\n"));
+		}
+
+		const retry = await prompts({
+			type: "confirm",
+			name: "retry",
+			message: "Would you like to retry with different credentials?",
+			initial: true,
+		});
+
+		return retry.retry === true;
 	}
-
-	const retry = await prompts({
-		type: "confirm",
-		name: "retry",
-		message: "Would you like to retry with different credentials?",
-		initial: true,
-	});
-
-	return retry.retry === true;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -812,7 +798,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 
 	// Environment selection
 	let environment =
-		args.environment || existingConfig.EBAY_ENVIRONMENT || "sandbox";
+		args.environment || existingConfig["EBAY_ENVIRONMENT"] || "sandbox";
 
 	if (!args.environment) {
 		const envResponse = await prompts({
@@ -844,14 +830,14 @@ async function runInteractiveSetup(args: CLIArgs) {
 			type: "text",
 			name: "EBAY_CLIENT_ID",
 			message: "eBay Client ID (App ID):",
-			initial: existingConfig.EBAY_CLIENT_ID || "",
+			initial: existingConfig["EBAY_CLIENT_ID"] || "",
 			validate: validateRequired,
 		},
 		{
 			type: "text",
 			name: "EBAY_CLIENT_SECRET",
 			message: "eBay Client Secret (Cert ID):",
-			initial: existingConfig.EBAY_CLIENT_SECRET || "",
+			initial: existingConfig["EBAY_CLIENT_SECRET"] || "",
 			validate: validateRequired,
 		},
 		{
@@ -859,7 +845,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 			name: "EBAY_REDIRECT_URI",
 			message: "eBay Redirect URI (RuName):",
 			initial:
-				existingConfig.EBAY_REDIRECT_URI ||
+				existingConfig["EBAY_REDIRECT_URI"] ||
 				"http://localhost:3000/oauth/callback",
 			validate: validateRequired,
 		},
@@ -921,7 +907,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 		initial: 0,
 	});
 
-	let refreshToken = existingConfig.EBAY_USER_REFRESH_TOKEN || "";
+	let refreshToken = existingConfig["EBAY_USER_REFRESH_TOKEN"] || "";
 
 	const ebayConfig: EbayConfig = {
 		clientId: credentials.EBAY_CLIENT_ID,
@@ -970,12 +956,12 @@ async function runInteractiveSetup(args: CLIArgs) {
 		EBAY_CLIENT_SECRET: credentials.EBAY_CLIENT_SECRET,
 		EBAY_REDIRECT_URI: credentials.EBAY_REDIRECT_URI,
 		EBAY_ENVIRONMENT: environment,
-		EBAY_MARKETPLACE_ID: existingConfig.EBAY_MARKETPLACE_ID || "",
-		EBAY_CONTENT_LANGUAGE: existingConfig.EBAY_CONTENT_LANGUAGE || "",
+		EBAY_MARKETPLACE_ID: existingConfig["EBAY_MARKETPLACE_ID"] || "",
+		EBAY_CONTENT_LANGUAGE: existingConfig["EBAY_CONTENT_LANGUAGE"] || "",
 		EBAY_USER_REFRESH_TOKEN: refreshToken,
 		EBAY_USER_ACCESS_TOKEN: "",
 		EBAY_APP_ACCESS_TOKEN: "",
-		LOG_LEVEL: existingConfig.LOG_LEVEL || "info",
+		LOG_LEVEL: existingConfig["LOG_LEVEL"] || "info",
 	};
 
 	// Validate and generate tokens
@@ -997,22 +983,27 @@ async function runInteractiveSetup(args: CLIArgs) {
 
 	// Review configuration
 	console.log(chalk.bold.cyan("\n📋 Configuration Review:\n"));
-	console.log(`  ${chalk.gray("Client ID:")} ${config.EBAY_CLIENT_ID}`);
+	console.log(`  ${chalk.gray("Client ID:")} ${config["EBAY_CLIENT_ID"]}`);
+	const clientSecret = config["EBAY_CLIENT_SECRET"];
+	const isClientSecretMissing = clientSecret == null;
+	const maskedSecret = isClientSecretMissing
+		? ""
+		: "*".repeat(Math.min(clientSecret.length, 20));
+	console.log(`  ${chalk.gray("Client Secret:")} ${maskedSecret}`);
 	console.log(
-		`  ${chalk.gray("Client Secret:")} ${"*".repeat(Math.min(config.EBAY_CLIENT_SECRET.length, 20))}`,
-	);
-	console.log(`  ${chalk.gray("Redirect URI:")} ${config.EBAY_REDIRECT_URI}`);
-	console.log(
-		`  ${chalk.gray("Environment:")} ${chalk.bold(config.EBAY_ENVIRONMENT)}`,
-	);
-	console.log(
-		`  ${chalk.gray("User Refresh Token:")} ${config.EBAY_USER_REFRESH_TOKEN ? chalk.green("✓ Configured") : chalk.yellow("✗ Not set")}`,
-	);
-	console.log(
-		`  ${chalk.gray("User Access Token:")} ${config.EBAY_USER_ACCESS_TOKEN ? chalk.green("✓ Generated") : chalk.yellow("✗ Not generated")}`,
+		`  ${chalk.gray("Redirect URI:")} ${config["EBAY_REDIRECT_URI"]}`,
 	);
 	console.log(
-		`  ${chalk.gray("App Access Token:")} ${config.EBAY_APP_ACCESS_TOKEN ? chalk.green("✓ Generated") : chalk.yellow("✗ Not generated")}\n`,
+		`  ${chalk.gray("Environment:")} ${chalk.bold(config["EBAY_ENVIRONMENT"])}`,
+	);
+	console.log(
+		`  ${chalk.gray("User Refresh Token:")} ${config["EBAY_USER_REFRESH_TOKEN"] ? chalk.green("✓ Configured") : chalk.yellow("✗ Not set")}`,
+	);
+	console.log(
+		`  ${chalk.gray("User Access Token:")} ${config["EBAY_USER_ACCESS_TOKEN"] ? chalk.green("✓ Generated") : chalk.yellow("✗ Not generated")}`,
+	);
+	console.log(
+		`  ${chalk.gray("App Access Token:")} ${config["EBAY_APP_ACCESS_TOKEN"] ? chalk.green("✓ Generated") : chalk.yellow("✗ Not generated")}\n`,
 	);
 
 	const confirmation = await prompts({
@@ -1089,19 +1080,9 @@ process.on("SIGINT", () => {
 });
 
 // Run main
-void Effect.runPromise(
-	Effect.either(
-		Effect.tryPromise({
-			try: () => main(),
-			catch: (error) => error,
-		}),
-	),
-).then((setupOutcome) => {
-	if (Either.isLeft(setupOutcome)) {
-		console.error(
-			chalk.red("\n❌ Setup failed:"),
-			getErrorMessage(setupOutcome.left),
-		);
-		process.exitCode = 1;
-	}
-});
+try {
+	await main();
+} catch (error) {
+	console.error(chalk.red("\n❌ Setup failed:"), getErrorMessage(error));
+	process.exitCode = 1;
+}

@@ -62,7 +62,7 @@ const categoryPolicySchema = z.object({
 	virtual: z.boolean().optional(),
 });
 
-const categoryPolicyResponseSchema = z.object({
+export const categoryPolicyResponseSchema = z.object({
 	categoryPolicies: z.array(categoryPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -121,7 +121,7 @@ const itemConditionPolicySchema = z.object({
 	itemConditions: z.array(itemConditionSchema).optional(),
 });
 
-const itemConditionPolicyResponseSchema = z.object({
+export const itemConditionPolicyResponseSchema = z.object({
 	itemConditionPolicies: z.array(itemConditionPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -147,7 +147,7 @@ const returnPolicySchema = z.object({
 	required: z.boolean().optional(),
 });
 
-const returnPolicyResponseSchema = z.object({
+export const returnPolicyResponseSchema = z.object({
 	returnPolicies: z.array(returnPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -162,7 +162,7 @@ const listingStructurePolicySchema = z.object({
 	variationsSupported: z.boolean().optional(),
 });
 
-const listingStructurePolicyResponseSchema = z.object({
+export const listingStructurePolicyResponseSchema = z.object({
 	listingStructurePolicies: z.array(listingStructurePolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -184,7 +184,7 @@ const listingTypePolicySchema = z.object({
 	pickupDropOffEnabled: z.boolean().optional(),
 });
 
-const listingTypePoliciesResponseSchema = z.object({
+export const listingTypePoliciesResponseSchema = z.object({
 	listingTypePolicies: z.array(listingTypePolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -201,7 +201,7 @@ const negotiatedPricePolicySchema = z.object({
 	categoryTreeId: z.string().optional(),
 });
 
-const negotiatedPricePolicyResponseSchema = z.object({
+export const negotiatedPricePolicyResponseSchema = z.object({
 	negotiatedPricePolicies: z.array(negotiatedPricePolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -222,7 +222,7 @@ const shippingPolicySchema = z.object({
 	shippingTermsRequired: z.boolean().optional(),
 });
 
-const shippingPoliciesResponseSchema = z.object({
+export const shippingPoliciesResponseSchema = z.object({
 	shippingPolicies: z.array(shippingPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -239,7 +239,7 @@ const automotivePartsCompatibilityPolicySchema = z.object({
 	maxNumberOfCompatibleVehicles: z.number().int().optional(),
 });
 
-const automotivePartsCompatibilityPolicyResponseSchema = z.object({
+export const automotivePartsCompatibilityPolicyResponseSchema = z.object({
 	automotivePartsCompatibilityPolicies: z
 		.array(automotivePartsCompatibilityPolicySchema)
 		.optional(),
@@ -269,7 +269,7 @@ const classifiedAdPolicySchema = z.object({
 	sellerContactDetailsEnabled: z.boolean().optional(),
 });
 
-const classifiedAdPolicyResponseSchema = z.object({
+export const classifiedAdPolicyResponseSchema = z.object({
 	classifiedAdPolicies: z.array(classifiedAdPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -334,7 +334,7 @@ const motorsListingPolicySchema = z.object({
 	vrmSupported: z.boolean().optional(),
 });
 
-const motorsListingPoliciesResponseSchema = z.object({
+export const motorsListingPoliciesResponseSchema = z.object({
 	motorsListingPolicies: z.array(motorsListingPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -348,7 +348,7 @@ const currencySchema = z.object({
 	description: z.string().optional(),
 });
 
-const getCurrenciesResponseSchema = z.object({
+export const getCurrenciesResponseSchema = z.object({
 	defaultCurrency: currencySchema.optional(),
 	marketplaceId: z.string().optional(),
 });
@@ -369,7 +369,7 @@ const extendedProducerResponsibilityPolicySchema = z.object({
 	supportedAttributes: z.array(extendedProducerResponsibilitySchema).optional(),
 });
 
-const extendedProducerResponsibilityPolicyResponseSchema = z.object({
+export const extendedProducerResponsibilityPolicyResponseSchema = z.object({
 	extendedProducerResponsibilities: z
 		.array(extendedProducerResponsibilityPolicySchema)
 		.optional(),
@@ -396,7 +396,7 @@ const pictogramSchema = z.object({
 	pictogramUrl: z.string().optional(),
 });
 
-const hazardousMaterialDetailsResponseSchema = z.object({
+export const hazardousMaterialDetailsResponseSchema = z.object({
 	signalWords: z.array(signalWordSchema).optional(),
 	statements: z.array(hazardStatementSchema).optional(),
 	pictograms: z.array(pictogramSchema).optional(),
@@ -417,7 +417,7 @@ const productSafetyLabelStatementSchema = z.object({
 	statementId: z.string().optional(),
 });
 
-const productSafetyLabelsResponseSchema = z.object({
+export const productSafetyLabelsResponseSchema = z.object({
 	pictograms: z.array(productSafetyLabelPictogramSchema).optional(),
 	statements: z.array(productSafetyLabelStatementSchema).optional(),
 });
@@ -437,7 +437,7 @@ const regulatoryPolicySchema = z.object({
 	supportedAttributes: z.array(regulatoryAttributeSchema).optional(),
 });
 
-const regulatoryPolicyResponseSchema = z.object({
+export const regulatoryPolicyResponseSchema = z.object({
 	regulatoryPolicies: z.array(regulatoryPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -454,7 +454,7 @@ const siteVisibilityPolicySchema = z.object({
 	crossBorderTradeNorthAmericaEnabled: z.boolean().optional(),
 });
 
-const siteVisibilityPoliciesResponseSchema = z.object({
+export const siteVisibilityPoliciesResponseSchema = z.object({
 	siteVisibilityPolicies: z.array(siteVisibilityPolicySchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
@@ -495,18 +495,18 @@ const propertyNamesResponsePropertiesSchema = z.object({
 	propertyNames: z.array(propertyNamesResponsePropertyNamesSchema).optional(),
 });
 
-const propertyNamesResponseSchema = z.object({
+export const propertyNamesResponseSchema = z.object({
 	categoryId: z.string().optional(),
 	properties: z.array(propertyNamesResponsePropertiesSchema).optional(),
 });
 
-const propertyValuesResponseSchema = z.object({
+export const propertyValuesResponseSchema = z.object({
 	metadataVersion: z.string().optional(),
 	propertyName: z.string().optional(),
 	propertyValues: z.array(z.string()).optional(),
 });
 
-const multiCompatibilityPropertyValuesResponseSchema = z.object({
+export const multiCompatibilityPropertyValuesResponseSchema = z.object({
 	compatibilities: z.array(compatibilitySchema).optional(),
 	metadataVersion: z.string().optional(),
 });
@@ -541,14 +541,14 @@ const productResponseCompatibilityDetailsSchema = z.object({
 	productDetails: z.array(propertyValuesSchema).optional(),
 });
 
-const productResponseSchema = z.object({
+export const productResponseSchema = z.object({
 	compatibilityDetails: z
 		.array(productResponseCompatibilityDetailsSchema)
 		.optional(),
 	pagination: paginationSchema.optional(),
 });
 
-const specificationResponseSchema = z.object({
+export const specificationResponseSchema = z.object({
 	compatibilityDetails: z.array(compatibilitySchema).optional(),
 	pagination: paginationSchema.optional(),
 });
@@ -557,19 +557,19 @@ const specificationResponseSchema = z.object({
 // Input Schemas
 // ============================================================================
 
-const propertyNamesRequestSchema = z.object({
+export const propertyNamesRequestSchema = z.object({
 	categoryId: z.string().optional(),
 	dataset: z.array(z.string()).optional(),
 });
 
-const propertyValuesRequestSchema = z.object({
+export const propertyValuesRequestSchema = z.object({
 	categoryId: z.string().optional(),
 	propertyFilters: z.array(propertyFilterInnerSchema).optional(),
 	propertyName: z.string().optional(),
 	sortOrder: z.string().optional(),
 });
 
-const multiCompatibilityPropertyValuesRequestSchema = z.object({
+export const multiCompatibilityPropertyValuesRequestSchema = z.object({
 	categoryId: z.string().optional(),
 	propertyFilters: z.array(propertyFilterInnerSchema).optional(),
 	propertyNames: z.array(z.string()).optional(),
@@ -590,7 +590,7 @@ const sortOrderInnerSchema = z.object({
 	sortPriority: z.string().optional(),
 });
 
-const productRequestSchema = z.object({
+export const productRequestSchema = z.object({
 	applicationPropertyFilters: z.array(propertyFilterInnerSchema).optional(),
 	dataset: z.array(z.string()).optional(),
 	datasetPropertyName: z.array(z.string()).optional(),
@@ -600,7 +600,7 @@ const productRequestSchema = z.object({
 	sortOrders: z.array(sortOrderInnerSchema).optional(),
 });
 
-const specificationRequestSchema = z.object({
+export const specificationRequestSchema = z.object({
 	categoryId: z.string().optional(),
 	compatibilityPropertyFilters: z.array(propertyFilterInnerSchema).optional(),
 	dataset: z.string().optional(),

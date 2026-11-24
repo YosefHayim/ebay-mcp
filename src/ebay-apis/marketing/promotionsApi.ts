@@ -1,4 +1,3 @@
-import type { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	createEmailCampaignInputSchema,
@@ -27,7 +26,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
 	marketplaceHeader,
 	requestDeleteEffect,
 	requestGetEffect,
@@ -262,7 +260,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	createItemPriceMarkdownPromotion: (
 		input: CreateItemPriceMarkdownPromotionInput,
-	): Effect.Effect<CreateItemPriceMarkdownPromotionResponse, EbayApiError> => {
+	): Promise<CreateItemPriceMarkdownPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_price_markdown`;
 		return requestPostEffect<CreateItemPriceMarkdownPromotionResponse>(
 			client,
@@ -286,7 +284,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getItemPriceMarkdownPromotion: (
 		input: GetItemPriceMarkdownPromotionInput,
-	): Effect.Effect<GetItemPriceMarkdownPromotionResponse, EbayApiError> => {
+	): Promise<GetItemPriceMarkdownPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_price_markdown/${input.promotionId}`;
 		return requestGetEffect<GetItemPriceMarkdownPromotionResponse>(
 			client,
@@ -309,7 +307,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	updateItemPriceMarkdownPromotion: (
 		input: UpdateItemPriceMarkdownPromotionInput,
-	): Effect.Effect<UpdateItemPriceMarkdownPromotionResponse, EbayApiError> => {
+	): Promise<UpdateItemPriceMarkdownPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_price_markdown/${input.promotionId}`;
 		return requestPutEffect<UpdateItemPriceMarkdownPromotionResponse>(
 			client,
@@ -333,7 +331,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	deleteItemPriceMarkdownPromotion: (
 		input: DeleteItemPriceMarkdownPromotionInput,
-	): Effect.Effect<DeleteItemPriceMarkdownPromotionResponse, EbayApiError> => {
+	): Promise<DeleteItemPriceMarkdownPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_price_markdown/${input.promotionId}`;
 		return requestDeleteEffect<DeleteItemPriceMarkdownPromotionResponse>(
 			client,
@@ -356,7 +354,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	createItemPromotion: (
 		input: CreateItemPromotionInput,
-	): Effect.Effect<CreateItemPromotionResponse, EbayApiError> => {
+	): Promise<CreateItemPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_promotion`;
 		return requestPostEffect<CreateItemPromotionResponse>(
 			client,
@@ -380,7 +378,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getItemPromotion: (
 		input: GetItemPromotionInput,
-	): Effect.Effect<GetItemPromotionResponse, EbayApiError> => {
+	): Promise<GetItemPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_promotion/${input.promotionId}`;
 		return requestGetEffect<GetItemPromotionResponse>(client, path);
 	},
@@ -400,7 +398,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	updateItemPromotion: (
 		input: UpdateItemPromotionInput,
-	): Effect.Effect<UpdateItemPromotionResponse, EbayApiError> => {
+	): Promise<UpdateItemPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_promotion/${input.promotionId}`;
 		return requestPutEffect<UpdateItemPromotionResponse>(
 			client,
@@ -424,7 +422,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	deleteItemPromotion: (
 		input: DeleteItemPromotionInput,
-	): Effect.Effect<DeleteItemPromotionResponse, EbayApiError> => {
+	): Promise<DeleteItemPromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/item_promotion/${input.promotionId}`;
 		return requestDeleteEffect<DeleteItemPromotionResponse>(client, path);
 	},
@@ -444,7 +442,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getListingSet: (
 		input: GetListingSetInput,
-	): Effect.Effect<GetListingSetResponse, EbayApiError> => {
+	): Promise<GetListingSetResponse> => {
 		const path = `${MARKETING_BASE_PATH}/promotion/${input.promotionId}/get_listing_set`;
 		const params = buildEndpointParams({
 			limit: { wireName: "limit", value: input.limit },
@@ -471,7 +469,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getPromotions: (
 		input: GetPromotionsInput,
-	): Effect.Effect<GetPromotionsResponse, EbayApiError> => {
+	): Promise<GetPromotionsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/promotion`;
 		const params = buildEndpointParams({
 			limit: { wireName: "limit", value: input.limit },
@@ -503,7 +501,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	pausePromotion: (
 		input: PausePromotionInput,
-	): Effect.Effect<PausePromotionResponse, EbayApiError> => {
+	): Promise<PausePromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/promotion/${input.promotionId}/pause`;
 		return requestPostEffect<PausePromotionResponse>(client, path);
 	},
@@ -523,7 +521,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	resumePromotion: (
 		input: ResumePromotionInput,
-	): Effect.Effect<ResumePromotionResponse, EbayApiError> => {
+	): Promise<ResumePromotionResponse> => {
 		const path = `${MARKETING_BASE_PATH}/promotion/${input.promotionId}/resume`;
 		return requestPostEffect<ResumePromotionResponse>(client, path);
 	},
@@ -543,7 +541,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getPromotionReports: (
 		input: GetPromotionReportsInput,
-	): Effect.Effect<GetPromotionReportsResponse, EbayApiError> => {
+	): Promise<GetPromotionReportsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/promotion_report`;
 		const params = buildEndpointParams({
 			limit: { wireName: "limit", value: input.limit },
@@ -574,7 +572,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getPromotionSummaryReport: (
 		input: GetPromotionSummaryReportInput,
-	): Effect.Effect<GetPromotionSummaryReportResponse, EbayApiError> => {
+	): Promise<GetPromotionSummaryReportResponse> => {
 		const path = `${MARKETING_BASE_PATH}/promotion_summary_report`;
 		const params = buildEndpointParams({
 			marketplaceId: { wireName: "marketplace_id", value: input.marketplaceId },
@@ -601,7 +599,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getEmailCampaigns: (
 		input: GetEmailCampaignsInput = {},
-	): Effect.Effect<GetEmailCampaignsResponse, EbayApiError> => {
+	): Promise<GetEmailCampaignsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign`;
 		const params = buildEndpointParams({
 			limit: { wireName: "limit", value: input.limit },
@@ -627,7 +625,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	createEmailCampaign: (
 		input: CreateEmailCampaignInput,
-	): Effect.Effect<CreateEmailCampaignResponse, EbayApiError> => {
+	): Promise<CreateEmailCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign`;
 		const config = marketplaceHeader(input.marketplaceId);
 		return requestPostEffect<CreateEmailCampaignResponse>(
@@ -653,7 +651,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getEmailCampaign: (
 		input: GetEmailCampaignInput,
-	): Effect.Effect<GetEmailCampaignResponse, EbayApiError> => {
+	): Promise<GetEmailCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign/${input.emailCampaignId}`;
 		return requestGetEffect<GetEmailCampaignResponse>(client, path);
 	},
@@ -673,7 +671,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	updateEmailCampaign: (
 		input: UpdateEmailCampaignInput,
-	): Effect.Effect<UpdateEmailCampaignResponse, EbayApiError> => {
+	): Promise<UpdateEmailCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign/${input.emailCampaignId}`;
 		return requestPutEffect<UpdateEmailCampaignResponse>(
 			client,
@@ -697,7 +695,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	deleteEmailCampaign: (
 		input: DeleteEmailCampaignInput,
-	): Effect.Effect<DeleteEmailCampaignResponse, EbayApiError> => {
+	): Promise<DeleteEmailCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign/${input.emailCampaignId}`;
 		return requestDeleteEffect<DeleteEmailCampaignResponse>(client, path);
 	},
@@ -715,9 +713,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/email_campaign/methods/getAudiences
 	 */
-	getAudiences: (
-		input: GetAudiencesInput,
-	): Effect.Effect<GetAudiencesResponse, EbayApiError> => {
+	getAudiences: (input: GetAudiencesInput): Promise<GetAudiencesResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign/audience`;
 		const params = buildEndpointParams({
 			emailCampaignType: {
@@ -745,7 +741,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getEmailPreview: (
 		input: GetEmailPreviewInput,
-	): Effect.Effect<GetEmailPreviewResponse, EbayApiError> => {
+	): Promise<GetEmailPreviewResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign/${input.emailCampaignId}/email_preview`;
 		return requestGetEffect<GetEmailPreviewResponse>(client, path);
 	},
@@ -765,7 +761,7 @@ export const createMarketingPromotionsMethods = (client: EbayApiClient) => ({
 	 */
 	getEmailReport: (
 		input: GetEmailReportInput,
-	): Effect.Effect<GetEmailReportResponse, EbayApiError> => {
+	): Promise<GetEmailReportResponse> => {
 		const path = `${MARKETING_BASE_PATH}/email_campaign/report`;
 		const params = buildEndpointParams({
 			endDate: { wireName: "endDate", value: input.endDate },

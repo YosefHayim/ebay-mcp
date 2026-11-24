@@ -62,6 +62,7 @@ const vitestConfig = defineConfig({
 				// Exclude script files
 				"scripts/**",
 				"src/cli/**",
+				"**/*.test.ts",
 			],
 			include: ["src/**/*.ts"],
 			// Floors at the measured baseline: coverage may rise, never drop.
@@ -74,8 +75,8 @@ const vitestConfig = defineConfig({
 		},
 		// Unit suite only. The hermetic integration suite runs via its own config —
 		// `pnpm run test:integration` (vitest.integration.config.cts) and CI's test.yml.
-		include: ["tests/unit/**/*.test.ts"],
-		exclude: ["node_modules", "build", "dist", "tests/integration/**"],
+		include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+		exclude: ["node_modules", "build", "dist", "**/*.integration.test.ts"],
 		testTimeout: 10_000,
 		hookTimeout: 10_000,
 	},

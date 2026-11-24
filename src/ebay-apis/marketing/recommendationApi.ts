@@ -1,12 +1,9 @@
-import { Effect } from "effect";
 import type {
 	EbayApiClient,
 	EbayRequestConfig,
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -71,74 +68,61 @@ export class RecommendationApi {
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/recommendation/resources/find/methods/findListingRecommendations
 	 */
-	public findListingRecommendations = (
+	public findListingRecommendations = async (
 		input: FindListingRecommendationsInput,
-	): Effect.Effect<
-		PagedListingRecommendationCollection,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<PagedListingRecommendationCollection> => {
 		const client = this.client;
 		const path = `${this.basePath}/find`;
 
-		return Effect.gen(function* () {
-			const validatedInput =
-				yield* requireObjectEffect<FindListingRecommendationsInput>(
-					input,
-					"input",
-				);
-			const marketplaceId = yield* requireStringEffect(
-				validatedInput.marketplaceId,
-				"marketplaceId",
-			);
-			const filter = yield* optionalStringEffect(
-				validatedInput.filter,
-				"filter",
-			);
-			const limit = yield* optionalPositiveNumberEffect(
-				validatedInput.limit,
-				"limit",
-			);
-			const offset = yield* optionalNonNegativeNumberEffect(
-				validatedInput.offset,
-				"offset",
-			);
-			let requestBody: FindListingRecommendationRequest = {};
+		const validatedInput = requireObjectEffect<FindListingRecommendationsInput>(
+			input,
+			"input",
+		);
+		const marketplaceId = requireStringEffect(
+			validatedInput.marketplaceId,
+			"marketplaceId",
+		);
+		const filter = optionalStringEffect(validatedInput.filter, "filter");
+		const limit = optionalPositiveNumberEffect(validatedInput.limit, "limit");
+		const offset = optionalNonNegativeNumberEffect(
+			validatedInput.offset,
+			"offset",
+		);
+		let requestBody: FindListingRecommendationRequest = {};
 
-			if (validatedInput.requestBody !== undefined) {
-				requestBody =
-					yield* requireObjectEffect<FindListingRecommendationRequest>(
-						validatedInput.requestBody,
-						"requestBody",
-					);
-			}
-
-			const params = buildEndpointParams({
-				filter: { wireName: "filter", value: filter },
-				limit: {
-					wireName: "limit",
-					value: limit === undefined ? undefined : String(limit),
-				},
-				offset: {
-					wireName: "offset",
-					value: offset === undefined ? undefined : String(offset),
-				},
-			});
-			const config: EbayRequestConfig = {
-				headers: {
-					"X-EBAY-C-MARKETPLACE-ID": marketplaceId,
-				},
-			};
-
-			if (params !== undefined) {
-				config.params = params;
-			}
-
-			return yield* requestPostEffect<PagedListingRecommendationCollection>(
-				client,
-				path,
-				requestBody,
-				config,
+		if (validatedInput.requestBody !== undefined) {
+			requestBody = requireObjectEffect<FindListingRecommendationRequest>(
+				validatedInput.requestBody,
+				"requestBody",
 			);
+		}
+
+		const params = buildEndpointParams({
+			filter: { wireName: "filter", value: filter },
+			limit: {
+				wireName: "limit",
+				value: limit === undefined ? undefined : String(limit),
+			},
+			offset: {
+				wireName: "offset",
+				value: offset === undefined ? undefined : String(offset),
+			},
 		});
+		const config: EbayRequestConfig = {
+			headers: {
+				"X-EBAY-C-MARKETPLACE-ID": marketplaceId,
+			},
+		};
+
+		if (params !== undefined) {
+			config.params = params;
+		}
+
+		return await requestPostEffect<PagedListingRecommendationCollection>(
+			client,
+			path,
+			requestBody,
+			config,
+		);
 	};
 }

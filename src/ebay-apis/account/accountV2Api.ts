@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	calculatedShippingRulesInputSchema,
@@ -16,8 +15,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
-	type EndpointInputError,
 	marketplaceHeader,
 	optionalStringEffect,
 	requestGetEffect,
@@ -110,80 +107,66 @@ export class AccountV2Api {
 	 * Retrieves one shipping rate table with its rates, so their rateIds can be updated.
 	 *
 	 * @param input - Rate table ID (path), from Account API v1 getRateTables.
-	 * @returns An Effect that succeeds with eBay's generated RateTableDetails.
+	 * @returns A promise that resolves with eBay's generated RateTableDetails.
 	 *
 	 * @example
 	 * ```ts
-	 * const table = await Effect.runPromise(accountV2Api.getRateTable({ rateTableId: '5000000000' }));
+	 * const table = await accountV2Api.getRateTable({ rateTableId: '5000000000' });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/rate_table/methods/getRateTable
 	 */
-	public getRateTable = (
+	public getRateTable = async (
 		input: GetRateTableInput,
-	): Effect.Effect<
-		RateTableDetailsResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<RateTableDetailsResponse> => {
 		const { client, basePath } = this;
+		const validInput = requireObjectEffect<GetRateTableInput>(input, "input");
+		const rateTableId = requireStringEffect(
+			validInput.rateTableId,
+			"rateTableId",
+		);
 
-		return Effect.gen(function* () {
-			const validInput = yield* requireObjectEffect<GetRateTableInput>(
-				input,
-				"input",
-			);
-			const rateTableId = yield* requireStringEffect(
-				validInput.rateTableId,
-				"rateTableId",
-			);
-
-			return yield* requestGetEffect<RateTableDetailsResponse>(
-				client,
-				`${basePath}/rate_table/${encodeURIComponent(rateTableId)}`,
-			);
-		});
+		return requestGetEffect<RateTableDetailsResponse>(
+			client,
+			`${basePath}/rate_table/${encodeURIComponent(rateTableId)}`,
+		);
 	};
 
 	/**
 	 * Updates the shippingCost and/or additionalCost of rates in a shipping rate table.
 	 *
 	 * @param input - Rate table ID (path) and the RateTableUpdate body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.updateShippingCost({
+	 * await accountV2Api.updateShippingCost({
 	 *     rateTableId: '5000000000',
 	 *     rateTableUpdate: { rates: [{ rateId: 'R1', shippingCost: { currency: 'USD', value: '4.99' } }] },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/rate_table/methods/updateShippingCost
 	 */
-	public updateShippingCost = (
+	public updateShippingCost = async (
 		input: UpdateShippingCostInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> => {
+	): Promise<void> => {
 		const { client, basePath } = this;
+		const validInput = requireObjectEffect<UpdateShippingCostInput>(
+			input,
+			"input",
+		);
+		const rateTableId = requireStringEffect(
+			validInput.rateTableId,
+			"rateTableId",
+		);
+		const rateTableUpdate = requireObjectEffect<RateTableUpdate>(
+			validInput.rateTableUpdate,
+			"rateTableUpdate",
+		);
+		const path = `${basePath}/rate_table/${encodeURIComponent(rateTableId)}/update_shipping_cost`;
 
-		return Effect.gen(function* () {
-			const validInput = yield* requireObjectEffect<UpdateShippingCostInput>(
-				input,
-				"input",
-			);
-			const rateTableId = yield* requireStringEffect(
-				validInput.rateTableId,
-				"rateTableId",
-			);
-			const rateTableUpdate = yield* requireObjectEffect<RateTableUpdate>(
-				validInput.rateTableUpdate,
-				"rateTableUpdate",
-			);
-			const path = `${basePath}/rate_table/${encodeURIComponent(rateTableId)}/update_shipping_cost`;
-
-			return yield* requestPostEffect<void>(client, path, rateTableUpdate);
-		});
+		return requestPostEffect<void>(client, path, rateTableUpdate);
 	};
 
 	/**
@@ -191,18 +174,18 @@ export class AccountV2Api {
 	 * (mainland China sellers only). Requires the sell.finances scope.
 	 *
 	 * @param _input - Empty object accepted for tool/API shape consistency.
-	 * @returns An Effect that succeeds with eBay's generated PayoutSettingsResponse.
+	 * @returns A promise that resolves with eBay's generated PayoutSettingsResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const settings = await Effect.runPromise(accountV2Api.getPayoutSettings({}));
+	 * const settings = await accountV2Api.getPayoutSettings({});
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/payout_settings/methods/getPayoutSettings
 	 */
 	public getPayoutSettings = (
 		_input: GetPayoutSettingsInput = {},
-	): Effect.Effect<PayoutSettingsResponse, EbayApiError> =>
+	): Promise<PayoutSettingsResponse> =>
 		requestGetEffect<PayoutSettingsResponse>(
 			this.client,
 			`${this.basePath}/payout_settings`,
@@ -213,41 +196,37 @@ export class AccountV2Api {
 	 * (mainland China sellers only; percentages must total 100). Requires sell.finances.
 	 *
 	 * @param input - UpdatePayoutPercentageRequest body under `payoutSplit`.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.updatePayoutPercentage({
+	 * await accountV2Api.updatePayoutPercentage({
 	 *     payoutSplit: {
 	 *       payoutInstruments: [
 	 *         { instrumentId: 'BANK-1', payoutPercentage: '70' },
 	 *         { instrumentId: 'PAYONEER-1', payoutPercentage: '30' },
 	 *       ],
 	 *     },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/payout_settings/methods/updatePayoutPercentage
 	 */
-	public updatePayoutPercentage = (
+	public updatePayoutPercentage = async (
 		input: UpdatePayoutPercentageInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> => {
+	): Promise<void> => {
 		const { client } = this;
 		const path = `${this.basePath}/payout_settings/update_percentage`;
+		const validInput = requireObjectEffect<UpdatePayoutPercentageInput>(
+			input,
+			"input",
+		);
+		const payoutSplit = requireObjectEffect<UpdatePayoutPercentageRequest>(
+			validInput.payoutSplit,
+			"payoutSplit",
+		);
 
-		return Effect.gen(function* () {
-			const validInput =
-				yield* requireObjectEffect<UpdatePayoutPercentageInput>(input, "input");
-			const payoutSplit =
-				yield* requireObjectEffect<UpdatePayoutPercentageRequest>(
-					validInput.payoutSplit,
-					"payoutSplit",
-				);
-
-			return yield* requestPostEffect<void>(client, path, payoutSplit);
-		});
+		return requestPostEffect<void>(client, path, payoutSplit);
 	};
 
 	/**
@@ -255,23 +234,21 @@ export class AccountV2Api {
 	 * combined payment window) for one marketplace.
 	 *
 	 * @param input - Marketplace header and the CreateCalculatedShippingRulesRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.createCalculatedShippingRules({
+	 * await accountV2Api.createCalculatedShippingRules({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     shippingRules: { combinedDuration: 'DAYS_7' },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/createCalculatedShippingRules
 	 */
 	public createCalculatedShippingRules = (
 		input: CalculatedShippingRulesInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<
 			Schemas["CreateCalculatedShippingRulesRequest"]
 		>("create_calculated_shipping_rules", input, "shippingRules");
@@ -280,23 +257,21 @@ export class AccountV2Api {
 	 * Creates flat-rate combined-shipping rules for one marketplace.
 	 *
 	 * @param input - Marketplace header and the CreateFlatShippingRulesRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.createFlatShippingRules({
+	 * await accountV2Api.createFlatShippingRules({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     shippingRules: { flatShippingRule: { combinedShippingRuleType: 'EACH_ADDITIONAL_AMOUNT' } },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/createFlatShippingRules
 	 */
 	public createFlatShippingRules = (
 		input: FlatShippingRulesInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<Schemas["CreateFlatShippingRulesRequest"]>(
 			"create_flat_shipping_rules",
 			input,
@@ -308,23 +283,21 @@ export class AccountV2Api {
 	 * above an order amount or item count) for one marketplace.
 	 *
 	 * @param input - Marketplace header and the CreatePromotionalShippingRuleRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.createPromotionalShippingRule({
+	 * await accountV2Api.createPromotionalShippingRule({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     shippingRules: { promotionalShippingRule: { itemCount: 3 } },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/createPromotionalShippingRule
 	 */
 	public createPromotionalShippingRule = (
 		input: PromotionalShippingRuleInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<
 			Schemas["CreatePromotionalShippingRuleRequest"]
 		>("create_promotional_shipping_rule", input, "shippingRules");
@@ -334,67 +307,56 @@ export class AccountV2Api {
 	 * rules and combined payment window for one marketplace.
 	 *
 	 * @param input - Marketplace sent as the X-EBAY-C-MARKETPLACE-ID header.
-	 * @returns An Effect that succeeds with eBay's GetCombinedShippingRulesPublicApiResponse.
+	 * @returns A promise that resolves with eBay's GetCombinedShippingRulesPublicApiResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const rules = await Effect.runPromise(
-	 *   accountV2Api.getCombinedShippingRules({ marketplaceId: MarketplaceId.EBAY_US }),
-	 * );
+	 * const rules = await accountV2Api.getCombinedShippingRules({ marketplaceId: MarketplaceId.EBAY_US });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/getCombinedShippingRules
 	 */
-	public getCombinedShippingRules = (
+	public getCombinedShippingRules = async (
 		input: GetCombinedShippingRulesInput,
-	): Effect.Effect<
-		CombinedShippingRulesResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<CombinedShippingRulesResponse> => {
 		const { client } = this;
 		const path = `${this.basePath}/combined_shipping_rules`;
+		const validInput = requireObjectEffect<GetCombinedShippingRulesInput>(
+			input,
+			"input",
+		);
+		const marketplaceId = requireStringEffect(
+			validInput.marketplaceId,
+			"marketplaceId",
+		);
 
-		return Effect.gen(function* () {
-			const validInput =
-				yield* requireObjectEffect<GetCombinedShippingRulesInput>(
-					input,
-					"input",
-				);
-			const marketplaceId = yield* requireStringEffect(
-				validInput.marketplaceId,
-				"marketplaceId",
-			);
-
-			return yield* requestGetEffect<CombinedShippingRulesResponse>(
-				client,
-				path,
-				undefined,
-				marketplaceHeader(marketplaceId),
-			);
-		});
+		return requestGetEffect<CombinedShippingRulesResponse>(
+			client,
+			path,
+			undefined,
+			marketplaceHeader(marketplaceId),
+		);
 	};
 
 	/**
 	 * Updates existing calculated combined-shipping rules for one marketplace.
 	 *
 	 * @param input - Marketplace header and the UpdateCalculatedShippingRulesRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.updateCalculatedShippingRules({
+	 * await accountV2Api.updateCalculatedShippingRules({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     shippingRules: { combinedDuration: 'DAYS_14' },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updateCalculatedShippingRules
 	 */
 	public updateCalculatedShippingRules = (
 		input: CalculatedShippingRulesInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<
 			Schemas["UpdateCalculatedShippingRulesRequest"]
 		>("update_calculated_shipping_rules", input, "shippingRules");
@@ -403,23 +365,21 @@ export class AccountV2Api {
 	 * Changes the combined payment window for unpaid orders on one marketplace.
 	 *
 	 * @param input - Marketplace header and the UpdateCombinedPaymentsRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.updateCombinedPayments({
+	 * await accountV2Api.updateCombinedPayments({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     combinedPayments: { combinedDuration: 'DAYS_30' },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updateCombinedPayments
 	 */
 	public updateCombinedPayments = (
 		input: UpdateCombinedPaymentsInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<Schemas["UpdateCombinedPaymentsRequest"]>(
 			"update_combined_payments",
 			input,
@@ -430,23 +390,21 @@ export class AccountV2Api {
 	 * Updates existing flat-rate combined-shipping rules for one marketplace.
 	 *
 	 * @param input - Marketplace header and the UpdateFlatShippingRulesRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.updateFlatShippingRules({
+	 * await accountV2Api.updateFlatShippingRules({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     shippingRules: { combinedDuration: 'DAYS_5' },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updateFlatShippingRules
 	 */
 	public updateFlatShippingRules = (
 		input: FlatShippingRulesInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<Schemas["UpdateFlatShippingRulesRequest"]>(
 			"update_flat_shipping_rules",
 			input,
@@ -457,23 +415,21 @@ export class AccountV2Api {
 	 * Updates the existing promotional combined-shipping rule for one marketplace.
 	 *
 	 * @param input - Marketplace header and the UpdatePromotionalShippingRuleRequest body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.updatePromotionalShippingRule({
+	 * await accountV2Api.updatePromotionalShippingRule({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     shippingRules: { promotionalShippingRule: { orderAmount: { currency: 'USD', value: '50.00' } } },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updatePromotionalShippingRule
 	 */
 	public updatePromotionalShippingRule = (
 		input: PromotionalShippingRuleInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> =>
+	): Promise<void> =>
 		this.postCombinedShippingRules<
 			Schemas["UpdatePromotionalShippingRuleRequest"]
 		>("update_promotional_shipping_rule", input, "shippingRules");
@@ -483,53 +439,45 @@ export class AccountV2Api {
 	 * specific field groups.
 	 *
 	 * @param input - Marketplace header and optional comma-separated `fieldgroups`.
-	 * @returns An Effect that succeeds with eBay's generated GetUserPreferencesResponse.
+	 * @returns A promise that resolves with eBay's generated GetUserPreferencesResponse.
 	 *
 	 * @example
 	 * ```ts
-	 * const preferences = await Effect.runPromise(
-	 *   accountV2Api.getUserPreferences({
+	 * const preferences = await accountV2Api.getUserPreferences({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     fieldgroups: 'COMBINED_PAYMENT,DISPATCH_CUTOFF_TIME',
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/user_preferences/methods/getUserPreferences
 	 */
-	public getUserPreferences = (
+	public getUserPreferences = async (
 		input: GetUserPreferencesInput,
-	): Effect.Effect<
-		UserPreferencesResponse,
-		EbayApiError | EndpointInputError
-	> => {
+	): Promise<UserPreferencesResponse> => {
 		const { client } = this;
 		const path = `${this.basePath}/user_preferences`;
-
-		return Effect.gen(function* () {
-			const validInput = yield* requireObjectEffect<GetUserPreferencesInput>(
-				input,
-				"input",
-			);
-			const marketplaceId = yield* requireStringEffect(
-				validInput.marketplaceId,
-				"marketplaceId",
-			);
-			const fieldgroups = yield* optionalStringEffect(
-				validInput.fieldgroups,
-				"fieldgroups",
-			);
-			const params = buildEndpointParams({
-				fieldgroups: { wireName: "fieldgroups", value: fieldgroups },
-			});
-
-			return yield* requestGetEffect<UserPreferencesResponse>(
-				client,
-				path,
-				params,
-				marketplaceHeader(marketplaceId),
-			);
+		const validInput = requireObjectEffect<GetUserPreferencesInput>(
+			input,
+			"input",
+		);
+		const marketplaceId = requireStringEffect(
+			validInput.marketplaceId,
+			"marketplaceId",
+		);
+		const fieldgroups = optionalStringEffect(
+			validInput.fieldgroups,
+			"fieldgroups",
+		);
+		const params = buildEndpointParams({
+			fieldgroups: { wireName: "fieldgroups", value: fieldgroups },
 		});
+
+		return requestGetEffect<UserPreferencesResponse>(
+			client,
+			path,
+			params,
+			marketplaceHeader(marketplaceId),
+		);
 	};
 
 	/**
@@ -537,81 +485,70 @@ export class AccountV2Api {
 	 * the preferences being changed).
 	 *
 	 * @param input - Marketplace header and the preferences PATCH body.
-	 * @returns An Effect that succeeds when eBay returns 204 No Content.
+	 * @returns A promise that resolves when eBay returns 204 No Content.
 	 *
 	 * @example
 	 * ```ts
-	 * await Effect.runPromise(
-	 *   accountV2Api.setUserPreferences({
+	 * await accountV2Api.setUserPreferences({
 	 *     marketplaceId: MarketplaceId.EBAY_US,
 	 *     preferences: { outOfStockControlPreference: true },
-	 *   }),
-	 * );
+	 *   });
 	 * ```
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/user_preferences/methods/setUserPreferences
 	 */
-	public setUserPreferences = (
+	public setUserPreferences = async (
 		input: SetUserPreferencesInput,
-	): Effect.Effect<void, EbayApiError | EndpointInputError> => {
+	): Promise<void> => {
 		const { client } = this;
 		const path = `${this.basePath}/user_preferences`;
+		const validInput = requireObjectEffect<SetUserPreferencesInput>(
+			input,
+			"input",
+		);
+		const marketplaceId = requireStringEffect(
+			validInput.marketplaceId,
+			"marketplaceId",
+		);
+		const preferences = requireObjectEffect<SetUserPreferencesRequest>(
+			validInput.preferences,
+			"preferences",
+		);
 
-		return Effect.gen(function* () {
-			const validInput = yield* requireObjectEffect<SetUserPreferencesInput>(
-				input,
-				"input",
-			);
-			const marketplaceId = yield* requireStringEffect(
-				validInput.marketplaceId,
-				"marketplaceId",
-			);
-			const preferences = yield* requireObjectEffect<SetUserPreferencesRequest>(
-				validInput.preferences,
-				"preferences",
-			);
-
-			return yield* requestPatchEffect<void>(
-				client,
-				path,
-				preferences,
-				marketplaceHeader(marketplaceId),
-			);
-		});
+		return requestPatchEffect<void>(
+			client,
+			path,
+			preferences,
+			marketplaceHeader(marketplaceId),
+		);
 	};
 
 	/**
 	 * Validates the marketplace header and body field, then POSTs one
 	 * combined-shipping-rules request that eBay answers with 204 No Content.
 	 */
-	private readonly postCombinedShippingRules = <Body extends object>(
+	private readonly postCombinedShippingRules = async <Body extends object>(
 		operation: CombinedShippingRulesOperation,
 		input: unknown,
 		bodyField: "shippingRules" | "combinedPayments",
-	): Effect.Effect<void, EbayApiError | EndpointInputError> => {
+	): Promise<void> => {
 		const { client } = this;
 		const path = `${this.basePath}/combined_shipping_rules/${operation}`;
+		const validInput = requireObjectEffect<Record<string, unknown>>(
+			input,
+			"input",
+		);
+		const marketplaceId = requireStringEffect(
+			validInput["marketplaceId"],
+			"marketplaceId",
+		);
+		const rules = requireObjectEffect<Body>(validInput[bodyField], bodyField);
 
-		return Effect.gen(function* () {
-			const validInput = yield* requireObjectEffect<Record<string, unknown>>(
-				input,
-				"input",
-			);
-			const marketplaceId = yield* requireStringEffect(
-				validInput.marketplaceId,
-				"marketplaceId",
-			);
-			const rules = yield* requireObjectEffect<Body>(
-				validInput[bodyField],
-				bodyField,
-			);
-
-			return yield* requestPostEffect<void>(
-				client,
-				path,
-				rules,
-				marketplaceHeader(marketplaceId),
-			);
-		});
+		return requestPostEffect<void>(
+			client,
+			path,
+			rules,
+			marketplaceHeader(marketplaceId),
+		);
 	};
 }

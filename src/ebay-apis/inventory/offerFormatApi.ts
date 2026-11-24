@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import {
 	BUY_IT_NOW_MARGIN_LABEL,
 	meetsBuyItNowMargin,
@@ -79,6 +78,8 @@ const auctionViolation = (
 			"an AUCTION offer can carry Best Offer or a Buy It Now price (pricingSummary.price), not both",
 		);
 	}
+
+	return undefined;
 };
 
 const fixedPriceViolation = (
@@ -104,6 +105,8 @@ const fixedPriceViolation = (
 			"auctionStartPrice and auctionReservePrice only apply to AUCTION offers; FIXED_PRICE offers use pricingSummary.price",
 		);
 	}
+
+	return undefined;
 };
 
 /** Fields eBay requires when an AUCTION offer is created (its createOffer error catalogue). */
@@ -123,6 +126,8 @@ const auctionCreateViolation = (
 			"auctionStartPrice is required for AUCTION offers",
 		);
 	}
+
+	return undefined;
 };
 
 /** Price relations that hold for any body carrying an opening bid, with or without a format. */
@@ -148,6 +153,8 @@ const auctionPriceViolation = (
 			`the Buy It Now price (pricingSummary.price) must be at least ${BUY_IT_NOW_MARGIN_LABEL} higher than auctionStartPrice`,
 		);
 	}
+
+	return undefined;
 };
 
 /**
@@ -189,17 +196,20 @@ export const findOfferFormatViolation = (
  *
  * @param offer - Create or update offer body.
  * @param parameter - Parameter path used to label the failing field (for example `body`).
- * @returns An Effect that succeeds when the body is consistent and fails with `EndpointInputError` otherwise.
+ * @returns Nothing when the body is consistent. Throws `EndpointInputError` otherwise.
  *
  * @example
  * ```ts
- * yield* validateOfferFormatEffect(offerDetails, 'body');
+ * validateOfferFormatEffect(offerDetails, 'body');
  * ```
  */
 export const validateOfferFormatEffect = (
 	offer: OfferFormatFields,
 	parameter: string,
-): Effect.Effect<void, EndpointInputError> => {
+): void => {
 	const violation = findOfferFormatViolation(offer, parameter);
-	return violation ? Effect.fail(violation) : Effect.void;
+
+	if (violation) {
+		throw violation;
+	}
 };

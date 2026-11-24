@@ -5,7 +5,6 @@
 import process from "node:process";
 import chalk from "chalk";
 import { execSync } from "child_process";
-import { Effect, Either } from "effect";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { writeCliLine } from "@/shared/cliOutput.js";
@@ -37,10 +36,20 @@ export interface SecurityCheckResult {
  */
 export const checkNodeVersion = (): SecurityCheckResult => {
 	const requiredVersion = 18;
-	const currentVersion = Number.parseInt(
-		process.version.slice(1).split(".")[0],
-		10,
-	);
+	const majorText = process.version.slice(1).split(".")[0];
+	const isMajorMissing = majorText == null;
+
+	if (isMajorMissing) {
+		return {
+			check: "Node.js Version",
+			passed: false,
+			message: `Node.js ${process.version} is below required version ${requiredVersion}`,
+			severity: "critical",
+			fix: `Install Node.js ${requiredVersion} or higher from https://nodejs.org/`,
+		};
+	}
+
+	const currentVersion = Number.parseInt(majorText, 10);
 
 	if (currentVersion >= requiredVersion) {
 		return {
@@ -123,25 +132,13 @@ export const checkNetworkConnectivity =
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), 5000);
 
-		const reached = await Effect.runPromise(
-			Effect.either(
-				Effect.tryPromise({
-					try: () =>
-						fetch("https://api.ebay.com/health", {
-							signal: controller.signal,
-						}),
-					catch: (error) => error,
-				}).pipe(
-					Effect.ensuring(
-						Effect.sync(() => {
-							clearTimeout(timeout);
-						}),
-					),
-				),
-			),
-		);
+		let healthResponse: Response;
 
-		if (Either.isLeft(reached)) {
+		try {
+			healthResponse = await fetch("https://api.ebay.com/health", {
+				signal: controller.signal,
+			});
+		} catch {
 			return {
 				check: "Network Connectivity",
 				passed: false,
@@ -149,9 +146,9 @@ export const checkNetworkConnectivity =
 				severity: "critical",
 				fix: "Check your internet connection, proxy settings, and firewall",
 			};
+		} finally {
+			clearTimeout(timeout);
 		}
-
-		const healthResponse = reached.right;
 
 		if (healthResponse.ok || healthResponse.status === 404) {
 			// 404 is fine, means we can reach eBay servers
@@ -266,20 +263,14 @@ export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
 		};
 	}
 
-	const tracked = Effect.runSync(
-		Effect.either(
-			Effect.try({
-				try: () =>
-					execSync("git ls-files .env", {
-						cwd: projectRoot,
-						encoding: "utf-8",
-					}).trim(),
-				catch: (error) => error,
-			}),
-		),
-	);
+	let trackedFiles: string;
 
-	if (Either.isLeft(tracked)) {
+	try {
+		trackedFiles = execSync("git ls-files .env", {
+			cwd: projectRoot,
+			encoding: "utf-8",
+		}).trim();
+	} catch {
 		return {
 			check: "Git Tracking",
 			passed: true,
@@ -288,7 +279,7 @@ export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
 		};
 	}
 
-	if (tracked.right === "") {
+	if (trackedFiles === "") {
 		return {
 			check: "Git Tracking",
 			passed: true,

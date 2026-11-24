@@ -1,4 +1,3 @@
-import type { Effect } from "effect";
 import type { z } from "zod";
 import type {
 	cloneCampaignInputSchema,
@@ -22,7 +21,6 @@ import type {
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	type EbayApiError,
 	marketplaceHeader,
 	requestDeleteEffect,
 	requestGetEffect,
@@ -206,7 +204,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	cloneCampaign: (
 		input: CloneCampaignInput,
-	): Effect.Effect<CloneCampaignResponse, EbayApiError> => {
+	): Promise<CloneCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/clone`;
 		return requestPostEffect<CloneCampaignResponse>(
 			client,
@@ -230,7 +228,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	getCampaigns: (
 		input: GetCampaignsInput = {},
-	): Effect.Effect<GetCampaignsResponse, EbayApiError> => {
+	): Promise<GetCampaignsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign`;
 		const params = buildEndpointParams({
 			campaignName: { wireName: "campaign_name", value: input.campaignName },
@@ -273,7 +271,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	createCampaign: (
 		input: CreateCampaignInput,
-	): Effect.Effect<CreateCampaignResponse, EbayApiError> => {
+	): Promise<CreateCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign`;
 		return requestPostEffect<CreateCampaignResponse>(
 			client,
@@ -295,9 +293,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/getCampaign
 	 */
-	getCampaign: (
-		input: GetCampaignInput,
-	): Effect.Effect<GetCampaignResponse, EbayApiError> => {
+	getCampaign: (input: GetCampaignInput): Promise<GetCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}`;
 		return requestGetEffect<GetCampaignResponse>(client, path);
 	},
@@ -317,7 +313,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	deleteCampaign: (
 		input: DeleteCampaignInput,
-	): Effect.Effect<DeleteCampaignResponse, EbayApiError> => {
+	): Promise<DeleteCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}`;
 		return requestDeleteEffect<DeleteCampaignResponse>(client, path);
 	},
@@ -335,9 +331,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/endCampaign
 	 */
-	endCampaign: (
-		input: EndCampaignInput,
-	): Effect.Effect<EndCampaignResponse, EbayApiError> => {
+	endCampaign: (input: EndCampaignInput): Promise<EndCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/end`;
 		return requestPostEffect<EndCampaignResponse>(client, path);
 	},
@@ -357,7 +351,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	findCampaignByAdReference: (
 		input: FindCampaignByAdReferenceInput = {},
-	): Effect.Effect<FindCampaignByAdReferenceResponse, EbayApiError> => {
+	): Promise<FindCampaignByAdReferenceResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/find_campaign_by_ad_reference`;
 		const params = buildEndpointParams({
 			inventoryReferenceId: {
@@ -392,7 +386,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	getCampaignByName: (
 		input: GetCampaignByNameInput,
-	): Effect.Effect<GetCampaignByNameResponse, EbayApiError> => {
+	): Promise<GetCampaignByNameResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/get_campaign_by_name`;
 		const params = buildEndpointParams({
 			campaignName: { wireName: "campaign_name", value: input.campaignName },
@@ -415,7 +409,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	pauseCampaign: (
 		input: PauseCampaignInput,
-	): Effect.Effect<PauseCampaignResponse, EbayApiError> => {
+	): Promise<PauseCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/pause`;
 		return requestPostEffect<PauseCampaignResponse>(client, path);
 	},
@@ -435,7 +429,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	resumeCampaign: (
 		input: ResumeCampaignInput,
-	): Effect.Effect<ResumeCampaignResponse, EbayApiError> => {
+	): Promise<ResumeCampaignResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/resume`;
 		return requestPostEffect<ResumeCampaignResponse>(client, path);
 	},
@@ -455,7 +449,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	suggestBudget: (
 		input: SuggestBudgetInput,
-	): Effect.Effect<SuggestBudgetResponse, EbayApiError> => {
+	): Promise<SuggestBudgetResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/suggest_budget`;
 		const config = marketplaceHeader(input.marketplaceId);
 		return requestGetEffect<SuggestBudgetResponse>(
@@ -479,9 +473,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 *
 	 * @see https://developer.ebay.com/api-docs/sell/marketing/resources/campaign/methods/suggestItems
 	 */
-	suggestItems: (
-		input: SuggestItemsInput,
-	): Effect.Effect<SuggestItemsResponse, EbayApiError> => {
+	suggestItems: (input: SuggestItemsInput): Promise<SuggestItemsResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/suggest_items`;
 		const params = buildEndpointParams({
 			categoryIds: { wireName: "category_ids", value: input.categoryIds },
@@ -506,7 +498,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	suggestMaxCpc: (
 		input: SuggestMaxCpcInput,
-	): Effect.Effect<SuggestMaxCpcResponse, EbayApiError> => {
+	): Promise<SuggestMaxCpcResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/suggest_max_cpc`;
 		return requestPostEffect<SuggestMaxCpcResponse>(
 			client,
@@ -530,7 +522,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	updateAdRateStrategy: (
 		input: UpdateAdRateStrategyInput,
-	): Effect.Effect<UpdateAdRateStrategyResponse, EbayApiError> => {
+	): Promise<UpdateAdRateStrategyResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/update_ad_rate_strategy`;
 		return requestPostEffect<UpdateAdRateStrategyResponse>(
 			client,
@@ -554,7 +546,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	updateBiddingStrategy: (
 		input: UpdateBiddingStrategyInput,
-	): Effect.Effect<UpdateBiddingStrategyResponse, EbayApiError> => {
+	): Promise<UpdateBiddingStrategyResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/update_bidding_strategy`;
 		return requestPostEffect<UpdateBiddingStrategyResponse>(
 			client,
@@ -578,7 +570,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	updateCampaignBudget: (
 		input: UpdateCampaignBudgetInput,
-	): Effect.Effect<UpdateCampaignBudgetResponse, EbayApiError> => {
+	): Promise<UpdateCampaignBudgetResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/update_campaign_budget`;
 		return requestPostEffect<UpdateCampaignBudgetResponse>(
 			client,
@@ -602,7 +594,7 @@ export const createMarketingCampaignsMethods = (client: EbayApiClient) => ({
 	 */
 	updateCampaignIdentification: (
 		input: UpdateCampaignIdentificationInput,
-	): Effect.Effect<UpdateCampaignIdentificationResponse, EbayApiError> => {
+	): Promise<UpdateCampaignIdentificationResponse> => {
 		const path = `${MARKETING_BASE_PATH}/ad_campaign/${input.campaignId}/update_campaign_identification`;
 		return requestPostEffect<UpdateCampaignIdentificationResponse>(
 			client,

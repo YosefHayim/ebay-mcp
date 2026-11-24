@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import {
 	BUY_IT_NOW_MARGIN_LABEL,
 	meetsBuyItNowMargin,
@@ -48,12 +47,13 @@ const parseTradingAmount = (rawAmount: unknown): number | undefined => {
 };
 
 const isBestOfferEnabled = (tradingItem: TradingItemFields): boolean => {
-	const details = tradingItem.BestOfferDetails;
+	const details = tradingItem["BestOfferDetails"];
 	if (!isRecord(details)) {
 		return false;
 	}
 	return (
-		details.BestOfferEnabled === true || details.BestOfferEnabled === "true"
+		details["BestOfferEnabled"] === true ||
+		details["BestOfferEnabled"] === "true"
 	);
 };
 
@@ -62,23 +62,23 @@ const auctionViolation = (
 	parameter: string,
 ): EndpointInputError | undefined => {
 	if (
-		tradingItem.ListingType !== undefined &&
-		tradingItem.ListingType !== TRADING_AUCTION_LISTING_TYPE
+		tradingItem["ListingType"] !== undefined &&
+		tradingItem["ListingType"] !== TRADING_AUCTION_LISTING_TYPE
 	) {
 		return inputError(
 			`${parameter}.ListingType`,
-			`AUCTION listings use ListingType ${TRADING_AUCTION_LISTING_TYPE}; omit it or pass format FIXED_PRICE for ${String(tradingItem.ListingType)}`,
+			`AUCTION listings use ListingType ${TRADING_AUCTION_LISTING_TYPE}; omit it or pass format FIXED_PRICE for ${String(tradingItem["ListingType"])}`,
 		);
 	}
-	if (tradingItem.ListingDuration === TRADING_GTC_DURATION) {
+	if (tradingItem["ListingDuration"] === TRADING_GTC_DURATION) {
 		return inputError(
 			`${parameter}.ListingDuration`,
 			"AUCTION listings need a day-count ListingDuration such as Days_7; GTC is only valid for FIXED_PRICE listings",
 		);
 	}
 	if (
-		tradingItem.Quantity !== undefined &&
-		Number(tradingItem.Quantity) !== 1
+		tradingItem["Quantity"] !== undefined &&
+		Number(tradingItem["Quantity"]) !== 1
 	) {
 		return inputError(
 			`${parameter}.Quantity`,
@@ -87,13 +87,15 @@ const auctionViolation = (
 	}
 	if (
 		isBestOfferEnabled(tradingItem) &&
-		tradingItem.BuyItNowPrice !== undefined
+		tradingItem["BuyItNowPrice"] !== undefined
 	) {
 		return inputError(
 			`${parameter}.BestOfferDetails.BestOfferEnabled`,
 			"an AUCTION listing can carry Best Offer or a BuyItNowPrice, not both",
 		);
 	}
+
+	return undefined;
 };
 
 /** Fields eBay requires when an auction is created with AddItem. */
@@ -101,75 +103,81 @@ const auctionCreateViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
 ): EndpointInputError | undefined => {
-	if (tradingItem.ListingDuration === undefined) {
+	if (tradingItem["ListingDuration"] === undefined) {
 		return inputError(
 			`${parameter}.ListingDuration`,
 			"ListingDuration is required for AUCTION listings (a day count such as Days_7)",
 		);
 	}
-	if (parseTradingAmount(tradingItem.StartPrice) === undefined) {
+	if (parseTradingAmount(tradingItem["StartPrice"]) === undefined) {
 		return inputError(
 			`${parameter}.StartPrice`,
 			"StartPrice (the opening bid) is required for AUCTION listings",
 		);
 	}
+
+	return undefined;
 };
 
 const fixedPriceViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
 ): EndpointInputError | undefined => {
-	if (tradingItem.ListingType === TRADING_AUCTION_LISTING_TYPE) {
+	if (tradingItem["ListingType"] === TRADING_AUCTION_LISTING_TYPE) {
 		return inputError(
 			`${parameter}.ListingType`,
 			`ListingType ${TRADING_AUCTION_LISTING_TYPE} is an auction; pass format AUCTION instead`,
 		);
 	}
 	if (
-		tradingItem.ListingDuration !== undefined &&
-		tradingItem.ListingDuration !== TRADING_GTC_DURATION
+		tradingItem["ListingDuration"] !== undefined &&
+		tradingItem["ListingDuration"] !== TRADING_GTC_DURATION
 	) {
 		return inputError(
 			`${parameter}.ListingDuration`,
 			`FIXED_PRICE listings must use ListingDuration ${TRADING_GTC_DURATION} (the only duration eBay accepts for fixed-price listings); day counts such as Days_7 are for AUCTION listings`,
 		);
 	}
-	if (tradingItem.ReservePrice !== undefined) {
+	if (tradingItem["ReservePrice"] !== undefined) {
 		return inputError(
 			`${parameter}.ReservePrice`,
 			"ReservePrice only applies to AUCTION listings",
 		);
 	}
-	if (tradingItem.BuyItNowPrice !== undefined) {
+	if (tradingItem["BuyItNowPrice"] !== undefined) {
 		return inputError(
 			`${parameter}.BuyItNowPrice`,
 			"BuyItNowPrice only applies to AUCTION listings; FIXED_PRICE listings use StartPrice",
 		);
 	}
+
+	return undefined;
 };
 
 const auctionPriceViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
 ): EndpointInputError | undefined => {
-	const start = parseTradingAmount(tradingItem.StartPrice);
+	const start = parseTradingAmount(tradingItem["StartPrice"]);
 	if (start === undefined) {
 		return;
 	}
-	const reserve = parseTradingAmount(tradingItem.ReservePrice);
+	const reserve = parseTradingAmount(tradingItem["ReservePrice"]);
 	if (reserve !== undefined && reserve <= start) {
 		return inputError(
 			`${parameter}.ReservePrice`,
 			"ReservePrice must be higher than StartPrice (the opening bid)",
 		);
 	}
-	const buyItNow = parseTradingAmount(tradingItem.BuyItNowPrice);
+	const buyItNow = parseTradingAmount(tradingItem["BuyItNowPrice"]);
 	if (buyItNow !== undefined && !meetsBuyItNowMargin(start, buyItNow)) {
 		return inputError(
 			`${parameter}.BuyItNowPrice`,
 			`BuyItNowPrice must be at least ${BUY_IT_NOW_MARGIN_LABEL} higher than StartPrice (the opening bid)`,
 		);
 	}
+
+	return undefined;
 };
 
 /** Inputs to the Trading listing-format rules. */
@@ -227,11 +235,12 @@ export const findTradingListingFormatViolation = ({
  * Rejects a Trading `Item` payload that mixes AUCTION and FIXED_PRICE fields before it reaches eBay.
  *
  * @param check - Item payload, selected format, parameter label, and create flag.
- * @returns An Effect that succeeds when the payload is consistent and fails with `EndpointInputError` otherwise.
+ * @returns Nothing when the payload is consistent.
+ * @throws {EndpointInputError} When the payload mixes listing formats.
  *
  * @example
  * ```ts
- * yield* validateTradingListingFormatEffect({
+ * validateTradingListingFormatEffect({
  *   item: tradingItem,
  *   format,
  *   parameter: 'item',
@@ -241,9 +250,12 @@ export const findTradingListingFormatViolation = ({
  */
 export const validateTradingListingFormatEffect = (
 	check: TradingListingFormatCheck,
-): Effect.Effect<void, EndpointInputError> => {
+): void => {
 	const violation = findTradingListingFormatViolation(check);
-	return violation ? Effect.fail(violation) : Effect.void;
+
+	if (violation !== undefined) {
+		throw violation;
+	}
 };
 
 /**
@@ -252,30 +264,35 @@ export const validateTradingListingFormatEffect = (
  * @param reason - Trading `EndingReason` selected by the caller, if any.
  * @param format - Listing format the caller selected.
  * @param parameter - Parameter path used to label the failing field (for example `reason`).
- * @returns An Effect that succeeds when the reason fits the format and fails with `EndpointInputError` otherwise.
+ * @returns Nothing when the reason fits the format.
+ * @throws {EndpointInputError} When the reason belongs to the other listing format.
  *
  * @example
  * ```ts
- * yield* validateTradingEndingReasonEffect('SellToHighBidder', FormatType.AUCTION, 'reason');
+ * validateTradingEndingReasonEffect('SellToHighBidder', FormatType.AUCTION, 'reason');
  * ```
  */
 export const validateTradingEndingReasonEffect = (
 	reason: string | undefined,
 	format: FormatType,
 	parameter: string,
-): Effect.Effect<void, EndpointInputError> => {
-	if (
-		reason === SELL_TO_HIGH_BIDDER_REASON &&
-		format === FormatType.FIXED_PRICE
-	) {
-		return Effect.fail(
-			inputError(
-				parameter,
-				`${SELL_TO_HIGH_BIDDER_REASON} only ends AUCTION listings; pass format AUCTION or another reason`,
-			),
-		);
+): void => {
+	const isAnotherReason = reason !== SELL_TO_HIGH_BIDDER_REASON;
+
+	if (isAnotherReason) {
+		return;
 	}
-	return Effect.void;
+
+	const isAuction = format !== FormatType.FIXED_PRICE;
+
+	if (isAuction) {
+		return;
+	}
+
+	throw inputError(
+		parameter,
+		`${SELL_TO_HIGH_BIDDER_REASON} only ends AUCTION listings; pass format AUCTION or another reason`,
+	);
 };
 
 /**

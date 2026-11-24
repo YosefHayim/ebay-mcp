@@ -83,7 +83,7 @@ const evaluationCycleSchema = z.object({
 	startDate: z.string().optional(),
 });
 
-const getCustomerServiceMetricResponseSchema = z.object({
+export const getCustomerServiceMetricResponseSchema = z.object({
 	dimensionMetrics: z.array(dimensionMetricSchema).optional(),
 	evaluationCycle: evaluationCycleSchema.optional(),
 	marketplaceId: z.string().optional(),
@@ -108,7 +108,7 @@ const standardsProfileSchema = z.object({
 	standardsLevel: z.string().optional(),
 });
 
-const findSellerStandardsProfilesResponseSchema = z.object({
+export const findSellerStandardsProfilesResponseSchema = z.object({
 	standardsProfiles: z.array(standardsProfileSchema).optional(),
 });
 
@@ -147,7 +147,7 @@ const metadataSchema = z.object({
 	metadataRecords: z.array(metadataRecordSchema).optional(),
 });
 
-const reportSchema = z.object({
+export const reportSchema = z.object({
 	dimensionMetadata: z.array(metadataSchema).optional(),
 	endDate: z.string().optional(),
 	header: headerSchema.optional(),

@@ -256,11 +256,11 @@ export const logResponse = (
 	const meta: Record<string, unknown> = {};
 
 	if (rateLimitRemaining && rateLimitTotal) {
-		meta.rateLimit = `${rateLimitRemaining}/${rateLimitTotal}`;
+		meta["rateLimit"] = `${rateLimitRemaining}/${rateLimitTotal}`;
 	}
 
 	if (responseBody) {
-		meta.data = truncateData(responseBody);
+		meta["data"] = truncateData(responseBody);
 	}
 
 	apiLogger.http(`Response: ${status} ${statusText}`, meta);

@@ -9,6 +9,7 @@ interface FamilyIconProps {
 export const FamilyIcon = ({ familyKey, size = 18 }: FamilyIconProps) => (
 	<span
 		class="family-icon"
+		// biome-ignore lint/security/noDangerouslySetInnerHtml: svg markup comes from this file
 		dangerouslySetInnerHTML={{ __html: renderFamilyIconSvg(familyKey, size) }}
 	/>
 );

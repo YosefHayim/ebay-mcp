@@ -20,11 +20,11 @@ export const startCoverageBoard = () => {
 
 		for (const familyTile of familyTiles) {
 			const isPicked = pickedFamilyKeys.includes(
-				familyTile.dataset.family ?? "",
+				familyTile.dataset["family"] ?? "",
 			);
 			familyTile.classList.toggle("is-on", isPicked);
 			familyTile.setAttribute("aria-pressed", String(isPicked));
-			if (isPicked) toolTotal += Number(familyTile.dataset.count);
+			if (isPicked) toolTotal += Number(familyTile.dataset["count"]);
 		}
 		pickedTotalElement.textContent = String(toolTotal);
 		pickedCountElement.textContent = String(pickedFamilyKeys.length);
@@ -35,7 +35,7 @@ export const startCoverageBoard = () => {
 		writeSetupSelection({ ...readSetupSelection(), pickedFamilyKeys });
 	};
 	const listAllFamilyKeys = () =>
-		familyTiles.map((familyTile) => familyTile.dataset.family ?? "");
+		familyTiles.map((familyTile) => familyTile.dataset["family"] ?? "");
 
 	coverageBoard.addEventListener("click", (event) => {
 		const clickedElement =
@@ -45,7 +45,7 @@ export const startCoverageBoard = () => {
 		if (!isTileClick) return;
 
 		const { pickedFamilyKeys } = readSetupSelection();
-		const clickedKey = clickedTile.dataset.family ?? "";
+		const clickedKey = clickedTile.dataset["family"] ?? "";
 		const isAlreadyPicked = pickedFamilyKeys.includes(clickedKey);
 		const nextKeys = isAlreadyPicked
 			? pickedFamilyKeys.filter((pickedKey) => pickedKey !== clickedKey)
