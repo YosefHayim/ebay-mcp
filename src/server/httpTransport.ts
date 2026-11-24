@@ -5,7 +5,6 @@ import {
 	type Implementation,
 	isInitializeRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import cors from "cors";
 import { randomUUID } from "crypto";
 import express, {
 	type Request,
@@ -292,6 +291,97 @@ function createRequestLogger(): RequestHandler {
 	};
 }
 
+function originMatchesAllowed(
+	origin: string,
+	allowedOrigin: string | RegExp,
+): boolean {
+	const isPattern = allowedOrigin instanceof RegExp;
+
+	if (isPattern) {
+		return allowedOrigin.test(origin);
+	}
+
+	return allowedOrigin === origin;
+}
+
+function originIsListed(
+	origin: string,
+	allowedOrigins: readonly (string | RegExp)[],
+): boolean {
+	for (const allowedOrigin of allowedOrigins) {
+		const isListed = originMatchesAllowed(origin, allowedOrigin);
+
+		if (isListed) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function reflectAllowedOrigin(
+	request: Request,
+	response: Response,
+	allowedOrigins: readonly (string | RegExp)[],
+): void {
+	const requestOrigin = request.header("origin");
+
+	if (requestOrigin == null) {
+		return;
+	}
+
+	if (requestOrigin === "") {
+		return;
+	}
+
+	const isAllowed = originIsListed(requestOrigin, allowedOrigins);
+	const isNotAllowed = !isAllowed;
+
+	if (isNotAllowed) {
+		return;
+	}
+
+	response.setHeader("Access-Control-Allow-Origin", requestOrigin);
+}
+
+function endPreflight(response: Response): void {
+	response.setHeader("Content-Length", "0");
+	response.status(204).end();
+}
+
+function allowConfiguredOrigins(
+	allowedOrigins: readonly (string | RegExp)[],
+): RequestHandler {
+	return function allowConfiguredOrigin(request, response, next) {
+		response.vary("Origin");
+		reflectAllowedOrigin(request, response, allowedOrigins);
+		response.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
+
+		const isActualRequest = request.method !== "OPTIONS";
+
+		if (isActualRequest) {
+			next();
+			return;
+		}
+
+		response.vary("Access-Control-Request-Headers");
+		response.setHeader(
+			"Access-Control-Allow-Methods",
+			"GET,HEAD,PUT,PATCH,POST,DELETE",
+		);
+
+		const requestedHeaders =
+			request.header("access-control-request-headers") ?? "";
+		const hasRequestedHeaders = requestedHeaders !== "";
+
+		if (hasRequestedHeaders) {
+			response.setHeader("Access-Control-Allow-Headers", requestedHeaders);
+		}
+
+		endPreflight(response);
+	};
+}
+
 function sendInvalidSession(response: Response): void {
 	response.status(400).json({
 		error: "invalid_session",
@@ -317,12 +407,7 @@ export const createHttpMcpApp = async (
 	const serverUrl = getHttpServerUrl(config);
 	const ebayConfig = config.ebayConfig ?? getEbayConfig();
 
-	app.use(
-		cors({
-			origin: config.corsOrigins,
-			exposedHeaders: ["Mcp-Session-Id"],
-		}),
-	);
+	app.use(allowConfiguredOrigins(config.corsOrigins));
 	app.use(express.json());
 	app.use(helmet({ xPoweredBy: false }));
 	app.use(createRequestLogger());

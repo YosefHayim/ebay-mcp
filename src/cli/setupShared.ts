@@ -1,15 +1,14 @@
-import dotenv from "dotenv";
+import { parseEnv } from "node:util";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 /**
  * Load existing key/value config from the project .env file.
  *
- * Uses `dotenv.parse` (not a hand-rolled splitter) so quoted values are
- * unwrapped and `#`-bearing tokens survive — eBay refresh tokens look like
- * `v^1.1#i^1#...`, and a naive parser either keeps stray quotes or trips over
- * the `#`. Placeholder values (e.g. `your-client-id_here`) are skipped so the
- * wizard treats them as unset.
+ * Uses Node's `parseEnv` so quoted values are unwrapped and `#`-bearing tokens
+ * survive — eBay refresh tokens look like `v^1.1#i^1#...`, and a naive parser
+ * either keeps stray quotes or trips over the `#`. Placeholder values (e.g.
+ * `your-client-id_here`) are skipped so the wizard treats them as unset.
  *
  * @param projectRoot - Project root containing the `.env` file.
  * @returns Parsed config values with placeholders removed.
@@ -27,7 +26,7 @@ export const loadExistingConfig = (
 		return {};
 	}
 
-	const parsed = dotenv.parse(readFileSync(envPath, "utf-8"));
+	const parsed = parseEnv(readFileSync(envPath, "utf-8"));
 	const envConfig: Record<string, string> = {};
 	for (const [key, envValue] of Object.entries(parsed)) {
 		if (envValue && !envValue.includes("_here")) {

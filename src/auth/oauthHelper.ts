@@ -2,11 +2,11 @@
  * OAuth Helper - Assists with eBay OAuth token acquisition
  */
 
-import chalk from "chalk";
 import { createServer, type Server } from "http";
 import { writeCliLine } from "@/shared/cliOutput.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 import { getOAuthAuthorizationUrl } from "@/shared/environment.js";
+import { paint } from "@/shared/paint.js";
 
 /**
  * Result captured from the local OAuth callback endpoint. Exactly one of `code`
@@ -256,7 +256,7 @@ export const interactiveOAuthFlow = async (
 	config: EbayConfig,
 	scopes?: string[],
 ): Promise<string | null> => {
-	writeCliLine(chalk.bold.cyan("\n🔐 Interactive OAuth Flow\n"));
+	writeCliLine(paint.bold.cyan("\n🔐 Interactive OAuth Flow\n"));
 
 	// Check if redirect URI is localhost
 	const redirectUri =
@@ -266,7 +266,7 @@ export const interactiveOAuthFlow = async (
 
 	if (!isLocalhost) {
 		writeCliLine(
-			chalk.yellow(
+			paint.yellow(
 				"⚠️  Your redirect URI is not localhost. Interactive flow requires localhost callback.\n",
 			),
 		);
@@ -280,7 +280,7 @@ export const interactiveOAuthFlow = async (
 	const port = isPortMissing ? 3000 : Number.parseInt(portText, 10);
 
 	// Start callback server
-	writeCliLine(chalk.cyan("Starting local OAuth callback server...\n"));
+	writeCliLine(paint.cyan("Starting local OAuth callback server...\n"));
 	const { server, codePromise } = await startCallbackServer(port);
 
 	// Generate auth URL
@@ -291,17 +291,17 @@ export const interactiveOAuthFlow = async (
 		scopes,
 	);
 
-	writeCliLine(chalk.bold.white("📋 Step 1: Authorize the Application\n"));
-	writeCliLine(chalk.gray("Open this URL in your browser:\n"));
+	writeCliLine(paint.bold.white("📋 Step 1: Authorize the Application\n"));
+	writeCliLine(paint.gray("Open this URL in your browser:\n"));
 
 	writeCliLine(
-		chalk.blue.underline(hyperlink(authUrl.substring(0, 20) + "...", authUrl)),
+		paint.blue.underline(hyperlink(authUrl.substring(0, 20) + "...", authUrl)),
 	);
 	writeCliLine("");
 
-	writeCliLine(chalk.gray("Waiting for authorization..."));
+	writeCliLine(paint.gray("Waiting for authorization..."));
 	writeCliLine(
-		chalk.gray("(This window will update automatically after you authorize)\n"),
+		paint.gray("(This window will update automatically after you authorize)\n"),
 	);
 
 	// Wait for callback
@@ -312,7 +312,7 @@ export const interactiveOAuthFlow = async (
 
 	if (callback.error) {
 		writeCliLine(
-			chalk.red(
+			paint.red(
 				`\n✗ Authorization failed: ${callback.errorDescription || callback.error}\n`,
 			),
 		);
@@ -320,11 +320,11 @@ export const interactiveOAuthFlow = async (
 	}
 
 	if (callback.code) {
-		writeCliLine(chalk.green("\n✓ Authorization successful!\n"));
+		writeCliLine(paint.green("\n✓ Authorization successful!\n"));
 		return callback.code;
 	}
 
-	writeCliLine(chalk.yellow("\n⚠️  No authorization code received.\n"));
+	writeCliLine(paint.yellow("\n⚠️  No authorization code received.\n"));
 	return null;
 };
 
@@ -349,37 +349,37 @@ export const displayManualOAuthInstructions = (
 ): void => {
 	const authUrl = generateAuthUrl(clientId, redirectUri, environment, scopes);
 
-	writeCliLine(chalk.bold.cyan("\n📖 Manual OAuth Token Acquisition Guide\n"));
-	writeCliLine(chalk.white("Step 1: Generate Authorization URL\n"));
-	writeCliLine(chalk.gray("Copy this URL and open it in your browser:\n"));
-	writeCliLine(chalk.blue.underline(authUrl));
+	writeCliLine(paint.bold.cyan("\n📖 Manual OAuth Token Acquisition Guide\n"));
+	writeCliLine(paint.white("Step 1: Generate Authorization URL\n"));
+	writeCliLine(paint.gray("Copy this URL and open it in your browser:\n"));
+	writeCliLine(paint.blue.underline(authUrl));
 	writeCliLine("");
 
-	writeCliLine(chalk.white("\nStep 2: Authorize the Application\n"));
-	writeCliLine(chalk.gray("  • Log in to your eBay account"));
-	writeCliLine(chalk.gray("  • Review the permissions requested"));
-	writeCliLine(chalk.gray('  • Click "Agree" to authorize\n'));
+	writeCliLine(paint.white("\nStep 2: Authorize the Application\n"));
+	writeCliLine(paint.gray("  • Log in to your eBay account"));
+	writeCliLine(paint.gray("  • Review the permissions requested"));
+	writeCliLine(paint.gray('  • Click "Agree" to authorize\n'));
 
-	writeCliLine(chalk.white("Step 3: Get the Authorization Code\n"));
+	writeCliLine(paint.white("Step 3: Get the Authorization Code\n"));
 	writeCliLine(
-		chalk.gray(
+		paint.gray(
 			"  • After authorization, you will be redirected to your redirect URI",
 		),
 	);
-	writeCliLine(chalk.gray('  • The URL will contain a "code" parameter'));
+	writeCliLine(paint.gray('  • The URL will contain a "code" parameter'));
 	writeCliLine(
-		chalk.gray("  • Example: https://your-redirect-uri?code=v^1.1#i^1...\n"),
+		paint.gray("  • Example: https://your-redirect-uri?code=v^1.1#i^1...\n"),
 	);
 
-	writeCliLine(chalk.white("Step 4: Exchange Code for Tokens\n"));
-	writeCliLine(chalk.gray("  • Use the code to get your refresh token"));
+	writeCliLine(paint.white("Step 4: Exchange Code for Tokens\n"));
+	writeCliLine(paint.gray("  • Use the code to get your refresh token"));
 	writeCliLine(
-		chalk.gray(
+		paint.gray(
 			"  • This can be done through the MCP tool: ebay_exchange_auth_code",
 		),
 	);
 	writeCliLine(
-		chalk.gray("  • Or paste the code in the setup wizard when prompted\n"),
+		paint.gray("  • Or paste the code in the setup wizard when prompted\n"),
 	);
 };
 
@@ -393,15 +393,15 @@ export const displayManualOAuthInstructions = (
  * ```
  */
 export const getRuNameHelp = (): string => `
-${chalk.bold.cyan("What is a RuName (Redirect URI)?")}
+${paint.bold.cyan("What is a RuName (Redirect URI)?")}
 
 A RuName (Redirect URL name) is a unique identifier for your OAuth redirect URI.
 It's required for eBay's OAuth flow to know where to send users after authorization.
 
-${chalk.bold.white("How to create a RuName:")}
+${paint.bold.white("How to create a RuName:")}
 
 1. Go to eBay Developer Portal:
-   ${chalk.blue.underline("https://developer.ebay.com/my/keys")}
+   ${paint.blue.underline("https://developer.ebay.com/my/keys")}
 
 2. Select your application
 
@@ -410,17 +410,17 @@ ${chalk.bold.white("How to create a RuName:")}
 4. Click "Add RuName"
 
 5. Enter your redirect URI:
-   ${chalk.gray("For local development: http://localhost:3000/oauth/callback")}
-   ${chalk.gray("For production: https://your-domain.com/oauth/callback")}
+   ${paint.gray("For local development: http://localhost:3000/oauth/callback")}
+   ${paint.gray("For production: https://your-domain.com/oauth/callback")}
 
 6. Copy the generated RuName and use it in your configuration
 
-${chalk.bold.white("Common RuName formats:")}
+${paint.bold.white("Common RuName formats:")}
 
-  ${chalk.gray("• For localhost:")} YourCompany-YourApp-LocalTest-RuName
-  ${chalk.gray("• For production:")} YourCompany-YourApp-Production-RuName
+  ${paint.gray("• For localhost:")} YourCompany-YourApp-LocalTest-RuName
+  ${paint.gray("• For production:")} YourCompany-YourApp-Production-RuName
 
-${chalk.yellow("Note:")} The RuName is NOT the same as the redirect URI itself.
+${paint.yellow("Note:")} The RuName is NOT the same as the redirect URI itself.
 It's a reference name that eBay associates with your redirect URI.
 `;
 
@@ -434,53 +434,53 @@ It's a reference name that eBay associates with your redirect URI.
  * ```
  */
 export const displayFirstTimeDeveloperGuide = (): void => {
-	writeCliLine(chalk.bold.cyan("\n🆕 First-Time eBay Developer Guide\n"));
-	writeCliLine(chalk.white("Welcome! Here's how to get started:\n"));
+	writeCliLine(paint.bold.cyan("\n🆕 First-Time eBay Developer Guide\n"));
+	writeCliLine(paint.white("Welcome! Here's how to get started:\n"));
 
-	writeCliLine(chalk.bold.yellow("Step 1: Create eBay Developer Account\n"));
+	writeCliLine(paint.bold.yellow("Step 1: Create eBay Developer Account\n"));
 	writeCliLine(
-		chalk.gray("  1. Visit: ") +
-			chalk.blue.underline("https://developer.ebay.com/"),
+		paint.gray("  1. Visit: ") +
+			paint.blue.underline("https://developer.ebay.com/"),
 	);
-	writeCliLine(chalk.gray('  2. Click "Register" or "Join"'));
-	writeCliLine(chalk.gray("  3. Complete the registration form"));
-	writeCliLine(chalk.gray("  4. Verify your email address\n"));
+	writeCliLine(paint.gray('  2. Click "Register" or "Join"'));
+	writeCliLine(paint.gray("  3. Complete the registration form"));
+	writeCliLine(paint.gray("  4. Verify your email address\n"));
 
-	writeCliLine(chalk.bold.yellow("Step 2: Create an Application\n"));
+	writeCliLine(paint.bold.yellow("Step 2: Create an Application\n"));
 	writeCliLine(
-		chalk.gray("  1. Go to: ") +
-			chalk.blue.underline("https://developer.ebay.com/my/keys"),
+		paint.gray("  1. Go to: ") +
+			paint.blue.underline("https://developer.ebay.com/my/keys"),
 	);
-	writeCliLine(chalk.gray('  2. Click "Create Application"'));
+	writeCliLine(paint.gray('  2. Click "Create Application"'));
 	writeCliLine(
-		chalk.gray("  3. Fill in application details (name, description)"),
+		paint.gray("  3. Fill in application details (name, description)"),
 	);
-	writeCliLine(chalk.gray("  4. Choose Sandbox environment to start\n"));
+	writeCliLine(paint.gray("  4. Choose Sandbox environment to start\n"));
 
-	writeCliLine(chalk.bold.yellow("Step 3: Get Your Credentials\n"));
-	writeCliLine(chalk.gray("  After creating the app, you will see:"));
-	writeCliLine(chalk.gray("  • App ID (Client ID) - Copy this"));
-	writeCliLine(chalk.gray("  • Cert ID (Client Secret) - Copy this"));
-	writeCliLine(chalk.gray("  • These are needed for the setup wizard\n"));
+	writeCliLine(paint.bold.yellow("Step 3: Get Your Credentials\n"));
+	writeCliLine(paint.gray("  After creating the app, you will see:"));
+	writeCliLine(paint.gray("  • App ID (Client ID) - Copy this"));
+	writeCliLine(paint.gray("  • Cert ID (Client Secret) - Copy this"));
+	writeCliLine(paint.gray("  • These are needed for the setup wizard\n"));
 
-	writeCliLine(chalk.bold.yellow("Step 4: Create RuName (Redirect URI)\n"));
-	writeCliLine(chalk.gray("  1. In your application settings"));
-	writeCliLine(chalk.gray('  2. Navigate to "User Tokens" section'));
-	writeCliLine(chalk.gray('  3. Click "Add RuName"'));
-	writeCliLine(chalk.gray("  4. Enter: http://localhost:3000/oauth/callback"));
-	writeCliLine(chalk.gray("  5. Save and copy the generated RuName\n"));
+	writeCliLine(paint.bold.yellow("Step 4: Create RuName (Redirect URI)\n"));
+	writeCliLine(paint.gray("  1. In your application settings"));
+	writeCliLine(paint.gray('  2. Navigate to "User Tokens" section'));
+	writeCliLine(paint.gray('  3. Click "Add RuName"'));
+	writeCliLine(paint.gray("  4. Enter: http://localhost:3000/oauth/callback"));
+	writeCliLine(paint.gray("  5. Save and copy the generated RuName\n"));
 
-	writeCliLine(chalk.bold.yellow("Step 5: Get User Token\n"));
-	writeCliLine(chalk.gray("  Option A: Use this setup wizard (recommended)"));
+	writeCliLine(paint.bold.yellow("Step 5: Get User Token\n"));
+	writeCliLine(paint.gray("  Option A: Use this setup wizard (recommended)"));
 	writeCliLine(
-		chalk.gray("  Option B: Manual OAuth flow through eBay Developer Portal\n"),
+		paint.gray("  Option B: Manual OAuth flow through eBay Developer Portal\n"),
 	);
 
 	writeCliLine(
-		chalk.green.bold("✅ Once you have these, you're ready to continue!\n"),
+		paint.green.bold("✅ Once you have these, you're ready to continue!\n"),
 	);
 	writeCliLine(
-		chalk.gray(
+		paint.gray(
 			"Press Enter to continue when you have your credentials ready...",
 		),
 	);

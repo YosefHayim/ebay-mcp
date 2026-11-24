@@ -1,19 +1,18 @@
 /**
  * Quote a value for safe inclusion in a `.env` line.
  *
- * eBay OAuth tokens look like `v^1.1#i^1#...`; dotenv treats an unquoted `#` as
- * the start of an inline comment, so an unquoted token is truncated to `v^1.1`
- * on the next read — silently breaking authentication. Wrap any value
- * containing `#`, whitespace, or quote characters in quotes so dotenv restores
- * it verbatim.
+ * eBay OAuth tokens look like `v^1.1#i^1#...`. An unquoted `#` starts an inline
+ * comment, so an unquoted token is truncated to `v^1.1` on the next read —
+ * silently breaking authentication. Wrap any value containing `#`, whitespace,
+ * or quote characters in quotes so the next read restores it verbatim.
  *
- * dotenv strips the surrounding quotes but never unescapes inside them, and in
- * double quotes it turns `\n` into a newline. So instead of escaping, pick a
- * quote mark the value does not contain: double quotes unless the value has a
- * `"` or `\`, then single quotes, then backticks.
+ * Node's env parser strips the surrounding quotes but never unescapes inside
+ * them, and in double quotes it turns `\n` into a newline. So instead of
+ * escaping, pick a quote mark the value does not contain: double quotes unless
+ * the value has a `"` or `\`, then single quotes, then backticks.
  *
  * @param envValue - Raw environment value to serialize.
- * @returns A dotenv-safe value string.
+ * @returns A value string the env parser can read back.
  * @throws Error when the value contains all three quote marks and cannot be quoted.
  *
  * @example

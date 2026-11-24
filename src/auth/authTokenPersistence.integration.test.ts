@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import dotenv from "dotenv";
+import { parseEnv } from "node:util";
 import nock from "nock";
 import { afterEach, describe, expect, it } from "vitest";
 import { DotEnvCredentialStore } from "@/auth/credentialSession.js";
@@ -62,7 +62,7 @@ describe("OAuth token persistence", () => {
 
 		await oauthClient.initialize();
 
-		const persisted = dotenv.parse(readFileSync(envPath, "utf-8"));
+		const persisted = parseEnv(readFileSync(envPath, "utf-8"));
 		expect(persisted).toMatchObject({
 			EBAY_USER_ACCESS_TOKEN: "integration_access_token",
 			EBAY_USER_REFRESH_TOKEN: "integration_refresh_token",

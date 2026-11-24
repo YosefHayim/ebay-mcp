@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import { paint, type TerminalText } from "@/shared/paint.js";
 import { writeCliLine } from "./cliOutput.js";
 
 /**
@@ -8,21 +8,33 @@ import { writeCliLine } from "./cliOutput.js";
  * (the stdout-is-reserved rule applies to the MCP *server* runtime, not CLI
  * tooling). The eBay brand palette matches the setup wizard.
  */
-export const ebayPalette = {
-	red: chalk.hex("#E53238"),
-	blue: chalk.hex("#0064D2"),
-	yellow: chalk.hex("#F5AF02"),
-	green: chalk.hex("#86B817"),
+export const ebayPalette: {
+	red: TerminalText;
+	blue: TerminalText;
+	yellow: TerminalText;
+	green: TerminalText;
+} = {
+	red: paint.hex("#E53238"),
+	blue: paint.hex("#0064D2"),
+	yellow: paint.hex("#F5AF02"),
+	green: paint.hex("#86B817"),
 };
 
 /** Semantic text styles used across CLI output. */
-export const ui = {
-	dim: chalk.dim,
-	bold: chalk.bold,
-	success: chalk.green,
-	warning: chalk.yellow,
-	error: chalk.red,
-	info: chalk.cyan,
+export const ui: {
+	dim: TerminalText;
+	bold: TerminalText;
+	success: TerminalText;
+	warning: TerminalText;
+	error: TerminalText;
+	info: TerminalText;
+} = {
+	dim: paint.dim,
+	bold: paint.bold,
+	success: paint.green,
+	warning: paint.yellow,
+	error: paint.red,
+	info: paint.cyan,
 };
 
 /**

@@ -45,7 +45,7 @@ In your app's **User Tokens** settings, copy the **RuName** (the eBay redirect U
 
 ### 2. Run the setup wizard
 
-Needs [Node.js](https://nodejs.org/) 24 or newer.
+Needs [Node.js](https://nodejs.org/) 24.16 or newer.
 
 ```bash
 npm install -g ebay-mcp

@@ -3,11 +3,11 @@
  */
 
 import process from "node:process";
-import chalk from "chalk";
 import { execSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { writeCliLine } from "@/shared/cliOutput.js";
+import { paint } from "@/shared/paint.js";
 
 /**
  * Outcome of a pre-flight security or environment check.
@@ -338,22 +338,22 @@ export const runSecurityChecks = async (
 export const displaySecurityResults = (
 	results: SecurityCheckResult[],
 ): void => {
-	writeCliLine(chalk.bold.cyan("\n🔒 Security & Environment Checks\n"));
+	writeCliLine(paint.bold.cyan("\n🔒 Security & Environment Checks\n"));
 
 	for (const checkResult of results) {
-		const icon = checkResult.passed ? chalk.green("✓") : chalk.red("✗");
-		let severity = chalk.gray("[INFO]");
+		const icon = checkResult.passed ? paint.green("✓") : paint.red("✗");
+		let severity = paint.gray("[INFO]");
 		if (checkResult.severity === "critical") {
-			severity = chalk.red("[CRITICAL]");
+			severity = paint.red("[CRITICAL]");
 		} else if (checkResult.severity === "warning") {
-			severity = chalk.yellow("[WARNING]");
+			severity = paint.yellow("[WARNING]");
 		}
 
-		writeCliLine(`${icon} ${chalk.bold(checkResult.check)}: ${severity}`);
-		writeCliLine(`  ${chalk.gray(checkResult.message)}`);
+		writeCliLine(`${icon} ${paint.bold(checkResult.check)}: ${severity}`);
+		writeCliLine(`  ${paint.gray(checkResult.message)}`);
 
 		if (checkResult.fix) {
-			writeCliLine(`  ${chalk.yellow("→ Fix:")} ${checkResult.fix}`);
+			writeCliLine(`  ${paint.yellow("→ Fix:")} ${checkResult.fix}`);
 		}
 		writeCliLine("");
 	}
@@ -367,18 +367,18 @@ export const displaySecurityResults = (
 
 	if (critical.length > 0) {
 		writeCliLine(
-			chalk.red.bold(
+			paint.red.bold(
 				`⚠️  ${critical.length} critical issue(s) found. Please fix before continuing.\n`,
 			),
 		);
 	} else if (warnings.length > 0) {
 		writeCliLine(
-			chalk.yellow.bold(
+			paint.yellow.bold(
 				`⚠️  ${warnings.length} warning(s) found. Recommended to fix.\n`,
 			),
 		);
 	} else {
-		writeCliLine(chalk.green.bold("✅ All security checks passed!\n"));
+		writeCliLine(paint.green.bold("✅ All security checks passed!\n"));
 	}
 };
 

@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
+import { parseEnv } from "node:util";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
@@ -46,7 +46,7 @@ describe("credential session", () => {
 			EBAY_USER_REFRESH_TOKEN: "refresh",
 		});
 
-		const parsed = dotenv.parse(readFileSync(envPath, "utf-8"));
+		const parsed = parseEnv(readFileSync(envPath, "utf-8"));
 		expect(parsed).toMatchObject({
 			EBAY_CLIENT_ID: "client",
 			EBAY_USER_ACCESS_TOKEN: "access",
@@ -85,7 +85,7 @@ describe("credential session", () => {
 			}),
 		]);
 
-		const parsed = dotenv.parse(readFileSync(envPath, "utf-8"));
+		const parsed = parseEnv(readFileSync(envPath, "utf-8"));
 		expect(parsed).toMatchObject({
 			EBAY_CLIENT_ID: "client",
 			EBAY_APP_ACCESS_TOKEN: "app-token-value",

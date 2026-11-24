@@ -2,9 +2,9 @@
  * Scope Helper - Manages eBay OAuth scopes
  */
 
-import chalk from "chalk";
 import { writeCliLine } from "@/shared/cliOutput.js";
 import { getDefaultScopes } from "@/shared/environment.js";
+import { paint } from "@/shared/paint.js";
 
 /**
  * Group of related OAuth scopes shown in setup guidance.
@@ -133,17 +133,17 @@ export const getRecommendedScopes = (
  * ```
  */
 export const displayScopeCategories = (): void => {
-	writeCliLine(chalk.bold.cyan("\n📋 Available OAuth Scopes\n"));
+	writeCliLine(paint.bold.cyan("\n📋 Available OAuth Scopes\n"));
 
 	const categories = getScopeCategories();
 
 	for (const category of categories) {
 		const badge = category.required
-			? chalk.green("[Required]")
-			: chalk.gray("[Optional]");
-		writeCliLine(`${badge} ${chalk.bold.white(category.name)}`);
-		writeCliLine(`  ${chalk.gray(category.description)}`);
-		writeCliLine(chalk.gray(`  Scopes: ${category.scopes.length}`));
+			? paint.green("[Required]")
+			: paint.gray("[Optional]");
+		writeCliLine(`${badge} ${paint.bold.white(category.name)}`);
+		writeCliLine(`  ${paint.gray(category.description)}`);
+		writeCliLine(paint.gray(`  Scopes: ${category.scopes.length}`));
 		writeCliLine("");
 	}
 };
@@ -197,30 +197,30 @@ export const displayScopeVerification = (
 	tokenScopes: string[],
 	environment: "sandbox" | "production",
 ): void => {
-	writeCliLine(chalk.bold.cyan("\n🔍 Scope Verification\n"));
+	writeCliLine(paint.bold.cyan("\n🔍 Scope Verification\n"));
 
 	const recommendedScopes = getRecommendedScopes(environment);
 	const verification = verifyScopesCoverage(tokenScopes, recommendedScopes);
 
-	writeCliLine(chalk.bold.white("Token Scopes:"));
-	writeCliLine(chalk.gray(`  Total: ${tokenScopes.length}\n`));
+	writeCliLine(paint.bold.white("Token Scopes:"));
+	writeCliLine(paint.gray(`  Total: ${tokenScopes.length}\n`));
 
 	if (verification.hasAllRequired) {
-		writeCliLine(chalk.green("✓ Token has all recommended scopes\n"));
+		writeCliLine(paint.green("✓ Token has all recommended scopes\n"));
 	} else {
-		writeCliLine(chalk.yellow("⚠️  Token is missing some recommended scopes\n"));
+		writeCliLine(paint.yellow("⚠️  Token is missing some recommended scopes\n"));
 
-		writeCliLine(chalk.bold.white("Missing Scopes:"));
+		writeCliLine(paint.bold.white("Missing Scopes:"));
 		for (const scope of verification.missingScopes) {
-			writeCliLine(chalk.yellow(`  • ${scope}`));
+			writeCliLine(paint.yellow(`  • ${scope}`));
 		}
 		writeCliLine("");
 	}
 
 	if (verification.extraScopes.length > 0) {
-		writeCliLine(chalk.gray("Additional Scopes (not in recommended list):"));
+		writeCliLine(paint.gray("Additional Scopes (not in recommended list):"));
 		for (const scope of verification.extraScopes) {
-			writeCliLine(chalk.gray(`  • ${scope}`));
+			writeCliLine(paint.gray(`  • ${scope}`));
 		}
 		writeCliLine("");
 	}
@@ -229,7 +229,7 @@ export const displayScopeVerification = (
 	const categories = getScopeCategories();
 	const tokenScopeSet = new Set(tokenScopes);
 
-	writeCliLine(chalk.bold.white("Coverage by Category:\n"));
+	writeCliLine(paint.bold.white("Coverage by Category:\n"));
 
 	for (const category of categories) {
 		const hasAllCategoryScopes = category.scopes.every((scope) =>
@@ -241,16 +241,16 @@ export const displayScopeVerification = (
 
 		let status: string;
 		if (hasAllCategoryScopes) {
-			status = chalk.green("✓ Full");
+			status = paint.green("✓ Full");
 		} else if (hasSomeCategoryScopes) {
-			status = chalk.yellow("◐ Partial");
+			status = paint.yellow("◐ Partial");
 		} else {
-			status = chalk.red("✗ None");
+			status = paint.red("✗ None");
 		}
 
 		const badge = category.required
-			? chalk.red("[Required]")
-			: chalk.gray("[Optional]");
+			? paint.red("[Required]")
+			: paint.gray("[Optional]");
 		writeCliLine(`${status} ${badge} ${category.name}`);
 	}
 

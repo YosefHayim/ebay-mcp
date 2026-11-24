@@ -77,9 +77,6 @@
 	"dependencies": {
 		"@modelcontextprotocol/ext-apps": "1.7.4",
 		"@modelcontextprotocol/sdk": "1.32.1",
-		"chalk": "^5.6.2",
-		"cors": "^2.8.6",
-		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"fast-xml-builder": "1.2.0",
 		"fast-xml-parser": "^5.9.0",
@@ -93,7 +90,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.1",
-		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.6",
 		"@types/node": "^25.9.3",
 		"@types/prompts": "^2.4.9",
@@ -121,7 +117,7 @@
 	},
 	"packageManager": "pnpm@10.14.0",
 	"engines": {
-		"node": ">=24"
+		"node": ">=24.16.0"
 	},
 	"pnpm": {
 		"overrides": {

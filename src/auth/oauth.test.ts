@@ -1,9 +1,9 @@
 import process from "node:process";
+import { parseEnv } from "node:util";
 import {
 	cleanupMocks,
 	mockOAuthTokenEndpoint,
 } from "@tests/helpers/mockHttp.js";
-import dotenv from "dotenv";
 import type * as FsModule from "fs";
 import * as fs from "fs";
 import { promises as fsPromises, mkdtempSync, rmSync } from "fs";
@@ -532,7 +532,7 @@ describe("EbayOAuthClient", () => {
 		const getLastEnvWrite = (): {
 			filePath: string;
 			content: string;
-			parsed: Record<string, string>;
+			parsed: NodeJS.Dict<string>;
 		} => {
 			const envWrite = [...writeFileSyncMock.mock.calls]
 				.reverse()
@@ -548,7 +548,7 @@ describe("EbayOAuthClient", () => {
 			return {
 				filePath: String(filePath),
 				content: envContent,
-				parsed: dotenv.parse(envContent),
+				parsed: parseEnv(envContent),
 			};
 		};
 

@@ -11,7 +11,6 @@
  */
 
 import process from "node:process";
-import { config } from "dotenv";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir, platform } from "os";
 import { dirname, join } from "path";
@@ -21,10 +20,10 @@ import type {
 	DetectedMCPClient,
 	MCPServerConfig,
 } from "@/shared/llmClientDetector.js";
+import { loadEnvFileIfPresent } from "@/shared/load-env-file.js";
 import { isRecord } from "@/shared/typeGuards.js";
 
-// Load environment variables silently
-config({ quiet: true });
+loadEnvFileIfPresent();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

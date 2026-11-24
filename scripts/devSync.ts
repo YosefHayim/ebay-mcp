@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import process from "node:process";
-import chalk from "chalk";
 import { execFileSync, execSync } from "child_process";
 import {
 	existsSync,
@@ -13,6 +12,7 @@ import {
 import { basename, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { getErrorMessage } from "@/shared/errors.js";
+import { paint } from "@/shared/paint.js";
 import {
 	classifyOperation,
 	collectImplementedNames,
@@ -40,12 +40,12 @@ const TOOLS_DIRS = [
 ];
 
 const ui = {
-	success: chalk.green,
-	warning: chalk.yellow,
-	error: chalk.red,
-	info: chalk.cyan,
-	dim: chalk.dim,
-	bold: chalk.bold,
+	success: paint.green,
+	warning: paint.yellow,
+	error: paint.red,
+	info: paint.cyan,
+	dim: paint.dim,
+	bold: paint.bold,
 };
 
 const applyNamespaceNames = (
@@ -65,10 +65,12 @@ const applyNamespaceNames = (
 function showSpinner(message: string): () => void {
 	const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 	let i = 0;
-	process.stdout.write(`  ${ui.info(frames[0])} ${message}`);
+	const firstFrame = frames[0] ?? "⠋";
+	process.stdout.write(`  ${ui.info(firstFrame)} ${message}`);
 	const interval = setInterval(() => {
 		i = (i + 1) % frames.length;
-		process.stdout.write(`\r  ${ui.info(frames[i])} ${message}`);
+		const frame = frames[i] ?? "⠋";
+		process.stdout.write(`\r  ${ui.info(frame)} ${message}`);
 	}, 80);
 	return () => {
 		clearInterval(interval);

@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import { parseEnv } from "node:util";
 import {
 	closeSync,
 	existsSync,
@@ -102,7 +102,16 @@ function readExistingEnv(envPath: string): Record<string, string> {
 		return {};
 	}
 
-	return dotenv.parse(readFileSync(envPath, "utf-8"));
+	const parsed = parseEnv(readFileSync(envPath, "utf-8"));
+	const existing: Record<string, string> = {};
+
+	for (const [name, envValue] of Object.entries(parsed)) {
+		if (typeof envValue === "string") {
+			existing[name] = envValue;
+		}
+	}
+
+	return existing;
 }
 
 function flushCredentialFile(envPath: string): void {

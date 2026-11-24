@@ -2,30 +2,28 @@
  * Unit tests for the `.env` serialization helpers in `envFile`.
  *
  * The regression these guard against: eBay OAuth tokens look like
- * `v^1.1#i^1#...`, and dotenv treats an unquoted `#` as the start of an inline
- * comment. An unquoted token is therefore truncated to `v^1.1` on the next
+ * `v^1.1#i^1#...`, and an unquoted `#` starts an inline comment. An unquoted
+ * token is therefore truncated to `v^1.1` on the next
  * read, silently breaking authentication (`invalid_grant — the provided
  * authorization refresh token is invalid or was issued to another client`).
  */
 
-import dotenv from "dotenv";
+import { parseEnv } from "node:util";
 import { describe, expect, it } from "vitest";
 import { quoteEnvValue, stringifyEnv } from "@/shared/envFile.js";
 
 const SAMPLE_REFRESH_TOKEN = "v^1.1#i^1#I^3#r^1#p^3#f^0#t^Ul41Xz==";
 
 describe("quoteEnvValue", () => {
-	it("quotes a token containing # so dotenv does not treat it as a comment", () => {
+	it("quotes a token containing # so it is not read as a comment", () => {
 		const line = `EBAY_USER_REFRESH_TOKEN=${quoteEnvValue(SAMPLE_REFRESH_TOKEN)}`;
-		const parsed = dotenv.parse(line);
+		const parsed = parseEnv(line);
 
 		expect(parsed.EBAY_USER_REFRESH_TOKEN).toBe(SAMPLE_REFRESH_TOKEN);
 	});
 
 	it("truncates at # when NOT quoted (documents the bug being prevented)", () => {
-		const parsed = dotenv.parse(
-			`EBAY_USER_REFRESH_TOKEN=${SAMPLE_REFRESH_TOKEN}`,
-		);
+		const parsed = parseEnv(`EBAY_USER_REFRESH_TOKEN=${SAMPLE_REFRESH_TOKEN}`);
 
 		expect(parsed.EBAY_USER_REFRESH_TOKEN).toBe("v^1.1");
 	});
@@ -47,8 +45,8 @@ describe("quoteEnvValue", () => {
 		["a single quote", "it's #1"],
 		["double and single quotes", `a"b'c #d`],
 		["a trailing backslash", "ends with \\"],
-	])("round-trips a value with %s through dotenv", (_label, envValue) => {
-		const parsed = dotenv.parse(`SECRET=${quoteEnvValue(envValue)}`);
+	])("round-trips a value with %s through the env parser", (_label, envValue) => {
+		const parsed = parseEnv(`SECRET=${quoteEnvValue(envValue)}`);
 
 		expect(parsed.SECRET).toBe(envValue);
 	});
@@ -59,7 +57,7 @@ describe("quoteEnvValue", () => {
 });
 
 describe("stringifyEnv", () => {
-	it("writes one KEY=value line per entry that dotenv reads back verbatim", () => {
+	it("writes one KEY=value line per entry that reads back verbatim", () => {
 		const env = {
 			EBAY_ENVIRONMENT: "sandbox",
 			EBAY_USER_REFRESH_TOKEN: SAMPLE_REFRESH_TOKEN,
@@ -69,7 +67,7 @@ describe("stringifyEnv", () => {
 		const content = stringifyEnv(env);
 
 		expect(content.split("\n")).toHaveLength(3);
-		expect(dotenv.parse(content)).toEqual(env);
+		expect(parseEnv(content)).toEqual(env);
 	});
 
 	it("returns an empty string for an empty env", () => {

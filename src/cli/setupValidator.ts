@@ -4,7 +4,6 @@
  * Tests the configuration after setup to ensure everything is working properly.
  */
 
-import chalk from "chalk";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { EbayOAuthClient } from "@/auth/oauth.js";
@@ -13,6 +12,7 @@ import type { EbayConfig } from "@/shared/ebay.js";
 import { getOAuthAuthorizationUrl } from "@/shared/environment.js";
 import { parseEnvFile } from "@/shared/envParser.js";
 import { getErrorMessage } from "@/shared/errors.js";
+import { paint } from "@/shared/paint.js";
 
 /**
  * Result for one setup validation test.
@@ -247,7 +247,7 @@ export const validateSetup = async (
 ): Promise<ValidationSummary> => {
 	const results: ValidationResult[] = [];
 
-	writeCliLine(chalk.bold.cyan("\n🧪 Running Configuration Tests...\n"));
+	writeCliLine(paint.bold.cyan("\n🧪 Running Configuration Tests...\n"));
 
 	// Test 1: .env file exists
 	const envFileResult = validateEnvFile(projectRoot);
@@ -337,19 +337,19 @@ export const validateSetup = async (
 	const failed = results.length - passed;
 
 	// Print summary
-	writeCliLine(chalk.gray("\n" + "─".repeat(60)));
-	writeCliLine(chalk.bold.white("\n📊 Validation Summary\n"));
+	writeCliLine(paint.gray("\n" + "─".repeat(60)));
+	writeCliLine(paint.bold.white("\n📊 Validation Summary\n"));
 	writeCliLine(`  Total Tests: ${results.length}`);
-	writeCliLine(`  ${chalk.green("✓ Passed:")} ${passed}`);
-	writeCliLine(`  ${chalk.red("✗ Failed:")} ${failed}`);
+	writeCliLine(`  ${paint.green("✓ Passed:")} ${passed}`);
+	writeCliLine(`  ${paint.red("✗ Failed:")} ${failed}`);
 
 	if (failed === 0) {
 		writeCliLine(
-			chalk.green.bold("\n✨ All tests passed! Configuration is valid.\n"),
+			paint.green.bold("\n✨ All tests passed! Configuration is valid.\n"),
 		);
 	} else {
 		writeCliLine(
-			chalk.yellow.bold(
+			paint.yellow.bold(
 				"\n⚠️  Some tests failed. Please review the errors above.\n",
 			),
 		);
@@ -367,14 +367,14 @@ export const validateSetup = async (
  * Prints a single validation result.
  */
 const printResult = (validation: ValidationResult): void => {
-	const icon = validation.passed ? chalk.green("✓") : chalk.red("✗");
-	const status = validation.passed ? chalk.green("PASS") : chalk.red("FAIL");
+	const icon = validation.passed ? paint.green("✓") : paint.red("✗");
+	const status = validation.passed ? paint.green("PASS") : paint.red("FAIL");
 
-	writeCliLine(`${icon} ${chalk.bold(validation.test)}: ${status}`);
-	writeCliLine(`  ${chalk.gray(validation.message)}`);
+	writeCliLine(`${icon} ${paint.bold(validation.test)}: ${status}`);
+	writeCliLine(`  ${paint.gray(validation.message)}`);
 
 	if (validation.error) {
-		writeCliLine(`  ${chalk.yellow("→")} ${chalk.yellow(validation.error)}`);
+		writeCliLine(`  ${paint.yellow("→")} ${paint.yellow(validation.error)}`);
 	}
 
 	writeCliLine("");
@@ -398,46 +398,46 @@ export const displayRecommendations = (summary: ValidationSummary): void => {
 			!validation.error,
 	);
 
-	writeCliLine(chalk.bold.cyan("💡 Recommendations:\n"));
+	writeCliLine(paint.bold.cyan("💡 Recommendations:\n"));
 
 	if (!hasUserTokens) {
-		writeCliLine(chalk.yellow("  ⚠️  User tokens not configured"));
+		writeCliLine(paint.yellow("  ⚠️  User tokens not configured"));
 		writeCliLine(
-			chalk.gray("     • You can only use app token for limited API access"),
+			paint.gray("     • You can only use app token for limited API access"),
 		);
 		writeCliLine(
-			chalk.gray(
+			paint.gray(
 				"     • To enable full API access, use the ebay_get_oauth_url tool",
 			),
 		);
 		writeCliLine(
-			chalk.gray(
+			paint.gray(
 				"     • Then save your refresh token to EBAY_USER_REFRESH_TOKEN in .env\n",
 			),
 		);
 	}
 
 	if (summary.failed > 0) {
-		writeCliLine(chalk.red("  ❌ Configuration has errors"));
-		writeCliLine(chalk.gray("     • Review the failed tests above"));
+		writeCliLine(paint.red("  ❌ Configuration has errors"));
+		writeCliLine(paint.gray("     • Review the failed tests above"));
 		writeCliLine(
-			chalk.gray("     • Update your .env file with correct values"),
+			paint.gray("     • Update your .env file with correct values"),
 		);
 		writeCliLine(
-			chalk.gray("     • Run the setup wizard again: npm run setup\n"),
+			paint.gray("     • Run the setup wizard again: npm run setup\n"),
 		);
 	} else {
-		writeCliLine(chalk.green("  ✅ Configuration is complete and valid"));
+		writeCliLine(paint.green("  ✅ Configuration is complete and valid"));
 		writeCliLine(
-			chalk.gray(
+			paint.gray(
 				"     • Restart your MCP client (Claude Desktop, Cline, etc.)",
 			),
 		);
 		writeCliLine(
-			chalk.gray("     • The eBay MCP server should now be available"),
+			paint.gray("     • The eBay MCP server should now be available"),
 		);
 		writeCliLine(
-			chalk.gray(
+			paint.gray(
 				"     • Try using tools like: ebay_get_user, ebay_get_oauth_url\n",
 			),
 		);

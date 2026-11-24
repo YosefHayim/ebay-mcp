@@ -2,9 +2,7 @@
 
 import process from "node:process";
 import { setTimeout as sleep } from "node:timers/promises";
-import chalk from "chalk";
 import { randomUUID } from "crypto";
-import { config } from "dotenv";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import type { Server } from "http";
 import { homedir, platform } from "os";
@@ -28,11 +26,13 @@ import {
 	configureLLMClient,
 	detectLLMClients,
 } from "@/shared/llmClientDetector.js";
+import { loadEnvFileIfPresent } from "@/shared/load-env-file.js";
+import { paint } from "@/shared/paint.js";
 import { checkForUpdates } from "@/shared/version.js";
 import { loadExistingConfig } from "./setupShared.js";
 import { runSkillsWizard } from "./skills.js";
 
-config({ quiet: true });
+loadEnvFileIfPresent();
 
 checkForUpdates();
 
@@ -63,10 +63,10 @@ const CONTENT_LANGUAGE_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const ebay = {
-	red: chalk.hex("#E53238"),
-	blue: chalk.hex("#0064D2"),
-	yellow: chalk.hex("#F5AF02"),
-	green: chalk.hex("#86B817"),
+	red: paint.hex("#E53238"),
+	blue: paint.hex("#0064D2"),
+	yellow: paint.hex("#F5AF02"),
+	green: paint.hex("#86B817"),
 };
 
 const LOGO = `
@@ -79,12 +79,12 @@ const LOGO = `
 `;
 
 const ui = {
-	dim: chalk.dim,
-	bold: chalk.bold,
-	success: chalk.green,
-	warning: chalk.yellow,
-	error: chalk.red,
-	info: chalk.cyan,
+	dim: paint.dim,
+	bold: paint.bold,
+	success: paint.green,
+	warning: paint.yellow,
+	error: paint.red,
+	info: paint.cyan,
 };
 
 const DEVELOPER_NAME = "Yosef Hayim Sabag";
@@ -1416,17 +1416,17 @@ const parseArgs = (): { help: boolean; quick: boolean; diagnose: boolean } => {
 
 const showHelp = (): void => {
 	console.log(`
-${chalk.bold("eBay MCP Server Setup")}  ${chalk.dim("interactive setup")}
+${paint.bold("eBay MCP Server Setup")}  ${paint.dim("interactive setup")}
 
-${chalk.bold("Usage:")}
+${paint.bold("Usage:")}
   npm run setup [options]
 
-${chalk.bold("Options:")}
+${paint.bold("Options:")}
   --help, -h       Show this help message
   --quick, -q      Quick setup (skip optional configuration)
   --diagnose, -d   Run diagnostics only
 
-${chalk.bold("Examples:")}
+${paint.bold("Examples:")}
   npm run setup              Full interactive wizard
   npm run setup --quick      Skip optional configuration
   npm run setup --diagnose   Check system health

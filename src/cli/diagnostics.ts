@@ -8,7 +8,6 @@
  */
 
 import process from "node:process";
-import chalk from "chalk";
 import { writeFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -27,6 +26,7 @@ import { isEntryModule } from "@/shared/entryModule.js";
 import { parseEnvFile } from "@/shared/envParser.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import { detectLLMClients } from "@/shared/llmClientDetector.js";
+import { paint } from "@/shared/paint.js";
 import { getUpdateInfo, getVersion } from "@/shared/version.js";
 import { readEnvironment } from "./setupShared.js";
 
@@ -109,7 +109,7 @@ async function testEbayAuthentication(
 function displayHeader(): void {
 	console.clear();
 	console.log(
-		chalk.bold.cyan(`
+		paint.bold.cyan(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║              eBay MCP Server Diagnostics                     ║
@@ -117,18 +117,18 @@ function displayHeader(): void {
 ╚══════════════════════════════════════════════════════════════╝
   `),
 	);
-	console.log(chalk.gray(`Run date: ${new Date().toISOString()}\n`));
+	console.log(paint.gray(`Run date: ${new Date().toISOString()}\n`));
 }
 
 /**
  * Display system information
  */
 function displaySystemInfo(): void {
-	console.log(chalk.bold.cyan("💻 System Information\n"));
-	console.log(`  ${chalk.gray("Node.js:")} ${process.version}`);
-	console.log(`  ${chalk.gray("Platform:")} ${process.platform}`);
-	console.log(`  ${chalk.gray("Architecture:")} ${process.arch}`);
-	console.log(`  ${chalk.gray("CWD:")} ${process.cwd()}`);
+	console.log(paint.bold.cyan("💻 System Information\n"));
+	console.log(`  ${paint.gray("Node.js:")} ${process.version}`);
+	console.log(`  ${paint.gray("Platform:")} ${process.platform}`);
+	console.log(`  ${paint.gray("Architecture:")} ${process.arch}`);
+	console.log(`  ${paint.gray("CWD:")} ${process.cwd()}`);
 	console.log("");
 }
 
@@ -140,22 +140,22 @@ function displaySystemInfo(): void {
  * abort on a best-effort network call.
  */
 async function displayUpdateStatus(): Promise<void> {
-	console.log(chalk.bold.cyan("🔄 Version\n"));
-	console.log(`  ${chalk.gray("Installed:")} ${getVersion()}`);
+	console.log(paint.bold.cyan("🔄 Version\n"));
+	console.log(`  ${paint.gray("Installed:")} ${getVersion()}`);
 
 	try {
 		const updateInfo = await getUpdateInfo();
 
 		if (updateInfo) {
 			console.log(
-				`  ${chalk.gray("Latest:")}    ${chalk.green(updateInfo.latest)} ${chalk.yellow(`(run \`npm i -g ${updateInfo.name}\` to update)`)}`,
+				`  ${paint.gray("Latest:")}    ${paint.green(updateInfo.latest)} ${paint.yellow(`(run \`npm i -g ${updateInfo.name}\` to update)`)}`,
 			);
 		} else {
-			console.log(`  ${chalk.gray("Latest:")}    ${chalk.green("up to date")}`);
+			console.log(`  ${paint.gray("Latest:")}    ${paint.green("up to date")}`);
 		}
 	} catch {
 		console.log(
-			`  ${chalk.gray("Latest:")}    ${chalk.dim("update check unavailable (offline?)")}`,
+			`  ${paint.gray("Latest:")}    ${paint.dim("update check unavailable (offline?)")}`,
 		);
 	}
 
@@ -166,7 +166,7 @@ async function displayUpdateStatus(): Promise<void> {
  * Display configuration status
  */
 function displayConfigurationStatus(envVars: Record<string, string>): void {
-	console.log(chalk.bold.cyan("⚙️  Configuration Status\n"));
+	console.log(paint.bold.cyan("⚙️  Configuration Status\n"));
 
 	const checks = [
 		{ key: "EBAY_CLIENT_ID", label: "Client ID", redact: true },
@@ -190,16 +190,16 @@ function displayConfigurationStatus(envVars: Record<string, string>): void {
 		let displayValue: string;
 
 		if (envValue && envValue.trim() && !envValue.includes("_here")) {
-			status = chalk.green("✓ Set");
+			status = paint.green("✓ Set");
 			displayValue = check.redact
 				? `${envValue.substring(0, 10)}...`
 				: envValue;
 		} else {
-			status = chalk.red("✗ Not set");
-			displayValue = chalk.gray("(not configured)");
+			status = paint.red("✗ Not set");
+			displayValue = paint.gray("(not configured)");
 		}
 
-		console.log(`  ${status} ${chalk.bold(check.label)}: ${displayValue}`);
+		console.log(`  ${status} ${paint.bold(check.label)}: ${displayValue}`);
 	}
 
 	console.log("");
@@ -209,23 +209,23 @@ function displayConfigurationStatus(envVars: Record<string, string>): void {
  * Display LLM client status
  */
 function displayLLMClientStatus(): void {
-	console.log(chalk.bold.cyan("🤖 LLM Client Detection\n"));
+	console.log(paint.bold.cyan("🤖 LLM Client Detection\n"));
 
 	const clients = detectLLMClients();
 
 	for (const client of clients) {
 		const detected = client.detected
-			? chalk.green("✓ Detected")
-			: chalk.gray("✗ Not found");
+			? paint.green("✓ Detected")
+			: paint.gray("✗ Not found");
 		const configured = client.configExists
-			? chalk.green("[Configured]")
-			: chalk.gray("[Not configured]");
+			? paint.green("[Configured]")
+			: paint.gray("[Not configured]");
 
 		console.log(
-			`  ${detected} ${chalk.bold(client.displayName)} ${configured}`,
+			`  ${detected} ${paint.bold(client.displayName)} ${configured}`,
 		);
 		if (client.detected) {
-			console.log(chalk.gray(`    Config: ${client.configPath}`));
+			console.log(paint.gray(`    Config: ${client.configPath}`));
 		}
 	}
 
@@ -236,21 +236,21 @@ function displayLLMClientStatus(): void {
  * Test API authentication and display results
  */
 async function displayAuthenticationTest(config: EbayConfig): Promise<void> {
-	console.log(chalk.bold.cyan("🔐 API Authentication Test\n"));
+	console.log(paint.bold.cyan("🔐 API Authentication Test\n"));
 
 	const authCheck = await testEbayAuthentication(config);
 
 	if (authCheck.success) {
-		console.log(chalk.green("  ✓ Successfully authenticated with eBay API\n"));
+		console.log(paint.green("  ✓ Successfully authenticated with eBay API\n"));
 
 		if (authCheck.userInfo) {
-			console.log(chalk.bold.white("  User Information:"));
-			console.log(chalk.gray(JSON.stringify(authCheck.userInfo, null, 2)));
+			console.log(paint.bold.white("  User Information:"));
+			console.log(paint.gray(JSON.stringify(authCheck.userInfo, null, 2)));
 			console.log("");
 		}
 	} else {
-		console.log(chalk.red("  ✗ Authentication failed\n"));
-		console.log(chalk.yellow(`  Error: ${authCheck.error}\n`));
+		console.log(paint.red("  ✗ Authentication failed\n"));
+		console.log(paint.yellow(`  Error: ${authCheck.error}\n`));
 	}
 }
 
@@ -315,7 +315,7 @@ async function generateDiagnosticReport(
 	if (exportPath) {
 		writeFileSync(exportPath, JSON.stringify(report, null, 2), "utf-8");
 		console.log(
-			chalk.green(`\n✓ Diagnostic report exported to: ${exportPath}\n`),
+			paint.green(`\n✓ Diagnostic report exported to: ${exportPath}\n`),
 		);
 	}
 
@@ -343,18 +343,18 @@ export const runDiagnostics = async (exportReport = false): Promise<void> => {
 	displayLLMClientStatus();
 
 	// API connectivity
-	console.log(chalk.bold.cyan("🌐 API Connectivity\n"));
+	console.log(paint.bold.cyan("🌐 API Connectivity\n"));
 	const apiConnection = await checkApiConnectivity();
 
 	if (apiConnection.canReachEbay) {
-		console.log(chalk.green("  ✓ Can reach eBay API servers\n"));
+		console.log(paint.green("  ✓ Can reach eBay API servers\n"));
 	} else {
-		console.log(chalk.red("  ✗ Cannot reach eBay API servers"));
-		console.log(chalk.yellow(`  Error: ${apiConnection.error}\n`));
+		console.log(paint.red("  ✗ Cannot reach eBay API servers"));
+		console.log(paint.yellow(`  Error: ${apiConnection.error}\n`));
 	}
 
 	// Configuration validation
-	console.log(chalk.bold.cyan("📋 Configuration Validation\n"));
+	console.log(paint.bold.cyan("📋 Configuration Validation\n"));
 	const validationSummary = await validateSetup(PROJECT_ROOT);
 	displayRecommendations(validationSummary);
 
@@ -381,7 +381,7 @@ export const runDiagnostics = async (exportReport = false): Promise<void> => {
 					displayScopeVerification(scopeInfo.tokenScopes, config.environment);
 				}
 			} catch {
-				console.log(chalk.yellow("⚠️  Could not verify token scopes\n"));
+				console.log(paint.yellow("⚠️  Could not verify token scopes\n"));
 			}
 		}
 	}
@@ -395,10 +395,10 @@ export const runDiagnostics = async (exportReport = false): Promise<void> => {
 		await generateDiagnosticReport(reportPath);
 	}
 
-	console.log(chalk.bold.green("✅ Diagnostics complete!\n"));
-	console.log(chalk.gray("For more help, visit:"));
+	console.log(paint.bold.green("✅ Diagnostics complete!\n"));
+	console.log(paint.gray("For more help, visit:"));
 	console.log(
-		chalk.blue.underline(
+		paint.blue.underline(
 			"  https://github.com/YosefHayim/ebay-mcp#troubleshooting\n",
 		),
 	);
@@ -414,7 +414,7 @@ if (isEntryModule(import.meta.url)) {
 		await runDiagnostics(exportReport);
 	} catch (error) {
 		console.error(
-			chalk.red("\n❌ Diagnostics failed:"),
+			paint.red("\n❌ Diagnostics failed:"),
 			getErrorMessage(error),
 		);
 		process.exitCode = 1;

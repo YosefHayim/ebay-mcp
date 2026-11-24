@@ -1,10 +1,10 @@
 import process from "node:process";
 import type { Implementation } from "@modelcontextprotocol/sdk/types.js";
-import { config } from "dotenv";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { CREDENTIAL_ENV_PATH } from "@/shared/credentialFile.js";
 import type { EbayConfig } from "@/shared/ebay.js";
+import { loadEnvFileIfPresent } from "@/shared/load-env-file.js";
 import { getMediaAccessConfig } from "@/shared/mediaAccess.js";
 import { productionScopes, sandboxScopes } from "@/shared/oauthScopes.js";
 import { getToolGatingConfigError } from "@/shared/toolFamilies.js";
@@ -13,7 +13,7 @@ import { getVersion } from "@/shared/version.js";
 // Load .env from the package root (two levels up from src/shared/), not process.cwd().
 // MCP servers inherit cwd from the host (e.g. Claude Code's project dir), so
 // process.cwd() may point to an unrelated project with a different .env.
-config({ path: CREDENTIAL_ENV_PATH, quiet: true });
+loadEnvFileIfPresent(CREDENTIAL_ENV_PATH);
 
 const writeConfigDiagnostic = (message: string): void => {
 	process.stderr.write(`[eBay MCP] ${message}\n`);
