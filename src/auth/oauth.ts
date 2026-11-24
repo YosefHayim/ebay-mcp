@@ -2,10 +2,10 @@ import {
 	type CredentialStore,
 	createAppAccessTokenExpiry,
 	createStoredUserTokens,
-	createStoredUserTokensFromResponse,
 	DotEnvCredentialStore,
 	type EbayUserTokenResponse,
 	isTokenExpired,
+	mergeEbayUserTokens,
 } from "@/auth/credentialSession.js";
 import type {
 	EbayAppAccessTokenResponse,
@@ -390,7 +390,7 @@ export class EbayOAuthClient {
 			);
 		}
 
-		this.userTokens = createStoredUserTokensFromResponse({
+		this.userTokens = mergeEbayUserTokens({
 			config: this.config,
 			tokenData,
 		});
@@ -427,7 +427,7 @@ export class EbayOAuthClient {
 			tokenRequest,
 		);
 
-		const refreshedTokens = createStoredUserTokensFromResponse({
+		const refreshedTokens = mergeEbayUserTokens({
 			config: this.config,
 			previousTokens: loadedUserTokens,
 			tokenData,

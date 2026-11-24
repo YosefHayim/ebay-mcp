@@ -201,7 +201,7 @@ export function isTokenExpired(
 	return now >= expiry;
 }
 
-export interface CreateStoredUserTokensInput {
+interface StoredUserTokenFields {
 	accessToken: string;
 	accessTokenExpiry?: number | undefined;
 	config: EbayConfig;
@@ -214,34 +214,35 @@ export interface CreateStoredUserTokensInput {
 }
 
 export function createStoredUserTokens(
-	input: CreateStoredUserTokensInput,
+	tokenFields: StoredUserTokenFields,
 ): StoredTokenData {
-	const now = input.now ?? Date.now();
-	const envAppToken = input.envAppToken ?? input.config.appAccessToken;
-	const tokenType = input.tokenType ?? "Bearer";
+	const now = tokenFields.now ?? Date.now();
+	const envAppToken =
+		tokenFields.envAppToken ?? tokenFields.config.appAccessToken;
+	const tokenType = tokenFields.tokenType ?? "Bearer";
 	const accessTokenExpiry =
-		input.accessTokenExpiry ?? createDefaultAccessTokenExpiry(now);
+		tokenFields.accessTokenExpiry ?? createDefaultAccessTokenExpiry(now);
 	const refreshTokenExpiry =
-		input.refreshTokenExpiry ?? createDefaultRefreshTokenExpiry(now);
+		tokenFields.refreshTokenExpiry ?? createDefaultRefreshTokenExpiry(now);
 
 	return {
-		clientId: input.config.clientId,
-		clientSecret: input.config.clientSecret,
-		redirectUri: input.config.redirectUri,
-		locale: input.config.locale,
-		marketplaceId: input.config.marketplaceId,
-		contentLanguage: input.config.contentLanguage,
+		clientId: tokenFields.config.clientId,
+		clientSecret: tokenFields.config.clientSecret,
+		redirectUri: tokenFields.config.redirectUri,
+		locale: tokenFields.config.locale,
+		marketplaceId: tokenFields.config.marketplaceId,
+		contentLanguage: tokenFields.config.contentLanguage,
 		envAppToken,
-		userAccessToken: input.accessToken,
-		userRefreshToken: input.refreshToken,
+		userAccessToken: tokenFields.accessToken,
+		userRefreshToken: tokenFields.refreshToken,
 		tokenType,
 		userAccessTokenExpiry: accessTokenExpiry,
 		userRefreshTokenExpiry: refreshTokenExpiry,
-		scope: input.scope,
+		scope: tokenFields.scope,
 	};
 }
 
-export interface CreateStoredUserTokensFromResponseInput {
+interface MergeEbayUserTokens {
 	config: EbayConfig;
 	envAppToken?: string;
 	previousTokens?: StoredTokenData | null;
@@ -261,16 +262,16 @@ function pickRefreshTokenExpiry(
 	return previousExpiry;
 }
 
-export function createStoredUserTokensFromResponse(
-	input: CreateStoredUserTokensFromResponseInput,
+export function mergeEbayUserTokens(
+	tokenSave: MergeEbayUserTokens,
 ): StoredTokenData {
-	const now = input.now ?? Date.now();
-	const previousTokens = input.previousTokens;
-	const freshToken = input.tokenData;
+	const now = tokenSave.now ?? Date.now();
+	const previousTokens = tokenSave.previousTokens;
+	const freshToken = tokenSave.tokenData;
 
-	const envAppTokenFromCaller = input.envAppToken;
+	const envAppTokenFromCaller = tokenSave.envAppToken;
 	const envAppTokenFromPreviousSave = previousTokens?.envAppToken;
-	const envAppTokenFromConfig = input.config.appAccessToken;
+	const envAppTokenFromConfig = tokenSave.config.appAccessToken;
 	const envAppToken =
 		envAppTokenFromCaller ??
 		envAppTokenFromPreviousSave ??
@@ -297,7 +298,7 @@ export function createStoredUserTokensFromResponse(
 	);
 
 	return createStoredUserTokens({
-		config: input.config,
+		config: tokenSave.config,
 		envAppToken,
 		accessToken: freshToken.access_token,
 		refreshToken,

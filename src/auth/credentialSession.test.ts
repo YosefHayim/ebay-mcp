@@ -10,10 +10,10 @@ import {
 	createDefaultAccessTokenExpiry,
 	createDefaultRefreshTokenExpiry,
 	createStoredUserTokens,
-	createStoredUserTokensFromResponse,
 	DotEnvCredentialStore,
 	isTokenExpired,
 	maskToken,
+	mergeEbayUserTokens,
 } from "@/auth/credentialSession.js";
 import {
 	CREDENTIAL_ENV_PATH,
@@ -140,7 +140,7 @@ describe("credential session", () => {
 	it("preserves refresh-session fields when refresh responses omit them", () => {
 		const now = Date.UTC(2026, 0, 1);
 		const refreshExpiry = now + 100_000;
-		const tokens = createStoredUserTokensFromResponse({
+		const tokens = mergeEbayUserTokens({
 			config: {
 				clientId: "client",
 				clientSecret: "secret",
