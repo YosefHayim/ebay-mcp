@@ -103,7 +103,6 @@
 		"@types/supertest": "^7.2.0",
 		"@types/update-notifier": "^6.0.8",
 		"@vitest/coverage-v8": "^4.1.9",
-		"@vitest/ui": "^4.1.9",
 		"esbuild": "^0.28.1",
 		"hono": "^4.13.13",
 		"husky": "^9.1.7",
