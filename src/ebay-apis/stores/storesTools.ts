@@ -14,7 +14,6 @@ const STORE_NOTE =
 const CATEGORY_TASK_NOTE =
 	"Asynchronous: eBay accepts the change and returns { taskId, location } from the Location header; poll ebay_get_store_task with taskId (or ebay_get_store_tasks) until the task is COMPLETED or FAILED. Only one store category change (add, rename, move, or delete) can be in flight at a time; eBay rejects a new change until the previous task finishes.";
 
-/** Stores API tools for eBay Store details, store categories, and category tasks. */
 export const storesEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_store",

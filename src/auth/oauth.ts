@@ -173,17 +173,17 @@ export class EbayOAuthClient {
 		}
 	};
 
-	hasUserTokens(): boolean {
+	hasUserTokens = (): boolean => {
 		return this.userTokens !== null;
-	}
+	};
 
-	private isUserAccessTokenExpired(tokens: StoredTokenData): boolean {
+	private isUserAccessTokenExpired = (tokens: StoredTokenData): boolean => {
 		return isTokenExpired(tokens.userAccessTokenExpiry);
-	}
+	};
 
-	private isUserRefreshTokenExpired(tokens: StoredTokenData): boolean {
+	private isUserRefreshTokenExpired = (tokens: StoredTokenData): boolean => {
 		return isTokenExpired(tokens.userRefreshTokenExpiry);
-	}
+	};
 
 	getAccessToken = async (): Promise<string> => {
 		const loadedUserTokens = this.userTokens;
@@ -358,7 +358,7 @@ export class EbayOAuthClient {
 			);
 		}
 
-		if (redirectUri === "") {
+		if (redirectUri == "") {
 			throw new Error(
 				"Redirect URI is required for authorization code exchange",
 			);
@@ -374,7 +374,7 @@ export class EbayOAuthClient {
 			tokenRequest,
 		);
 		const refreshToken = tokenData.refresh_token;
-		const refreshTokenIsMissing = typeof refreshToken !== "string";
+		const refreshTokenIsMissing = typeof refreshToken != "string";
 
 		if (refreshTokenIsMissing) {
 			throw new Error(
@@ -382,7 +382,7 @@ export class EbayOAuthClient {
 			);
 		}
 
-		const refreshTokenIsEmpty = refreshToken.length === 0;
+		const refreshTokenIsEmpty = refreshToken.length == 0;
 
 		if (refreshTokenIsEmpty) {
 			throw new Error(
@@ -437,7 +437,7 @@ export class EbayOAuthClient {
 			EBAY_USER_ACCESS_TOKEN: tokenData.access_token,
 		};
 		const refreshTokenChanged =
-			refreshedTokens.userRefreshToken !== this.config.refreshToken;
+			refreshedTokens.userRefreshToken != this.config.refreshToken;
 
 		if (refreshTokenChanged) {
 			envUpdates["EBAY_USER_REFRESH_TOKEN"] = refreshedTokens.userRefreshToken;
@@ -454,22 +454,22 @@ export class EbayOAuthClient {
 		};
 	};
 
-	isAuthenticated(): boolean {
+	isAuthenticated = (): boolean => {
 		if (this.userTokens && !this.isUserAccessTokenExpired(this.userTokens)) {
 			return true;
 		}
 		return (
 			this.appAccessToken !== null && !isTokenExpired(this.appAccessTokenExpiry)
 		);
-	}
+	};
 
-	clearAllTokens(): void {
+	clearAllTokens = (): void => {
 		this.appAccessToken = null;
 		this.appAccessTokenExpiry = 0;
 		this.userTokens = null;
-	}
+	};
 
-	getTokenInfo(): OAuthTokenInfo {
+	getTokenInfo = (): OAuthTokenInfo => {
 		const tokenInfo: OAuthTokenInfo = {
 			hasUserToken:
 				this.userTokens !== null &&
@@ -497,17 +497,17 @@ export class EbayOAuthClient {
 		}
 
 		return tokenInfo;
-	}
+	};
 
-	getUserTokens(): StoredTokenData | null {
+	getUserTokens = (): StoredTokenData | null => {
 		return this.userTokens;
-	}
+	};
 
-	getCachedAppAccessToken(): string | null {
+	getCachedAppAccessToken = (): string | null => {
 		return this.appAccessToken;
-	}
+	};
 
-	getCachedAppAccessTokenExpiry(): number {
+	getCachedAppAccessTokenExpiry = (): number => {
 		return this.appAccessTokenExpiry;
-	}
+	};
 }

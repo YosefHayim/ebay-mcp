@@ -1,13 +1,11 @@
 import { z } from "zod";
 
-/** Marketplace sent as the Charity API's required X-EBAY-C-MARKETPLACE-ID header. */
 const charityMarketplaceIdSchema = z
 	.enum(["EBAY_US", "EBAY_GB"])
 	.describe(
 		"Marketplace sent as the required X-EBAY-C-MARKETPLACE-ID header: EBAY_US or EBAY_GB",
 	);
 
-/** Input for Charity API getCharityOrg. */
 export const getCharityOrgInputSchema = z.object({
 	charityOrgId: z
 		.string()
@@ -18,7 +16,6 @@ export const getCharityOrgInputSchema = z.object({
 	marketplaceId: charityMarketplaceIdSchema,
 });
 
-/** Input for Charity API getCharityOrgs; eBay requires exactly one of q or registrationIds. */
 export const getCharityOrgsInputSchema = z.object({
 	marketplaceId: charityMarketplaceIdSchema,
 	q: z

@@ -7,7 +7,9 @@ import {
 	hasOrderRefunds,
 } from "@/ebay-apis/fulfillment/orderIssueHelpers.js";
 
-const order = (partial: Order): Order => partial;
+function order(partial: Order): Order {
+	return partial;
+}
 
 describe("orderIssueHelpers", () => {
 	describe("hasCancellationRequest", () => {

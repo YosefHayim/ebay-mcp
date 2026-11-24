@@ -102,19 +102,12 @@ export type {
 	GetReportTasksResponse,
 } from "./reportsApi.js";
 
-/**
- * Marketing API surface: campaigns, ads, promotions, reports, and email campaigns.
- * Implementation is split by subdomain; `new MarketingApi(client)` keeps stable method names.
- */
 export interface MarketingApi
 	extends MarketingAdsMethods,
 		MarketingCampaignsMethods,
 		MarketingPromotionsMethods,
 		MarketingReportsMethods {}
 
-/**
- * Composes Marketing subdomain method maps onto one facade instance.
- */
 export class MarketingApi {
 	public constructor(client: EbayApiClient) {
 		Object.assign(

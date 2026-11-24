@@ -1,95 +1,44 @@
-/**
- * OAuth Helper - Assists with eBay OAuth token acquisition
- */
-
 import { createServer, type Server } from "http";
 import { writeCliLine } from "@/shared/cliOutput.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 import { getOAuthAuthorizationUrl } from "@/shared/environment.js";
 import { paint } from "@/shared/paint.js";
 
-/**
- * Result captured from the local OAuth callback endpoint. Exactly one of `code`
- * (success) or `error` (failure / timeout / CSRF) is populated.
- */
 export interface OAuthCallbackResult {
-	/** Authorization code eBay appended to the redirect, when successful. */
 	code?: string;
-	/** Opaque CSRF value echoed back by eBay, when a `state` was sent. */
 	state?: string | undefined;
-	/** Error code: an eBay `error`, `'timeout'`, or `'invalid_state'`. */
 	error?: string;
-	/** Human-readable detail for {@link OAuthCallbackResult.error}. */
 	errorDescription?: string | undefined;
 }
 
-/**
- * Tuning for {@link startCallbackServer}. Both fields are optional so callers
- * can focus on port and timeout when they do not need callback validation.
- */
 export interface CallbackServerOptions {
-	/** Loopback path eBay redirects to. Defaults to `/oauth/callback`. */
 	path?: string;
-	/**
-	 * Opaque value sent as the OAuth `state`. When provided, a callback whose
-	 * `state` does not match is rejected as `invalid_state` (CSRF defense).
-	 */
 	expectedState?: string;
 }
 
-/**
- * Generate terminal hyperlink (if supported)
- */
-const hyperlink = (text: string, url: string): string =>
-	`\u001B]8;;${url}\u0007${text}\u001B]8;;\u0007`;
+function hyperlink(text: string, url: string): string {
+	return `\u001B]8;;${url}\u0007${text}\u001B]8;;\u0007`;
+}
 
-/**
- * Generates an eBay OAuth authorization URL.
- *
- * @param clientId eBay application client ID.
- * @param redirectUri Redirect URI or RuName configured for the application.
- * @param environment eBay environment that should receive the authorization request.
- * @param scopes OAuth scopes to request; defaults come from the environment helper.
- * @returns Fully qualified eBay OAuth authorization URL.
- * @example
- * ```ts
- * const url = generateAuthUrl(clientId, redirectUri, 'sandbox');
- * ```
- */
-export const generateAuthUrl = (
+export function generateAuthUrl(
 	clientId: string,
 	redirectUri: string,
 	environment: "sandbox" | "production",
 	scopes?: string[],
-): string =>
-	getOAuthAuthorizationUrl(clientId, redirectUri, environment, scopes);
+): string {
+	return getOAuthAuthorizationUrl(clientId, redirectUri, environment, scopes);
+}
 
-/**
- * Escape a string for safe interpolation into HTML text/attribute context.
- *
- * The callback page reflects eBay's `error` / `error_description` query params,
- * which are attacker-controllable: a crafted `…/oauth/callback?error=<script>…`
- * would otherwise execute in the browser (reflected XSS). Encoding the five
- * HTML-significant characters neutralizes the markup while keeping the message
- * legible.
- */
-const escapeHtml = (text: string): string =>
-	text
+function escapeHtml(text: string): string {
+	return text
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
 		.replace(/'/g, "&#39;");
+}
 
-/**
- * Render the small HTML page the user lands on after eBay redirects back.
- *
- * @param success Whether authorization succeeded.
- * @param detail Error detail shown when `success` is false. Caller-supplied and
- *   potentially attacker-controlled (eBay's `error_description`), so it is
- *   HTML-escaped before interpolation.
- */
-const renderCallbackPage = (success: boolean, detail = ""): string => {
+function renderCallbackPage(success: boolean, detail = ""): string {
 	const gradient = success
 		? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
 		: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
@@ -131,33 +80,13 @@ const renderCallbackPage = (success: boolean, detail = ""): string => {
     ${autoClose}
   </body>
 </html>`;
-};
+}
 
-/**
- * Start a loopback HTTP server that captures the eBay OAuth redirect.
- *
- * eBay redirects the browser to the URL registered under your RuName; point that
- * URL at `http://localhost:<port><path>` and this server captures the `?code=`
- * automatically, removing the copy-paste step. The returned `codePromise` settles
- * exactly once — on the first matching callback, a timeout, or a CSRF `state`
- * mismatch — and the internal timer is always cleared so no handle leaks. The
- * caller owns the server and must `server.close()` when done. The outer promise
- * rejects if the port cannot be bound (e.g. `EADDRINUSE`).
- *
- * @param port Loopback port to listen on (`0` lets the OS choose — handy in tests).
- * @param timeoutMs How long to wait for the redirect before settling with `timeout`.
- * @param options Path and CSRF-`state` tuning — see {@link CallbackServerOptions}.
- * @returns The live server plus a promise resolving to the callback result.
- * @example
- * ```ts
- * const { server, codePromise } = await startCallbackServer(3000);
- * ```
- */
-export const startCallbackServer = async (
+export async function startCallbackServer(
 	port = 3000,
 	timeoutMs = 300_000,
 	options: CallbackServerOptions = {},
-): Promise<{ server: Server; codePromise: Promise<OAuthCallbackResult> }> => {
+): Promise<{ server: Server; codePromise: Promise<OAuthCallbackResult> }> {
 	const callbackPath = options.path ?? "/oauth/callback";
 	const { expectedState } = options;
 
@@ -177,7 +106,7 @@ export const startCallbackServer = async (
 
 		const server = createServer((request, response) => {
 			const url = new URL(request.url ?? "/", `http://localhost:${port}`);
-			if (url.pathname !== callbackPath) {
+			if (url.pathname != callbackPath) {
 				response.writeHead(404);
 				response.end("Not Found");
 				return;
@@ -189,7 +118,7 @@ export const startCallbackServer = async (
 			const errorDescription =
 				url.searchParams.get("error_description") ?? undefined;
 
-			if (expectedState && state !== expectedState) {
+			if (expectedState && state != expectedState) {
 				response.writeHead(400, { "Content-Type": "text/html" });
 				response.end(
 					renderCallbackPage(
@@ -239,23 +168,12 @@ export const startCallbackServer = async (
 			onServerReady({ server, codePromise });
 		});
 	});
-};
+}
 
-/**
- * Runs an interactive OAuth flow with a local callback server.
- *
- * @param config eBay application configuration used to build the authorization URL.
- * @param scopes OAuth scopes to request for the user token.
- * @returns The authorization code when the browser callback succeeds, otherwise `null`.
- * @example
- * ```ts
- * const code = await interactiveOAuthFlow(config);
- * ```
- */
-export const interactiveOAuthFlow = async (
+export async function interactiveOAuthFlow(
 	config: EbayConfig,
 	scopes?: string[],
-): Promise<string | null> => {
+): Promise<string | null> {
 	writeCliLine(paint.bold.cyan("\n🔐 Interactive OAuth Flow\n"));
 
 	// Check if redirect URI is localhost
@@ -326,27 +244,14 @@ export const interactiveOAuthFlow = async (
 
 	writeCliLine(paint.yellow("\n⚠️  No authorization code received.\n"));
 	return null;
-};
+}
 
-/**
- * Displays manual OAuth instructions in the setup CLI.
- *
- * @param clientId eBay application client ID.
- * @param redirectUri Redirect URI or RuName configured for the application.
- * @param environment eBay environment for the authorization URL.
- * @param scopes OAuth scopes to include in the manual authorization URL.
- * @returns Nothing; instructions are written to stdout.
- * @example
- * ```ts
- * displayManualOAuthInstructions(clientId, redirectUri, 'sandbox');
- * ```
- */
-export const displayManualOAuthInstructions = (
+export function displayManualOAuthInstructions(
 	clientId: string,
 	redirectUri: string,
 	environment: "sandbox" | "production",
 	scopes?: string[],
-): void => {
+): void {
 	const authUrl = generateAuthUrl(clientId, redirectUri, environment, scopes);
 
 	writeCliLine(paint.bold.cyan("\n📖 Manual OAuth Token Acquisition Guide\n"));
@@ -381,18 +286,10 @@ export const displayManualOAuthInstructions = (
 	writeCliLine(
 		paint.gray("  • Or paste the code in the setup wizard when prompted\n"),
 	);
-};
+}
 
-/**
- * Gets help text for RuName (Redirect URI) setup.
- *
- * @returns A formatted help block explaining eBay RuName creation.
- * @example
- * ```ts
- * writeCliLine(getRuNameHelp());
- * ```
- */
-export const getRuNameHelp = (): string => `
+export function getRuNameHelp(): string {
+	return `
 ${paint.bold.cyan("What is a RuName (Redirect URI)?")}
 
 A RuName (Redirect URL name) is a unique identifier for your OAuth redirect URI.
@@ -423,17 +320,9 @@ ${paint.bold.white("Common RuName formats:")}
 ${paint.yellow("Note:")} The RuName is NOT the same as the redirect URI itself.
 It's a reference name that eBay associates with your redirect URI.
 `;
+}
 
-/**
- * Displays the first-time eBay developer guide in the setup CLI.
- *
- * @returns Nothing; the guide is written to stdout.
- * @example
- * ```ts
- * displayFirstTimeDeveloperGuide();
- * ```
- */
-export const displayFirstTimeDeveloperGuide = (): void => {
+export function displayFirstTimeDeveloperGuide(): void {
 	writeCliLine(paint.bold.cyan("\n🆕 First-Time eBay Developer Guide\n"));
 	writeCliLine(paint.white("Welcome! Here's how to get started:\n"));
 
@@ -484,4 +373,4 @@ export const displayFirstTimeDeveloperGuide = (): void => {
 			"Press Enter to continue when you have your credentials ready...",
 		),
 	);
-};
+}

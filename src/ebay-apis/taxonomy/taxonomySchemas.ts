@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-/**
- * Taxonomy/Metadata API Schemas
- *
- * This file contains Zod schemas for the Sell Metadata API (Taxonomy section).
- * Schemas are organized by policy type and include category-related metadata.
- */
-
 // ============================================================================
 // Common Schemas
 // ============================================================================

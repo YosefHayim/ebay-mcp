@@ -407,7 +407,7 @@ describe("EbayApiClient Unit Tests", () => {
 			// Check that rate limit info was logged (could be in detailed debug format)
 			const rateLimitCalls = apiHttpSpy.mock.calls.filter(
 				(call) =>
-					(call[1] as { rateLimit?: string } | undefined)?.rateLimit ===
+					(call[1] as { rateLimit?: string } | undefined)?.rateLimit ==
 					"4500/5000",
 			);
 			expect(rateLimitCalls.length).toBeGreaterThan(0);
@@ -611,7 +611,7 @@ describe("EbayApiClient Unit Tests", () => {
 			mockOAuthClient.getOrRefreshAppAccessToken.mockImplementation(
 				async () => {
 					attempt += 1;
-					const isFirstAttempt = attempt === 1;
+					const isFirstAttempt = attempt == 1;
 
 					if (isFirstAttempt) {
 						return "mock_app_token";
@@ -638,7 +638,7 @@ describe("EbayApiClient Unit Tests", () => {
 			let attempt = 0;
 			mockOAuthClient.getAccessToken.mockImplementation(async () => {
 				attempt += 1;
-				const isFirstAttempt = attempt === 1;
+				const isFirstAttempt = attempt == 1;
 
 				if (isFirstAttempt) {
 					return "mock_access_token";

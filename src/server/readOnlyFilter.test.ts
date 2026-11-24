@@ -27,10 +27,12 @@ describe("isReadOnlyModeEnabled", () => {
 });
 
 describe("isReadOnlyTool", () => {
-	const def = (
+	function def(
 		name: string,
 		annotations?: ReadOnlyToolDefinition["annotations"],
-	): ReadOnlyToolDefinition => ({ name, annotations });
+	): ReadOnlyToolDefinition {
+		return { name, annotations };
+	}
 
 	it("honors readOnlyHint=true over name heuristics", () => {
 		expect(
@@ -112,7 +114,7 @@ describe("isReadOnlyTool", () => {
 describe("isReadOnlyTool against full registry", () => {
 	it("keeps every annotated readOnlyHint=true tool", () => {
 		const annotatedReadOnly = getToolDefinitions().filter(
-			(definition) => definition.annotations?.readOnlyHint === true,
+			(definition) => definition.annotations?.readOnlyHint == true,
 		);
 		expect(annotatedReadOnly.length).toBeGreaterThan(0);
 		for (const definition of annotatedReadOnly) {
@@ -122,7 +124,7 @@ describe("isReadOnlyTool against full registry", () => {
 
 	it("excludes every annotated readOnlyHint=false tool", () => {
 		const annotatedWrite = getToolDefinitions().filter(
-			(definition) => definition.annotations?.readOnlyHint === false,
+			(definition) => definition.annotations?.readOnlyHint == false,
 		);
 		expect(annotatedWrite.length).toBeGreaterThan(0);
 		for (const definition of annotatedWrite) {
@@ -135,7 +137,7 @@ describe("isReadOnlyTool against full registry", () => {
 			/_(create|delete|update)_/.test(definition.name),
 		);
 		for (const definition of suspects) {
-			if (definition.annotations?.readOnlyHint === true) continue;
+			if (definition.annotations?.readOnlyHint == true) continue;
 			expect(isReadOnlyTool(definition), definition.name).toBe(false);
 		}
 	});

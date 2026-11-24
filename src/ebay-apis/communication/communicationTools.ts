@@ -162,13 +162,6 @@ function omitUndefinedLeaveFeedback(feedback: LeaveFeedbackInput) {
 	});
 }
 
-/**
- * Communication API tools for member messages, notifications, and seller feedback.
- *
- * Each tool derives its transport schema from the same Zod object whose inferred
- * args are passed to the endpoint method. Handlers stay at the MCP boundary:
- * they run one endpoint call and leave off optional fields that are undefined.
- */
 export const communicationEntries: ToolEntry[] = [
 	// Negotiation API
 	defineTool({

@@ -26,14 +26,14 @@ afterAll(async () => {
 	await rm(path.dirname(fixture.root), { recursive: true, force: true });
 });
 
-const writeFeed = async (
+async function writeFeed(
 	name: string,
 	bytes: Buffer | string,
-): Promise<string> => {
+): Promise<string> {
 	const filePath = path.join(fixture.root, name);
 	await writeFile(filePath, bytes);
 	return filePath;
-};
+}
 
 describe("feed files", () => {
 	it.each([

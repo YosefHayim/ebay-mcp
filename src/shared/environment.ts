@@ -13,147 +13,82 @@ import { getVersion } from "@/shared/version.js";
 // process.cwd() may point to an unrelated project with a different .env.
 loadEnvFileIfPresent(CREDENTIAL_ENV_PATH);
 
-const writeConfigDiagnostic = (message: string): void => {
+function writeConfigDiagnostic(message: string): void {
 	process.stderr.write(`[eBay MCP] ${message}\n`);
-};
+}
 
-/** Supported eBay API environment key. */
 export type EbayEnvironment = "production" | "sandbox";
 
-/** Result returned when validating requested OAuth scopes. */
 export interface ScopeValidationResult {
-	/** Non-fatal warnings for scopes outside the selected environment. */
 	warnings: string[];
-	/** Requested scopes preserved for the authorization request. */
 	validScopes: string[];
 }
 
-/** Startup environment validation result. */
 export interface EnvironmentValidationResult {
-	/** Whether startup can continue. */
 	isValid: boolean;
-	/** Non-fatal configuration warnings. */
 	warnings: string[];
-	/** Fatal configuration errors. */
 	errors: string[];
-	/** Informational startup notices. */
 	infos: string[];
 }
 
-/** Logger settings parsed from environment variables at process startup. */
 export interface LoggingConfig {
-	/** Winston-compatible log level name. */
 	logLevel: string;
-	/** Whether file transports should be enabled in addition to stderr. */
 	enableFileLogging: boolean;
 }
 
-/** Runtime UI feature gate parsed from environment variables. */
 export interface UiRuntimeConfig {
-	/** Whether MCP Apps UI resources may be advertised when the client supports them. */
 	enabled: boolean;
 }
 
-/**
- * Build logger settings from environment variables.
- *
- * @returns Logger level and file-logging flag used by the shared logger.
- *
- * @example
- * ```ts
- * const logging = getLoggingConfig();
- * ```
- */
-export const getLoggingConfig = (): LoggingConfig => ({
-	logLevel: process.env["EBAY_LOG_LEVEL"] || "info",
-	enableFileLogging: process.env["EBAY_ENABLE_FILE_LOGGING"] === "true",
-});
+export function getLoggingConfig(): LoggingConfig {
+	return {
+		logLevel: process.env["EBAY_LOG_LEVEL"] || "info",
+		enableFileLogging: process.env["EBAY_ENABLE_FILE_LOGGING"] == "true",
+	};
+}
 
-/**
- * Build MCP Apps UI gating config from environment variables.
- *
- * @returns UI runtime feature flag derived from `EBAY_MCP_UI`.
- *
- * @example
- * ```ts
- * const uiConfig = getUiRuntimeConfig();
- * ```
- */
-export const getUiRuntimeConfig = (): UiRuntimeConfig => ({
-	enabled: process.env["EBAY_MCP_UI"] !== "off",
-});
+export function getUiRuntimeConfig(): UiRuntimeConfig {
+	return {
+		enabled: process.env["EBAY_MCP_UI"] != "off",
+	};
+}
 
-/**
- * Gets default OAuth scopes for the specified eBay environment.
- *
- * @param environment eBay environment whose checked-in scope table should be loaded.
- * @returns Unique OAuth scope URIs for the selected environment.
- * @example
- * ```ts
- * const scopes = getDefaultScopes('production');
- * ```
- */
-export const getDefaultScopes = (environment: EbayEnvironment): string[] => [
-	...(environment === "production" ? productionScopes : sandboxScopes),
-];
+export function getDefaultScopes(environment: EbayEnvironment): string[] {
+	return [...(environment == "production" ? productionScopes : sandboxScopes)];
+}
 
-/** Optional scope requiring keyset eligibility and fresh user consent. */
 export const POST_ORDER_DOCUMENT_SCOPE =
 	"https://api.ebay.com/oauth/api_scope/commerce.post_order.document";
 
-/** Optional Finances API scope for order earnings; requested only through `EBAY_OAUTH_SCOPES`. */
 export const FINANCES_EARNINGS_SCOPE =
 	"https://api.ebay.com/oauth/api_scope/sell.finances.earnings.read";
 
-/** Limited-release Logistics API scope; requested only through `EBAY_OAUTH_SCOPES`. */
 export const LOGISTICS_SCOPE =
 	"https://api.ebay.com/oauth/api_scope/sell.logistics";
 
-/**
- * Recognized scopes, including optional scopes that are never requested by default.
- * @param environment - eBay environment for the base scope catalogue.
- * @returns Known scope identifiers; recognition does not guarantee keyset eligibility.
- */
-export const getKnownScopes = (environment: EbayEnvironment): string[] => [
-	...getDefaultScopes(environment),
-	POST_ORDER_DOCUMENT_SCOPE,
-	FINANCES_EARNINGS_SCOPE,
-	LOGISTICS_SCOPE,
-];
+export function getKnownScopes(environment: EbayEnvironment): string[] {
+	return [
+		...getDefaultScopes(environment),
+		POST_ORDER_DOCUMENT_SCOPE,
+		FINANCES_EARNINGS_SCOPE,
+		LOGISTICS_SCOPE,
+	];
+}
 
-/** Environment variable naming the exact OAuth scopes the consent URL should request. */
 export const OAUTH_SCOPES_ENV = "EBAY_OAUTH_SCOPES";
 
-/** Shape every eBay OAuth scope shares; anything else would corrupt the query string. */
 const SCOPE_PATTERN = /^https:\/\/api\.ebay\.com\/oauth\/[\w./-]+$/;
 
-/**
- * OAuth scopes the consent URL should ask for.
- *
- * The checked-in scope tables list every scope eBay publishes, but a keyset is
- * only granted a subset — several of these are limited release — and eBay
- * rejects the whole authorization request with `invalid_scope` when it names one
- * the keyset never received. `EBAY_OAUTH_SCOPES` takes the scope list shown for
- * your own keyset in the developer portal, separated by spaces or commas.
- *
- * @param environment eBay environment whose scope table backs the default.
- * @param env Environment to read; defaults to `process.env`.
- * @returns Configured scopes when the variable is set, otherwise the environment defaults.
- * @example
- * ```ts
- * const scopes = getRequestedScopes('production');
- * ```
- */
-export const getRequestedScopes = (
+export function getRequestedScopes(
 	environment: EbayEnvironment,
 	env: NodeJS.ProcessEnv = process.env,
-): string[] => {
+): string[] {
 	const configured = (env[OAUTH_SCOPES_ENV] ?? "")
 		.split(/[\s,]+/)
 		.map((scope) => scope.trim())
 		.filter((scope) => scope.length > 0);
 
-	if (configured.length === 0) {
+	if (configured.length == 0) {
 		return getDefaultScopes(environment);
 	}
 
@@ -163,28 +98,17 @@ export const getRequestedScopes = (
 	const rejected = configured.filter((scope) => !SCOPE_PATTERN.test(scope));
 	if (rejected.length > 0) {
 		writeConfigDiagnostic(
-			`${OAUTH_SCOPES_ENV} ignored ${rejected.length === 1 ? "an entry that is" : `${rejected.length} entries that are`} not an eBay OAuth scope URI: ${rejected.join(", ")}`,
+			`${OAUTH_SCOPES_ENV} ignored ${rejected.length == 1 ? "an entry that is" : `${rejected.length} entries that are`} not an eBay OAuth scope URI: ${rejected.join(", ")}`,
 		);
 	}
 
 	return wellFormed.length > 0 ? wellFormed : getDefaultScopes(environment);
-};
+}
 
-/**
- * Validates requested scopes against the selected eBay environment.
- *
- * @param scopes OAuth scopes requested by a token-management call or setup flow.
- * @param environment eBay environment to validate against.
- * @returns Requested scopes plus warnings for environment-only or unknown scopes.
- * @example
- * ```ts
- * const scopeValidation = validateScopes(scopes, 'sandbox');
- * ```
- */
-export const validateScopes = (
+export function validateScopes(
 	scopes: string[],
 	environment: EbayEnvironment,
-): ScopeValidationResult => {
+): ScopeValidationResult {
 	const validScopes = getKnownScopes(environment);
 	const validScopeSet = new Set(validScopes);
 	const warnings: string[] = [];
@@ -196,7 +120,7 @@ export const validateScopes = (
 		} else {
 			// Check if this is a scope for the other environment
 			const otherEnvironment =
-				environment === "production" ? "sandbox" : "production";
+				environment == "production" ? "sandbox" : "production";
 			const otherScopes = getDefaultScopes(otherEnvironment);
 
 			if (otherScopes.includes(scope)) {
@@ -214,18 +138,9 @@ export const validateScopes = (
 	});
 
 	return { warnings, validScopes: requestedValidScopes };
-};
+}
 
-/**
- * Validates environment configuration on startup.
- *
- * @returns Startup validation result consumed by server entrypoints and diagnostics.
- * @example
- * ```ts
- * const validation = validateEnvironmentConfig();
- * ```
- */
-export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
+export function validateEnvironmentConfig(): EnvironmentValidationResult {
 	const proxyAuth = getProxyAuthConfig();
 	const warnings: string[] = [...proxyAuth.warnings];
 	const errors: string[] = [...proxyAuth.errors];
@@ -245,11 +160,7 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
 
 	// Validate EBAY_ENVIRONMENT
 	const environment = process.env["EBAY_ENVIRONMENT"];
-	if (
-		environment &&
-		environment !== "production" &&
-		environment !== "sandbox"
-	) {
+	if (environment && environment != "production" && environment != "sandbox") {
 		errors.push(
 			`EBAY_ENVIRONMENT must be either "production" or "sandbox", got: "${environment}"`,
 		);
@@ -289,7 +200,7 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
 	// Validate EBAY_MCP_MEDIA_DIRS / EBAY_MCP_MEDIA_ROOT (local media upload allowlist)
 	errors.push(...getMediaAccessConfig().errors);
 
-	const isValid = errors.length === 0;
+	const isValid = errors.length == 0;
 
 	return {
 		isValid,
@@ -297,22 +208,13 @@ export const validateEnvironmentConfig = (): EnvironmentValidationResult => {
 		errors,
 		infos: proxyAuth.infos,
 	};
-};
+}
 
-/**
- * Build EbayConfig from environment variables with safe defaults.
- *
- * @returns Runtime eBay API configuration derived from environment variables.
- * @example
- * ```ts
- * const config = getEbayConfig();
- * ```
- */
-export const getEbayConfig = (): EbayConfig => {
+export function getEbayConfig(): EbayConfig {
 	const clientId = process.env["EBAY_CLIENT_ID"] ?? "";
 	const clientSecret = process.env["EBAY_CLIENT_SECRET"] ?? "";
 	const environment =
-		process.env["EBAY_ENVIRONMENT"] === "production" ? "production" : "sandbox";
+		process.env["EBAY_ENVIRONMENT"] == "production" ? "production" : "sandbox";
 	const accessToken = process.env["EBAY_USER_ACCESS_TOKEN"] ?? "";
 	const refreshToken = process.env["EBAY_USER_REFRESH_TOKEN"] ?? "";
 	const appAccessToken = process.env["EBAY_APP_ACCESS_TOKEN"] ?? "";
@@ -325,7 +227,7 @@ export const getEbayConfig = (): EbayConfig => {
 	// Only require client credentials when this server authenticates to eBay itself.
 	// In proxy auth mode the upstream proxy supplies auth, so absent credentials are
 	// expected and must not nag (tokens can otherwise be generated from a refresh token).
-	if (!disableAuthHeader && (clientId === "" || clientSecret === "")) {
+	if (!disableAuthHeader && (clientId == "" || clientSecret == "")) {
 		writeConfigDiagnostic(
 			"Missing required eBay credentials. Please set:\n1) EBAY_CLIENT_ID\n2) EBAY_CLIENT_SECRET\nin your .env file at project root",
 		);
@@ -358,16 +260,8 @@ export const getEbayConfig = (): EbayConfig => {
 	}
 
 	return ebayConfig;
-};
+}
 
-/**
- * Trading API site IDs for each REST marketplace ID.
- *
- * The Trading API predates the REST marketplace IDs and identifies a site with
- * a numeric `X-EBAY-API-SITEID` header instead. The mapping is fixed by eBay.
- *
- * @see https://developer.ebay.com/devzone/merchandising/docs/CallRef/Enums/GlobalIdList.html
- */
 const TRADING_SITE_IDS: Readonly<Record<string, string>> = {
 	EBAY_AT: "16",
 	EBAY_AU: "15",
@@ -392,127 +286,64 @@ const TRADING_SITE_IDS: Readonly<Record<string, string>> = {
 
 const DEFAULT_TRADING_SITE_ID = "0";
 
-/**
- * Get the Trading API site ID for the configured marketplace.
- *
- * Derived from `EBAY_MARKETPLACE_ID` so a single setting drives both REST and
- * Trading traffic. `EBAY_SITE_ID` overrides it for sites this map does not
- * cover, or when REST and Trading must target different sites.
- *
- * Listing on a non-US site with the wrong site ID fails at eBay: the currency
- * belongs to the marketplace, so an EUR listing sent to site 0 is rejected
- * with "Invalid auction currency".
- *
- * @returns Numeric Trading API site ID sent as `X-EBAY-API-SITEID`.
- * @example
- * ```ts
- * // EBAY_MARKETPLACE_ID=EBAY_DE
- * const siteId = getTradingSiteId(); // '77'
- * ```
- */
-export const getTradingSiteId = (): string => {
+export function getTradingSiteId(): string {
 	const override = (process.env["EBAY_SITE_ID"] ?? "").trim();
-	if (override !== "") {
+	if (override != "") {
 		return override;
 	}
 	const marketplaceId =
 		(process.env["EBAY_MARKETPLACE_ID"] ?? "").trim() || "EBAY_US";
 	return TRADING_SITE_IDS[marketplaceId] ?? DEFAULT_TRADING_SITE_ID;
-};
+}
 
-/**
- * Get the eBay REST API base URL for the configured environment.
- *
- * @param environment eBay environment used when no override is configured.
- * @param overrideBaseUrl Base URL override from `EBAY_MCP_API_BASE_URL`.
- * @returns REST API base URL for direct eBay or proxy traffic.
- * @example
- * ```ts
- * const baseUrl = getBaseUrl('sandbox');
- * ```
- */
-export const getBaseUrl = (
+export function getBaseUrl(
 	environment: EbayEnvironment,
 	overrideBaseUrl?: string,
-): string => {
+): string {
 	if (overrideBaseUrl) {
 		return overrideBaseUrl;
 	}
-	return environment === "production"
+	return environment == "production"
 		? "https://api.ebay.com"
 		: "https://api.sandbox.ebay.com";
-};
+}
 
-/**
- * Get base URL for Identity API (uses apiz subdomain).
- *
- * @param environment eBay environment used when no override is configured.
- * @param overrideBaseUrl Base URL override from `EBAY_MCP_API_BASE_URL`.
- * @returns Identity API base URL for direct eBay or proxy traffic.
- * @example
- * ```ts
- * const identityBaseUrl = getIdentityBaseUrl('production');
- * ```
- */
-export const getIdentityBaseUrl = (
+export function getIdentityBaseUrl(
 	environment: EbayEnvironment,
 	overrideBaseUrl?: string,
-): string => {
+): string {
 	if (overrideBaseUrl) {
 		return overrideBaseUrl;
 	}
-	return environment === "production"
+	return environment == "production"
 		? "https://apiz.ebay.com"
 		: "https://apiz.sandbox.ebay.com";
-};
+}
 
-/**
- * Get base URL for the Media API (uses the apim subdomain).
- *
- * @param environment eBay environment used when no override is configured.
- * @param overrideBaseUrl Base URL override from `EBAY_MCP_API_BASE_URL`.
- * @returns Media API base URL for direct eBay or proxy traffic.
- * @example
- * ```ts
- * const mediaBaseUrl = getMediaBaseUrl('production');
- * ```
- */
-export const getMediaBaseUrl = (
+export function getMediaBaseUrl(
 	environment: EbayEnvironment,
 	overrideBaseUrl?: string,
-): string => {
+): string {
 	if (overrideBaseUrl) {
 		return overrideBaseUrl;
 	}
-	return environment === "production"
+	return environment == "production"
 		? "https://apim.ebay.com"
 		: "https://apim.sandbox.ebay.com";
-};
+}
 
-/**
- * Get base URL for the Client Registration API (uses the tppz subdomain).
- *
- * @param environment eBay environment used when no override is configured.
- * @param overrideBaseUrl Base URL override from `EBAY_MCP_API_BASE_URL`.
- * @returns Client Registration API base URL for direct eBay or proxy traffic.
- * @example
- * ```ts
- * const registrationBaseUrl = getClientRegistrationBaseUrl('production');
- * ```
- */
-export const getClientRegistrationBaseUrl = (
+export function getClientRegistrationBaseUrl(
 	environment: EbayEnvironment,
 	overrideBaseUrl?: string,
-): string => {
+): string {
 	if (overrideBaseUrl) {
 		return overrideBaseUrl;
 	}
-	return environment === "production"
+	return environment == "production"
 		? "https://tppz.ebay.com"
 		: "https://tppz.sandbox.ebay.com";
-};
+}
 
-/** Hosts treated as loopback when deciding whether a cleartext base URL is safe. */
 const LOOPBACK_HOSTS = new Set([
 	"localhost",
 	"127.0.0.1",
@@ -521,50 +352,17 @@ const LOOPBACK_HOSTS = new Set([
 	"0.0.0.0",
 ]);
 
-/**
- * Parsed and validated proxy/runtime auth overrides sourced from the `EBAY_MCP_*`
- * environment variables. Lets the server run behind an authenticating reverse
- * proxy: when {@link disableAuthHeader} is set the server attaches no eBay auth and
- * skips token acquisition, and {@link apiBaseUrl} redirects all outbound eBay
- * traffic to the proxy origin. `warnings`/`errors`/`infos` are surfaced through
- * {@link validateEnvironmentConfig} so startup and `npm run diagnose` report
- * misconfigurations consistently.
- *
- * @see https://github.com/YosefHayim/ebay-mcp/issues/122
- */
 export interface ProxyAuthConfig {
-	/** Normalized base-URL override (trailing slash stripped), or undefined when unset. */
 	apiBaseUrl?: string | undefined;
-	/** Whether all eBay auth headers and token acquisition should be skipped. */
 	disableAuthHeader: boolean;
-	/** Non-fatal configuration notices (e.g. cleartext credentials, no-op flag). */
 	warnings: string[];
-	/** Fatal configuration problems (e.g. an unparseable base URL). */
 	errors: string[];
-	/** Informational startup notices (e.g. proxy auth mode active). */
 	infos: string[];
 }
 
-/**
- * Parse, normalize, and validate the proxy auth overrides from the environment.
- *
- * Normalization strips a trailing slash from the base URL so path concatenation
- * (`${base}${'/sell/...'}`) never yields a double slash. An unparseable URL is a
- * fatal error (fail loud at the boundary) rather than a silent fallback to
- * `api.ebay.com`. Two non-fatal warnings guard the footguns: disabling auth without
- * a base URL (requests would hit real eBay unauthenticated), and pointing the base
- * URL at a plaintext `http://` non-loopback host while auth is still on (real eBay
- * tokens would traverse the wire in cleartext).
- *
- * @returns Parsed proxy auth configuration and startup diagnostics.
- * @example
- * ```ts
- * const proxyAuth = getProxyAuthConfig();
- * ```
- */
-export const getProxyAuthConfig = (): ProxyAuthConfig => {
+export function getProxyAuthConfig(): ProxyAuthConfig {
 	const disableAuthHeader =
-		process.env["EBAY_MCP_DISABLE_AUTH_HEADER"] === "true";
+		process.env["EBAY_MCP_DISABLE_AUTH_HEADER"] == "true";
 	const rawBaseUrl = (process.env["EBAY_MCP_API_BASE_URL"] ?? "").trim();
 	const warnings: string[] = [];
 	const errors: string[] = [];
@@ -600,7 +398,7 @@ export const getProxyAuthConfig = (): ProxyAuthConfig => {
 	if (
 		parsedBaseUrl &&
 		!disableAuthHeader &&
-		parsedBaseUrl.protocol === "http:" &&
+		parsedBaseUrl.protocol == "http:" &&
 		!LOOPBACK_HOSTS.has(parsedBaseUrl.hostname)
 	) {
 		warnings.push(
@@ -611,9 +409,9 @@ export const getProxyAuthConfig = (): ProxyAuthConfig => {
 	}
 
 	return { apiBaseUrl, disableAuthHeader, warnings, errors, infos };
-};
+}
 
-const getSigningConfig = (): EbayConfig["signing"] => {
+function getSigningConfig(): EbayConfig["signing"] {
 	const keyJwe = process.env["EBAY_SIGNING_KEY_JWE"]?.trim();
 	const privateKey = process.env["EBAY_SIGNING_PRIVATE_KEY"]?.trim();
 	if (keyJwe && privateKey) {
@@ -626,35 +424,17 @@ const getSigningConfig = (): EbayConfig["signing"] => {
 	}
 
 	return undefined;
-};
+}
 
-/**
- * Generate the OAuth authorization URL for user consent
- * This URL should be opened in a browser for the user to grant permissions
- *
- * Note: Scopes are optional - eBay will automatically grant the appropriate scopes
- * based on your application's keyset configuration if scopes are not specified.
- *
- * @param clientId eBay application client ID.
- * @param redirectUri eBay RuName redirect value, not a localhost URL.
- * @param environment eBay environment that should host the authorization page.
- * @param scopes OAuth scopes to request; defaults to the selected environment scopes.
- * @param state Opaque CSRF value returned by eBay to the redirect URI.
- * @returns Fully qualified OAuth authorization URL for user consent.
- * @example
- * ```ts
- * const url = getOAuthAuthorizationUrl(clientId, ruName, 'sandbox');
- * ```
- */
-export const getOAuthAuthorizationUrl = (
+export function getOAuthAuthorizationUrl(
 	clientId: string,
 	redirectUri: string, // MUST be eBay RuName, NOT a URL
 	environment: EbayEnvironment,
 	scopes?: string[],
 	state?: string,
-): string => {
+): string {
 	const authBase =
-		environment === "production"
+		environment == "production"
 			? "https://auth.ebay.com"
 			: "https://auth.sandbox.ebay.com";
 
@@ -673,11 +453,8 @@ export const getOAuthAuthorizationUrl = (
 	});
 
 	return `${authBase}/oauth2/authorize?${params.toString()}&scope=${scopeList}`;
-};
+}
 
-/**
- * MCP server implementation metadata advertised to clients.
- */
 export const mcpConfig: Implementation = {
 	name: "eBay API Model Context Protocol Server",
 	version: getVersion(),

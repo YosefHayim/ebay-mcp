@@ -57,7 +57,7 @@ function pickRequestedScopes(
 		return { warnings: [], validScopes: scopes };
 	}
 
-	if (scopes.length === 0) {
+	if (scopes.length == 0) {
 		return { warnings: [], validScopes: scopes };
 	}
 
@@ -69,7 +69,7 @@ function maskedTokenOrNull(token: string | undefined): string | null {
 		return null;
 	}
 
-	if (token.length === 0) {
+	if (token.length == 0) {
 		return null;
 	}
 
@@ -81,7 +81,7 @@ function describeRefreshedExpiry(expiry: number | undefined) {
 		return null;
 	}
 
-	if (expiry === 0) {
+	if (expiry == 0) {
 		return null;
 	}
 
@@ -210,10 +210,6 @@ const exchangeAuthorizationCodeInputSchema = z.object({
 		),
 });
 
-/**
- * OAuth token management tools for consent URLs, token storage, refresh, status,
- * and date/expiry helpers. Handlers receive validated runtime config from the API facade.
- */
 export const tokenManagementEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_oauth_url",

@@ -6,7 +6,9 @@ import {
 import { createInventoryOffersMethods } from "@/ebay-apis/inventory/offersApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 
-const usd = (amount: string) => ({ currency: "USD", value: amount });
+function usd(amount: string) {
+	return { currency: "USD", value: amount };
+}
 
 const auctionOffer = {
 	sku: "AUCTION-1",

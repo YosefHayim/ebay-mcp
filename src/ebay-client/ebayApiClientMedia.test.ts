@@ -53,7 +53,7 @@ describe("EbayApiClient media transport", () => {
 				"/commerce/media/v1_beta/image/create_image_from_file",
 				(multipartBody) => {
 					rawBody =
-						typeof multipartBody === "string"
+						typeof multipartBody == "string"
 							? multipartBody
 							: JSON.stringify(multipartBody);
 					return true;

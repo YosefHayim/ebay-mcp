@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-/**
- * Zod schemas for Negotiation API input validation.
- * OpenAPI spec: sell_negotiation_v1_oas3.json
- */
-
-/** Optional positive page size accepted by Negotiation list endpoints. */
 const limitSchema = z
 	.number({
 		invalid_type_error: "limit must be a number",
@@ -14,7 +8,6 @@ const limitSchema = z
 	.positive("limit must be a positive number")
 	.optional();
 
-/** Optional zero-based page offset accepted by Negotiation list endpoints. */
 const offsetSchema = z
 	.number({
 		invalid_type_error: "offset must be a number",
@@ -23,7 +16,6 @@ const offsetSchema = z
 	.min(0, "offset must be a non-negative number")
 	.optional();
 
-/** Schema for findEligibleItems input. */
 export const findEligibleItemsSchema = z.object({
 	limit: limitSchema,
 	offset: offsetSchema,
@@ -35,7 +27,6 @@ export const findEligibleItemsSchema = z.object({
 		.optional(),
 });
 
-/** Schema for sendOfferToInterestedBuyers input. */
 export const sendOfferToInterestedBuyersSchema = z.object({
 	allowCounterOffer: z
 		.boolean({

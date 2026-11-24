@@ -7,61 +7,35 @@ import { z } from "zod";
 import { TOOL_FAMILY_KEYS } from "@/shared/toolFamilies.js";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
-/**
- * Tool gating: the runtime half of the `EBAY_MCP_TOOLS=dynamic` feature.
- *
- * In dynamic mode the server registers every eBay tool but boots with them
- * disabled, advertising only the three discovery meta-tools defined here. The
- * agent browses the catalogue and enables just the tools it needs; the MCP SDK
- * emits `tools/listChanged` automatically when a tool's `enabled` flag flips, so
- * the host re-fetches and the freshly enabled tools appear natively, with their
- * real input schemas and validation. This keeps advertised context proportional
- * to what the agent actually uses instead of the full ~187-tool catalogue.
- *
- * The pure env parsing/validation lives in `@/shared/toolFamilies`; this
- * module owns everything that needs the live tool registry.
- */
-
-/** Default page size for {@link ToolGatingController.list} when `limit` is omitted. */
 const DEFAULT_LIST_LIMIT = 25;
 
-/** Upper bound on a single discovery page, mirrored by the `list_ebay_tools` schema. */
 const MAX_LIST_LIMIT = 100;
 
-/**
- * Initialize-time guidance shown to the agent in dynamic mode so it knows the
- * catalogue is hidden behind the discovery tools. Set only when dynamic mode is
- * active; the default and static modes leave the handshake untouched.
- */
 export const DYNAMIC_MODE_INSTRUCTIONS =
 	"This eBay server keeps its full tool catalogue hidden to save context. Only the discovery tools are visible right now. " +
 	"Call `list_ebay_tools` (no arguments) to see the tool families, then `list_ebay_tools` with a `family` or `query` to find specific tools, " +
 	"then `enable_ebay_tools` with the tool names you need — they will appear as normal tools you can call. " +
 	"Call `disable_ebay_tools` to remove tools you no longer need and reclaim context.";
 
-/** One discoverable eBay tool — lightweight by design; the full input schema arrives only on enable. */
 interface ToolCatalogRow {
 	name: string;
 	family: string;
 	summary: string;
 }
 
-/** A tool family as shown in the discovery overview. */
 interface FamilyOverviewRow {
 	key: string;
 	title: string;
 	count: number;
 }
 
-/** Precomputed catalogue derived once from {@link toolCategories}. */
 interface ToolCatalog {
 	rows: ToolCatalogRow[];
 	families: FamilyOverviewRow[];
 	familyByToolName: Map<string, string>;
 }
 
-/** Condenses a tool description to a single sentence for the discovery listing. */
-const toSummary = (description: string): string => {
+function toSummary(description: string): string {
 	const [firstLine] = description.split("\n", 1);
 	const isFirstLineMissing = firstLine == null;
 
@@ -72,12 +46,11 @@ const toSummary = (description: string): string => {
 	const trimmedLine = firstLine.trim();
 	const sentenceEnd = trimmedLine.indexOf(". ");
 	const sentence =
-		sentenceEnd === -1 ? trimmedLine : trimmedLine.slice(0, sentenceEnd + 1);
+		sentenceEnd == -1 ? trimmedLine : trimmedLine.slice(0, sentenceEnd + 1);
 	return sentence.length > 160 ? `${sentence.slice(0, 157)}...` : sentence;
-};
+}
 
-/** Builds the discovery catalogue (tool rows, family overview, name→family index). */
-const buildCatalog = (): ToolCatalog => {
+function buildCatalog(): ToolCatalog {
 	const rows: ToolCatalogRow[] = [];
 	const families: FamilyOverviewRow[] = [];
 	const familyByToolName = new Map<string, string>();
@@ -100,11 +73,10 @@ const buildCatalog = (): ToolCatalog => {
 	}
 
 	return { rows, families, familyByToolName };
-};
+}
 
 const CATALOG = buildCatalog();
 
-/** Input accepted by the lightweight dynamic-mode tool catalogue. */
 const listEbayToolsInputSchema = z.object({
 	family: z
 		.string()
@@ -131,7 +103,6 @@ const listEbayToolsInputSchema = z.object({
 		),
 });
 
-/** Input accepted by the dynamic-mode enable/disable meta-tools. */
 const dynamicToolNamesInputSchema = z.object({
 	names: z
 		.array(z.string())
@@ -141,22 +112,7 @@ const dynamicToolNamesInputSchema = z.object({
 		),
 });
 
-/**
- * Resolves the tool names belonging to the given families, preserving the caller's
- * ability to filter registry entries for static mode. Unknown family keys
- * contribute nothing (they are rejected earlier by env validation).
- *
- * @param families - Tool family keys requested by static tool gating mode.
- * @returns Tool names that belong to the requested families.
- *
- * @example
- * ```ts
- * const names = toolNamesInFamilies(['inventory', 'account']);
- * ```
- */
-export const toolNamesInFamilies = (
-	families: Iterable<string>,
-): Set<string> => {
+export function toolNamesInFamilies(families: Iterable<string>): Set<string> {
 	const wanted = new Set(families);
 	const names = new Set<string>();
 	for (const [name, family] of CATALOG.familyByToolName) {
@@ -165,9 +121,8 @@ export const toolNamesInFamilies = (
 		}
 	}
 	return names;
-};
+}
 
-/** Result of {@link ToolGatingController.enable} / {@link ToolGatingController.disable}. */
 interface MutationResult {
 	enabled?: string[];
 	disabled?: string[];
@@ -175,50 +130,28 @@ interface MutationResult {
 	activeCount: number;
 }
 
-/**
- * Drives the discovery meta-tools against the live set of registered tool handles.
- * Backed by the per-connection `RegisteredTool` map, so enabling/disabling is
- * naturally isolated to one client session.
- */
 export interface ToolGatingController {
-	/** Lists families or lightweight tool rows matching the provided filters. */
 	list(args: {
 		family?: string | undefined;
 		query?: string | undefined;
 		cursor?: string | undefined;
 		limit?: number | undefined;
 	}): unknown;
-	/** Enables registered eBay tools by exact tool name. */
 	enable(names: string[]): MutationResult;
-	/** Disables registered eBay tools by exact tool name. */
 	disable(names: string[]): MutationResult;
 }
 
-/** Parses an opaque list cursor (a stringified offset) back into a non-negative offset. */
-const parseCursor = (cursor: string | undefined): number => {
+function parseCursor(cursor: string | undefined): number {
 	if (!cursor) {
 		return 0;
 	}
 	const offset = Number.parseInt(cursor, 10);
 	return Number.isInteger(offset) && offset > 0 ? offset : 0;
-};
+}
 
-/**
- * Creates the controller backing the discovery meta-tools.
- *
- * @param handles - Map of eBay tool name → its registered handle. Only these tools
- *   are gateable; the meta-tools themselves are intentionally absent so they can
- *   never be disabled and are excluded from `activeCount`.
- * @returns Controller used by the discovery meta-tools.
- *
- * @example
- * ```ts
- * const controller = createToolGatingController(handles);
- * ```
- */
-export const createToolGatingController = (
+export function createToolGatingController(
 	handles: Map<string, RegisteredTool>,
-): ToolGatingController => {
+): ToolGatingController {
 	const activeCount = (): number =>
 		[...handles.values()].filter((handle) => handle.enabled).length;
 
@@ -232,7 +165,7 @@ export const createToolGatingController = (
 				unknown.push(name);
 				continue;
 			}
-			if (handle.enabled !== enable) {
+			if (handle.enabled != enable) {
 				if (enable) {
 					handle.enable();
 				} else {
@@ -255,15 +188,14 @@ export const createToolGatingController = (
 						...row,
 						enabledCount: [...handles.entries()].filter(
 							([name, handle]) =>
-								CATALOG.familyByToolName.get(name) === row.key &&
-								handle.enabled,
+								CATALOG.familyByToolName.get(name) == row.key && handle.enabled,
 						).length,
 					})),
 					hint: "Call list_ebay_tools with { family } or { query } to list tools, then enable_ebay_tools.",
 				};
 			}
 
-			if (family && !CATALOG.families.some((row) => row.key === family)) {
+			if (family && !CATALOG.families.some((row) => row.key == family)) {
 				return {
 					error: `Unknown tool family "${family}".`,
 					validFamilies: TOOL_FAMILY_KEYS,
@@ -272,7 +204,7 @@ export const createToolGatingController = (
 
 			const needle = query?.toLowerCase();
 			const matches = CATALOG.rows.filter((row) => {
-				if (family && row.family !== family) {
+				if (family && row.family != family) {
 					return false;
 				}
 				if (needle) {
@@ -304,31 +236,20 @@ export const createToolGatingController = (
 		enable: (names) => mutate(names, true),
 		disable: (names) => mutate(names, false),
 	};
-};
+}
 
-/** Wraps controller output as a standard text tool result. */
-const toToolResult = (controllerOutput: unknown): CallToolResult => ({
-	content: [{ type: "text", text: JSON.stringify(controllerOutput, null, 2) }],
-});
+function toToolResult(controllerOutput: unknown): CallToolResult {
+	return {
+		content: [
+			{ type: "text", text: JSON.stringify(controllerOutput, null, 2) },
+		],
+	};
+}
 
-/**
- * Registers the three discovery meta-tools on the server. Called only in dynamic
- * mode, after the eBay tools are registered and disabled, so the controller sees
- * every gateable handle.
- *
- * @param server - MCP server receiving the discovery meta-tools.
- * @param controller - Dynamic tool gating controller backing the meta-tools.
- * @returns Nothing; the server is mutated through MCP SDK registration calls.
- *
- * @example
- * ```ts
- * registerMetaTools(server, createToolGatingController(handles));
- * ```
- */
-export const registerMetaTools = (
+export function registerMetaTools(
 	server: McpServer,
 	controller: ToolGatingController,
-): void => {
+): void {
 	server.registerTool(
 		"list_ebay_tools",
 		{
@@ -358,4 +279,4 @@ export const registerMetaTools = (
 		},
 		({ names }) => toToolResult(controller.disable(names)),
 	);
-};
+}

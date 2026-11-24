@@ -1,24 +1,3 @@
-/**
- * Interactive Setup for eBay API MCP Server - Complete Optimized Version
- *
- * Features:
- * - Pre-flight security checks
- * - First-time developer guidance
- * - Interactive OAuth flow with local callback server
- * - Scope selection and verification
- * - Auto-generate access tokens
- * - Multi-environment support
- * - Enhanced LLM client detection and configuration
- * - Docker setup option
- * - Post-setup quick start guide
- *
- * Usage:
- *   npx ebay-mcp                         Interactive setup wizard
- *   npx ebay-mcp --help                  Show help
- *   npx ebay-mcp --diagnose              Run diagnostics
- *   npx ebay-mcp --first-time            First-time developer guide
- */
-
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable n/no-process-exit */
@@ -202,7 +181,7 @@ function stripWrappedQuotes(token: string): string {
 }
 
 function validateRefreshToken(token: string): true | string {
-	const isBlank = token.trim() === "";
+	const isBlank = token.trim() == "";
 
 	if (isBlank) {
 		return "Refresh token is required";
@@ -219,7 +198,7 @@ function validateRefreshToken(token: string): true | string {
 }
 
 function describeDetectedClient(client: LLMClient): AskChoice {
-	const isAlreadyConfigured = client.configExists === true;
+	const isAlreadyConfigured = client.configExists == true;
 	const labelSuffix = isAlreadyConfigured
 		? paint.yellow(" [Already configured]")
 		: paint.green(" [Recommended]");
@@ -227,7 +206,7 @@ function describeDetectedClient(client: LLMClient): AskChoice {
 	return {
 		label: client.displayName + labelSuffix,
 		value: client.name,
-		selected: isAlreadyConfigured === false,
+		selected: isAlreadyConfigured == false,
 	};
 }
 
@@ -293,7 +272,7 @@ function generateEnvFile(
 ): void {
 	const envPath = join(
 		PROJECT_ROOT,
-		`.env${environment === "sandbox" ? "" : `.${environment}`}`,
+		`.env${environment == "sandbox" ? "" : `.${environment}`}`,
 	);
 
 	const content = `# eBay API MCP Server Configuration
@@ -503,7 +482,7 @@ async function validateAndGenerateTokens(
 			initial: true,
 		});
 
-		return retry.value === true;
+		return retry.value == true;
 	}
 }
 
@@ -531,7 +510,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 	const clients = detectLLMClients();
 	const detectedClients = clients.filter((client) => client.detected);
 
-	if (detectedClients.length === 0) {
+	if (detectedClients.length == 0) {
 		console.log(
 			paint.yellow("⚠️  No compatible LLM clients detected on your system.\n"),
 		);
@@ -551,7 +530,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 	}
 
 	const clientCount = detectedClients.length;
-	const plural = clientCount === 1 ? "client" : "clients";
+	const plural = clientCount == 1 ? "client" : "clients";
 	console.log(
 		paint.green.bold(
 			`✓ Found ${clientCount} compatible ${plural} on your system:\n`,
@@ -635,7 +614,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 		choices: detectedClients.map(describeDetectedClient),
 	});
 	const selectedClients = clientSelection.value ?? [];
-	const isNoneSelected = selectedClients.length === 0;
+	const isNoneSelected = selectedClients.length == 0;
 
 	if (isNoneSelected) {
 		console.log(paint.gray("\n⏭️  Skipping LLM client configuration.\n"));
@@ -661,7 +640,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 
 	for (const clientName of selectedClients) {
 		const client = detectedClients.find(
-			(detected) => detected.name === clientName,
+			(detected) => detected.name == clientName,
 		);
 		if (!client) continue;
 
@@ -711,7 +690,7 @@ async function setupDocker(): Promise<void> {
 		message: "Would you like to generate Docker configuration?",
 		initial: false,
 	});
-	const skipsDocker = wantDocker.value !== true;
+	const skipsDocker = wantDocker.value != true;
 
 	if (skipsDocker) {
 		return;
@@ -826,7 +805,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 				message: "Critical issues found. Continue anyway?",
 				initial: false,
 			});
-			const stopsSetup = continueAnyway.value !== true;
+			const stopsSetup = continueAnyway.value != true;
 
 			if (stopsSetup) {
 				console.log(
@@ -850,7 +829,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 			message: "Is this your first time setting up eBay Developer credentials?",
 			initial: false,
 		});
-		const wantsGuide = needsGuide.value === true;
+		const wantsGuide = needsGuide.value == true;
 
 		if (wantsGuide) {
 			displayFirstTimeDeveloperGuide();
@@ -867,7 +846,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 		args.environment || existingConfig["EBAY_ENVIRONMENT"] || "sandbox";
 
 	if (!args.environment) {
-		const environmentInitial = environment === "production" ? 1 : 0;
+		const environmentInitial = environment == "production" ? 1 : 0;
 		const envResponse = await askSelect({
 			message: "Select eBay environment:",
 			choices: [
@@ -912,7 +891,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 		message: "Need help understanding RuName (Redirect URI)?",
 		initial: false,
 	});
-	const wantsRuNameHelp = needsRuNameHelp.value === true;
+	const wantsRuNameHelp = needsRuNameHelp.value == true;
 
 	if (wantsRuNameHelp) {
 		console.log(getRuNameHelp());
@@ -932,7 +911,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 		message: "Would you like to see available OAuth scopes?",
 		initial: false,
 	});
-	const wantsScopes = viewScopes.value === true;
+	const wantsScopes = viewScopes.value == true;
 
 	if (wantsScopes) {
 		displayScopeCategories();
@@ -962,9 +941,9 @@ async function runInteractiveSetup(args: CLIArgs) {
 	};
 
 	const method = tokenMethod.value;
-	const usesInteractiveFlow = method === "interactive";
-	const usesManualFlow = method === "manual";
-	const usesExistingToken = method === "existing";
+	const usesInteractiveFlow = method == "interactive";
+	const usesManualFlow = method == "manual";
+	const usesExistingToken = method == "existing";
 
 	async function storeAcquiredToken(
 		useInteractiveFlow: boolean,
@@ -1061,7 +1040,7 @@ async function runInteractiveSetup(args: CLIArgs) {
 		message: "Save this configuration?",
 		initial: true,
 	});
-	const skipsSave = confirmation.value !== true;
+	const skipsSave = confirmation.value != true;
 
 	if (skipsSave) {
 		console.log(paint.yellow("\n⚠️  Configuration not saved.\n"));

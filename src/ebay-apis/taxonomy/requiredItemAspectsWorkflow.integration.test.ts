@@ -5,7 +5,7 @@ import { getToolDefinitions } from "@/tool-registry/index.js";
 describe("required item aspects workflow", () => {
 	it("connects the registered taxonomy metadata to the pre-listing workflow", () => {
 		const tool = getToolDefinitions().find(
-			(definition) => definition.name === "ebay_get_item_aspects_for_category",
+			(definition) => definition.name == "ebay_get_item_aspects_for_category",
 		);
 		const usingSkill = renderCodexSection(buildSkillDoc("using"));
 

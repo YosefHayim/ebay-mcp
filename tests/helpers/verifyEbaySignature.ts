@@ -5,11 +5,11 @@ const SIGNATURE_LABEL_PATTERN = /^sig1=/;
 const SIGNATURE_VALUE_PATTERN = /^sig1=:|:$/g;
 const COVERED_COMPONENT_PATTERN = /"([^"]+)"/g;
 
-export const verifyEbaySignature = (
+export function verifyEbaySignature(
 	signatureHeaders: Record<string, string>,
 	signedRequest: { readonly method: string; readonly url: string },
 	publicKey: KeyObject,
-): boolean => {
+): boolean {
 	const headerEntries = Object.entries(signatureHeaders).map(
 		([name, value]) => [name.toLowerCase(), value] as const,
 	);
@@ -36,6 +36,6 @@ export const verifyEbaySignature = (
 	);
 	const signature = Buffer.from(signatureBase64, "base64");
 	const signatureBaseBytes = Buffer.from(signatureBase);
-	const digest = publicKey.asymmetricKeyType === "ed25519" ? null : "sha256";
+	const digest = publicKey.asymmetricKeyType == "ed25519" ? null : "sha256";
 	return verify(digest, signatureBaseBytes, publicKey, signature);
-};
+}

@@ -89,18 +89,14 @@ const scheduleFields = {
 		.describe("Schema version of the report, when the template requires it"),
 };
 
-/** Feed task identifier for the task, order task, inventory task and service metric task resources. */
 export const feedTaskIdInputSchema = z.object({ taskId });
-/** Feed schedule identifier. */
 export const feedScheduleIdInputSchema = z.object({ scheduleId });
-/** Schedule template identifier. */
 export const feedScheduleTemplateIdInputSchema = z.object({
 	scheduleTemplateId: nonempty.describe(
 		"Schedule template ID from ebay_get_feed_schedule_templates",
 	),
 });
 
-/** Filters for getOrderTasks. */
 export const getOrderTasksInputSchema = z.object({
 	feedType: nonempty
 		.optional()
@@ -113,7 +109,6 @@ export const getOrderTasksInputSchema = z.object({
 	limit,
 	offset,
 });
-/** Filters for getInventoryTasks. */
 export const getInventoryTasksInputSchema = z.object({
 	feedType: nonempty
 		.optional()
@@ -128,7 +123,6 @@ export const getInventoryTasksInputSchema = z.object({
 	limit,
 	offset,
 });
-/** Filters for getTasks. */
 export const getFeedTasksInputSchema = z.object({
 	feedType: nonempty
 		.optional()
@@ -141,7 +135,6 @@ export const getFeedTasksInputSchema = z.object({
 	limit,
 	offset,
 });
-/** Filters for getCustomerServiceMetricTasks. */
 export const getCustomerServiceMetricTasksInputSchema = z.object({
 	feedType: nonempty
 		.optional()
@@ -151,7 +144,6 @@ export const getCustomerServiceMetricTasksInputSchema = z.object({
 	limit,
 	offset,
 });
-/** Feed type and pagination for getSchedules and getScheduleTemplates. */
 export const feedTypePageInputSchema = z.object({
 	feedType: nonempty.describe(
 		"Feed type; schedules exist only for LMS_ORDER_REPORT",
@@ -160,7 +152,6 @@ export const feedTypePageInputSchema = z.object({
 	offset,
 });
 
-/** Body of createOrderTask. */
 export const createOrderTaskInputSchema = z.object({
 	task: z
 		.object({
@@ -190,7 +181,6 @@ export const createOrderTaskInputSchema = z.object({
 		})
 		.describe("CreateOrderTaskRequest body"),
 });
-/** Body of createInventoryTask. */
 export const createInventoryTaskInputSchema = z.object({
 	task: z
 		.object({
@@ -211,7 +201,6 @@ export const createInventoryTaskInputSchema = z.object({
 		})
 		.describe("CreateInventoryTaskRequest body"),
 });
-/** Body and headers of createTask. */
 export const createFeedTaskInputSchema = z.object({
 	task: z
 		.object({
@@ -232,7 +221,6 @@ export const createFeedTaskInputSchema = z.object({
 		.optional()
 		.describe("Accept-Language, e.g. fr-CA with EBAY_CA or fr-BE with EBAY_BE"),
 });
-/** Body and headers of createCustomerServiceMetricTask. */
 export const createCustomerServiceMetricTaskInputSchema = z.object({
 	task: z
 		.object({
@@ -264,7 +252,6 @@ export const createCustomerServiceMetricTaskInputSchema = z.object({
 		.describe("CreateServiceMetricsTaskRequest body"),
 	acceptLanguage,
 });
-/** Body of createSchedule. */
 export const createFeedScheduleInputSchema = z.object({
 	schedule: z
 		.object({
@@ -280,7 +267,6 @@ export const createFeedScheduleInputSchema = z.object({
 			"CreateUserScheduleRequest body; include every field the template requires",
 		),
 });
-/** Schedule ID and body of updateSchedule. */
 export const updateFeedScheduleInputSchema = z.object({
 	scheduleId,
 	schedule: z
@@ -289,7 +275,6 @@ export const updateFeedScheduleInputSchema = z.object({
 			"UpdateUserScheduleRequest body; include every field the template requires",
 		),
 });
-/** Task ID and local feed file for uploadFile. */
 export const uploadFeedFileInputSchema = z.object({
 	taskId,
 	path: nonempty.describe(

@@ -37,7 +37,7 @@ const config: EbayConfig = {
 let client: Client;
 let runtime: EbayMcpRuntime;
 
-const callTool = async (name: string, args: Record<string, unknown>) => {
+async function callTool(name: string, args: Record<string, unknown>) {
 	const toolResult = await client.callTool({ name, arguments: args });
 	const text = Array.isArray(toolResult.content)
 		? toolResult.content
@@ -48,7 +48,7 @@ const callTool = async (name: string, args: Record<string, unknown>) => {
 		isError: toolResult.isError === true,
 		payload: JSON.parse(text) as unknown,
 	};
-};
+}
 
 beforeEach(async () => {
 	vi.clearAllMocks();
@@ -118,7 +118,7 @@ describe("Finances tool advertisement", () => {
 			"ebay_get_order_earnings_by_id",
 			"ebay_get_order_earnings_summary",
 		]) {
-			const description = tools.find((tool) => tool.name === name)?.description;
+			const description = tools.find((tool) => tool.name == name)?.description;
 			expect(description).toContain("sell.finances.earnings.read");
 			expect(description).toContain("EBAY_OAUTH_SCOPES");
 		}

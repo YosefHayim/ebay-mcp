@@ -1,8 +1,3 @@
-/**
- * Main types index
- * Exports all eBay types for easy importing
- */
-
 // Core eBay types
 export * from "./ebay.js";
 

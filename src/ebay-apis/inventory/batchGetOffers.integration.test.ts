@@ -67,7 +67,7 @@ describe("ebay_get_offers_by_skus registered MCP contract", () => {
 
 	it("advertises bounded SKU input and explicit execution semantics", async () => {
 		const definition = (await client.listTools()).tools.find(
-			(tool) => tool.name === "ebay_get_offers_by_skus",
+			(tool) => tool.name == "ebay_get_offers_by_skus",
 		);
 
 		expect(definition?.inputSchema.required).toContain("skus");

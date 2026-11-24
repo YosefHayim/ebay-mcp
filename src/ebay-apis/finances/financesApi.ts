@@ -49,113 +49,51 @@ type GetTransferInput = z.infer<typeof getTransferInputSchema>;
 type GetBillingActivitiesInput = z.infer<
 	typeof getBillingActivitiesInputSchema
 >;
-/** Query fields shared by the paginated Finances collections. */
 type FinancesPageQuery = Pick<
 	GetTransactionsInput,
 	"filter" | "limit" | "offset" | "sort"
 >;
 
-/** Maps the shared filter/limit/offset/sort fields to their eBay query names. */
-const pageQuery = (input: FinancesPageQuery): QueryParams | undefined =>
-	buildEndpointParams({
+function pageQuery(input: FinancesPageQuery): QueryParams | undefined {
+	return buildEndpointParams({
 		filter: { wireName: "filter", value: input.filter },
 		limit: { wireName: "limit", value: input.limit },
 		offset: { wireName: "offset", value: input.offset },
 		sort: { wireName: "sort", value: input.sort },
 	});
+}
 
-/** Maps the single filter field accepted by the Finances summary endpoints. */
-const filterQuery = (filter: string | undefined): QueryParams | undefined =>
-	buildEndpointParams({ filter: { wireName: "filter", value: filter } });
+function filterQuery(filter: string | undefined): QueryParams | undefined {
+	return buildEndpointParams({ filter: { wireName: "filter", value: filter } });
+}
 
-/**
- * Response returned by getOrderEarnings.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarnings
- */
 export type OrderEarningsResponse = components["schemas"]["OrderEarnings"];
 
-/**
- * Response returned by getOrderEarningsById.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsById
- */
 export type OrderEarningResponse = components["schemas"]["OrderEarning"];
 
-/**
- * Response returned by getOrderEarningsSummary.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsSummary
- */
 export type OrderEarningsSummaryResponse =
 	components["schemas"]["OrderEarningsSummary"];
 
-/**
- * Response returned by getPayout.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayout
- */
 export type PayoutResponse = components["schemas"]["Payout"];
 
-/**
- * Response returned by getPayouts; eBay may answer 204 with no body when nothing matches.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayouts
- */
 export type PayoutsResponse = components["schemas"]["Payouts"];
 
-/**
- * Response returned by getPayoutSummary.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayoutSummary
- */
 export type PayoutSummaryResponse =
 	components["schemas"]["PayoutSummaryResponse"];
 
-/**
- * Response returned by getSellerFundsSummary; eBay answers 204 with no body when no funds are pending.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/seller_funds_summary/methods/getSellerFundsSummary
- */
 export type SellerFundsSummaryResponse =
 	components["schemas"]["SellerFundsSummaryResponse"];
 
-/**
- * Response returned by getTransactions; eBay answers 204 with no body when nothing matches.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactions
- */
 export type TransactionsResponse = components["schemas"]["Transactions"];
 
-/**
- * Response returned by getTransactionSummary.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactionSummary
- */
 export type TransactionSummaryResponse =
 	components["schemas"]["TransactionSummaryResponse"];
 
-/**
- * Response returned by getTransfer.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/transfer/methods/getTransfer
- */
 export type TransferResponse = components["schemas"]["Transfer"];
 
-/**
- * Response returned by getBillingActivities.
- *
- * @see https://developer.ebay.com/api-docs/sell/finances/resources/billing_activity/methods/getBillingActivities
- */
 export type BillingActivityResponse =
 	components["schemas"]["BillingActivityResponse"];
 
-/**
- * Finances API - payouts, transactions, transfers, seller funds, billing activity, and order
- * earnings. Every operation except getBillingActivities is served from the apiz host. Every
- * call is digitally signed when signing credentials are configured, as eBay requires for
- * EU/UK sellers.
- */
 export class FinancesApi {
 	private readonly client: EbayApiClient;
 
@@ -163,10 +101,6 @@ export class FinancesApi {
 		this.client = client;
 	}
 
-	/**
-	 * Sends a GET to the apiz host (or EBAY_MCP_API_BASE_URL) with an optional marketplace
-	 * header, keeping the relative eBay path in the typed error.
-	 */
 	private readonly getFromApiz = async <T>(
 		path: string,
 		params: QueryParams | undefined,
@@ -191,25 +125,6 @@ export class FinancesApi {
 		}
 	};
 
-	/**
-	 * Retrieves order-level earnings (gross amount, expenses, refunds, net earnings) for the
-	 * seller's orders. Requires the optional sell.finances.earnings.read scope.
-	 *
-	 * @param input - Optional orderCreationDate filter, pagination, sort, and marketplace override.
-	 * @returns An Effect that succeeds with eBay's OrderEarnings page.
-	 *
-	 * @example
-	 * ```ts
-	 * const earnings = await Effect.runPromise(
-	 *   financesApi.getOrderEarnings({
-	 *     filter: 'orderCreationDate:[2024-10-23T00:00:01.000Z..2024-11-09T00:00:01.000Z]',
-	 *     limit: 50,
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarnings
-	 */
 	public getOrderEarnings = async (
 		input: GetOrderEarningsInput = {},
 	): Promise<OrderEarningsResponse> => {
@@ -227,21 +142,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves earnings for one order. Requires the optional sell.finances.earnings.read scope.
-	 *
-	 * @param input - eBay order ID plus optional marketplace override.
-	 * @returns An Effect that succeeds with eBay's OrderEarning.
-	 *
-	 * @example
-	 * ```ts
-	 * const earning = await Effect.runPromise(
-	 *   financesApi.getOrderEarningsById({ orderId: '12-12345-12345' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsById
-	 */
 	public getOrderEarningsById = async (
 		input: GetOrderEarningsByIdInput,
 	): Promise<OrderEarningResponse> => {
@@ -259,20 +159,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves aggregated order earnings for orders created in a date range. Requires the
-	 * optional sell.finances.earnings.read scope.
-	 *
-	 * @param input - Optional orderCreationDate filter and marketplace override.
-	 * @returns An Effect that succeeds with eBay's OrderEarningsSummary.
-	 *
-	 * @example
-	 * ```ts
-	 * const summary = await Effect.runPromise(financesApi.getOrderEarningsSummary({}));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/order_earnings/methods/getOrderEarningsSummary
-	 */
 	public getOrderEarningsSummary = async (
 		input: GetOrderEarningsSummaryInput = {},
 	): Promise<OrderEarningsSummaryResponse> => {
@@ -290,19 +176,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves one seller payout by ID.
-	 *
-	 * @param input - Payout ID (not a split-payout payoutReference) plus optional marketplace override.
-	 * @returns An Effect that succeeds with eBay's Payout.
-	 *
-	 * @example
-	 * ```ts
-	 * const payout = await Effect.runPromise(financesApi.getPayout({ payoutId: '5000000001' }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayout
-	 */
 	public getPayout = async (input: GetPayoutInput): Promise<PayoutResponse> => {
 		const getFromApiz = this.getFromApiz;
 
@@ -318,21 +191,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves seller payouts with optional date/status filtering, pagination, and sorting.
-	 *
-	 * @param input - Optional payout filter, pagination, sort, and marketplace override.
-	 * @returns An Effect that succeeds with eBay's Payouts page, or undefined on HTTP 204.
-	 *
-	 * @example
-	 * ```ts
-	 * const payouts = await Effect.runPromise(
-	 *   financesApi.getPayouts({ filter: 'payoutStatus:{SUCCEEDED}', limit: 20 }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayouts
-	 */
 	public getPayouts = async (
 		input: GetPayoutsInput = {},
 	): Promise<PayoutsResponse | undefined> => {
@@ -350,21 +208,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves cumulative payout counts and amounts, optionally filtered by date and status.
-	 *
-	 * @param input - Optional payoutDate/payoutStatus filter and marketplace override.
-	 * @returns An Effect that succeeds with eBay's PayoutSummaryResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const summary = await Effect.runPromise(
-	 *   financesApi.getPayoutSummary({ filter: 'payoutStatus:{SUCCEEDED}' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/payout/methods/getPayoutSummary
-	 */
 	public getPayoutSummary = async (
 		input: GetPayoutSummaryInput = {},
 	): Promise<PayoutSummaryResponse> => {
@@ -382,20 +225,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves funds not yet paid out: available, processing, and on-hold amounts.
-	 *
-	 * @param input - Optional marketplace override.
-	 * @returns An Effect that succeeds with eBay's SellerFundsSummaryResponse, or undefined on
-	 * HTTP 204 when no funds are pending.
-	 *
-	 * @example
-	 * ```ts
-	 * const funds = await Effect.runPromise(financesApi.getSellerFundsSummary({}));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/seller_funds_summary/methods/getSellerFundsSummary
-	 */
 	public getSellerFundsSummary = async (
 		input: GetSellerFundsSummaryInput = {},
 	): Promise<SellerFundsSummaryResponse | undefined> => {
@@ -413,21 +242,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves monetary transactions (sales, refunds, credits, fees, transfers, and more).
-	 *
-	 * @param input - Optional transaction filter, pagination, sort, and marketplace override.
-	 * @returns An Effect that succeeds with eBay's Transactions page, or undefined on HTTP 204.
-	 *
-	 * @example
-	 * ```ts
-	 * const sales = await Effect.runPromise(
-	 *   financesApi.getTransactions({ filter: 'transactionType:{SALE}', limit: 100 }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactions
-	 */
 	public getTransactions = async (
 		input: GetTransactionsInput = {},
 	): Promise<TransactionsResponse | undefined> => {
@@ -445,22 +259,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves cumulative counts and amounts for monetary transactions, including on-hold funds.
-	 *
-	 * @param input - Transaction filter (eBay requires a transactionStatus criterion) and optional
-	 * marketplace override.
-	 * @returns An Effect that succeeds with eBay's TransactionSummaryResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const summary = await Effect.runPromise(
-	 *   financesApi.getTransactionSummary({ filter: 'transactionStatus:{PAYOUT}' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/transaction/methods/getTransactionSummary
-	 */
 	public getTransactionSummary = async (
 		input: GetTransactionSummaryInput,
 	): Promise<TransactionSummaryResponse> => {
@@ -478,21 +276,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves one TRANSFER transaction (a seller reimbursing eBay for charges such as refunds).
-	 *
-	 * @param input - TRANSFER transaction ID plus optional marketplace override.
-	 * @returns An Effect that succeeds with eBay's Transfer.
-	 *
-	 * @example
-	 * ```ts
-	 * const transfer = await Effect.runPromise(
-	 *   financesApi.getTransfer({ transferId: '0-00000-00000' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/transfer/methods/getTransfer
-	 */
 	public getTransfer = async (
 		input: GetTransferInput,
 	): Promise<TransferResponse> => {
@@ -510,22 +293,6 @@ export class FinancesApi {
 		);
 	};
 
-	/**
-	 * Retrieves the seller's billing activities (fees and credits) for one activity, listing,
-	 * order, or date range. Unlike the rest of the Finances API this is served from the api host.
-	 *
-	 * @param input - Billing filter, pagination, sort, and optional Accept-Language override.
-	 * @returns An Effect that succeeds with eBay's BillingActivityResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const activities = await Effect.runPromise(
-	 *   financesApi.getBillingActivities({ filter: 'orderId:{12-12345-12345}' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/finances/resources/billing_activity/methods/getBillingActivities
-	 */
 	public getBillingActivities = async (
 		input: GetBillingActivitiesInput,
 	): Promise<BillingActivityResponse> => {

@@ -12,7 +12,6 @@ import {
 	mapTrafficReportToChart,
 } from "@/tool-registry/ui/maps.js";
 
-/** Analytics API tools for seller traffic and performance reporting. */
 export const analyticsEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_traffic_report",

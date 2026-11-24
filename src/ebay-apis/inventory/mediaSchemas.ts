@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-/**
- * Media API Schemas
- *
- * Zod schemas for the local-media upload tools (images via eBay
- * Picture Services, videos via the Media API lifecycle).
- */
-
 const mediaReferenceSchema = z
 	.string()
 	.min(1)
@@ -24,7 +17,6 @@ const waitForProcessingSchema = z
 		"Seconds to wait for eBay to finish processing a video before returning (default 120). A video still PROCESSING can be checked later with ebay_get_video",
 	);
 
-/** Validates the ebay_upload_images input. */
 export const uploadImagesInputSchema = z.object({
 	paths: z
 		.array(mediaReferenceSchema)
@@ -35,7 +27,6 @@ export const uploadImagesInputSchema = z.object({
 		),
 });
 
-/** Validates the ebay_upload_video input. */
 export const uploadVideoInputSchema = z.object({
 	path: mediaReferenceSchema.describe(
 		"Absolute local path or media:// reference to an MP4 or MOV file up to 150 MB",
@@ -53,7 +44,6 @@ export const uploadVideoInputSchema = z.object({
 	waitForProcessingSeconds: waitForProcessingSchema,
 });
 
-/** Validates the ebay_get_video input. */
 export const videoIdInputSchema = z.object({
 	videoId: z
 		.string()
@@ -61,7 +51,6 @@ export const videoIdInputSchema = z.object({
 		.describe("eBay video ID returned by ebay_upload_video"),
 });
 
-/** Validates the ebay_attach_media_to_inventory_item input. */
 export const attachMediaInputSchema = z.object({
 	sku: z
 		.string()
@@ -103,12 +92,10 @@ const uploadedImageSchema = z.object({
 	expirationDate: z.string().optional(),
 });
 
-/** Validates the ebay_upload_images output. */
 export const uploadImagesOutputSchema = z.object({
 	images: z.array(uploadedImageSchema),
 });
 
-/** Validates the Media API video payload returned by upload and get tools. */
 export const videoOutputSchema = z
 	.object({
 		videoId: z.string().optional(),
@@ -133,7 +120,6 @@ const mediaOutcomeSchema = z.object({
 	error: z.string().optional(),
 });
 
-/** Validates the ebay_attach_media_to_inventory_item output. */
 export const attachMediaOutputSchema = z.object({
 	sku: z.string(),
 	updated: z.boolean(),

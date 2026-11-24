@@ -8,9 +8,7 @@ import {
 } from "@/ebay-apis/inventory/offersApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 
-const expectSkuInputError = async (
-	program: Promise<unknown>,
-): Promise<void> => {
+async function expectSkuInputError(program: Promise<unknown>): Promise<void> {
 	let thrown: unknown;
 
 	try {
@@ -21,10 +19,11 @@ const expectSkuInputError = async (
 
 	expect(thrown).toBeInstanceOf(Error);
 	expect((thrown as Error).message).toContain("sku");
-};
+}
 
-const clientWithGet = (get: ReturnType<typeof vi.fn>): EbayApiClient =>
-	({ get }) as unknown as EbayApiClient;
+function clientWithGet(get: ReturnType<typeof vi.fn>): EbayApiClient {
+	return { get } as unknown as EbayApiClient;
+}
 
 describe("createInventoryOffersMethods getOffers", () => {
 	let client: EbayApiClient;
@@ -97,7 +96,7 @@ describe("getOffersBySkus", () => {
 
 	it("keeps a failed request beside its SKU without discarding successes", async () => {
 		const get = vi.fn((_path: string, params: { sku: string }) => {
-			if (params.sku === "BAD") {
+			if (params.sku == "BAD") {
 				return Promise.reject(new Error("not found"));
 			}
 			return Promise.resolve({ offers: [{ sku: params.sku }] });

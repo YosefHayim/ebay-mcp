@@ -39,15 +39,15 @@ const inventoryItem = {
 	product: { title: "MCP boundary test item" },
 };
 
-const parseTextPayload = (
+function parseTextPayload(
 	toolResult: Awaited<ReturnType<Client["callTool"]>>,
-): unknown => {
+): unknown {
 	const first = toolResult.content[0];
 	if (!first || first.type !== "text") {
 		throw new Error("Expected one MCP text content block");
 	}
 	return JSON.parse(first.text);
-};
+}
 
 describe("204 responses at the MCP protocol boundary", () => {
 	let client: Client;

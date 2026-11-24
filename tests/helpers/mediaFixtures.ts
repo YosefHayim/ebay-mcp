@@ -2,7 +2,6 @@ import { mkdir, mkdtemp, realpath, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-/** Minimal byte sequences that pass the media signature sniffing. */
 export const JPEG_BYTES = Buffer.concat([
 	Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
 	Buffer.from("JFIF", "latin1"),
@@ -23,42 +22,27 @@ export const MOV_BYTES = Buffer.concat([
 	Buffer.alloc(32, 0),
 ]);
 
-/** Builds an ISO-BMFF header (`....ftyp<brand>`) for signature tests. */
-export const isoHeader = (brand: string): Buffer =>
-	Buffer.concat([
+export function isoHeader(brand: string): Buffer {
+	return Buffer.concat([
 		Buffer.from([0x00, 0x00, 0x00, 0x18]),
 		Buffer.from(`ftyp${brand}`, "latin1"),
 		Buffer.alloc(16, 0),
 	]);
+}
 
-/** A scratch media directory with a few files, an outside directory, and a symlink escaping into it. */
 export interface MediaFixture {
-	/** Allowed root. */
 	readonly root: string;
-	/** Directory outside the root. */
 	readonly outside: string;
-	/** `root/front.jpg` (valid JPEG). */
 	readonly jpeg: string;
-	/** `root/nested/back.png` (valid PNG). */
 	readonly png: string;
-	/** `root/clip.mp4` (valid MP4). */
 	readonly mp4: string;
-	/** `root/fake.jpg` (PNG bytes with a .jpg name). */
 	readonly mismatched: string;
-	/** `root/notes.txt`. */
 	readonly text: string;
-	/** `root/escape.jpg` → `outside/secret.jpg`. */
 	readonly escapingLink: string;
-	/** `outside/secret.jpg` (valid JPEG). */
 	readonly outsideJpeg: string;
 }
 
-/**
- * Builds the media fixture under the OS temp directory.
- *
- * @returns Paths of the created files and directories.
- */
-export const createMediaFixture = async (): Promise<MediaFixture> => {
+export async function createMediaFixture(): Promise<MediaFixture> {
 	// realpath: macOS puts the temp dir behind a /var → /private/var symlink.
 	const base = await realpath(
 		await mkdtemp(path.join(tmpdir(), "ebay-mcp-media-")),
@@ -95,4 +79,4 @@ export const createMediaFixture = async (): Promise<MediaFixture> => {
 		escapingLink,
 		outsideJpeg,
 	};
-};
+}

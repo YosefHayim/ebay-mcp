@@ -62,11 +62,11 @@ export function buildEndpointParams(
 }
 
 export function requireStringEffect(value: unknown, name: string): string {
-	if (typeof value !== "string") {
+	if (typeof value != "string") {
 		throw new Error(`${name} is required and must be a string`);
 	}
 
-	if (value.length === 0) {
+	if (value.length == 0) {
 		throw new Error(`${name} is required and must be a string`);
 	}
 
@@ -81,7 +81,7 @@ export function optionalStringEffect(
 		return undefined;
 	}
 
-	if (typeof value !== "string") {
+	if (typeof value != "string") {
 		throw new Error(`${name} must be a string when provided`);
 	}
 
@@ -96,7 +96,7 @@ export function optionalPositiveNumberEffect(
 		return undefined;
 	}
 
-	if (typeof value !== "number") {
+	if (typeof value != "number") {
 		throw new Error(`${name} must be a positive number when provided`);
 	}
 
@@ -115,7 +115,7 @@ export function optionalNonNegativeNumberEffect(
 		return undefined;
 	}
 
-	if (typeof value !== "number") {
+	if (typeof value != "number") {
 		throw new Error(`${name} must be a non-negative number when provided`);
 	}
 
@@ -130,7 +130,7 @@ export function requireObjectEffect<ObjectShape extends object>(
 	value: unknown,
 	name: string,
 ): ObjectShape {
-	if (typeof value !== "object") {
+	if (typeof value != "object") {
 		throw new Error(`${name} is required and must be an object`);
 	}
 

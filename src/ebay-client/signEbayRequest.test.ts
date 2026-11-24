@@ -13,10 +13,6 @@ import {
 	signEbayRequest,
 } from "@/ebay-client/signEbayRequest.js";
 
-/**
- * Ed25519 test key from RFC 9421 Appendix B.1.4, assembled from its public seed
- * at runtime so secret scanners do not flag a literal private-key block.
- */
 const RFC_ED25519_KEY = createPrivateKey({
 	key: Buffer.from(
 		"302e020100300506032b657004220420" +
@@ -37,9 +33,9 @@ const SIGNATURE_HEADER_PATTERN = /^sig1=:[A-Za-z0-9+/]+=*:$/;
 const PRIVATE_KEY_HINT_PATTERN = /EBAY_SIGNING_PRIVATE_KEY/;
 const SUPPORTED_KEY_TYPES_PATTERN = /ED25519 or RSA/;
 
-/** Base64 PKCS#8 DER — the shape eBay's createSigningKey returns. */
-const toBase64Der = (key: KeyObject): string =>
-	key.export({ format: "der", type: "pkcs8" }).toString("base64");
+function toBase64Der(key: KeyObject): string {
+	return key.export({ format: "der", type: "pkcs8" }).toString("base64");
+}
 
 describe("computeContentDigest", () => {
 	it("matches the example in eBay digital signature guide", () => {

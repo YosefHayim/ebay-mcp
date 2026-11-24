@@ -1,12 +1,6 @@
 import { z } from "zod";
 import { LengthUnit, MarketplaceId, WeightUnit } from "@/shared/ebayEnums.js";
 
-/**
- * Logistics API input schemas. The request bodies mirror the generated
- * `ShippingQuoteRequest` and `CreateShipmentFromQuoteRequest` DTOs in
- * `@/ebay-openapi-types/sellLogisticsV1Oas3.js`.
- */
-
 const nonempty = z
 	.string()
 	.min(1)
@@ -72,7 +66,6 @@ const marketplaceId = z
 		"X-EBAY-C-MARKETPLACE-ID for the request, e.g. EBAY_US; defaults to the configured EBAY_MARKETPLACE_ID",
 	);
 
-/** ShippingQuoteRequest body for createShippingQuote. */
 export const shippingQuoteRequestSchema = z.object({
 	orders: z
 		.array(
@@ -122,7 +115,6 @@ export const shippingQuoteRequestSchema = z.object({
 	),
 });
 
-/** CreateShipmentFromQuoteRequest body for createFromShippingQuote. */
 export const createShipmentFromQuoteRequestSchema = z.object({
 	shippingQuoteId: nonempty.describe(
 		"Shipping quote ID returned by ebay_create_shipping_quote",
@@ -155,7 +147,6 @@ export const createShipmentFromQuoteRequestSchema = z.object({
 		),
 });
 
-/** Input for Logistics API createShippingQuote. */
 export const createShippingQuoteInputSchema = z.object({
 	shippingQuoteRequest: shippingQuoteRequestSchema.describe(
 		"Generated ShippingQuoteRequest body: orders, package, and from/to addresses",
@@ -163,7 +154,6 @@ export const createShippingQuoteInputSchema = z.object({
 	marketplaceId,
 });
 
-/** Input for Logistics API createFromShippingQuote. */
 export const createFromShippingQuoteInputSchema = z.object({
 	shipmentRequest: createShipmentFromQuoteRequestSchema.describe(
 		"Generated CreateShipmentFromQuoteRequest body: the quote and rate to purchase",
@@ -171,14 +161,12 @@ export const createFromShippingQuoteInputSchema = z.object({
 	marketplaceId,
 });
 
-/** Input for Logistics API getShippingQuote. */
 export const shippingQuoteIdInputSchema = z.object({
 	shippingQuoteId: nonempty.describe(
 		"Shipping quote ID returned by ebay_create_shipping_quote",
 	),
 });
 
-/** Input for Logistics API getShipment, cancelShipment, and downloadLabelFile. */
 export const shipmentIdInputSchema = z.object({
 	shipmentId: nonempty.describe(
 		"Shipment ID returned by ebay_create_shipment_from_shipping_quote",

@@ -7,7 +7,6 @@ import {
 } from "@/server/toolGating.js";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
-/** Minimal RegisteredTool stand-in exposing just the enabled flag the controller toggles. */
 function fakeHandle(enabled = false): RegisteredTool {
 	const handle = {
 		enabled,
@@ -23,7 +22,6 @@ function fakeHandle(enabled = false): RegisteredTool {
 	return handle as unknown as RegisteredTool;
 }
 
-/** Builds a handle map for every registered tool, as dynamic mode does (all disabled). */
 function buildHandles(): Map<string, RegisteredTool> {
 	const handles = new Map<string, RegisteredTool>();
 	for (const category of toolCategories) {
@@ -35,7 +33,7 @@ function buildHandles(): Map<string, RegisteredTool> {
 }
 
 const inventory = toolCategories.find(
-	(category) => category.key === "inventory",
+	(category) => category.key == "inventory",
 )!;
 const sampleTool = inventory.entries[0].definition.name;
 
@@ -60,7 +58,7 @@ describe("ToolGatingController", () => {
 			};
 			expect(familyOverview.families).toHaveLength(toolCategories.length);
 			const inventoryRow = familyOverview.families.find(
-				(row) => row.key === "inventory",
+				(row) => row.key == "inventory",
 			);
 			expect(inventoryRow?.count).toBe(inventory.entries.length);
 		});
@@ -73,7 +71,7 @@ describe("ToolGatingController", () => {
 			};
 			expect(familyListing.total).toBe(inventory.entries.length);
 			expect(
-				familyListing.tools.every((tool) => tool.family === "inventory"),
+				familyListing.tools.every((tool) => tool.family == "inventory"),
 			).toBe(true);
 		});
 
@@ -94,7 +92,7 @@ describe("ToolGatingController", () => {
 			}) as {
 				tools: { name: string }[];
 			};
-			expect(searchListing.tools.some((tool) => tool.name === sampleTool)).toBe(
+			expect(searchListing.tools.some((tool) => tool.name == sampleTool)).toBe(
 				true,
 			);
 		});
@@ -172,7 +170,7 @@ describe("registerMetaTools", () => {
 		registerMetaTools(server, createToolGatingController(handles));
 
 		const enableCall = registerTool.mock.calls.find(
-			(call) => call[0] === "enable_ebay_tools",
+			(call) => call[0] == "enable_ebay_tools",
 		)!;
 		const handler = enableCall[2] as (args: { names: string[] }) => {
 			content: { text: string }[];

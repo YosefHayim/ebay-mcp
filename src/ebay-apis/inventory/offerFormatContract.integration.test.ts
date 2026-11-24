@@ -22,7 +22,9 @@ vi.mock("../../auth/oauth.js", () => ({
 	}),
 }));
 
-const usd = (amount: string) => ({ currency: "USD", value: amount });
+function usd(amount: string) {
+	return { currency: "USD", value: amount };
+}
 
 const auctionOffer = {
 	sku: "AUCTION-1",
@@ -86,7 +88,7 @@ afterEach(async () => {
 describe("offer format advertised MCP schema", () => {
 	it("advertises both formats, the auction prices, and the listing durations", async () => {
 		const definition = (await client.listTools()).tools.find(
-			(tool) => tool.name === "ebay_create_offer",
+			(tool) => tool.name == "ebay_create_offer",
 		);
 
 		expect(definition?.description).toContain("AUCTION");
@@ -112,7 +114,7 @@ describe("offer format advertised MCP schema", () => {
 
 	it("advertises auction fields on update without the offer keys", async () => {
 		const definition = (await client.listTools()).tools.find(
-			(tool) => tool.name === "ebay_update_offer",
+			(tool) => tool.name == "ebay_update_offer",
 		);
 		const offerSchema = definition?.inputSchema.properties?.body as {
 			properties?: Record<string, unknown>;

@@ -7,18 +7,15 @@ import type { ToolEntry } from "@/tool-registry/registry.js";
 const SHIPPING_LANGUAGE_NOTE =
 	"Set acceptLanguage to fr-CA (EBAY_CA), fr-BE or nl-BE (EBAY_BE) to localize the metadata for the French Canada and Belgian marketplaces. Use the returned values when configuring fulfillment policies (ebay_create_fulfillment_policy).";
 
-/** Marketplace-scoped metadata request with an optional category filter. */
 const marketplaceMetadataSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 	filter: z.string().optional().describe("Filter criteria"),
 });
 
-/** Marketplace-scoped metadata request with no filter parameter. */
 const marketplaceOnlyMetadataSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 });
 
-/** Metadata compatibility property filter from the generated request bodies. */
 const propertyFilterSchema = z
 	.object({
 		propertyName: z.string().optional().describe("Compatibility property name"),
@@ -34,7 +31,6 @@ const propertyFilterSchema = z
 	})
 	.passthrough();
 
-/** Pagination input accepted by generated Metadata compatibility requests. */
 const paginationInputSchema = z
 	.object({
 		limit: z.number().optional().describe("Maximum number of results"),
@@ -42,7 +38,6 @@ const paginationInputSchema = z
 	})
 	.passthrough();
 
-/** Sort order item accepted by generated Metadata compatibility requests. */
 const sortOrderSchema = z
 	.object({
 		sortOrder: z
@@ -60,7 +55,6 @@ const sortOrderSchema = z
 	})
 	.passthrough();
 
-/** Product identifier accepted by getProductCompatibilities. */
 const productIdentifierSchema = z
 	.object({
 		ean: z.string().optional().describe("EAN product identifier"),
@@ -71,7 +65,6 @@ const productIdentifierSchema = z
 	})
 	.passthrough();
 
-/** Product disabled filter accepted by getProductCompatibilities. */
 const disabledProductFilterSchema = z
 	.object({
 		excludeForEbayReviews: z
@@ -85,7 +78,6 @@ const disabledProductFilterSchema = z
 	})
 	.passthrough();
 
-/** Generated SpecificationRequest shape for getCompatibilitiesBySpecification. */
 const specificationRequestSchema = z
 	.object({
 		categoryId: z.string().optional().describe("eBay leaf category ID"),
@@ -116,7 +108,6 @@ const specificationRequestSchema = z
 	})
 	.passthrough();
 
-/** Generated PropertyNamesRequest shape for getCompatibilityPropertyNames. */
 const propertyNamesRequestSchema = z
 	.object({
 		categoryId: z.string().optional().describe("eBay leaf category ID"),
@@ -124,7 +115,6 @@ const propertyNamesRequestSchema = z
 	})
 	.passthrough();
 
-/** Generated PropertyValuesRequest shape for getCompatibilityPropertyValues. */
 const propertyValuesRequestSchema = z
 	.object({
 		categoryId: z.string().optional().describe("eBay leaf category ID"),
@@ -140,7 +130,6 @@ const propertyValuesRequestSchema = z
 	})
 	.passthrough();
 
-/** Generated MultiCompatibilityPropertyValuesRequest shape. */
 const multiCompatibilityPropertyValuesDataSchema = z
 	.object({
 		categoryId: z.string().optional().describe("eBay leaf category ID"),
@@ -152,7 +141,6 @@ const multiCompatibilityPropertyValuesDataSchema = z
 	})
 	.passthrough();
 
-/** Generated ProductRequest shape for getProductCompatibilities. */
 const productRequestSchema = z
 	.object({
 		applicationPropertyFilters: z
@@ -180,7 +168,6 @@ const productRequestSchema = z
 	})
 	.passthrough();
 
-/** Compatibility metadata request carrying the required marketplace header value. */
 const compatibilitySpecificationRequestSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 	specification: specificationRequestSchema.describe(
@@ -188,7 +175,6 @@ const compatibilitySpecificationRequestSchema = z.object({
 	),
 });
 
-/** Compatibility property-name request carrying the required marketplace header value. */
 const compatibilityPropertyNamesRequestSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 	data: propertyNamesRequestSchema.describe(
@@ -196,7 +182,6 @@ const compatibilityPropertyNamesRequestSchema = z.object({
 	),
 });
 
-/** Compatibility property-value request carrying the required marketplace header value. */
 const compatibilityPropertyValuesRequestSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 	data: propertyValuesRequestSchema.describe(
@@ -204,7 +189,6 @@ const compatibilityPropertyValuesRequestSchema = z.object({
 	),
 });
 
-/** Multi-property compatibility value request carrying the required marketplace header value. */
 const multiCompatibilityPropertyValuesRequestSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 	data: multiCompatibilityPropertyValuesDataSchema.describe(
@@ -212,18 +196,15 @@ const multiCompatibilityPropertyValuesRequestSchema = z.object({
 	),
 });
 
-/** Product compatibility request carrying the required marketplace header value. */
 const productCompatibilityRequestSchema = z.object({
 	marketplaceId: z.nativeEnum(MarketplaceId).describe("Marketplace ID"),
 	data: productRequestSchema.describe("Product compatibility request data"),
 });
 
-/** Sales-tax jurisdiction request by country code. */
 const salesTaxJurisdictionsSchema = z.object({
 	countryCode: z.string().describe("Country code (e.g., US)"),
 });
 
-/** Metadata API tools for marketplace, business policy, and sales tax metadata. */
 export const metadataEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_automotive_parts_compatibility_policies",

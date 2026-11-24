@@ -20,7 +20,6 @@ import type {
 	TableViewModel,
 } from "@/tool-registry/ui/viewModels.js";
 
-/** Client capabilities advertising MCP Apps support for the given MIME types. */
 function uiCapabilities(mimeTypes: string[]): Record<string, unknown> {
 	return { extensions: { [EXTENSION_ID]: { mimeTypes } } };
 }

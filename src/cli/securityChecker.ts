@@ -1,7 +1,3 @@
-/**
- * Security Checker - Pre-flight security and environment checks
- */
-
 import process from "node:process";
 import { execSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
@@ -9,32 +5,15 @@ import { join } from "path";
 import { writeCliLine } from "@/shared/cliOutput.js";
 import { paint } from "@/shared/paint.js";
 
-/**
- * Outcome of a pre-flight security or environment check.
- */
 export interface SecurityCheckResult {
-	/** Human-readable check name printed in diagnostics output. */
 	check: string;
-	/** Whether the check passed. */
 	passed: boolean;
-	/** User-facing result message. */
 	message: string;
-	/** Severity used to decide whether setup should continue. */
 	severity: "critical" | "warning" | "info";
-	/** Optional remediation text shown when the check fails. */
 	fix?: string;
 }
 
-/**
- * Checks that the current Node.js major version meets the minimum runtime.
- *
- * @returns A security check result for the active Node.js process.
- * @example
- * ```ts
- * const nodeVersionCheck = checkNodeVersion();
- * ```
- */
-export const checkNodeVersion = (): SecurityCheckResult => {
+export function checkNodeVersion(): SecurityCheckResult {
 	const requiredVersion = 18;
 	const majorText = process.version.slice(1).split(".")[0];
 	const isMajorMissing = majorText == null;
@@ -67,19 +46,9 @@ export const checkNodeVersion = (): SecurityCheckResult => {
 		severity: "critical",
 		fix: `Install Node.js ${requiredVersion} or higher from https://nodejs.org/`,
 	};
-};
+}
 
-/**
- * Checks whether `.env` files are ignored by git.
- *
- * @param projectRoot Absolute project root containing `.gitignore`.
- * @returns A security check result for credential file ignore coverage.
- * @example
- * ```ts
- * const gitignoreCheck = checkGitignore(process.cwd());
- * ```
- */
-export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
+export function checkGitignore(projectRoot: string): SecurityCheckResult {
 	const gitignorePath = join(projectRoot, ".gitignore");
 
 	if (!existsSync(gitignorePath)) {
@@ -96,7 +65,7 @@ export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
 	const hasEnv = gitignoreContent.split("\n").some((line) => {
 		const trimmed = line.trim();
 		return (
-			trimmed === ".env" || trimmed === "*.env" || trimmed.startsWith(".env")
+			trimmed == ".env" || trimmed == "*.env" || trimmed.startsWith(".env")
 		);
 	});
 
@@ -116,70 +85,50 @@ export const checkGitignore = (projectRoot: string): SecurityCheckResult => {
 		severity: "critical",
 		fix: 'Add ".env" to your .gitignore file immediately',
 	};
-};
+}
 
-/**
- * Checks network connectivity to eBay API hosts.
- *
- * @returns A security check result for the eBay API reachability probe.
- * @example
- * ```ts
- * const connectivityCheck = await checkNetworkConnectivity();
- * ```
- */
-export const checkNetworkConnectivity =
-	async (): Promise<SecurityCheckResult> => {
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 5000);
+export async function checkNetworkConnectivity(): Promise<SecurityCheckResult> {
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 5000);
 
-		let healthResponse: Response;
+	let healthResponse: Response;
 
-		try {
-			healthResponse = await fetch("https://api.ebay.com/health", {
-				signal: controller.signal,
-			});
-		} catch {
-			return {
-				check: "Network Connectivity",
-				passed: false,
-				message: "Cannot reach eBay API servers",
-				severity: "critical",
-				fix: "Check your internet connection, proxy settings, and firewall",
-			};
-		} finally {
-			clearTimeout(timeout);
-		}
-
-		if (healthResponse.ok || healthResponse.status === 404) {
-			// 404 is fine, means we can reach eBay servers
-			return {
-				check: "Network Connectivity",
-				passed: true,
-				message: "Successfully connected to eBay API servers",
-				severity: "info",
-			};
-		}
-
+	try {
+		healthResponse = await fetch("https://api.ebay.com/health", {
+			signal: controller.signal,
+		});
+	} catch {
 		return {
 			check: "Network Connectivity",
 			passed: false,
-			message: `Unexpected response from eBay API: ${healthResponse.status}`,
-			severity: "warning",
-			fix: "Check your internet connection and firewall settings",
+			message: "Cannot reach eBay API servers",
+			severity: "critical",
+			fix: "Check your internet connection, proxy settings, and firewall",
 		};
-	};
+	} finally {
+		clearTimeout(timeout);
+	}
 
-/**
- * Checks whether the compiled server entrypoint exists.
- *
- * @param projectRoot Absolute project root containing the `build` directory.
- * @returns A security check result for build output presence.
- * @example
- * ```ts
- * const buildCheck = checkProjectBuild(process.cwd());
- * ```
- */
-export const checkProjectBuild = (projectRoot: string): SecurityCheckResult => {
+	if (healthResponse.ok || healthResponse.status == 404) {
+		// 404 is fine, means we can reach eBay servers
+		return {
+			check: "Network Connectivity",
+			passed: true,
+			message: "Successfully connected to eBay API servers",
+			severity: "info",
+		};
+	}
+
+	return {
+		check: "Network Connectivity",
+		passed: false,
+		message: `Unexpected response from eBay API: ${healthResponse.status}`,
+		severity: "warning",
+		fix: "Check your internet connection and firewall settings",
+	};
+}
+
+export function checkProjectBuild(projectRoot: string): SecurityCheckResult {
 	const buildPath = join(projectRoot, "build", "index.js");
 
 	if (existsSync(buildPath)) {
@@ -198,19 +147,9 @@ export const checkProjectBuild = (projectRoot: string): SecurityCheckResult => {
 		severity: "warning",
 		fix: 'Run "npm run build" to build the project',
 	};
-};
+}
 
-/**
- * Checks whether project dependencies are installed.
- *
- * @param projectRoot Absolute project root containing `node_modules`.
- * @returns A security check result for dependency installation state.
- * @example
- * ```ts
- * const dependencyCheck = checkDependencies(process.cwd());
- * ```
- */
-export const checkDependencies = (projectRoot: string): SecurityCheckResult => {
+export function checkDependencies(projectRoot: string): SecurityCheckResult {
 	const nodeModulesPath = join(projectRoot, "node_modules");
 
 	if (existsSync(nodeModulesPath)) {
@@ -229,19 +168,9 @@ export const checkDependencies = (projectRoot: string): SecurityCheckResult => {
 		severity: "critical",
 		fix: 'Run "npm install" to install dependencies',
 	};
-};
+}
 
-/**
- * Checks whether `.env` is tracked by git.
- *
- * @param projectRoot Absolute project root containing `.git`.
- * @returns A security check result for credential tracking risk.
- * @example
- * ```ts
- * const gitTrackingCheck = checkGitTracking(process.cwd());
- * ```
- */
-export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
+export function checkGitTracking(projectRoot: string): SecurityCheckResult {
 	const gitPath = join(projectRoot, ".git");
 	const envPath = join(projectRoot, ".env");
 
@@ -279,7 +208,7 @@ export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
 		};
 	}
 
-	if (trackedFiles === "") {
+	if (trackedFiles == "") {
 		return {
 			check: "Git Tracking",
 			passed: true,
@@ -295,21 +224,11 @@ export const checkGitTracking = (projectRoot: string): SecurityCheckResult => {
 		severity: "critical",
 		fix: 'Run: git rm --cached .env && git commit -m "Remove .env from tracking"',
 	};
-};
+}
 
-/**
- * Runs all security checks used by setup and diagnostics commands.
- *
- * @param projectRoot Absolute project root to inspect.
- * @returns Ordered security check results for CLI display and gating.
- * @example
- * ```ts
- * const results = await runSecurityChecks(process.cwd());
- * ```
- */
-export const runSecurityChecks = async (
+export async function runSecurityChecks(
 	projectRoot: string,
-): Promise<SecurityCheckResult[]> => {
+): Promise<SecurityCheckResult[]> {
 	const results: SecurityCheckResult[] = [];
 
 	// Synchronous checks
@@ -323,29 +242,17 @@ export const runSecurityChecks = async (
 	results.push(await checkNetworkConnectivity());
 
 	return results;
-};
+}
 
-/**
- * Displays security check results in the setup/diagnostics CLI.
- *
- * @param results Security check results returned by `runSecurityChecks`.
- * @returns Nothing; results are written to stdout.
- * @example
- * ```ts
- * displaySecurityResults(results);
- * ```
- */
-export const displaySecurityResults = (
-	results: SecurityCheckResult[],
-): void => {
+export function displaySecurityResults(results: SecurityCheckResult[]): void {
 	writeCliLine(paint.bold.cyan("\n🔒 Security & Environment Checks\n"));
 
 	for (const checkResult of results) {
 		const icon = checkResult.passed ? paint.green("✓") : paint.red("✗");
 		let severity = paint.gray("[INFO]");
-		if (checkResult.severity === "critical") {
+		if (checkResult.severity == "critical") {
 			severity = paint.red("[CRITICAL]");
-		} else if (checkResult.severity === "warning") {
+		} else if (checkResult.severity == "warning") {
 			severity = paint.yellow("[WARNING]");
 		}
 
@@ -359,10 +266,10 @@ export const displaySecurityResults = (
 	}
 
 	const critical = results.filter(
-		(checkResult) => !checkResult.passed && checkResult.severity === "critical",
+		(checkResult) => !checkResult.passed && checkResult.severity == "critical",
 	);
 	const warnings = results.filter(
-		(checkResult) => !checkResult.passed && checkResult.severity === "warning",
+		(checkResult) => !checkResult.passed && checkResult.severity == "warning",
 	);
 
 	if (critical.length > 0) {
@@ -380,17 +287,8 @@ export const displaySecurityResults = (
 	} else {
 		writeCliLine(paint.green.bold("✅ All security checks passed!\n"));
 	}
-};
+}
 
-/**
- * Checks whether any security result should block setup.
- *
- * @param results Security check results to inspect.
- * @returns `true` when at least one critical check failed.
- * @example
- * ```ts
- * if (hasCriticalFailures(results)) process.exit(1);
- * ```
- */
-export const hasCriticalFailures = (results: SecurityCheckResult[]): boolean =>
-	results.some((check) => !check.passed && check.severity === "critical");
+export function hasCriticalFailures(results: SecurityCheckResult[]): boolean {
+	return results.some((check) => !check.passed && check.severity == "critical");
+}

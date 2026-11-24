@@ -1,9 +1,3 @@
-/**
- * Marketing API schemas — reports slice.
- *
- * Zod schemas for Marketing endpoints. The barrel `marketing.ts` re-exports all slices.
- */
-
 import { z } from "zod";
 import {
 	amountSchema,
@@ -14,42 +8,27 @@ import {
 // Reporting Schemas
 // ============================================================================
 
-/**
- * Validates the Marketing API dimension model.
- */
 export const dimensionSchema = z.object({
 	dimensionKey: z.string().optional(),
 	dimensionValues: z.array(z.string()).optional(),
 });
 
-/**
- * Validates the Marketing API dimension key annotation model.
- */
 export const dimensionKeyAnnotationSchema = z.object({
 	annotationKey: z.string().optional(),
 	value: z.string().optional(),
 });
 
-/**
- * Validates the Marketing API dimension metadata model.
- */
 export const dimensionMetadataSchema = z.object({
 	annotations: z.array(dimensionKeyAnnotationSchema).optional(),
 	dataType: z.string().optional(),
 	dimensionKey: z.string().optional(),
 });
 
-/**
- * Validates the Marketing API metric metadata model.
- */
 export const metricMetadataSchema = z.object({
 	dataType: z.string().optional(),
 	metricKey: z.string().optional(),
 });
 
-/**
- * Validates the Marketing API report metadata model.
- */
 export const reportMetadataSchema = z.object({
 	dimensionMetadata: z.array(dimensionMetadataSchema).optional(),
 	maxNumberOfDimensionsToRequest: z.number().optional(),
@@ -59,16 +38,10 @@ export const reportMetadataSchema = z.object({
 	reportType: z.string().optional(),
 });
 
-/**
- * Validates the Marketing API report metadatas model.
- */
 export const reportMetadatasSchema = z.object({
 	reportMetadata: z.array(reportMetadataSchema).optional(),
 });
 
-/**
- * Validates the Marketing API create report task model.
- */
 export const createReportTaskSchema = z.object({
 	campaignIds: z.array(z.string()).optional(),
 	channels: z.array(z.string()).optional(),
@@ -84,9 +57,6 @@ export const createReportTaskSchema = z.object({
 	reportType: z.string(),
 });
 
-/**
- * Validates the Marketing API report task model.
- */
 export const reportTaskSchema = z.object({
 	campaignIds: z.array(z.string()).optional(),
 	channels: z.array(z.string()).optional(),
@@ -112,9 +82,6 @@ export const reportTaskSchema = z.object({
 	reportType: z.string().optional(),
 });
 
-/**
- * Validates the Marketing API report task paged collection model.
- */
 export const reportTaskPagedCollectionSchema = z.object({
 	href: z.string().optional(),
 	limit: z.number().optional(),
@@ -125,9 +92,6 @@ export const reportTaskPagedCollectionSchema = z.object({
 	reportTasks: z.array(reportTaskSchema).optional(),
 });
 
-/**
- * Validates the Marketing API summary report response payload.
- */
 export const summaryReportResponseSchema = z.object({
 	baseSale: amountSchema.optional(),
 	lastUpdated: z.string().optional(),
@@ -144,8 +108,6 @@ export const getReportInputSchema = z.object({
 	reportId: z.string().describe("reportId required endpoint parameter"),
 });
 
-/** Validates the Marketing API getReportMetadata endpoint input. */
-
 export const getReportMetadataInputSchema = z.object({
 	fundingModel: z
 		.string()
@@ -156,8 +118,6 @@ export const getReportMetadataInputSchema = z.object({
 		.describe("channel optional endpoint parameter")
 		.optional(),
 });
-
-/** Validates the Marketing API getReportMetadataForReportType endpoint input. */
 
 export const getReportMetadataForReportTypeInputSchema = z.object({
 	reportType: z.string().describe("reportType required endpoint parameter"),
@@ -171,8 +131,6 @@ export const getReportMetadataForReportTypeInputSchema = z.object({
 		.optional(),
 });
 
-/** Validates the Marketing API getReportTasks endpoint input. */
-
 export const getReportTasksInputSchema = z.object({
 	limit: z.number().describe("limit optional endpoint parameter").optional(),
 	offset: z.number().describe("offset optional endpoint parameter").optional(),
@@ -182,22 +140,14 @@ export const getReportTasksInputSchema = z.object({
 		.optional(),
 });
 
-/** Validates the Marketing API createReportTask endpoint input. */
-
 export const createReportTaskInputSchema = z.object({
 	request: createReportTaskSchema.describe("Create report task request body"),
 });
-
-/** Validates the Marketing API getReportTask endpoint input. */
 
 export const getReportTaskInputSchema = z.object({
 	reportTaskId: z.string().describe("reportTaskId required endpoint parameter"),
 });
 
-/** Validates the Marketing API deleteReportTask endpoint input. */
-
 export const deleteReportTaskInputSchema = z.object({
 	reportTaskId: z.string().describe("reportTaskId required endpoint parameter"),
 });
-
-/** Validates the Marketing API createItemPriceMarkdownPromotion endpoint input. */

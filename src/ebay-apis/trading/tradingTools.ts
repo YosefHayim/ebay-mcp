@@ -12,7 +12,6 @@ import type { ToolEntry } from "@/tool-registry/registry.js";
 const AUCTION_ITEM_RULES =
 	"AUCTION items take StartPrice as the opening bid, a day-count ListingDuration (Days_1/3/5/7/10; never GTC), Quantity 1, an optional ReservePrice above the opening bid, an optional BuyItNowPrice at least 30% above it, and Best Offer only without a BuyItNowPrice. FIXED_PRICE items take StartPrice as the price and ListingDuration GTC (the only fixed-price duration eBay accepts), and cannot carry ReservePrice or BuyItNowPrice. Payloads that mix the two formats are rejected before any eBay request.";
 
-/** Trading API tools for fixed-price and auction listing operations. */
 export const tradingEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_active_listings",

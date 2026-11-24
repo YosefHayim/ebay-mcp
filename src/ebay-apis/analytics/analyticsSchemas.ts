@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-/**
- * Analytics API Schemas
- *
- * This file contains Zod schemas for the Sell Analytics API.
- * Schemas are organized by type and include all analytics-related endpoints.
- */
-
 // ============================================================================
 // Common Schemas
 // ============================================================================
@@ -161,10 +154,8 @@ export const reportSchema = z.object({
 // Input Schemas for Operations
 // ============================================================================
 
-/** Input accepted by Analytics API findSellerStandardsProfiles. */
 export const findSellerStandardsProfilesInputSchema = z.object({});
 
-/** Input accepted by Analytics API getCustomerServiceMetric. */
 export const getCustomerServiceMetricInputSchema = z.object({
 	customerServiceMetricType: z
 		.string()
@@ -177,7 +168,6 @@ export const getCustomerServiceMetricInputSchema = z.object({
 		.describe("Marketplace ID used for the evaluation"),
 });
 
-/** Input accepted by Analytics API getSellerStandardsProfile. */
 export const getSellerStandardsProfileInputSchema = z.object({
 	program: z.string().describe("Seller standards program identifier"),
 	cycle: z
@@ -185,7 +175,6 @@ export const getSellerStandardsProfileInputSchema = z.object({
 		.describe("Seller standards cycle, e.g., CURRENT or PROJECTED"),
 });
 
-/** Input accepted by Analytics API getTrafficReport. */
 export const getTrafficReportInputSchema = z.object({
 	dimension: z.string().describe("Report dimension, e.g., LISTING or DAY"),
 	filter: z.string().describe("eBay traffic report filter expression"),

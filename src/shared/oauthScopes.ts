@@ -1,9 +1,3 @@
-/**
- * OAuth scopes eBay grants to seller apps, copied from the developer portal scope tables.
- * Each comment is eBay's description of the scope below it.
- */
-
-/** Scopes available to apps in the eBay production environment. */
 export const productionScopes: readonly string[] = [
 	// View public data from eBay
 	"https://api.ebay.com/oauth/api_scope",
@@ -59,7 +53,6 @@ export const productionScopes: readonly string[] = [
 	"https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly",
 ];
 
-/** Scopes available to apps in the eBay sandbox environment. */
 export const sandboxScopes: readonly string[] = [
 	// View public data from eBay
 	"https://api.ebay.com/oauth/api_scope",

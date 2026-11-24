@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-/**
- * Browse API Schemas
- *
- * Zod input schemas for active-listing marketplace search tools.
- */
-
-/**
- * Validates input for ebay_find_active_items (Browse item_summary/search).
- */
 export const findActiveItemsInputSchema = z.object({
 	query: z
 		.string()
@@ -71,9 +62,6 @@ export const findActiveItemsInputSchema = z.object({
 		),
 });
 
-/**
- * Validates input for ebay_get_item_details (Browse getItem).
- */
 export const getItemDetailsInputSchema = z.object({
 	itemId: z
 		.string()

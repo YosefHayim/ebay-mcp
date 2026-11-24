@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Input for Taxonomy API methods addressed only by category tree (fetchItemAspects, getExpiredCategories). */
 export const categoryTreeIdInputSchema = z.object({
 	categoryTreeId: z
 		.string()

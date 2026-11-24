@@ -48,14 +48,10 @@ type GetUserPreferencesInput = z.infer<typeof getUserPreferencesInputSchema>;
 type SetUserPreferencesInput = z.infer<typeof setUserPreferencesInputSchema>;
 
 type Schemas = components["schemas"];
-/** Generated request body for updateShippingCost. */
 type RateTableUpdate = Schemas["RateTableUpdate"];
-/** Generated request body for updatePayoutPercentage. */
 type UpdatePayoutPercentageRequest = Schemas["UpdatePayoutPercentageRequest"];
-/** Generated request body for setUserPreferences. */
 type SetUserPreferencesRequest = Schemas["SetUserPreferencesRequest"];
 
-/** Combined-shipping-rules POST operations that share the marketplace header contract. */
 type CombinedShippingRulesOperation =
 	| "create_calculated_shipping_rules"
 	| "create_flat_shipping_rules"
@@ -65,36 +61,15 @@ type CombinedShippingRulesOperation =
 	| "update_flat_shipping_rules"
 	| "update_promotional_shipping_rule";
 
-/**
- * Response returned by eBay Account API v2 getRateTable.
- *
- * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/rate_table/methods/getRateTable
- */
 export type RateTableDetailsResponse = Schemas["RateTableDetails"];
 
-/**
- * Response returned by eBay Account API v2 getPayoutSettings.
- *
- * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/payout_settings/methods/getPayoutSettings
- */
 export type PayoutSettingsResponse = Schemas["PayoutSettingsResponse"];
 
-/**
- * Response returned by eBay Account API v2 getCombinedShippingRules.
- *
- * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/getCombinedShippingRules
- */
 export type CombinedShippingRulesResponse =
 	Schemas["GetCombinedShippingRulesPublicApiResponse"];
 
-/**
- * Response returned by eBay Account API v2 getUserPreferences.
- *
- * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/user_preferences/methods/getUserPreferences
- */
 export type UserPreferencesResponse = Schemas["GetUserPreferencesResponse"];
 
-/** Account API v2 - rate tables, payout settings, combined shipping rules, and user preferences. */
 export class AccountV2Api {
 	private readonly basePath = "/sell/account/v2";
 	private readonly client: EbayApiClient;
@@ -103,19 +78,6 @@ export class AccountV2Api {
 		this.client = client;
 	}
 
-	/**
-	 * Retrieves one shipping rate table with its rates, so their rateIds can be updated.
-	 *
-	 * @param input - Rate table ID (path), from Account API v1 getRateTables.
-	 * @returns A promise that resolves with eBay's generated RateTableDetails.
-	 *
-	 * @example
-	 * ```ts
-	 * const table = await accountV2Api.getRateTable({ rateTableId: '5000000000' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/rate_table/methods/getRateTable
-	 */
 	public getRateTable = async (
 		input: GetRateTableInput,
 	): Promise<RateTableDetailsResponse> => {
@@ -132,22 +94,6 @@ export class AccountV2Api {
 		);
 	};
 
-	/**
-	 * Updates the shippingCost and/or additionalCost of rates in a shipping rate table.
-	 *
-	 * @param input - Rate table ID (path) and the RateTableUpdate body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.updateShippingCost({
-	 *     rateTableId: '5000000000',
-	 *     rateTableUpdate: { rates: [{ rateId: 'R1', shippingCost: { currency: 'USD', value: '4.99' } }] },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/rate_table/methods/updateShippingCost
-	 */
 	public updateShippingCost = async (
 		input: UpdateShippingCostInput,
 	): Promise<void> => {
@@ -169,20 +115,6 @@ export class AccountV2Api {
 		return requestPostEffect<void>(client, path, rateTableUpdate);
 	};
 
-	/**
-	 * Retrieves the seller's payout instruments and split-payout percentages
-	 * (mainland China sellers only). Requires the sell.finances scope.
-	 *
-	 * @param _input - Empty object accepted for tool/API shape consistency.
-	 * @returns A promise that resolves with eBay's generated PayoutSettingsResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const settings = await accountV2Api.getPayoutSettings({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/payout_settings/methods/getPayoutSettings
-	 */
 	public getPayoutSettings = (
 		_input: GetPayoutSettingsInput = {},
 	): Promise<PayoutSettingsResponse> =>
@@ -191,27 +123,6 @@ export class AccountV2Api {
 			`${this.basePath}/payout_settings`,
 		);
 
-	/**
-	 * Sets the split-payout percentage across the seller's two payout instruments
-	 * (mainland China sellers only; percentages must total 100). Requires sell.finances.
-	 *
-	 * @param input - UpdatePayoutPercentageRequest body under `payoutSplit`.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.updatePayoutPercentage({
-	 *     payoutSplit: {
-	 *       payoutInstruments: [
-	 *         { instrumentId: 'BANK-1', payoutPercentage: '70' },
-	 *         { instrumentId: 'PAYONEER-1', payoutPercentage: '30' },
-	 *       ],
-	 *     },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/payout_settings/methods/updatePayoutPercentage
-	 */
 	public updatePayoutPercentage = async (
 		input: UpdatePayoutPercentageInput,
 	): Promise<void> => {
@@ -229,23 +140,6 @@ export class AccountV2Api {
 		return requestPostEffect<void>(client, path, payoutSplit);
 	};
 
-	/**
-	 * Creates calculated combined-shipping rules (and optional handling rule or
-	 * combined payment window) for one marketplace.
-	 *
-	 * @param input - Marketplace header and the CreateCalculatedShippingRulesRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.createCalculatedShippingRules({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     shippingRules: { combinedDuration: 'DAYS_7' },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/createCalculatedShippingRules
-	 */
 	public createCalculatedShippingRules = (
 		input: CalculatedShippingRulesInput,
 	): Promise<void> =>
@@ -253,22 +147,6 @@ export class AccountV2Api {
 			Schemas["CreateCalculatedShippingRulesRequest"]
 		>("create_calculated_shipping_rules", input, "shippingRules");
 
-	/**
-	 * Creates flat-rate combined-shipping rules for one marketplace.
-	 *
-	 * @param input - Marketplace header and the CreateFlatShippingRulesRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.createFlatShippingRules({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     shippingRules: { flatShippingRule: { combinedShippingRuleType: 'EACH_ADDITIONAL_AMOUNT' } },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/createFlatShippingRules
-	 */
 	public createFlatShippingRules = (
 		input: FlatShippingRulesInput,
 	): Promise<void> =>
@@ -278,23 +156,6 @@ export class AccountV2Api {
 			"shippingRules",
 		);
 
-	/**
-	 * Creates the promotional combined-shipping rule (discount or free shipping
-	 * above an order amount or item count) for one marketplace.
-	 *
-	 * @param input - Marketplace header and the CreatePromotionalShippingRuleRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.createPromotionalShippingRule({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     shippingRules: { promotionalShippingRule: { itemCount: 3 } },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/createPromotionalShippingRule
-	 */
 	public createPromotionalShippingRule = (
 		input: PromotionalShippingRuleInput,
 	): Promise<void> =>
@@ -302,20 +163,6 @@ export class AccountV2Api {
 			Schemas["CreatePromotionalShippingRuleRequest"]
 		>("create_promotional_shipping_rule", input, "shippingRules");
 
-	/**
-	 * Retrieves the seller's calculated, flat, and promotional combined-shipping
-	 * rules and combined payment window for one marketplace.
-	 *
-	 * @param input - Marketplace sent as the X-EBAY-C-MARKETPLACE-ID header.
-	 * @returns A promise that resolves with eBay's GetCombinedShippingRulesPublicApiResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const rules = await accountV2Api.getCombinedShippingRules({ marketplaceId: MarketplaceId.EBAY_US });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/getCombinedShippingRules
-	 */
 	public getCombinedShippingRules = async (
 		input: GetCombinedShippingRulesInput,
 	): Promise<CombinedShippingRulesResponse> => {
@@ -338,22 +185,6 @@ export class AccountV2Api {
 		);
 	};
 
-	/**
-	 * Updates existing calculated combined-shipping rules for one marketplace.
-	 *
-	 * @param input - Marketplace header and the UpdateCalculatedShippingRulesRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.updateCalculatedShippingRules({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     shippingRules: { combinedDuration: 'DAYS_14' },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updateCalculatedShippingRules
-	 */
 	public updateCalculatedShippingRules = (
 		input: CalculatedShippingRulesInput,
 	): Promise<void> =>
@@ -361,22 +192,6 @@ export class AccountV2Api {
 			Schemas["UpdateCalculatedShippingRulesRequest"]
 		>("update_calculated_shipping_rules", input, "shippingRules");
 
-	/**
-	 * Changes the combined payment window for unpaid orders on one marketplace.
-	 *
-	 * @param input - Marketplace header and the UpdateCombinedPaymentsRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.updateCombinedPayments({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     combinedPayments: { combinedDuration: 'DAYS_30' },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updateCombinedPayments
-	 */
 	public updateCombinedPayments = (
 		input: UpdateCombinedPaymentsInput,
 	): Promise<void> =>
@@ -386,22 +201,6 @@ export class AccountV2Api {
 			"combinedPayments",
 		);
 
-	/**
-	 * Updates existing flat-rate combined-shipping rules for one marketplace.
-	 *
-	 * @param input - Marketplace header and the UpdateFlatShippingRulesRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.updateFlatShippingRules({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     shippingRules: { combinedDuration: 'DAYS_5' },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updateFlatShippingRules
-	 */
 	public updateFlatShippingRules = (
 		input: FlatShippingRulesInput,
 	): Promise<void> =>
@@ -411,22 +210,6 @@ export class AccountV2Api {
 			"shippingRules",
 		);
 
-	/**
-	 * Updates the existing promotional combined-shipping rule for one marketplace.
-	 *
-	 * @param input - Marketplace header and the UpdatePromotionalShippingRuleRequest body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.updatePromotionalShippingRule({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     shippingRules: { promotionalShippingRule: { orderAmount: { currency: 'USD', value: '50.00' } } },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/combined_shipping_rules/methods/updatePromotionalShippingRule
-	 */
 	public updatePromotionalShippingRule = (
 		input: PromotionalShippingRuleInput,
 	): Promise<void> =>
@@ -434,23 +217,6 @@ export class AccountV2Api {
 			Schemas["UpdatePromotionalShippingRuleRequest"]
 		>("update_promotional_shipping_rule", input, "shippingRules");
 
-	/**
-	 * Retrieves the seller's preferences for one marketplace, optionally limited to
-	 * specific field groups.
-	 *
-	 * @param input - Marketplace header and optional comma-separated `fieldgroups`.
-	 * @returns A promise that resolves with eBay's generated GetUserPreferencesResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const preferences = await accountV2Api.getUserPreferences({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     fieldgroups: 'COMBINED_PAYMENT,DISPATCH_CUTOFF_TIME',
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/user_preferences/methods/getUserPreferences
-	 */
 	public getUserPreferences = async (
 		input: GetUserPreferencesInput,
 	): Promise<UserPreferencesResponse> => {
@@ -480,23 +246,6 @@ export class AccountV2Api {
 		);
 	};
 
-	/**
-	 * Changes one or more seller preferences for one marketplace (PATCH: send only
-	 * the preferences being changed).
-	 *
-	 * @param input - Marketplace header and the preferences PATCH body.
-	 * @returns A promise that resolves when eBay returns 204 No Content.
-	 *
-	 * @example
-	 * ```ts
-	 * await accountV2Api.setUserPreferences({
-	 *     marketplaceId: MarketplaceId.EBAY_US,
-	 *     preferences: { outOfStockControlPreference: true },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/account/v2/resources/user_preferences/methods/setUserPreferences
-	 */
 	public setUserPreferences = async (
 		input: SetUserPreferencesInput,
 	): Promise<void> => {
@@ -523,10 +272,6 @@ export class AccountV2Api {
 		);
 	};
 
-	/**
-	 * Validates the marketplace header and body field, then POSTs one
-	 * combined-shipping-rules request that eBay answers with 204 No Content.
-	 */
 	private readonly postCombinedShippingRules = async <Body extends object>(
 		operation: CombinedShippingRulesOperation,
 		input: unknown,

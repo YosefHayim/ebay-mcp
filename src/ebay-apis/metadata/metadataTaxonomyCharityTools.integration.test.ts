@@ -37,7 +37,6 @@ const SHIPPING = "/sell/metadata/v1/shipping/marketplace";
 const TREE = "/commerce/taxonomy/v1/category_tree";
 const CHARITY = "/commerce/charity/v1/charity_org";
 
-/** Every tool this lane adds, with the inputs MCP clients must supply. */
 const LANE_TOOLS: Record<string, string[]> = {
 	ebay_get_exclude_shipping_locations: ["marketplaceId"],
 	ebay_get_handling_times: ["marketplaceId"],
@@ -53,17 +52,17 @@ const LANE_TOOLS: Record<string, string[]> = {
 let client: Client;
 let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
-const callTool = async (name: string, args: Record<string, unknown>) => {
+async function callTool(name: string, args: Record<string, unknown>) {
 	const toolResult = CallToolResultSchema.parse(
 		await client.callTool({ name, arguments: args }),
 	);
 	const [first] = toolResult.content;
-	const text = first?.type === "text" ? first.text : "";
+	const text = first?.type == "text" ? first.text : "";
 	return {
-		isError: toolResult.isError === true,
+		isError: toolResult.isError == true,
 		payload: JSON.parse(text) as unknown,
 	};
-};
+}
 
 beforeEach(async () => {
 	vi.clearAllMocks();
@@ -186,7 +185,7 @@ describe("Taxonomy tools", () => {
 			text: `Taxonomy item aspects for category tree 3 FetchItemAspectsResponse.gz (application/octet-stream, ${gzip.length} bytes)`,
 		});
 		const resource = aspectsResult.content.find(
-			(block) => block.type === "resource",
+			(block) => block.type == "resource",
 		);
 		expect(resource?.resource).toMatchObject({
 			uri: "ebay-taxonomy://category_tree/3/item_aspects",

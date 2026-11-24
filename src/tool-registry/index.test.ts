@@ -340,8 +340,7 @@ describe("Tools Layer", () => {
 
 		it("advertises required and recommended item specifics in the taxonomy tool", () => {
 			const tool = getToolDefinitions().find(
-				(definition) =>
-					definition.name === "ebay_get_item_aspects_for_category",
+				(definition) => definition.name == "ebay_get_item_aspects_for_category",
 			);
 
 			expect(tool?.description).toContain(

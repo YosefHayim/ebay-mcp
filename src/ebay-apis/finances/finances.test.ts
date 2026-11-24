@@ -31,7 +31,6 @@ const client = {
 const finances = new FinancesApi(client as unknown as EbayApiClient);
 const summaryFilter = { filter: "transactionStatus:{PAYOUT}" };
 
-/** One FinancesApi endpoint invocation, erased to a common promise type for table tests. */
 type FinancesCall = () => Promise<unknown>;
 
 beforeEach(() => {

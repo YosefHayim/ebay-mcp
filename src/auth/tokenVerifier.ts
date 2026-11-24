@@ -1,8 +1,3 @@
-/**
- * Token verification using OAuth 2.0 Token Introspection (RFC 7662)
- * and JWT validation
- */
-
 import { getErrorMessage } from "@/shared/errors.js";
 import {
 	describeHttpError,
@@ -19,39 +14,17 @@ import type {
 	VerifiedToken,
 } from "./oauthTypes.js";
 
-/**
- * OAuth issuer and audience settings used to validate MCP access tokens.
- */
 export interface TokenVerifierConfig {
-	/**
-	 * OAuth authorization server metadata URL or metadata object
-	 */
 	authServerMetadata: string | OAuthServerMetadata;
 
-	/**
-	 * Client ID for introspection endpoint authentication
-	 */
 	clientId?: string;
 
-	/**
-	 * Client secret for introspection endpoint authentication
-	 */
 	clientSecret?: string;
 
-	/**
-	 * Expected audience (resource server URL)
-	 */
 	expectedAudience: string;
 
-	/**
-	 * Required scopes for access
-	 */
 	requiredScopes?: string[];
 
-	/**
-	 * Whether to use token introspection (true) or JWT validation (false)
-	 * Default: true
-	 */
 	useIntrospection?: boolean;
 }
 
@@ -141,11 +114,11 @@ function isOutsideSuccessStatus(status: number): boolean {
 }
 
 function isStringClaim(claim: unknown): claim is string {
-	return typeof claim === "string";
+	return typeof claim == "string";
 }
 
 function isBase64UrlSegment(segment: string): boolean {
-	const isEmpty = segment.length === 0;
+	const isEmpty = segment.length == 0;
 
 	if (isEmpty) {
 		return false;
@@ -154,7 +127,7 @@ function isBase64UrlSegment(segment: string): boolean {
 	const base64GroupSize = 4;
 	const remainder = segment.length % base64GroupSize;
 	const impossibleRemainder = 1;
-	const isImpossibleLength = remainder === impossibleRemainder;
+	const isImpossibleLength = remainder == impossibleRemainder;
 
 	if (isImpossibleLength) {
 		return false;
@@ -195,7 +168,7 @@ function readSegment(segments: string[], index: number): string {
 function splitCompactJwt(token: string): CompactJwt {
 	const segments = token.split(".");
 	const compactSegmentCount = 3;
-	const hasThreeSegments = segments.length === compactSegmentCount;
+	const hasThreeSegments = segments.length == compactSegmentCount;
 
 	if (!hasThreeSegments) {
 		throw new Error("JWT must have three base64url segments");
@@ -251,14 +224,14 @@ function readKeyId(headerFields: Record<string, unknown>): string | undefined {
 		return undefined;
 	}
 
-	const isKeyId = typeof keyId === "string";
+	const isKeyId = typeof keyId == "string";
 	const isNotKeyId = !isKeyId;
 
 	if (isNotKeyId) {
 		throw new Error("JWT kid must be a string");
 	}
 
-	const isEmpty = keyId === "";
+	const isEmpty = keyId == "";
 
 	if (isEmpty) {
 		throw new Error("JWT kid must be a string");
@@ -318,7 +291,7 @@ function readPublicRsaJwk(key: unknown): VerificationKey | null {
 	}
 
 	const modulus = key["n"];
-	const isModulus = typeof modulus === "string";
+	const isModulus = typeof modulus == "string";
 	const isNotModulus = !isModulus;
 
 	if (isNotModulus) {
@@ -326,7 +299,7 @@ function readPublicRsaJwk(key: unknown): VerificationKey | null {
 	}
 
 	const exponent = key["e"];
-	const isExponent = typeof exponent === "string";
+	const isExponent = typeof exponent == "string";
 	const isNotExponent = !isExponent;
 
 	if (isNotExponent) {
@@ -403,7 +376,7 @@ async function fetchVerificationKeys(
 
 function findKeyById(keys: VerificationKey[], keyId: string): VerificationKey {
 	function keyHasId(key: VerificationKey): boolean {
-		return key.kid === keyId;
+		return key.kid == keyId;
 	}
 
 	const matchedKey = keys.find(keyHasId);
@@ -427,7 +400,7 @@ function pickVerificationKey(
 	}
 
 	const singleKeyCount = 1;
-	const isSingleKey = keys.length === singleKeyCount;
+	const isSingleKey = keys.length == singleKeyCount;
 	const isNotSingleKey = !isSingleKey;
 
 	if (isNotSingleKey) {
@@ -481,7 +454,7 @@ async function verifyRs256Signature(
 		throw new Error("JWT signature could not be verified", { cause });
 	}
 
-	const isSignatureRejected = isSignatureValid === false;
+	const isSignatureRejected = isSignatureValid == false;
 
 	if (isSignatureRejected) {
 		throw new Error("Invalid signature");
@@ -504,7 +477,7 @@ function readJwtClaims(claimsSegment: string): JwtClaims {
 
 function assertNotExpired(claims: JwtClaims, nowSeconds: number): void {
 	const expiry = claims.exp;
-	const hasExpiry = typeof expiry === "number";
+	const hasExpiry = typeof expiry == "number";
 	const hasNoExpiry = !hasExpiry;
 
 	if (hasNoExpiry) {
@@ -543,17 +516,17 @@ function isNonEmptyAudience(
 		return false;
 	}
 
-	return expectedAudience !== "";
+	return expectedAudience != "";
 }
 
 function audienceIncludes(
 	audienceClaim: unknown,
 	expectedAudience: string,
 ): boolean {
-	const isSingleAudience = typeof audienceClaim === "string";
+	const isSingleAudience = typeof audienceClaim == "string";
 
 	if (isSingleAudience) {
-		return audienceClaim === expectedAudience;
+		return audienceClaim == expectedAudience;
 	}
 
 	const isAudienceList = Array.isArray(audienceClaim);
@@ -610,7 +583,7 @@ async function readVerifiedJwtClaims(check: JwtCheck): Promise<JwtClaims> {
 
 function readScopes(claims: JwtClaims): string[] {
 	const scopeClaim = claims.scope;
-	const isScopeString = typeof scopeClaim === "string";
+	const isScopeString = typeof scopeClaim == "string";
 
 	if (isScopeString) {
 		return scopeClaim.split(" ");
@@ -627,14 +600,14 @@ function readScopes(claims: JwtClaims): string[] {
 
 function readClientId(claims: JwtClaims): string {
 	const clientId = claims.client_id;
-	const hasClientId = typeof clientId === "string";
+	const hasClientId = typeof clientId == "string";
 
 	if (hasClientId) {
 		return clientId;
 	}
 
 	const authorizedParty = claims.azp;
-	const hasAuthorizedParty = typeof authorizedParty === "string";
+	const hasAuthorizedParty = typeof authorizedParty == "string";
 
 	if (hasAuthorizedParty) {
 		return authorizedParty;
@@ -644,7 +617,7 @@ function readClientId(claims: JwtClaims): string {
 }
 
 function readOptionalNumber(claim: unknown): number | undefined {
-	const isNumber = typeof claim === "number";
+	const isNumber = typeof claim == "number";
 
 	if (isNumber) {
 		return claim;
@@ -654,7 +627,7 @@ function readOptionalNumber(claim: unknown): number | undefined {
 }
 
 function readOptionalString(claim: unknown): string | undefined {
-	const isString = typeof claim === "string";
+	const isString = typeof claim == "string";
 
 	if (isString) {
 		return claim;
@@ -665,7 +638,7 @@ function readOptionalString(claim: unknown): string | undefined {
 
 function readAudienceList(audienceList: unknown[]): string[] | undefined {
 	const audienceParts = audienceList.filter(isStringClaim);
-	const keptEveryPart = audienceParts.length === audienceList.length;
+	const keptEveryPart = audienceParts.length == audienceList.length;
 
 	if (keptEveryPart) {
 		return audienceParts;
@@ -675,7 +648,7 @@ function readAudienceList(audienceList: unknown[]): string[] | undefined {
 }
 
 function readOptionalAudience(claim: unknown): string | string[] | undefined {
-	const isSingleAudience = typeof claim === "string";
+	const isSingleAudience = typeof claim == "string";
 
 	if (isSingleAudience) {
 		return claim;
@@ -690,9 +663,6 @@ function readOptionalAudience(claim: unknown): string | string[] | undefined {
 	return undefined;
 }
 
-/**
- * Verifies MCP Bearer tokens using OAuth introspection or JWT validation.
- */
 export class TokenVerifier {
 	private config: TokenVerifierConfig;
 	private metadata: OAuthServerMetadata | null = null;
@@ -701,13 +671,10 @@ export class TokenVerifier {
 		this.config = config;
 	}
 
-	/**
-	 * Execute an OAuth verifier HTTP request and return its decoded body.
-	 */
-	private async requestVerifierData<T>(
+	private requestVerifierData = async <T>(
 		failureMessage: string,
 		options: HttpRequestOptions,
-	): Promise<T> {
+	): Promise<T> => {
 		var verifierResponse: HttpResponse<T>;
 
 		try {
@@ -729,20 +696,10 @@ export class TokenVerifier {
 		}
 
 		return verifierResponse.data;
-	}
+	};
 
-	/**
-	 * Initialize the verifier by loading OAuth server metadata.
-	 *
-	 * @returns Completes after metadata is loaded or assigned.
-	 *
-	 * @example
-	 * ```ts
-	 * await verifier.initialize();
-	 * ```
-	 */
 	initialize = async (): Promise<void> => {
-		if (typeof this.config.authServerMetadata === "string") {
+		if (typeof this.config.authServerMetadata == "string") {
 			this.metadata = await this.requestVerifierData<OAuthServerMetadata>(
 				"Failed to load OAuth server metadata",
 				{
@@ -755,32 +712,18 @@ export class TokenVerifier {
 		this.metadata = this.config.authServerMetadata;
 	};
 
-	/**
-	 * Verify an access token.
-	 *
-	 * @param token - Bearer token received by the MCP HTTP transport.
-	 * @returns Verified token claims.
-	 *
-	 * @example
-	 * ```ts
-	 * const verified = await verifier.verifyToken(token);
-	 * ```
-	 */
 	verifyToken = async (token: string): Promise<VerifiedToken> => {
 		if (!this.metadata) {
 			throw new Error("Token verifier not initialized");
 		}
 
-		if (this.config.useIntrospection === false) {
+		if (this.config.useIntrospection == false) {
 			return await this.verifyViaJWT(token);
 		}
 
 		return await this.verifyViaIntrospection(token);
 	};
 
-	/**
-	 * Verify token using OAuth 2.0 Token Introspection (RFC 7662)
-	 */
 	private verifyViaIntrospection = async (
 		token: string,
 	): Promise<VerifiedToken> => {
@@ -864,9 +807,6 @@ export class TokenVerifier {
 		});
 	};
 
-	/**
-	 * Verify token using JWT validation
-	 */
 	private verifyViaJWT = async (token: string): Promise<VerifiedToken> => {
 		if (!this.metadata) {
 			throw new Error("Token verifier not initialized");
@@ -923,10 +863,9 @@ export class TokenVerifier {
 		});
 	};
 
-	/**
-	 * Validate audience claim
-	 */
-	private validateAudience(audience: string | string[] | undefined): boolean {
+	private validateAudience = (
+		audience: string | string[] | undefined,
+	): boolean => {
 		if (!audience) {
 			return false;
 		}
@@ -937,10 +876,10 @@ export class TokenVerifier {
 		return audiences.some((aud) => {
 			const normalizedAud = aud.replace(/\/$/, "");
 			return (
-				normalizedAud === normalizedExpected ||
-				normalizedAud === normalizedExpected + "/" ||
-				normalizedExpected === normalizedAud + "/"
+				normalizedAud == normalizedExpected ||
+				normalizedAud == normalizedExpected + "/" ||
+				normalizedExpected == normalizedAud + "/"
 			);
 		});
-	}
+	};
 }

@@ -1,12 +1,5 @@
-/**
- * Core eBay API types
- */
-
 import type { LocaleEnum } from "./ebayEnums.js";
 
-/**
- * Runtime configuration required to authenticate eBay API clients.
- */
 export interface EbayConfig {
 	clientId: string;
 	clientSecret: string;
@@ -18,43 +11,14 @@ export interface EbayConfig {
 	accessToken?: string | undefined;
 	refreshToken?: string | undefined;
 	appAccessToken?: string;
-	/**
-	 * Overrides eBay's base host for ALL live API traffic — REST, Identity, Trading,
-	 * and the OAuth token endpoint. When set, every outbound eBay request targets this
-	 * origin instead of `api.ebay.com` / `apiz.ebay.com`, and the operator's reverse
-	 * proxy is responsible for routing the `apiz`-vs-`api` split internally. Sourced
-	 * from `EBAY_MCP_API_BASE_URL`; used to front all eBay calls through a proxy.
-	 * @see https://github.com/YosefHayim/ebay-mcp/issues/122
-	 */
 	apiBaseUrl?: string;
-	/**
-	 * When `true`, the client attaches NO eBay authentication of any kind — neither
-	 * `Authorization: Bearer` (REST) nor `X-EBAY-API-IAF-TOKEN` (Trading) — and skips
-	 * all token acquisition (no app-token mint, no refresh, no 401-retry). Client
-	 * credentials become optional; authentication is delegated to an upstream proxy.
-	 * Sourced from `EBAY_MCP_DISABLE_AUTH_HEADER`.
-	 * @see https://github.com/YosefHayim/ebay-mcp/issues/122
-	 */
 	disableAuthHeader?: boolean;
-	/**
-	 * Digital-signature credentials from the Key Management API `createSigningKey`
-	 * response, used to sign the calls eBay requires signatures on for EU/UK
-	 * sellers. Present only when `EBAY_SIGNING_KEY_JWE` and
-	 * `EBAY_SIGNING_PRIVATE_KEY` are both set.
-	 * @see https://developer.ebay.com/develop/guides/digital-signatures-for-apis
-	 */
 	signing?: {
-		/** The `jwe` value, sent in the `x-ebay-signature-key` header. */
 		readonly keyJwe: string;
-		/** The `privateKey` value: base64 PKCS#8 DER or PEM, Ed25519 or RSA. */
 		readonly privateKey: string;
 	};
 }
 
-/**
- * OAuth token response from eBay
- * Supports both client credentials and authorization code grants
- */
 export interface EbayTokenCore {
 	accessToken: string;
 	refreshToken: string;
@@ -62,29 +26,16 @@ export interface EbayTokenCore {
 	refreshTokenExpiresIn?: number;
 }
 
-/**
- * OAuth token response from eBay
- * Supports both client credentials and authorization code grants
- */
 export interface EbayAuthToken extends EbayTokenCore {
 	tokenType: string;
 }
 
-/**
- * App access token response from client credentials flow
- * Used for application-level operations (1,000 requests/day)
- * No refresh token - app tokens are short-lived and re-generated
- */
 export interface EbayAppAccessTokenResponse {
 	access_token: string;
 	expires_in: number;
 	token_type: string;
 }
 
-/**
- * User access token with refresh token
- * Used for user-specific operations (10,000-50,000 requests/day)
- */
 export interface EbayUserToken {
 	access_token: string;
 	refresh_token: string;
@@ -94,9 +45,6 @@ export interface EbayUserToken {
 	scope?: string;
 }
 
-/**
- * Stored user token data with expiry timestamps
- */
 export interface StoredTokenData {
 	userAccessToken: string;
 	userRefreshToken: string;
@@ -113,9 +61,6 @@ export interface StoredTokenData {
 	scope?: string | undefined; // Optional scope string
 }
 
-/**
- * Standard wrapper for successful eBay API responses and optional warnings.
- */
 export interface EbayApiResponse<T = unknown> {
 	data: T;
 	warnings?: {
@@ -126,9 +71,6 @@ export interface EbayApiResponse<T = unknown> {
 	}[];
 }
 
-/**
- * Standard error payload returned by eBay APIs.
- */
 export interface EbayApiError {
 	errors: {
 		errorId: number;
@@ -143,9 +85,6 @@ export interface EbayApiError {
 	}[];
 }
 
-/**
- * API category identifiers matching docs structure
- */
 export const EbayApiCategory = {
 	ACCOUNT_MANAGEMENT: "account-management",
 	ANALYTICS_AND_REPORT: "analytics-and-report",
@@ -160,9 +99,6 @@ export const EbayApiCategory = {
 export type EbayApiCategory =
 	(typeof EbayApiCategory)[keyof typeof EbayApiCategory];
 
-/**
- * Specific API identifiers
- */
 export const EbayApi = {
 	// Account Management
 	ACCOUNT: "sell/account/v1",
@@ -198,9 +134,6 @@ export const EbayApi = {
 
 export type EbayApi = (typeof EbayApi)[keyof typeof EbayApi];
 
-/**
- * OAuth scopes requested for production eBay authorization flows.
- */
 export const productionScopes = [
 	"https://api.ebay.com/oauth/api_scope",
 	"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
@@ -230,9 +163,6 @@ export const productionScopes = [
 	"https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly",
 ];
 
-/**
- * OAuth scopes requested for sandbox eBay authorization flows.
- */
 export const sandboxScopes = [
 	"https://api.ebay.com/oauth/api_scope",
 	"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
@@ -271,9 +201,6 @@ export const sandboxScopes = [
 	"https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly",
 ];
 
-/**
- * OAuth API endpoints
- */
 export const EbayOAuthApi = {
 	TOKEN: "/identity/v1/oauth2/token",
 	AUTHORIZE_SANDBOX: "https://auth.sandbox.ebay.com/oauth2/authorize",
@@ -284,9 +211,6 @@ export const EbayOAuthApi = {
 
 export type EbayOAuthApi = (typeof EbayOAuthApi)[keyof typeof EbayOAuthApi];
 
-/**
- * OAuth parameter descriptions
- */
 export interface EbayOAuthParams {
 	client_id: string;
 	redirect_uri: string;

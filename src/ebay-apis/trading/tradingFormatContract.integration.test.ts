@@ -37,19 +37,21 @@ const auctionItem = {
 	Country: "US",
 };
 
-const tradingResponse = (callName: string, responseFields: string): string =>
-	`<?xml version="1.0" encoding="utf-8"?>
+function tradingResponse(callName: string, responseFields: string): string {
+	return `<?xml version="1.0" encoding="utf-8"?>
   <${callName}Response xmlns="urn:ebay:apis:eBLBaseComponents">
     <Ack>Success</Ack>
     ${responseFields}
   </${callName}Response>`;
+}
 
-const textContent = (
+function textContent(
 	toolResult: Awaited<ReturnType<Client["callTool"]>>,
-): string =>
-	(toolResult.content as { type: string; text?: string }[])
+): string {
+	return (toolResult.content as { type: string; text?: string }[])
 		.map((block) => block.text ?? "")
 		.join("\n");
+}
 
 let client: Client;
 let runtime: EbayMcpRuntime;
@@ -103,7 +105,7 @@ describe("trading format advertised MCP schema", () => {
 			"ebay_end_listing",
 			"ebay_relist_item",
 		]) {
-			const definition = tools.find((tool) => tool.name === name);
+			const definition = tools.find((tool) => tool.name == name);
 
 			expect(definition?.description).toContain("AUCTION");
 			expect(definition?.inputSchema).toMatchObject({

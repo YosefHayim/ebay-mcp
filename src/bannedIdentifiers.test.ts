@@ -4,23 +4,10 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
-/**
- * Banned-identifier guard.
- *
- * Generic names like `resolve` say nothing about what a value is for, so the repo
- * bans declaring them: name the callback after what it settles (`onServerReady`),
- * or use an API that needs no callback (`once(server, 'listening')`,
- * `setTimeout` from `node:timers/promises`, `Effect.sleep`).
- *
- * Only declarations are banned. Reading a library member such as `path.resolve`
- * or writing an object key such as Vite's `resolve:` option is allowed, because
- * those names belong to the library, not to this repo.
- */
 const BANNED_NAMES = new Set(["resolve"]);
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const SCANNED_DIRS = ["src", "tests"];
-/** Generated OpenAPI types keep upstream names. */
 const GENERATED_DIR = path.join("src", "ebay-openapi-types");
 const SOURCE_FILE_PATTERN = /\.(ts|tsx|cts|mts)$/;
 
@@ -31,11 +18,10 @@ const sourceFiles = SCANNED_DIRS.flatMap((dir) =>
 		.filter((filePath) => !filePath.startsWith(GENERATED_DIR)),
 );
 
-/** True when the identifier is the name a declaration binds, not a reference or key. */
-const isDeclaredName = (identifier: ts.Identifier): boolean => {
+function isDeclaredName(identifier: ts.Identifier): boolean {
 	const { parent } = identifier;
 	if (ts.isImportSpecifier(parent)) {
-		return parent.name === identifier;
+		return parent.name == identifier;
 	}
 	return (
 		(ts.isVariableDeclaration(parent) ||
@@ -47,12 +33,11 @@ const isDeclaredName = (identifier: ts.Identifier): boolean => {
 			ts.isImportClause(parent) ||
 			ts.isNamespaceImport(parent) ||
 			ts.isImportEqualsDeclaration(parent)) &&
-		parent.name === identifier
+		parent.name == identifier
 	);
-};
+}
 
-/** Lists `file:line name` for every banned declaration in one source file. */
-const bannedDeclarationsIn = (filePath: string): string[] => {
+function bannedDeclarationsIn(filePath: string): string[] {
 	const sourceFile = ts.createSourceFile(
 		filePath,
 		readFileSync(path.join(repoRoot, filePath), "utf8"),
@@ -77,7 +62,7 @@ const bannedDeclarationsIn = (filePath: string): string[] => {
 	visit(sourceFile);
 
 	return violations;
-};
+}
 
 describe("banned identifiers", () => {
 	it("scans the source tree so the guard cannot pass vacuously", () => {

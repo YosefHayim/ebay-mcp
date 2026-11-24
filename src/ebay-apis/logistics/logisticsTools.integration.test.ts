@@ -110,18 +110,17 @@ const LOGISTICS_TOOLS = {
 let client: Client;
 let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
-/** Calls a tool and parses the JSON document carried by its single text block. */
-const callJsonTool = async (name: string, args: Record<string, unknown>) => {
+async function callJsonTool(name: string, args: Record<string, unknown>) {
 	const toolResult = CallToolResultSchema.parse(
 		await client.callTool({ name, arguments: args }),
 	);
 	const [block] = toolResult.content;
 	return {
-		isError: toolResult.isError === true,
+		isError: toolResult.isError == true,
 		payload:
-			block?.type === "text" ? (JSON.parse(block.text) as unknown) : undefined,
+			block?.type == "text" ? (JSON.parse(block.text) as unknown) : undefined,
 	};
-};
+}
 
 beforeEach(async () => {
 	vi.clearAllMocks();

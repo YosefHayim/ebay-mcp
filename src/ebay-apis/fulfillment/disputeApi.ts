@@ -26,112 +26,51 @@ import type {
 	updateEvidenceInputSchema,
 } from "./ordersSchemas.js";
 
-/**
- * Response returned by eBay Fulfillment API getPaymentDisputeSummaries.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDisputeSummaries
- */
 export type DisputeSummaryResponse =
 	components["schemas"]["DisputeSummaryResponse"];
 
-/**
- * Response returned by eBay Fulfillment API getPaymentDispute.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDispute
- */
 export type PaymentDispute = components["schemas"]["PaymentDispute"];
 
-/**
- * Response returned by eBay Fulfillment API getActivities.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getActivities
- */
 export type PaymentDisputeActivityHistory =
 	components["schemas"]["PaymentDisputeActivityHistory"];
 
-/**
- * Binary content returned by eBay Fulfillment API fetchEvidenceContent.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/fetchEvidenceContent
- */
 export type FetchEvidenceContentResponse = Buffer;
 
-/**
- * Response returned by eBay Fulfillment API uploadEvidenceFile.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/uploadEvidenceFile
- */
 export type FileEvidence = components["schemas"]["FileEvidence"];
 
-/**
- * Request payload accepted by eBay Fulfillment API addEvidence.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
- */
 export type AddEvidencePaymentDisputeRequest =
 	components["schemas"]["AddEvidencePaymentDisputeRequest"];
 
-/**
- * Response returned by eBay Fulfillment API addEvidence.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
- */
 export type AddEvidencePaymentDisputeResponse =
 	components["schemas"]["AddEvidencePaymentDisputeResponse"];
 
-/**
- * Request payload accepted by eBay Fulfillment API updateEvidence.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/updateEvidence
- */
 export type UpdateEvidencePaymentDisputeRequest =
 	components["schemas"]["UpdateEvidencePaymentDisputeRequest"];
 
-/**
- * Generated success payload for eBay Fulfillment API updateEvidence.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/updateEvidence
- */
 export type UpdateEvidenceResponse =
 	operations["updateEvidence"]["responses"][204]["content"];
 
-/** Input required to retrieve one payment dispute. */
 export interface GetPaymentDisputeInput {
-	/** eBay payment dispute identifier from getPaymentDisputeSummaries. */
 	readonly paymentDisputeId: string;
 }
 
-/** Input required to download one payment dispute evidence file. */
 export interface FetchEvidenceContentInput {
-	/** eBay payment dispute identifier that owns the evidence file. */
 	readonly paymentDisputeId: string;
-	/** Evidence set identifier from getPaymentDispute. */
 	readonly evidenceId: string;
-	/** Evidence file identifier from getPaymentDispute. */
 	readonly fileId: string;
 }
 
-/** Input required to retrieve payment dispute activity. */
 export interface GetActivitiesInput {
-	/** eBay payment dispute identifier that owns the activity history. */
 	readonly paymentDisputeId: string;
 }
 
-/** Filters accepted by getPaymentDisputeSummaries. */
 export interface GetPaymentDisputeSummariesInput {
-	/** eBay order identifier used to find disputes for one order. */
 	readonly orderId?: string | undefined;
-	/** Buyer username used to find disputes opened by one buyer. */
 	readonly buyerUsername?: string | undefined;
-	/** ISO-8601 lower bound for the dispute open date. */
 	readonly openDateFrom?: string | undefined;
-	/** ISO-8601 upper bound for the dispute open date. */
 	readonly openDateTo?: string | undefined;
-	/** Dispute status filter such as OPEN, ACTION_NEEDED, or CLOSED. */
 	readonly paymentDisputeStatus?: string | undefined;
-	/** Maximum number of disputes to return. */
 	readonly limit?: number | undefined;
-	/** Number of disputes to skip before returning the first result. */
 	readonly offset?: number | undefined;
 }
 
@@ -143,17 +82,13 @@ export type ContestPaymentDisputeInput = z.infer<
 	typeof contestPaymentDisputeInputSchema
 >;
 
-/** Multipart-compatible body accepted by uploadEvidenceFile. */
 export type UploadEvidenceFileBody =
 	| ArrayBuffer
 	| Uint8Array
 	| Record<string, unknown>;
 
-/** Input accepted by uploadEvidenceFile. */
 export interface UploadEvidenceFileInput {
-	/** eBay payment dispute identifier that owns the uploaded file. */
 	readonly paymentDisputeId: string;
-	/** Binary or multipart-compatible body passed to the request adapter. */
 	readonly body: UploadEvidenceFileBody;
 }
 
@@ -191,13 +126,12 @@ const FULFILLMENT_BASE_PATH = "/sell/fulfillment/v1";
 
 const APIZ_REQUEST: EbayRequestConfig = { absolute: true };
 
-const apizUrl = (client: EbayApiClient, path: string): string => {
+function apizUrl(client: EbayApiClient, path: string): string {
 	const { environment, apiBaseUrl } = client.getConfig();
 	const apizBaseUrl = getIdentityBaseUrl(environment, apiBaseUrl);
 	return `${apizBaseUrl}${FULFILLMENT_BASE_PATH}${path}`;
-};
+}
 
-/** eBay Fulfillment payment dispute endpoints, served from the apiz host only. */
 export class DisputeApi {
 	private readonly client: EbayApiClient;
 
@@ -205,21 +139,6 @@ export class DisputeApi {
 		this.client = client;
 	}
 
-	/**
-	 * Retrieves one payment dispute.
-	 *
-	 * @param input - Payment dispute identifier to retrieve.
-	 * @returns An Effect that succeeds with eBay's generated PaymentDispute response.
-	 *
-	 * @example
-	 * ```ts
-	 * const dispute = await Effect.runPromise(
-	 *   disputeApi.getPaymentDispute({ paymentDisputeId: '5001234567' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDispute
-	 */
 	public getPaymentDispute = async (
 		input: GetPaymentDisputeInput,
 	): Promise<PaymentDispute> => {
@@ -237,25 +156,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Downloads one evidence file attached to a payment dispute.
-	 *
-	 * @param input - Payment dispute, evidence set, and evidence file identifiers.
-	 * @returns An Effect that succeeds with the downloaded binary evidence content.
-	 *
-	 * @example
-	 * ```ts
-	 * const content = await Effect.runPromise(
-	 *   disputeApi.fetchEvidenceContent({
-	 *     paymentDisputeId: '5001234567',
-	 *     evidenceId: 'EVIDENCE-1',
-	 *     fileId: 'FILE-1',
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/fetchEvidenceContent
-	 */
 	public fetchEvidenceContent = async (
 		input: FetchEvidenceContentInput,
 	): Promise<FetchEvidenceContentResponse> => {
@@ -286,21 +186,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Retrieves the activity history for one payment dispute.
-	 *
-	 * @param input - Payment dispute identifier whose activity history is requested.
-	 * @returns An Effect that succeeds with eBay's generated PaymentDisputeActivityHistory.
-	 *
-	 * @example
-	 * ```ts
-	 * const activity = await Effect.runPromise(
-	 *   disputeApi.getActivities({ paymentDisputeId: '5001234567' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getActivities
-	 */
 	public getActivities = async (
 		input: GetActivitiesInput,
 	): Promise<PaymentDisputeActivityHistory> => {
@@ -321,21 +206,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Searches payment disputes using the filters supported by eBay.
-	 *
-	 * @param input - Optional dispute summary filters and pagination controls.
-	 * @returns An Effect that succeeds with eBay's generated DisputeSummaryResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const disputes = await Effect.runPromise(
-	 *   disputeApi.getPaymentDisputeSummaries({ orderId: 'ORDER-1', limit: 25 }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/getPaymentDisputeSummaries
-	 */
 	public getPaymentDisputeSummaries = async (
 		input: GetPaymentDisputeSummariesInput = {},
 	): Promise<DisputeSummaryResponse> => {
@@ -383,24 +253,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Accepts one payment dispute.
-	 *
-	 * @param input - Payment dispute identifier and optional generated accept payload.
-	 * @returns An Effect that succeeds when eBay accepts the dispute action.
-	 *
-	 * @example
-	 * ```ts
-	 * await Effect.runPromise(
-	 *   disputeApi.acceptPaymentDispute({
-	 *     paymentDisputeId: '5001234567',
-	 *     body: { revision: 3 },
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/acceptPaymentDispute
-	 */
 	public acceptPaymentDispute = async (
 		input: AcceptPaymentDisputeInput,
 	): Promise<void> => {
@@ -421,24 +273,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Contests one payment dispute.
-	 *
-	 * @param input - Payment dispute identifier and optional generated contest payload.
-	 * @returns An Effect that succeeds when eBay accepts the contest action.
-	 *
-	 * @example
-	 * ```ts
-	 * await Effect.runPromise(
-	 *   disputeApi.contestPaymentDispute({
-	 *     paymentDisputeId: '5001234567',
-	 *     body: { note: 'Proof of delivery is attached.', revision: 3 },
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/contestPaymentDispute
-	 */
 	public contestPaymentDispute = async (
 		input: ContestPaymentDisputeInput,
 	): Promise<void> => {
@@ -459,24 +293,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Uploads one evidence file for a payment dispute.
-	 *
-	 * @param input - Payment dispute identifier and multipart-compatible evidence file body.
-	 * @returns An Effect that succeeds with eBay's generated FileEvidence response.
-	 *
-	 * @example
-	 * ```ts
-	 * const file = await Effect.runPromise(
-	 *   disputeApi.uploadEvidenceFile({
-	 *     paymentDisputeId: '5001234567',
-	 *     body: new ArrayBuffer(8),
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/uploadEvidenceFile
-	 */
 	public uploadEvidenceFile = async (
 		input: UploadEvidenceFileInput,
 	): Promise<FileEvidence> => {
@@ -501,24 +317,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Adds evidence to one payment dispute.
-	 *
-	 * @param input - Payment dispute identifier and generated add-evidence payload.
-	 * @returns An Effect that succeeds with eBay's generated AddEvidencePaymentDisputeResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const evidence = await Effect.runPromise(
-	 *   disputeApi.addEvidence({
-	 *     paymentDisputeId: '5001234567',
-	 *     body: { evidenceType: 'PROOF_OF_DELIVERY', files: [{ fileId: 'FILE-1' }] },
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/addEvidence
-	 */
 	public addEvidence = async (
 		input: AddEvidenceInput,
 	): Promise<AddEvidencePaymentDisputeResponse> => {
@@ -541,24 +339,6 @@ export class DisputeApi {
 		);
 	};
 
-	/**
-	 * Updates evidence on one payment dispute.
-	 *
-	 * @param input - Payment dispute identifier and generated update-evidence payload.
-	 * @returns An Effect that succeeds when eBay accepts the evidence update.
-	 *
-	 * @example
-	 * ```ts
-	 * await Effect.runPromise(
-	 *   disputeApi.updateEvidence({
-	 *     paymentDisputeId: '5001234567',
-	 *     body: { evidenceId: 'EVIDENCE-1', files: [{ fileId: 'FILE-2' }] },
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/payment_dispute/methods/updateEvidence
-	 */
 	public updateEvidence = async (
 		input: UpdateEvidenceInput,
 	): Promise<UpdateEvidenceResponse> => {

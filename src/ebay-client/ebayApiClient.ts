@@ -22,82 +22,53 @@ import {
 	logResponse,
 } from "@/shared/logger.js";
 
-/**
- * Which eBay OAuth token a request authenticates with.
- *
- * `'application'` forces the client-credentials application token. Omitting
- * the token type keeps the default path, which prefers a configured user token
- * and falls back to the application token.
- */
 export type EbayTokenType = "application";
 
-/**
- * Per-request overrides accepted by the verb helpers ({@link EbayApiClient.get}
- * et al). `headers` are merged over the client defaults (the auth header is
- * always applied last and cannot be overridden); `params` are appended to the
- * query string — useful for POSTs that also take query parameters.
- */
 export interface EbayRequestConfig {
-	/** Headers merged over the client defaults before auth is applied. */
 	headers?: Record<string, string>;
-	/** Query parameters appended to the request URL. */
 	params?: Record<string, unknown>;
-	/** Successful response decoder for non-JSON endpoints such as binary evidence files. */
 	responseType?: ResponseType;
-	/** Treat `endpoint` as a full URL (APIs on another eBay host, e.g. `apim`). */
 	absolute?: boolean;
-	/** Per-request timeout override, e.g. for large media uploads. */
 	timeoutMs?: number;
-	/** Stop reading an `arraybuffer` body past this many bytes (see HttpRequestOptions); every verb forwards it. */
 	maxBytes?: number;
-	/**
-	 * Token the request must authenticate with. Omit for the default
-	 * user-first token, or pass `'application'` for endpoints eBay documents as
-	 * requiring a client-credentials application token (the Buy APIs).
-	 */
 	tokenType?: EbayTokenType;
-	/**
-	 * Attach eBay Digital Signature headers (RFC 9421) when signing credentials are
-	 * configured. Set for the calls eBay requires signatures on for EU/UK sellers
-	 * (the Finances API, Fulfillment issueRefund); a no-op without credentials.
-	 */
 	signed?: boolean;
 }
 
-/** Successful eBay response with the transport metadata some endpoints put their result in. */
 export interface EbayResponse<T> {
-	/** Decoded response body (`undefined` for an empty body). */
 	readonly data: T;
-	/** HTTP status code. */
 	readonly status: number;
-	/** Response headers with lower-cased names (e.g. `location`). */
 	readonly headers: Record<string, string>;
 }
 
-/** Bodies that must never be echoed into debug logs. */
-const isBinaryBody = (requestBody: unknown): boolean =>
-	requestBody instanceof FormData ||
-	requestBody instanceof Blob ||
-	requestBody instanceof Uint8Array ||
-	requestBody instanceof ArrayBuffer;
+function isBinaryBody(requestBody: unknown): boolean {
+	return (
+		requestBody instanceof FormData ||
+		requestBody instanceof Blob ||
+		requestBody instanceof Uint8Array ||
+		requestBody instanceof ArrayBuffer
+	);
+}
 
 const CONTENT_TYPE_HEADER = "content-type";
 
-const hasHeader = (
+function hasHeader(
 	headers: Record<string, string> | undefined,
 	name: string,
-): boolean =>
-	headers !== undefined &&
-	Object.keys(headers).some((key) => key.toLowerCase() === name);
+): boolean {
+	return (
+		headers !== undefined &&
+		Object.keys(headers).some((key) => key.toLowerCase() == name)
+	);
+}
 
-/** Removes every spelling of a header so fetch can derive it from the body. */
-const deleteHeader = (headers: Record<string, string>, name: string): void => {
+function deleteHeader(headers: Record<string, string>, name: string): void {
 	for (const key of Object.keys(headers)) {
-		if (key.toLowerCase() === name) {
+		if (key.toLowerCase() == name) {
 			delete headers[key];
 		}
 	}
-};
+}
 
 interface SerializedBody {
 	readonly wireBody: unknown;
@@ -109,16 +80,11 @@ interface SignedRequest {
 	readonly signatureHeaders: Record<string, string>;
 }
 
-/**
- * Serialize a body exactly as the HTTP adapter would so its Content-Digest
- * matches the bytes on the wire. Multipart and Blob bodies never reach here:
- * fetch streams them, so they cannot be digested up front.
- */
-const serializeSignedBody = (requestBody: unknown): SerializedBody => {
+function serializeSignedBody(requestBody: unknown): SerializedBody {
 	if (requestBody === undefined || requestBody === null) {
 		return { wireBody: requestBody };
 	}
-	if (typeof requestBody === "string" || requestBody instanceof Uint8Array) {
+	if (typeof requestBody == "string" || requestBody instanceof Uint8Array) {
 		return { wireBody: requestBody, digestBytes: requestBody };
 	}
 	if (requestBody instanceof ArrayBuffer) {
@@ -130,30 +96,30 @@ const serializeSignedBody = (requestBody: unknown): SerializedBody => {
 	}
 	const json = JSON.stringify(requestBody);
 	return { wireBody: json, digestBytes: json };
-};
+}
 
 // A proxy forwards eBay's Host header and path, so the signature covers the eBay URL.
-const ebayFacingUrl = (
+function ebayFacingUrl(
 	url: string,
 	ebayBaseUrl: string,
 	apiBaseUrl: string | undefined,
-): string =>
-	apiBaseUrl !== undefined && url.startsWith(apiBaseUrl)
+): string {
+	return apiBaseUrl !== undefined && url.startsWith(apiBaseUrl)
 		? `${ebayBaseUrl}${url.slice(apiBaseUrl.length)}`
 		: url;
+}
 
 const SIGNATURE_ERROR_PATTERN = /signature/i;
 const TRAILING_PERIOD_PATTERN = /\.?$/;
 
-/** True when an eBay error body points at a missing or rejected digital signature. */
-const isSignatureFailure = (detail: string | undefined): boolean =>
-	detail !== undefined && SIGNATURE_ERROR_PATTERN.test(detail);
+function isSignatureFailure(detail: string | undefined): boolean {
+	return detail !== undefined && SIGNATURE_ERROR_PATTERN.test(detail);
+}
 
 function isPresent<Present>(present: Present | undefined): present is Present {
 	return present != null;
 }
 
-/** Remediation appended to signature failures when the server has no signing credentials. */
 const SIGNING_SETUP_HINT =
 	" eBay requires Digital Signatures on this call for EU/UK sellers. Create a key with ebay_create_signing_key, then set EBAY_SIGNING_KEY_JWE (the jwe value) and EBAY_SIGNING_PRIVATE_KEY (the privateKey value) and restart the server.";
 
@@ -162,7 +128,7 @@ function signingSetupMessage(
 	signed: boolean | undefined,
 	hasSigningCredentials: boolean,
 ): string | undefined {
-	if (signed !== true) {
+	if (signed != true) {
 		return undefined;
 	}
 
@@ -177,63 +143,38 @@ function signingSetupMessage(
 	return `${detail?.replace(TRAILING_PERIOD_PATTERN, ".")}${SIGNING_SETUP_HINT}`;
 }
 
-/** Normalized request options used by the client transport. */
 interface EbayRequestOptions {
-	/** Query-string parameters appended to the request URL. */
 	readonly params?: Record<string, unknown> | undefined;
-	/** JSON/XML/form body passed to the HTTP adapter. */
 	readonly data?: unknown;
-	/** Headers merged over the client defaults before auth is applied. */
 	readonly headers?: Record<string, string> | undefined;
-	/** Successful response decoder for non-JSON endpoints. */
 	readonly responseType?: ResponseType | undefined;
-	/** Whether `endpoint` was already an absolute URL. */
 	readonly absolute?: boolean | undefined;
-	/** Per-request timeout override. */
 	readonly timeoutMs?: number | undefined;
-	/** Binary body read limit passed to the HTTP adapter. */
 	readonly maxBytes?: number | undefined;
-	/** Token the request must authenticate with; omit for the default path. */
 	readonly tokenType?: EbayTokenType | undefined;
-	/** Attach eBay Digital Signature headers when signing credentials are configured. */
 	readonly signed?: boolean | undefined;
 }
 
-/** Retry counters carried between recursive request attempts. */
 interface RequestRetryState {
-	/** Whether a 401 already triggered the one allowed token-refresh retry. */
 	readonly authRetried: boolean;
-	/** Number of server-error backoff retries already attempted. */
 	readonly serverRetries: number;
 }
 
-/** Context required to turn an HTTP failure into a retry or final error. */
 interface RequestFailureContext {
-	/** HTTP method used for this request. */
 	readonly method: string;
-	/** Fully qualified request URL. */
 	readonly url: string;
-	/** Normalized request options for a retry. */
 	readonly options: EbayRequestOptions;
-	/** Retry counters for this attempt. */
 	readonly state: RequestRetryState;
 }
 
-/**
- * Remediation hint for a token failure, matched to the token the request needs.
- *
- * Setting user tokens cannot repair rejected client credentials, so an
- * application request has to point at the credentials instead.
- */
-const tokenFailureRemediation = (
-	tokenType: EbayTokenType | undefined,
-): string =>
-	tokenType === "application"
+function tokenFailureRemediation(tokenType: EbayTokenType | undefined): string {
+	return tokenType == "application"
 		? "This endpoint requires an application access token minted from client credentials, which a user token cannot supply. Check EBAY_CLIENT_ID and EBAY_CLIENT_SECRET."
 		: "Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.";
+}
 
 function isServerStatus(status: number | undefined): boolean {
-	if (typeof status !== "number") {
+	if (typeof status != "number") {
 		return false;
 	}
 
@@ -245,35 +186,22 @@ function retryWaitMilliseconds(retryAfter: string | undefined): number {
 		return 60_000;
 	}
 
-	if (retryAfter === "") {
+	if (retryAfter == "") {
 		return 60_000;
 	}
 
 	return Number.parseInt(retryAfter, 10) * 1000;
 }
 
-/**
- * Base client for making eBay API requests.
- *
- * Wraps the native-`fetch` helper ({@link httpRequest}) with eBay-specific
- * concerns the old axios interceptors used to handle: per-request auth-token
- * injection, a sliding-window rate-limit guard, request/response logging, and
- * retry/refresh handling for 401 (refresh once), 429, and 5xx (exponential
- * backoff) responses.
- */
 export class EbayApiClient {
 	private readonly authClient: EbayOAuthClient;
 	private readonly baseUrl: string;
 	private readonly rateLimitTracker: RateLimitTracker;
 	private readonly config: EbayConfig;
 	private readonly timeoutMs = 30_000;
-	/** Parsed signing key, cached after the first signed request. */
 	private signingKey: KeyObject | undefined;
 
-	/**
-	 * Build default request headers based on configured marketplace and language.
-	 */
-	private getDefaultHeaders(): Record<string, string> {
+	private getDefaultHeaders = (): Record<string, string> => {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 			Accept: "application/json",
@@ -290,7 +218,7 @@ export class EbayApiClient {
 		}
 
 		return headers;
-	}
+	};
 
 	constructor(config: EbayConfig) {
 		this.config = config;
@@ -299,22 +227,21 @@ export class EbayApiClient {
 		this.rateLimitTracker = new RateLimitTracker();
 	}
 
-	/** Parse (once) and return the configured signing key. */
-	private getSigningKey(privateKey: string): KeyObject {
+	private getSigningKey = (privateKey: string): KeyObject => {
 		if (this.signingKey === undefined) {
 			this.signingKey = parseSigningPrivateKey(privateKey);
 		}
 		return this.signingKey;
-	}
+	};
 
-	private signRequest(
+	private signRequest = (
 		method: string,
 		url: string,
 		options: EbayRequestOptions,
-	): SignedRequest {
+	): SignedRequest => {
 		const { signing, environment, apiBaseUrl } = this.config;
 
-		if (options.signed !== true) {
+		if (options.signed != true) {
 			return { wireBody: options.data, signatureHeaders: {} };
 		}
 
@@ -361,31 +288,21 @@ export class EbayApiClient {
 				cause,
 			});
 		}
-	}
+	};
 
-	/**
-	 * Acquire the access token a request should authenticate with.
-	 *
-	 * Both token-acquisition sites (the initial attempt and the 401 retry) route
-	 * through here, so an `'application'` request cannot silently downgrade to
-	 * the user token on a retry.
-	 */
-	private async acquireAccessToken(
+	private acquireAccessToken = async (
 		tokenType: EbayTokenType | undefined,
-	): Promise<string> {
-		const isApplicationToken = tokenType === "application";
+	): Promise<string> => {
+		const isApplicationToken = tokenType == "application";
 
 		if (isApplicationToken) {
 			return await this.authClient.getOrRefreshAppAccessToken();
 		}
 
 		return await this.authClient.getAccessToken();
-	}
+	};
 
-	/**
-	 * Return the credential validation error that would block an authenticated request.
-	 */
-	private accessTokenValidationError(): Error | undefined {
+	private accessTokenValidationError = (): Error | undefined => {
 		if (!(this.config.clientId && this.config.clientSecret)) {
 			return new Error(
 				"Missing required eBay credentials. Please set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in your .env file.",
@@ -393,40 +310,30 @@ export class EbayApiClient {
 		}
 
 		return undefined;
-	}
+	};
 
-	/**
-	 * Serialize the full error response body so structured fields (errorId, parameters)
-	 * survive into the thrown message for diagnostics.
-	 */
-	private ebayErrorBody(errorBody: unknown): string {
+	private ebayErrorBody = (errorBody: unknown): string => {
 		if (errorBody == null) return "";
 		try {
 			return ` | response: ${JSON.stringify(errorBody)}`;
 		} catch {
 			return "";
 		}
-	}
+	};
 
-	/**
-	 * Core request boundary shared by every verb.
-	 */
-	private async request<T>(
+	private request = async <T>(
 		method: string,
 		endpoint: string,
 		options: EbayRequestOptions,
-	): Promise<T> {
+	): Promise<T> => {
 		return (await this.requestResponse<T>(method, endpoint, options)).data;
-	}
+	};
 
-	/**
-	 * Core request boundary that also returns status and headers.
-	 */
-	private async requestResponse<T>(
+	private requestResponse = async <T>(
 		method: string,
 		endpoint: string,
 		options: EbayRequestOptions,
-	): Promise<EbayResponse<T>> {
+	): Promise<EbayResponse<T>> => {
 		const url = options.absolute ? endpoint : `${this.baseUrl}${endpoint}`;
 		const httpResponse = await this.sendWithRetry<T>(method, url, options, {
 			authRetried: false,
@@ -438,17 +345,14 @@ export class EbayApiClient {
 			status: httpResponse.status,
 			headers: httpResponse.headers,
 		};
-	}
+	};
 
-	/**
-	 * Execute one request attempt, recursively re-entering for bounded retries.
-	 */
-	private async sendWithRetry<T>(
+	private sendWithRetry = async <T>(
 		method: string,
 		url: string,
 		options: EbayRequestOptions,
 		state: RequestRetryState,
-	): Promise<HttpResponse<T>> {
+	): Promise<HttpResponse<T>> => {
 		// In proxy auth mode the upstream proxy supplies credentials, so the server
 		// neither requires nor validates its own. See EBAY_MCP_DISABLE_AUTH_HEADER.
 		const suppliesOwnAuth = !this.config.disableAuthHeader;
@@ -577,15 +481,12 @@ export class EbayApiClient {
 			options,
 			state,
 		});
-	}
+	};
 
-	/**
-	 * Turn a completed non-2xx response into a bounded retry or a plain Error.
-	 */
-	private async handleCompletedFailure<T>(
+	private handleCompletedFailure = async <T>(
 		httpResponse: HttpResponse<T>,
 		context: RequestFailureContext,
-	): Promise<HttpResponse<T>> {
+	): Promise<HttpResponse<T>> => {
 		const { method, url, options, state } = context;
 		const status = httpResponse.status;
 
@@ -594,8 +495,8 @@ export class EbayApiClient {
 		// 401 — refresh the token once, then retry the request. Skipped in proxy
 		// auth mode: the server holds no token to refresh, so a 401 (the proxy's
 		// own auth failing) is surfaced directly rather than retried.
-		const isUnauthorized = status === 401;
-		const canRefreshAuth = this.config.disableAuthHeader !== true;
+		const isUnauthorized = status == 401;
+		const canRefreshAuth = this.config.disableAuthHeader != true;
 
 		if (isUnauthorized) {
 			if (canRefreshAuth) {
@@ -604,7 +505,7 @@ export class EbayApiClient {
 		}
 
 		// 429 — surface a clear rate-limit message with the server's retry hint.
-		const isRateLimited = status === 429;
+		const isRateLimited = status == 429;
 
 		if (isRateLimited) {
 			const retryAfter = httpResponse.headers["retry-after"];
@@ -638,12 +539,12 @@ export class EbayApiClient {
 		}
 
 		throw new Error(this.httpStatusMessage(httpResponse, context));
-	}
+	};
 
-	private async retryUnauthorized<T>(
+	private retryUnauthorized = async <T>(
 		httpResponse: HttpResponse<T>,
 		context: RequestFailureContext,
-	): Promise<HttpResponse<T>> {
+	): Promise<HttpResponse<T>> => {
 		const { options, state, method, url } = context;
 		const canRetryAuth = !state.authRetried;
 
@@ -684,16 +585,16 @@ export class EbayApiClient {
 			`${detail}. Automatic token refresh failed. ` +
 				tokenFailureRemediation(options.tokenType),
 		);
-	}
+	};
 
-	private httpStatusMessage<T>(
+	private httpStatusMessage = <T>(
 		httpResponse: HttpResponse<T>,
 		context: RequestFailureContext,
-	): string {
+	): string => {
 		const { url, options } = context;
 		const status = httpResponse.status;
 		const extracted = readHttpFailureMessage(httpResponse.data, "");
-		const detail = extracted === "" ? undefined : extracted;
+		const detail = extracted == "" ? undefined : extracted;
 		const setupMessage = signingSetupMessage(
 			detail,
 			options.signed,
@@ -708,16 +609,13 @@ export class EbayApiClient {
 		const shownDetail = detail ?? fallback;
 
 		return `eBay API Error: ${shownDetail}${this.ebayErrorBody(httpResponse.data)}`;
-	}
+	};
 
-	/**
-	 * Make a GET request to eBay API
-	 */
-	async get<T = unknown>(
+	get = async <T = unknown>(
 		endpoint: string,
 		params?: Record<string, unknown>,
 		config?: EbayRequestConfig,
-	): Promise<T> {
+	): Promise<T> => {
 		return await this.request<T>("GET", endpoint, {
 			params: { ...params, ...config?.params },
 			headers: config?.headers,
@@ -728,17 +626,13 @@ export class EbayApiClient {
 			tokenType: config?.tokenType,
 			signed: config?.signed,
 		});
-	}
+	};
 
-	/**
-	 * Make a GET request and keep the status and headers of the successful
-	 * response — for file downloads whose name and type arrive in headers.
-	 */
-	async getForResponse<T = unknown>(
+	getForResponse = async <T = unknown>(
 		endpoint: string,
 		params?: Record<string, unknown>,
 		config?: EbayRequestConfig,
-	): Promise<EbayResponse<T>> {
+	): Promise<EbayResponse<T>> => {
 		return await this.requestResponse<T>("GET", endpoint, {
 			params: { ...params, ...config?.params },
 			headers: config?.headers,
@@ -749,28 +643,21 @@ export class EbayApiClient {
 			tokenType: config?.tokenType,
 			signed: config?.signed,
 		});
-	}
+	};
 
-	/**
-	 * Make a POST request to eBay API
-	 */
-	async post<T = unknown>(
+	post = async <T = unknown>(
 		endpoint: string,
 		requestBody?: unknown,
 		config?: EbayRequestConfig,
-	): Promise<T> {
+	): Promise<T> => {
 		return (await this.postForResponse<T>(endpoint, requestBody, config)).data;
-	}
+	};
 
-	/**
-	 * Make a POST request and keep the status and headers of the successful
-	 * response — for endpoints that return their result in a `Location` header.
-	 */
-	async postForResponse<T = unknown>(
+	postForResponse = async <T = unknown>(
 		endpoint: string,
 		requestBody?: unknown,
 		config?: EbayRequestConfig,
-	): Promise<EbayResponse<T>> {
+	): Promise<EbayResponse<T>> => {
 		return await this.requestResponse<T>("POST", endpoint, {
 			data: requestBody,
 			params: config?.params,
@@ -782,28 +669,21 @@ export class EbayApiClient {
 			tokenType: config?.tokenType,
 			signed: config?.signed,
 		});
-	}
+	};
 
-	/**
-	 * Make a PUT request to eBay API
-	 */
-	async put<T = unknown>(
+	put = async <T = unknown>(
 		endpoint: string,
 		requestBody?: unknown,
 		config?: EbayRequestConfig,
-	): Promise<T> {
+	): Promise<T> => {
 		return (await this.putForResponse<T>(endpoint, requestBody, config)).data;
-	}
+	};
 
-	/**
-	 * Make a PUT request and keep the status and headers of the successful
-	 * response — for asynchronous updates that return a task `Location` header.
-	 */
-	async putForResponse<T = unknown>(
+	putForResponse = async <T = unknown>(
 		endpoint: string,
 		requestBody?: unknown,
 		config?: EbayRequestConfig,
-	): Promise<EbayResponse<T>> {
+	): Promise<EbayResponse<T>> => {
 		return await this.requestResponse<T>("PUT", endpoint, {
 			data: requestBody,
 			params: config?.params,
@@ -815,16 +695,13 @@ export class EbayApiClient {
 			tokenType: config?.tokenType,
 			signed: config?.signed,
 		});
-	}
+	};
 
-	/**
-	 * Make a PATCH request to eBay API
-	 */
-	async patch<T = unknown>(
+	patch = async <T = unknown>(
 		endpoint: string,
 		requestBody?: unknown,
 		config?: EbayRequestConfig,
-	): Promise<T> {
+	): Promise<T> => {
 		return await this.request<T>("PATCH", endpoint, {
 			data: requestBody,
 			params: config?.params,
@@ -836,28 +713,20 @@ export class EbayApiClient {
 			tokenType: config?.tokenType,
 			signed: config?.signed,
 		});
-	}
+	};
 
-	/**
-	 * Make a DELETE request to eBay API
-	 */
-	async delete<T = unknown>(
+	delete = async <T = unknown>(
 		endpoint: string,
 		config?: EbayRequestConfig,
-	): Promise<T> {
+	): Promise<T> => {
 		return (await this.deleteForResponse<T>(endpoint, config)).data;
-	}
+	};
 
-	/**
-	 * Make a DELETE request and keep the status and headers of the successful
-	 * response — for asynchronous deletes that return a task `Location` header.
-	 * `requestBody` is the optional body a few eBay DELETE calls document.
-	 */
-	async deleteForResponse<T = unknown>(
+	deleteForResponse = async <T = unknown>(
 		endpoint: string,
 		config?: EbayRequestConfig,
 		requestBody?: unknown,
-	): Promise<EbayResponse<T>> {
+	): Promise<EbayResponse<T>> => {
 		return await this.requestResponse<T>("DELETE", endpoint, {
 			data: requestBody,
 			params: config?.params,
@@ -869,30 +738,18 @@ export class EbayApiClient {
 			tokenType: config?.tokenType,
 			signed: config?.signed,
 		});
-	}
+	};
 
-	/**
-	 * Initialize the client (load user tokens from storage)
-	 */
 	initialize = (): Promise<void> => this.authClient.initialize();
 
-	/**
-	 * Check if client is authenticated
-	 */
-	isAuthenticated(): boolean {
+	isAuthenticated = (): boolean => {
 		return this.authClient.isAuthenticated();
-	}
+	};
 
-	/**
-	 * Check if user tokens are available
-	 */
-	hasUserTokens(): boolean {
+	hasUserTokens = (): boolean => {
 		return this.authClient.hasUserTokens();
-	}
+	};
 
-	/**
-	 * Set user access and refresh tokens
-	 */
 	setUserTokens = (
 		accessToken: string,
 		refreshToken: string,
@@ -906,51 +763,30 @@ export class EbayApiClient {
 			refreshTokenExpiry,
 		);
 
-	/**
-	 * Get token information for debugging
-	 */
-	getTokenInfo() {
+	getTokenInfo = () => {
 		return this.authClient.getTokenInfo();
-	}
+	};
 
-	/**
-	 * Get the OAuth client instance for advanced operations
-	 */
-	getOAuthClient(): EbayOAuthClient {
+	getOAuthClient = (): EbayOAuthClient => {
 		return this.authClient;
-	}
+	};
 
-	/**
-	 * Get rate limit statistics
-	 */
-	getRateLimitStats() {
+	getRateLimitStats = () => {
 		return this.rateLimitTracker.getStats();
-	}
+	};
 
-	/**
-	 * Get the config object (for accessing environment, etc.)
-	 */
-	getConfig(): EbayConfig {
+	getConfig = (): EbayConfig => {
 		return this.config;
-	}
+	};
 
-	/**
-	 * Manually refresh user access token using the refresh token
-	 * This is useful when you encounter "Invalid access token" errors
-	 * The token will be automatically saved to storage after refresh
-	 */
 	refreshUserToken = async (): Promise<void> => {
 		await this.authClient.refreshUserToken();
 	};
 
-	/**
-	 * Make a GET request with a full URL (for APIs that use different base URLs)
-	 * Used by Identity API which uses the apiz subdomain
-	 */
-	async getWithFullUrl<T = unknown>(
+	getWithFullUrl = async <T = unknown>(
 		fullUrl: string,
 		params?: Record<string, unknown>,
-	): Promise<T> {
+	): Promise<T> => {
 		return await this.request<T>("GET", fullUrl, { params, absolute: true });
-	}
+	};
 }

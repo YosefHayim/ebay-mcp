@@ -27,27 +27,15 @@ import { getToolEntries, type ToolEntry } from "@/tool-registry/registry.js";
 
 type ToolArgs = Record<string, unknown>;
 
-/**
- * Optional dependencies and metadata for constructing the eBay MCP runtime.
- */
 export interface EbayMcpRuntimeOptions {
-	/** Optional prebuilt API facade, mainly for tests. */
 	api?: EbaySellerApi;
-	/** Optional MCP implementation metadata advertised during initialize. */
 	serverConfig?: Implementation;
-	/** Enables debug/error logs for each tool call when true. */
 	logToolExecution?: boolean;
 }
 
-/**
- * Initialized MCP server runtime and eBay API facade.
- */
 export interface EbayMcpRuntime {
-	/** eBay API facade shared by every registered tool handler. */
 	api: EbaySellerApi;
-	/** MCP server instance with eBay tools registered. */
 	server: McpServer;
-	/** Initializes credentials/token state before the server accepts real calls. */
 	initializeApi(): Promise<void>;
 }
 
@@ -144,21 +132,9 @@ function registerTool(
 	return registered;
 }
 
-/**
- * Create an MCP server runtime and register all eBay tool handlers.
- *
- * @param options - Optional runtime dependencies and metadata overrides.
- * @returns Initialized runtime wrapper containing the MCP server and API facade.
- *
- * @example
- * ```ts
- * const runtime = createEbayMcpRuntime({ logToolExecution: true });
- * await runtime.initializeApi();
- * ```
- */
-export const createEbayMcpRuntime = (
+export function createEbayMcpRuntime(
 	options: EbayMcpRuntimeOptions = {},
-): EbayMcpRuntime => {
+): EbayMcpRuntime {
 	const api = options.api ?? new EbaySellerApi(getEbayConfig());
 	const serverInfo = options.serverConfig ?? mcpConfig;
 	const mode = resolveToolGatingMode();
@@ -167,7 +143,7 @@ export const createEbayMcpRuntime = (
 	// hidden behind the discovery tools; default/static modes keep the handshake
 	// byte-for-byte unchanged (a bare single-arg construction).
 	const server =
-		mode.kind === "dynamic"
+		mode.kind == "dynamic"
 			? new McpServer(serverInfo, { instructions: DYNAMIC_MODE_INSTRUCTIONS })
 			: new McpServer(serverInfo);
 
@@ -177,7 +153,7 @@ export const createEbayMcpRuntime = (
 	// full catalogue (dynamic then disables it below, before the transport connects).
 	const allEntries = getToolEntries();
 	let entries =
-		mode.kind === "static"
+		mode.kind == "static"
 			? (() => {
 					const names = toolNamesInFamilies(mode.families);
 					return allEntries.filter((entry) => names.has(entry.definition.name));
@@ -201,7 +177,7 @@ export const createEbayMcpRuntime = (
 		);
 	}
 
-	if (mode.kind === "dynamic") {
+	if (mode.kind == "dynamic") {
 		// Disable before `connect`: the SDK only emits `tools/listChanged` once the
 		// transport is connected, so these flips are silent. The agent re-enables the
 		// tools it needs via the meta-tools, which fire `listChanged` post-connect.
@@ -212,7 +188,7 @@ export const createEbayMcpRuntime = (
 		serverLogger.info(
 			`Dynamic tool mode: ${handles.size} eBay tools hidden behind 3 discovery tools`,
 		);
-	} else if (mode.kind === "static") {
+	} else if (mode.kind == "static") {
 		serverLogger.info(
 			`Static tool mode: registered ${handles.size} tools from families: ${mode.families.join(", ")}`,
 		);
@@ -231,4 +207,4 @@ export const createEbayMcpRuntime = (
 			await api.initialize();
 		},
 	};
-};
+}

@@ -20,7 +20,6 @@ import {
 	mapUserRateLimitsToStat,
 } from "@/tool-registry/ui/maps.js";
 
-/** Developer API tools for eBay application and keyset management. */
 export const developerEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_api_status",

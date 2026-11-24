@@ -34,7 +34,6 @@ function omitUndefinedListingIds(
 	return defined({ listingIds: requestBody.listingIds });
 }
 
-/** Marketing API tools for campaigns, ads, promotions, reports, and email campaigns. */
 export const marketingEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_bulk_create_ads_by_inventory_reference",

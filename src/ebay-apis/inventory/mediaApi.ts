@@ -23,45 +23,24 @@ type MediaResourceMethods = ReturnType<typeof createMediaResourceMethods>;
 
 type InventoryItemsMethods = ReturnType<typeof createInventoryItemsMethods>;
 
-/** Media API base path; the host is `apim` rather than `api` (see {@link getMediaBaseUrl}). */
 export const MEDIA_BASE_PATH = "/commerce/media/v1_beta";
 
-/** Timeout for binary uploads, which can be far larger than JSON calls. */
 const UPLOAD_TIMEOUT_MS = 10 * 60_000;
 
-/** How long {@link MediaApi.waitForVideo} waits for eBay processing by default. */
 export const DEFAULT_VIDEO_WAIT_MS = 120_000;
 
-/** Interval between video status polls. */
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 
-/** Video statuses eBay treats as final. */
 export const TERMINAL_VIDEO_STATUSES: ReadonlySet<string> = new Set([
 	"LIVE",
 	"BLOCKED",
 	"PROCESSING_FAILED",
 ]);
 
-/**
- * Response returned by createImageFromFile and getImage.
- *
- * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/getImage
- */
 export type ImageResponse = components["schemas"]["ImageResponse"];
 
-/**
- * Response returned by getVideo.
- *
- * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/getVideo
- */
 export type Video = components["schemas"]["Video"];
 
-/**
- * Request body accepted by createVideo.
- *
- * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/createVideo
- */
-/** Body sent to createVideo. Optional members may be omitted or undefined. */
 export interface CreateVideoRequest {
 	readonly classification?: readonly string[] | undefined;
 	readonly description?: string | undefined;
@@ -69,121 +48,79 @@ export interface CreateVideoRequest {
 	readonly title?: string | undefined;
 }
 
-/** One file to upload, already read into memory. */
 export interface MediaUpload {
-	/** Caller-supplied reference, echoed back in results. */
 	readonly source: string;
-	/** File name sent with the multipart part. */
 	readonly fileName: string;
-	/** MIME type of the file contents. */
 	readonly mimeType: string;
-	/** File contents. */
 	readonly bytes: Uint8Array;
 }
 
-/** An image hosted on eBay Picture Services. */
 export interface UploadedImage {
-	/** Caller-supplied reference of the uploaded file. */
 	readonly source: string;
-	/** Media API image ID parsed from the `Location` header, when eBay sent one. */
 	readonly imageId?: string | undefined;
-	/** EPS URL to place in `product.imageUrls`. */
 	readonly imageUrl: string;
-	/** When the unused image expires; it becomes permanent once a listing uses it. */
 	readonly expirationDate?: string | undefined;
 }
 
-/** Input accepted by getImage. */
 export interface ImageIdInput {
-	/** Media API image identifier. */
 	readonly imageId: string;
 }
 
-/** Input accepted by createVideo. */
 export interface CreateVideoInput {
-	/** Video title. */
 	readonly title: string;
-	/** Exact size in bytes of the file that will be uploaded. */
 	readonly size: number;
-	/** Optional description. */
 	readonly description?: string | undefined;
 }
 
-/** Input accepted by uploadVideo. */
 export interface UploadVideoInput {
-	/** Video ID returned by createVideo. */
 	readonly videoId: string;
-	/** File contents; must be exactly `size` bytes long. */
 	readonly bytes: Uint8Array;
 }
 
-/** Input accepted by getVideo. */
 export interface VideoIdInput {
-	/** Media API video identifier. */
 	readonly videoId: string;
 }
 
-/** Input accepted by waitForVideo. */
 export interface WaitForVideoInput extends VideoIdInput {
-	/** Longest time to wait before returning the latest status. */
 	readonly maxWaitMs?: number | undefined;
-	/** Delay between status polls. */
 	readonly pollIntervalMs?: number | undefined;
 }
 
-/** Input accepted by uploadVideoFile. */
 export interface UploadVideoFileInput {
-	/** File to upload. */
 	readonly file: MediaUpload;
-	/** Video title; defaults to the file name. */
 	readonly title?: string | undefined;
-	/** Optional description. */
 	readonly description?: string | undefined;
-	/** Longest time to wait for processing before returning. */
 	readonly maxWaitMs?: number | undefined;
-	/** Delay between status polls. */
 	readonly pollIntervalMs?: number | undefined;
 }
 
-/** Result of uploading several images in order. */
 export interface UploadImagesResult {
-	/** Uploaded images in input order. */
 	readonly images: readonly UploadedImage[];
 }
 
-/** Failure of one upload in a sequence, carrying what already succeeded. */
+function idFromLocation(location: string | undefined): string | undefined {
+	return location?.split("/").filter(Boolean).at(-1);
+}
 
-const idFromLocation = (location: string | undefined): string | undefined =>
-	location?.split("/").filter(Boolean).at(-1);
-
-/** Media API resource path for an image or video ID, with the ID encoded as one path segment. */
-const resourcePath = (
+function resourcePath(
 	resource: "image" | "video",
 	id: string,
 	suffix = "",
-): string => `/${resource}/${encodeURIComponent(id)}${suffix}`;
+): string {
+	return `/${resource}/${encodeURIComponent(id)}${suffix}`;
+}
 
-const apiFailure =
-	(method: "GET" | "POST", path: string) =>
-	(cause: unknown): Error =>
+function apiFailure(method: "GET" | "POST", path: string) {
+	return (cause: unknown): Error =>
 		createEbayRequestFailure(method, path, cause);
+}
 
-const videoStatusFinal = (video: Video): boolean =>
-	video.status !== undefined && TERMINAL_VIDEO_STATUSES.has(video.status);
+function videoStatusFinal(video: Video): boolean {
+	return (
+		video.status !== undefined && TERMINAL_VIDEO_STATUSES.has(video.status)
+	);
+}
 
-/**
- * Validates one of {@link MediaApi.waitForVideo}'s timing inputs.
- *
- * A zero, negative, or non-finite poll interval would leave the wait budget
- * standing still while status requests kept going, so the boundary is checked
- * before the first poll rather than inside the loop.
- *
- * @param durationMs - Caller-supplied duration in milliseconds, or undefined.
- * @param fallback - Duration used when the caller supplied none.
- * @param name - Parameter name used in the validation message.
- * @param minimum - Smallest accepted value.
- * @returns The duration to use. Throws a tagged input error when the value is unusable.
- */
 function requireDurationMs(
 	durationMs: number | undefined,
 	fallback: number,
@@ -213,34 +150,18 @@ function requireDurationMs(
 	return durationMs;
 }
 
-/**
- * Media API client. Image and video uploads go to eBay's `apim` host and return
- * the artefacts (EPS URLs, video IDs) that Inventory API listings reference.
- */
 export class MediaApi {
 	private readonly client: EbayApiClient;
 
-	/**
-	 * Uploads local media and rewrites an inventory item's `product.imageUrls` /
-	 * `product.videoIds` — the one composite in this surface; see {@link createMediaAttachMethods}.
-	 */
 	public readonly attachMediaToInventoryItem: MediaAttachMethods["attachMediaToInventoryItem"];
 
-	/** Media API createImageFromUrl endpoint; see createMediaResourceMethods. */
 	public readonly createImageFromUrl: MediaResourceMethods["createImageFromUrl"];
-	/** Media API createDocument endpoint; see createMediaResourceMethods. */
 	public readonly createDocument: MediaResourceMethods["createDocument"];
-	/** Media API createDocumentFromUrl endpoint; see createMediaResourceMethods. */
 	public readonly createDocumentFromUrl: MediaResourceMethods["createDocumentFromUrl"];
-	/** Media API getDocument endpoint; see createMediaResourceMethods. */
 	public readonly getDocument: MediaResourceMethods["getDocument"];
-	/** Media API uploadDocument endpoint; see createMediaResourceMethods. */
 	public readonly uploadDocument: MediaResourceMethods["uploadDocument"];
-	/** Media API uploadPostOrderDocument endpoint; see createMediaResourceMethods. */
 	public readonly uploadPostOrderDocument: MediaResourceMethods["uploadPostOrderDocument"];
-	/** Media API downloadPostOrderDocument endpoint; see createMediaResourceMethods. */
 	public readonly downloadPostOrderDocument: MediaResourceMethods["downloadPostOrderDocument"];
-	/** Media API removePostOrderDocument endpoint; see createMediaResourceMethods. */
 	public readonly removePostOrderDocument: MediaResourceMethods["removePostOrderDocument"];
 
 	public constructor(client: EbayApiClient, items: InventoryItemsMethods) {
@@ -260,26 +181,11 @@ export class MediaApi {
 		).attachMediaToInventoryItem;
 	}
 
-	private url(suffix: string): string {
+	private url = (suffix: string): string => {
 		const config = this.client.getConfig();
 		return `${getMediaBaseUrl(config.environment, config.apiBaseUrl)}${MEDIA_BASE_PATH}${suffix}`;
-	}
+	};
 
-	/**
-	 * Uploads one picture to eBay Picture Services.
-	 *
-	 * @param input - File name, MIME type, and contents.
-	 * @returns An Effect that succeeds with the EPS URL (and image ID when eBay returns one).
-	 *
-	 * @example
-	 * ```ts
-	 * const image = await Effect.runPromise(
-	 *   mediaApi.createImageFromFile({ source: 'front.jpg', fileName: 'front.jpg', mimeType: 'image/jpeg', bytes }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/createImageFromFile
-	 */
 	public createImageFromFile = async (
 		input: MediaUpload,
 	): Promise<UploadedImage> => {
@@ -329,19 +235,6 @@ export class MediaApi {
 		};
 	};
 
-	/**
-	 * Uploads pictures one after another, keeping input order.
-	 *
-	 * @param files - Files to upload in listing order.
-	 * @returns An Effect with every uploaded image, or a `MediaUploadError` naming the first failure and what preceded it.
-	 *
-	 * @example
-	 * ```ts
-	 * const { images } = await Effect.runPromise(mediaApi.uploadImageFiles(files));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/createImageFromFile
-	 */
 	public uploadImageFiles = async (
 		files: readonly MediaUpload[],
 	): Promise<UploadImagesResult> => {
@@ -372,19 +265,6 @@ export class MediaApi {
 		return { images: uploaded };
 	};
 
-	/**
-	 * Retrieves the EPS URL and expiry of an uploaded image.
-	 *
-	 * @param input - Media API image identifier.
-	 * @returns An Effect that succeeds with eBay's ImageResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const image = await Effect.runPromise(mediaApi.getImage({ imageId: 'IMG-1' }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/getImage
-	 */
 	public getImage = async (input: ImageIdInput): Promise<ImageResponse> => {
 		const client = this.client;
 		const url = (imageId: string) => this.url(resourcePath("image", imageId));
@@ -403,19 +283,6 @@ export class MediaApi {
 		}
 	};
 
-	/**
-	 * Creates a video resource that a file can then be uploaded to.
-	 *
-	 * @param input - Title, exact byte size, and optional description.
-	 * @returns An Effect that succeeds with the new video ID.
-	 *
-	 * @example
-	 * ```ts
-	 * const { videoId } = await Effect.runPromise(mediaApi.createVideo({ title: 'Demo', size: 1024 }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/createVideo
-	 */
 	public createVideo = async (
 		input: CreateVideoInput,
 	): Promise<VideoIdInput> => {
@@ -456,19 +323,6 @@ export class MediaApi {
 		return { videoId };
 	};
 
-	/**
-	 * Uploads the file for a created video resource.
-	 *
-	 * @param input - Video ID and file contents (exactly the size given to createVideo).
-	 * @returns An Effect that succeeds once eBay accepted the bytes.
-	 *
-	 * @example
-	 * ```ts
-	 * await Effect.runPromise(mediaApi.uploadVideo({ videoId: 'VID-1', bytes }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/uploadVideo
-	 */
 	public uploadVideo = async (input: UploadVideoInput): Promise<void> => {
 		const client = this.client;
 		const url = (videoId: string) =>
@@ -493,19 +347,6 @@ export class MediaApi {
 		}
 	};
 
-	/**
-	 * Retrieves a video's metadata, processing status, and playlists.
-	 *
-	 * @param input - Media API video identifier.
-	 * @returns An Effect that succeeds with eBay's Video.
-	 *
-	 * @example
-	 * ```ts
-	 * const video = await Effect.runPromise(mediaApi.getVideo({ videoId: 'VID-1' }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/getVideo
-	 */
 	public getVideo = async (input: VideoIdInput): Promise<Video> => {
 		const client = this.client;
 		const url = (videoId: string) => this.url(resourcePath("video", videoId));
@@ -524,22 +365,6 @@ export class MediaApi {
 		}
 	};
 
-	/**
-	 * Polls getVideo until the status is final or the wait budget runs out. The
-	 * last sleep is cut to the remaining budget, so the total wait never exceeds
-	 * `maxWaitMs` by more than one status request. Both timings are validated
-	 * before the first request, so no poll interval can stall the budget.
-	 *
-	 * @param input - Video ID plus optional wait budget and poll interval.
-	 * @returns An Effect with the latest Video; check `status` — it may still be PROCESSING.
-	 *
-	 * @example
-	 * ```ts
-	 * const video = await Effect.runPromise(mediaApi.waitForVideo({ videoId: 'VID-1', maxWaitMs: 60_000 }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/getVideo
-	 */
 	public waitForVideo = async (input: WaitForVideoInput): Promise<Video> => {
 		const getVideo = this.getVideo;
 		const maxWaitMs = requireDurationMs(
@@ -579,19 +404,6 @@ export class MediaApi {
 		return video;
 	};
 
-	/**
-	 * Runs the whole video lifecycle: create the resource, upload the bytes, wait for processing.
-	 *
-	 * @param input - File plus optional title, description, and wait settings.
-	 * @returns An Effect with the Video (its `videoId` is always set); `status` is LIVE when ready.
-	 *
-	 * @example
-	 * ```ts
-	 * const video = await Effect.runPromise(mediaApi.uploadVideoFile({ file }));
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/video/methods/uploadVideo
-	 */
 	public uploadVideoFile = async (
 		input: UploadVideoFileInput,
 	): Promise<Video> => {

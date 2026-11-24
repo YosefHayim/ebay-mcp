@@ -61,86 +61,33 @@ type GetSubscriptionFilterInput = z.infer<typeof getSubscriptionFilterSchema>;
 type DeleteSubscriptionFilterInput = z.infer<
 	typeof deleteSubscriptionFilterSchema
 >;
-/** Destination request body accepted by destination writes. */
 type DestinationRequest = components["schemas"]["DestinationRequest"];
-/** Subscription creation request body. */
 type CreateSubscriptionRequest =
 	components["schemas"]["CreateSubscriptionRequest"];
-/** Subscription update request body. */
 type UpdateSubscriptionRequest =
 	components["schemas"]["UpdateSubscriptionRequest"];
-/** Subscription filter body accepted by createSubscriptionFilter. */
 type CreateSubscriptionFilterRequest = Pick<
 	CreateSubscriptionFilterInput,
 	"filterSchema"
 >;
 
-/**
- * Notification API configuration returned by eBay getConfig.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/config/methods/getConfig
- */
 export type GetNotificationConfigResponse = components["schemas"]["Config"];
-/**
- * Destination search response returned by eBay getDestinations.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestinations
- */
 export type GetNotificationDestinationsResponse =
 	components["schemas"]["DestinationSearchResponse"];
-/**
- * Destination response returned by eBay getDestination.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestination
- */
 export type GetNotificationDestinationResponse =
 	components["schemas"]["Destination"];
-/**
- * Public key response returned by eBay getPublicKey.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/public_key/methods/getPublicKey
- */
 export type GetNotificationPublicKeyResponse =
 	components["schemas"]["PublicKey"];
-/**
- * Subscription search response returned by eBay getSubscriptions.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptions
- */
 export type GetNotificationSubscriptionsResponse =
 	components["schemas"]["SubscriptionSearchResponse"];
-/**
- * Subscription response returned by eBay getSubscription.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscription
- */
 export type GetNotificationSubscriptionResponse =
 	components["schemas"]["Subscription"];
-/**
- * Subscription filter response returned by eBay getSubscriptionFilter.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptionFilter
- */
 export type GetNotificationSubscriptionFilterResponse =
 	components["schemas"]["SubscriptionFilter"];
-/**
- * Topic response returned by eBay getTopic.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/topic/methods/getTopic
- */
 export type GetNotificationTopicResponse = components["schemas"]["Topic"];
-/**
- * Topic search response returned by eBay getTopics.
- *
- * @see https://developer.ebay.com/api-docs/commerce/notification/resources/topic/methods/getTopics
- */
 export type GetNotificationTopicsResponse =
 	components["schemas"]["TopicSearchResponse"];
 
-/**
- * Notification API - Event notifications and subscriptions
- * Based on: commerce_notification_v1_oas3.json
- */
 export class NotificationApi {
 	private readonly basePath = "/commerce/notification/v1";
 	private readonly client: EbayApiClient;
@@ -149,19 +96,6 @@ export class NotificationApi {
 		this.client = client;
 	}
 
-	/**
-	 * Retrieves a public key used to validate notification signatures.
-	 *
-	 * @param input - Public key identifier from the notification signature header.
-	 * @returns eBay's generated PublicKey response.
-	 *
-	 * @example
-	 * ```ts
-	 * const key = await notificationApi.getPublicKey({ publicKeyId: 'key-123' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/public_key/methods/getPublicKey
-	 */
 	getPublicKey = async (
 		input: GetPublicKeyInput,
 	): Promise<GetNotificationPublicKeyResponse> => {
@@ -183,19 +117,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Retrieves the Notification API alert configuration.
-	 *
-	 * @param input - Empty endpoint input object.
-	 * @returns eBay's generated Config response.
-	 *
-	 * @example
-	 * ```ts
-	 * const config = await notificationApi.getConfig({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/config/methods/getConfig
-	 */
 	getConfig = (
 		input: GetConfigInput = {},
 	): Promise<GetNotificationConfigResponse> => {
@@ -206,19 +127,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Updates the Notification API alert configuration.
-	 *
-	 * @param input - Notification alert configuration body.
-	 * @returns A promise that resolves when eBay accepts the update.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.updateConfig({ alertEmail: 'ops@example.com' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/config/methods/updateConfig
-	 */
 	updateConfig = async (input: UpdateConfigInput): Promise<void> => {
 		const apiClient = this.client;
 		const path = `${this.basePath}/config`;
@@ -228,19 +136,6 @@ export class NotificationApi {
 		return await requestPutEffect<void>(apiClient, path, configUpdate);
 	};
 
-	/**
-	 * Retrieves configured notification destinations.
-	 *
-	 * @param input - Optional page size and continuation token.
-	 * @returns eBay's generated DestinationSearchResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const destinations = await notificationApi.getDestinations({ limit: 20 });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestinations
-	 */
 	getDestinations = async (
 		input: GetDestinationsInput = {},
 	): Promise<GetNotificationDestinationsResponse> => {
@@ -271,19 +166,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Retrieves one notification destination.
-	 *
-	 * @param input - Destination identifier.
-	 * @returns eBay's generated Destination response.
-	 *
-	 * @example
-	 * ```ts
-	 * const destination = await notificationApi.getDestination({ destinationId: 'dest-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/getDestination
-	 */
 	getDestination = async (
 		input: GetDestinationInput,
 	): Promise<GetNotificationDestinationResponse> => {
@@ -305,19 +187,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Creates a notification destination.
-	 *
-	 * @param input - Destination request body.
-	 * @returns A promise that resolves when eBay accepts the destination.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.createDestination({ name: 'webhook' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/createDestination
-	 */
 	createDestination = async (input: CreateDestinationInput): Promise<void> => {
 		const apiClient = this.client;
 		const path = `${this.basePath}/destination`;
@@ -330,19 +199,6 @@ export class NotificationApi {
 		return await requestPostEffect<void>(apiClient, path, destinationRequest);
 	};
 
-	/**
-	 * Updates a notification destination.
-	 *
-	 * @param input - Destination identifier plus destination update body fields.
-	 * @returns A promise that resolves when eBay accepts the update.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.updateDestination({ destinationId: 'dest-1', name: 'webhook' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/updateDestination
-	 */
 	updateDestination = async (input: UpdateDestinationInput): Promise<void> => {
 		const apiClient = this.client;
 		const apiBasePath = this.basePath;
@@ -368,19 +224,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Deletes a notification destination.
-	 *
-	 * @param input - Destination identifier.
-	 * @returns A promise that resolves when eBay deletes the destination.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.deleteDestination({ destinationId: 'dest-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/destination/methods/deleteDestination
-	 */
 	deleteDestination = async (input: DeleteDestinationInput): Promise<void> => {
 		const apiClient = this.client;
 		const apiBasePath = this.basePath;
@@ -400,19 +243,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Retrieves configured notification subscriptions.
-	 *
-	 * @param input - Optional page size and continuation token.
-	 * @returns eBay's generated SubscriptionSearchResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const subscriptions = await notificationApi.getSubscriptions({ limit: 20 });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptions
-	 */
 	getSubscriptions = async (
 		input: GetSubscriptionsInput = {},
 	): Promise<GetNotificationSubscriptionsResponse> => {
@@ -443,19 +273,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Creates a notification subscription.
-	 *
-	 * @param input - Subscription creation request body.
-	 * @returns A promise that resolves when eBay accepts the subscription.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.createSubscription({ topicId: 'MARKETPLACE' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/createSubscription
-	 */
 	createSubscription = async (
 		input: CreateSubscriptionInput,
 	): Promise<void> => {
@@ -470,19 +287,6 @@ export class NotificationApi {
 		return await requestPostEffect<void>(apiClient, path, subscriptionRequest);
 	};
 
-	/**
-	 * Retrieves one notification subscription.
-	 *
-	 * @param input - Subscription identifier.
-	 * @returns eBay's generated Subscription response.
-	 *
-	 * @example
-	 * ```ts
-	 * const subscription = await notificationApi.getSubscription({ subscriptionId: 'sub-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscription
-	 */
 	getSubscription = async (
 		input: GetSubscriptionInput,
 	): Promise<GetNotificationSubscriptionResponse> => {
@@ -504,19 +308,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Updates a notification subscription.
-	 *
-	 * @param input - Subscription identifier plus subscription update body fields.
-	 * @returns A promise that resolves when eBay accepts the update.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.updateSubscription({ subscriptionId: 'sub-1', status: 'DISABLED' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/updateSubscription
-	 */
 	updateSubscription = async (
 		input: UpdateSubscriptionInput,
 	): Promise<void> => {
@@ -544,19 +335,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Deletes a notification subscription.
-	 *
-	 * @param input - Subscription identifier.
-	 * @returns A promise that resolves when eBay deletes the subscription.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.deleteSubscription({ subscriptionId: 'sub-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/deleteSubscription
-	 */
 	deleteSubscription = async (
 		input: DeleteSubscriptionInput,
 	): Promise<void> => {
@@ -578,19 +356,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Disables an active notification subscription.
-	 *
-	 * @param input - Subscription identifier.
-	 * @returns A promise that resolves when eBay disables the subscription.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.disableSubscription({ subscriptionId: 'sub-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/disableSubscription
-	 */
 	disableSubscription = async (
 		input: DisableSubscriptionInput,
 	): Promise<void> => {
@@ -612,19 +377,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Enables a disabled notification subscription.
-	 *
-	 * @param input - Subscription identifier.
-	 * @returns A promise that resolves when eBay enables the subscription.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.enableSubscription({ subscriptionId: 'sub-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/enableSubscription
-	 */
 	enableSubscription = async (
 		input: EnableSubscriptionInput,
 	): Promise<void> => {
@@ -646,19 +398,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Sends a test notification for a subscription.
-	 *
-	 * @param input - Subscription identifier.
-	 * @returns A promise that resolves when eBay accepts the test notification.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.testSubscription({ subscriptionId: 'sub-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/testSubscription
-	 */
 	testSubscription = async (input: TestSubscriptionInput): Promise<void> => {
 		const apiClient = this.client;
 		const apiBasePath = this.basePath;
@@ -678,19 +417,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Retrieves one notification topic.
-	 *
-	 * @param input - Topic identifier.
-	 * @returns eBay's generated Topic response.
-	 *
-	 * @example
-	 * ```ts
-	 * const topic = await notificationApi.getTopic({ topicId: 'topic-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/topic/methods/getTopic
-	 */
 	getTopic = async (
 		input: GetTopicInput,
 	): Promise<GetNotificationTopicResponse> => {
@@ -709,19 +435,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Retrieves available notification topics.
-	 *
-	 * @param input - Optional page size and continuation token.
-	 * @returns eBay's generated TopicSearchResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const topics = await notificationApi.getTopics({ limit: 20 });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/topic/methods/getTopics
-	 */
 	getTopics = async (
 		input: GetTopicsInput = {},
 	): Promise<GetNotificationTopicsResponse> => {
@@ -749,22 +462,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Creates a filter for a notification subscription.
-	 *
-	 * @param input - Subscription identifier plus JSON Schema filter body accepted by eBay.
-	 * @returns eBay's generated empty response body.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.createSubscriptionFilter({
-	 *     subscriptionId: 'sub-1',
-	 *     filterSchema: { type: 'object' },
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/createSubscriptionFilter
-	 */
 	createSubscriptionFilter = async (
 		input: CreateSubscriptionFilterInput,
 	): Promise<void> => {
@@ -792,19 +489,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Retrieves one subscription filter.
-	 *
-	 * @param input - Subscription identifier and subscription filter identifier.
-	 * @returns eBay's generated SubscriptionFilter response.
-	 *
-	 * @example
-	 * ```ts
-	 * const filter = await notificationApi.getSubscriptionFilter({ subscriptionId: 'sub-1', filterId: 'filter-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/getSubscriptionFilter
-	 */
 	getSubscriptionFilter = async (
 		input: GetSubscriptionFilterInput,
 	): Promise<GetNotificationSubscriptionFilterResponse> => {
@@ -830,22 +514,6 @@ export class NotificationApi {
 		);
 	};
 
-	/**
-	 * Deletes a subscription filter.
-	 *
-	 * @param input - Subscription identifier and subscription filter identifier.
-	 * @returns A promise that resolves when eBay deletes the filter.
-	 *
-	 * @example
-	 * ```ts
-	 * await notificationApi.deleteSubscriptionFilter({
-	 *     subscriptionId: 'sub-1',
-	 *     filterId: 'filter-1',
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/notification/resources/subscription/methods/deleteSubscriptionFilter
-	 */
 	deleteSubscriptionFilter = async (
 		input: DeleteSubscriptionFilterInput,
 	): Promise<void> => {

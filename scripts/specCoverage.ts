@@ -53,10 +53,13 @@ const ITEMS_SUFFIX = /items?$/;
 const BY_SUFFIX = /by\w+$/;
 const FOR_SUFFIX = /for\w+$/;
 
-const singularOrPlural = (name: string): string =>
-	name.endsWith("s") && !name.endsWith("ss") ? name.slice(0, -1) : `${name}s`;
+function singularOrPlural(name: string): string {
+	return name.endsWith("s") && !name.endsWith("ss")
+		? name.slice(0, -1)
+		: `${name}s`;
+}
 
-const fuzzyNameVariations = (operationId: string): ReadonlySet<string> => {
+function fuzzyNameVariations(operationId: string): ReadonlySet<string> {
 	const normalized = normalizeForMatching(operationId);
 	const stems = [
 		normalized,
@@ -69,20 +72,21 @@ const fuzzyNameVariations = (operationId: string): ReadonlySet<string> => {
 	const mappedTools = KNOWN_OPERATION_MAPPINGS[normalized] || [];
 	const mappedNames = mappedTools.map(normalizeForMatching);
 	return new Set([...stems, ...prefixedStems, ...mappedNames]);
-};
+}
 
-export const normalizeForMatching = (name: string): string =>
-	name.toLowerCase().replace(/[^a-z0-9]/g, "");
+export function normalizeForMatching(name: string): string {
+	return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
 
 export interface ImplementedNames {
 	readonly apiMethods: ReadonlySet<string>;
 	readonly normalizedNames: ReadonlySet<string>;
 }
 
-export const collectImplementedNames = (
+export function collectImplementedNames(
 	apiMethods: readonly string[],
 	toolNames: readonly string[],
-): ImplementedNames => {
+): ImplementedNames {
 	const normalizedNames = [...apiMethods, ...toolNames].map(
 		normalizeForMatching,
 	);
@@ -90,14 +94,14 @@ export const collectImplementedNames = (
 		apiMethods: new Set(apiMethods),
 		normalizedNames: new Set(normalizedNames),
 	};
-};
+}
 
 export type OperationCoverage = "exact" | "fuzzy" | "missing";
 
-export const classifyOperation = (
+export function classifyOperation(
 	operationId: string,
 	implemented: ImplementedNames,
-): OperationCoverage => {
+): OperationCoverage {
 	if (implemented.apiMethods.has(operationId)) {
 		return "exact";
 	}
@@ -106,4 +110,4 @@ export const classifyOperation = (
 		implemented.normalizedNames.has(name),
 	);
 	return hasFuzzyMatch ? "fuzzy" : "missing";
-};
+}

@@ -1,11 +1,6 @@
 import type { RegistrySnapshot, ToolFamily } from "@/cli/skills/types.js";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
-/**
- * Human descriptions for each tool family, keyed by the category `key` exported
- * from the registry. Kept here (next to the snapshot) so copy lives in one place
- * while counts stay live; an unknown key falls back to its registry title.
- */
 const FAMILY_BLURBS: Record<string, string> = {
 	connector:
 		"ChatGPT connector protocol tools (`search`/`fetch`) — not used when driving the API directly",
@@ -38,19 +33,7 @@ const FAMILY_BLURBS: Record<string, string> = {
 		"Legacy Trading API (XML) — create / revise / relist / end fixed-price listings",
 };
 
-/**
- * Builds a {@link RegistrySnapshot} from the live tool registry so a rendered
- * skill always reflects the real catalogue. Counts come from {@link toolCategories}
- * (the single source of truth for registry families); blurbs are static copy.
- *
- * @returns The current tool count and per-family index, in registry order.
- *
- * @example
- * ```ts
- * const snapshot = buildRegistrySnapshot();
- * ```
- */
-export const buildRegistrySnapshot = (): RegistrySnapshot => {
+export function buildRegistrySnapshot(): RegistrySnapshot {
 	const families: ToolFamily[] = toolCategories.map((category) => ({
 		key: category.key,
 		title: category.title,
@@ -61,4 +44,4 @@ export const buildRegistrySnapshot = (): RegistrySnapshot => {
 	const toolCount = families.reduce((sum, family) => sum + family.count, 0);
 
 	return { toolCount, families };
-};
+}

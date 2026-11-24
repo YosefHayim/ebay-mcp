@@ -1,13 +1,3 @@
-/**
- * Unit tests for the `.env` serialization helpers in `envFile`.
- *
- * The regression these guard against: eBay OAuth tokens look like
- * `v^1.1#i^1#...`, and an unquoted `#` starts an inline comment. An unquoted
- * token is therefore truncated to `v^1.1` on the next
- * read, silently breaking authentication (`invalid_grant — the provided
- * authorization refresh token is invalid or was issued to another client`).
- */
-
 import { parseEnv } from "node:util";
 import { describe, expect, it } from "vitest";
 import { quoteEnvValue, stringifyEnv } from "@/shared/envFile.js";

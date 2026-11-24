@@ -1,12 +1,3 @@
-/**
- * Diagnostics Script - Troubleshooting and system health checks
- *
- * Usage:
- *   npm run diagnose
- *   ebay-mcp diagnose
- *   ebay-mcp diagnose --export
- */
-
 import process from "node:process";
 import { writeFileSync } from "fs";
 import { dirname, join } from "path";
@@ -55,9 +46,6 @@ interface DiagnosticReport {
 	};
 }
 
-/**
- * Check API connectivity
- */
 async function checkApiConnectivity(): Promise<{
 	canReachEbay: boolean;
 	error?: string;
@@ -71,7 +59,7 @@ async function checkApiConnectivity(): Promise<{
 		});
 
 		return {
-			canReachEbay: healthResponse.ok || healthResponse.status === 404,
+			canReachEbay: healthResponse.ok || healthResponse.status == 404,
 		};
 	} catch (error) {
 		return {
@@ -83,9 +71,6 @@ async function checkApiConnectivity(): Promise<{
 	}
 }
 
-/**
- * Test eBay API authentication
- */
 async function testEbayAuthentication(
 	config: EbayConfig,
 ): Promise<{ success: boolean; error?: string; userInfo?: unknown }> {
@@ -103,9 +88,6 @@ async function testEbayAuthentication(
 	}
 }
 
-/**
- * Display diagnostic header
- */
 function displayHeader(): void {
 	console.clear();
 	console.log(
@@ -120,9 +102,6 @@ function displayHeader(): void {
 	console.log(paint.gray(`Run date: ${new Date().toISOString()}\n`));
 }
 
-/**
- * Display system information
- */
 function displaySystemInfo(): void {
 	console.log(paint.bold.cyan("💻 System Information\n"));
 	console.log(`  ${paint.gray("Node.js:")} ${process.version}`);
@@ -138,9 +117,6 @@ function displayUpdateStatus(): void {
 	console.log("");
 }
 
-/**
- * Display configuration status
- */
 function displayConfigurationStatus(envVars: Record<string, string>): void {
 	console.log(paint.bold.cyan("⚙️  Configuration Status\n"));
 
@@ -181,9 +157,6 @@ function displayConfigurationStatus(envVars: Record<string, string>): void {
 	console.log("");
 }
 
-/**
- * Display LLM client status
- */
 function displayLLMClientStatus(): void {
 	console.log(paint.bold.cyan("🤖 LLM Client Detection\n"));
 
@@ -208,9 +181,6 @@ function displayLLMClientStatus(): void {
 	console.log("");
 }
 
-/**
- * Test API authentication and display results
- */
 async function displayAuthenticationTest(config: EbayConfig): Promise<void> {
 	console.log(paint.bold.cyan("🔐 API Authentication Test\n"));
 
@@ -230,9 +200,6 @@ async function displayAuthenticationTest(config: EbayConfig): Promise<void> {
 	}
 }
 
-/**
- * Generate diagnostic report
- */
 async function generateDiagnosticReport(
 	exportPath?: string,
 ): Promise<DiagnosticReport> {
@@ -298,10 +265,7 @@ async function generateDiagnosticReport(
 	return report;
 }
 
-/**
- * Main diagnostics function
- */
-export const runDiagnostics = async (exportReport = false): Promise<void> => {
+export async function runDiagnostics(exportReport = false): Promise<void> {
 	displayHeader();
 	displaySystemInfo();
 	displayUpdateStatus();
@@ -378,7 +342,7 @@ export const runDiagnostics = async (exportReport = false): Promise<void> => {
 			"  https://github.com/YosefHayim/ebay-mcp#troubleshooting\n",
 		),
 	);
-};
+}
 
 // Direct script entry (`node build/cli/diagnostics.js` / `npm run diagnose`).
 // Guarded so importing from the bin does not auto-run diagnostics.

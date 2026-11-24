@@ -30,10 +30,10 @@ const DOWNLOAD_NOTE =
 const FEED_FILE_ACCESS_NOTE =
 	"Local file access is opt-in: the file must sit inside a directory listed in EBAY_MCP_MEDIA_DIRS (or under EBAY_MCP_MEDIA_ROOT, which also anchors media://<relative-path> references). Symlinks are resolved before the check.";
 
-const taskUri = (taskId: string, file: "input" | "result"): string =>
-	`ebay-feed://task/${encodeURIComponent(taskId)}/${file}`;
+function taskUri(taskId: string, file: "input" | "result"): string {
+	return `ebay-feed://task/${encodeURIComponent(taskId)}/${file}`;
+}
 
-/** Feed API tools for order, inventory, and customer service metric tasks, schedules, and feed files. */
 export const feedEntries: ToolEntry[] = [
 	// order_task
 	defineTool({

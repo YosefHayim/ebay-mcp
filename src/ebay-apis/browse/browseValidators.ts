@@ -1,43 +1,19 @@
-/**
- * Input validators for the Buy Browse tools.
- *
- * Each returns a tagged `EndpointInputError` rather than letting eBay answer
- * with an opaque 400, so a caller learns which parameter was wrong and why.
- */
-
 import {
 	BROWSE_SORT_VALUES,
 	type BrowseSortValue,
 } from "@/ebay-apis/browse/browseTypes.js";
 import { optionalStringEffect } from "@/ebay-client/request.js";
 
-/** Hard upper bound for the Browse search `limit` parameter. */
 const MAX_LIMIT = 200;
 
-/** Hard upper bound for the Browse search `offset` parameter. */
 const MAX_OFFSET = 10_000;
 
-/**
- * Validate a pagination value is a whole number inside an inclusive range.
- *
- * The shared numeric helpers only compare against their floor, so a fractional
- * or non-finite value survives them. Without `Number.isInteger` the public
- * `api.browse` surface would forward a `limit` of `1.5` (which the MCP schema
- * rejects) straight to eBay, and a `NaN` limit would surface later as a page
- * alignment failure blamed on `offset`.
- *
- * @param value - Pagination value supplied by the caller.
- * @param parameter - Parameter name used in the tagged error.
- * @param min - Inclusive lower bound.
- * @param max - Inclusive upper bound.
- * @returns The same value when valid, or a tagged input error.
- */
-const requireIntegerInRange = (
+function requireIntegerInRange(
 	value: number,
 	parameter: string,
 	min: number,
 	max: number,
-): number => {
+): number {
 	const isOutsideRange = !Number.isInteger(value) || value < min || value > max;
 
 	if (isOutsideRange) {
@@ -47,84 +23,44 @@ const requireIntegerInRange = (
 	}
 
 	return value;
-};
+}
 
-/**
- * Describe a price bound that is present but not a finite number.
- *
- * The shared numeric helper only compares against zero, and `NaN < 0` and
- * `Infinity < 0` are both false, so either value survives it and every later
- * comparison. The filter builder then interpolates it straight onto the wire
- * as `price:[NaN..]`. `Number.isFinite` (not `Number.isInteger`, since prices
- * are legitimately fractional) closes the gap the MCP schema's `.min(0)`
- * already covers.
- *
- * @param priceBound - Optional price bound already validated as a number >= 0.
- * @param parameter - Parameter name used in the tagged error.
- * @returns A tagged input error when the bound is not finite, else undefined.
- */
-const nonFinitePriceError = (
+function nonFinitePriceError(
 	priceBound: number | undefined,
 	parameter: string,
-): Error | undefined => {
+): Error | undefined {
 	if (priceBound === undefined || Number.isFinite(priceBound)) {
 		return;
 	}
 
 	return new Error(`${parameter} must be a finite number; got ${priceBound}`);
-};
+}
 
-/** Default page size when limit is omitted. */
 export const DEFAULT_LIMIT = 20;
 
-/**
- * Validate an optional string array input.
- *
- * @param value - Raw value supplied by the caller.
- * @param parameter - Parameter name used in the tagged error.
- * @returns The array (or undefined) when valid, or a tagged input error.
- */
-export const optionalStringArrayEffect = (
+export function optionalStringArrayEffect(
 	value: unknown,
 	parameter: string,
-): readonly string[] | undefined => {
+): readonly string[] | undefined {
 	if (value === undefined) {
 		return undefined;
 	}
 
 	const isStringArray =
 		Array.isArray(value) &&
-		value.every((entry) => typeof entry === "string" && entry.length > 0);
+		value.every((entry) => typeof entry == "string" && entry.length > 0);
 
 	if (!isStringArray) {
 		throw new Error(`${parameter} must be an array of non-empty strings`);
 	}
 
 	return value;
-};
+}
 
-/**
- * Validate an optional string input, rejecting a blank value.
- *
- * `optionalStringEffect` accepts `''`, and both `defined` and the query
- * builder drop only `undefined`, so a blank value survives to the wire: as an
- * empty `category_ids=` parameter, or as a bare `priceCurrency:` clause that
- * makes eBay silently discard the whole price filter and answer with
- * unfiltered results instead of an error.
- *
- * @param value - Raw value supplied by the caller.
- * @param parameter - Parameter name used in the tagged error.
- * @returns The trimmed string (or undefined) when valid, or a tagged input error.
- *
- * @example
- * ```ts
- * const categoryIds = optionalNonBlankStringEffect(input.categoryIds, 'categoryIds');
- * ```
- */
-export const optionalNonBlankStringEffect = (
+export function optionalNonBlankStringEffect(
 	value: unknown,
 	parameter: string,
-): string | undefined => {
+): string | undefined {
 	const text = optionalStringEffect(value, parameter);
 
 	if (text === undefined) {
@@ -132,27 +68,20 @@ export const optionalNonBlankStringEffect = (
 	}
 
 	const trimmed = text.trim();
-	const isBlank = trimmed.length === 0;
+	const isBlank = trimmed.length == 0;
 
 	if (isBlank) {
 		throw new Error(`${parameter} must be a non-empty string when provided`);
 	}
 
 	return trimmed;
-};
+}
 
-/**
- * Validate offset is a whole number inside Browse's supported range.
- *
- * @param offset - Offset already validated as a number >= 0.
- * @param limit - Validated page size the offset must align to.
- * @returns The same value when in range, or a tagged input error.
- */
-export const requireOffsetInRange = (offset: number, limit: number): number => {
+export function requireOffsetInRange(offset: number, limit: number): number {
 	const validated = requireIntegerInRange(offset, "offset", 0, MAX_OFFSET);
 	// Browse rejects an offset that is not a whole number of pages (error 12515)
 	// with an opaque 400, so the page arithmetic is enforced here instead.
-	const isMisalignedPage = validated % limit !== 0;
+	const isMisalignedPage = validated % limit != 0;
 
 	if (isMisalignedPage) {
 		throw new Error(
@@ -161,24 +90,12 @@ export const requireOffsetInRange = (offset: number, limit: number): number => {
 	}
 
 	return validated;
-};
+}
 
-/**
- * Reject a price window whose bounds are not finite, or are inverted.
- *
- * eBay accepts `price:[50..10]` and simply matches nothing, so an inverted
- * window would look like a legitimate empty result rather than a mistake. A
- * non-finite bound is rejected here too, because it passes every ordering
- * comparison silently and would otherwise reach the wire verbatim.
- *
- * @param priceMin - Optional lower bound.
- * @param priceMax - Optional upper bound.
- * @returns Unit when the window is coherent, or a tagged input error.
- */
-export const requireCoherentPriceRange = (
+export function requireCoherentPriceRange(
 	priceMin: number | undefined,
 	priceMax: number | undefined,
-): void => {
+): void {
 	const nonFinite =
 		nonFinitePriceError(priceMin, "priceMin") ??
 		nonFinitePriceError(priceMax, "priceMax");
@@ -195,26 +112,15 @@ export const requireCoherentPriceRange = (
 			`priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
 		);
 	}
-};
+}
 
-/**
- * Validate limit is a whole number inside Browse's supported range.
- *
- * @param limit - Page size already validated as a number > 0.
- * @returns The same value when in range, or a tagged input error.
- */
-export const requireLimitInRange = (limit: number): number =>
-	requireIntegerInRange(limit, "limit", 1, MAX_LIMIT);
+export function requireLimitInRange(limit: number): number {
+	return requireIntegerInRange(limit, "limit", 1, MAX_LIMIT);
+}
 
-/**
- * Validate sort is one of the supported Browse sort orders when provided.
- *
- * @param sort - Optional sort string.
- * @returns The validated sort value (or undefined), or a tagged input error.
- */
-export const requireSupportedSort = (
+export function requireSupportedSort(
 	sort: string | undefined,
-): BrowseSortValue | undefined => {
+): BrowseSortValue | undefined {
 	if (sort === undefined) {
 		return undefined;
 	}
@@ -226,4 +132,4 @@ export const requireSupportedSort = (
 	}
 
 	return sort as BrowseSortValue;
-};
+}

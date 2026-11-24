@@ -38,7 +38,7 @@ describe.each([
 	});
 
 	it("enforces its exact byte limit", async () => {
-		const limit = (kind === "document" ? 10 : 5) * 1024 * 1024;
+		const limit = (kind == "document" ? 10 : 5) * 1024 * 1024;
 		const name = path.join(fixture.root, `${kind}.pdf`);
 		const bytes = Buffer.alloc(limit);
 		bytes.write("%PDF-1.7");

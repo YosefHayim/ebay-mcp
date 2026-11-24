@@ -1,21 +1,10 @@
-/**
- * Unit tests for the OAuth loopback callback server (`startCallbackServer`).
- *
- * These exercise the inbound-redirect edge cases that gate the whole MCP flow:
- * code capture, URL-decoding, eBay error redirects, CSRF `state` validation,
- * stray non-callback requests, custom paths, timeouts, and port conflicts.
- * Every server binds to port `0` so the OS assigns a free port (no CI clashes),
- * and `afterEach` closes them so no listener or timer leaks between tests.
- */
-
 import type { Server } from "http";
 import { afterEach, describe, expect, it } from "vitest";
 import { startCallbackServer } from "@/auth/oauthHelper.js";
 
-/** Resolve the actual TCP port a `0`-bound server was assigned. */
 function portOf(server: Server): number {
 	const address = server.address();
-	if (address === null || typeof address === "string") {
+	if (address === null || typeof address == "string") {
 		throw new Error("server is not bound to a TCP port");
 	}
 	return address.port;
@@ -24,7 +13,6 @@ function portOf(server: Server): number {
 describe("startCallbackServer", () => {
 	const openServers: Server[] = [];
 
-	/** Track a started server so it is always closed after the test. */
 	function track(server: Server): Server {
 		openServers.push(server);
 		return server;

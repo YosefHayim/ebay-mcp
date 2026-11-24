@@ -68,20 +68,11 @@ interface RunWizardOptions {
 	onCancel?: () => void;
 }
 
-/**
- * Preserves wizard configuration typing without transforming the config.
- *
- * @param config - Wizard configuration to preserve as a typed literal.
- * @returns The same config object.
- *
- * @example
- * ```ts
- * const wizard = defineWizard({ steps: [] });
- * ```
- */
-export const defineWizard = <T extends WizardConfig>(config: T): T => config;
+export function defineWizard<T extends WizardConfig>(config: T): T {
+	return config;
+}
 
-const openUrl = async (url: string): Promise<void> => {
+async function openUrl(url: string): Promise<void> {
 	const currentPlatform = platform();
 	let command = "";
 	let args: string[] = [];
@@ -109,16 +100,16 @@ const openUrl = async (url: string): Promise<void> => {
 	// A missing opener (e.g. no xdg-open) emits 'error'; swallow it so the wizard keeps running.
 	child.on("error", () => undefined);
 	child.unref();
-};
+}
 
-const getSelectDefaultIndex = (
+function getSelectDefaultIndex(
 	options: { value: string; label: string }[],
 	stepDefault?: string,
-): number => {
+): number {
 	if (!stepDefault) return 0;
-	const index = options.findIndex((option) => option.value === stepDefault);
+	const index = options.findIndex((option) => option.value == stepDefault);
 	return index >= 0 ? index : 0;
-};
+}
 
 export interface Asked<ChoiceValue> {
 	cancelled: boolean;
@@ -165,7 +156,7 @@ function isCancelError(error: unknown): boolean {
 		return false;
 	}
 
-	return error.name === "AbortError";
+	return error.name == "AbortError";
 }
 
 async function readLine(query: string): Promise<LineAnswer> {
@@ -202,7 +193,7 @@ function readMutedLine(query: string): Promise<LineAnswer> {
 		resolve: (answer: LineAnswer) => void,
 		reject: (error: unknown) => void,
 	) {
-		const wasRaw = stdin.isRaw === true;
+		const wasRaw = stdin.isRaw == true;
 
 		try {
 			stdin.setRawMode(true);
@@ -256,7 +247,7 @@ function readMutedLine(query: string): Promise<LineAnswer> {
 		}
 
 		function decodeChunk(chunk: Buffer | string): string {
-			const isTextChunk = typeof chunk === "string";
+			const isTextChunk = typeof chunk == "string";
 
 			if (isTextChunk) {
 				return chunk;
@@ -300,24 +291,24 @@ function readMutedLine(query: string): Promise<LineAnswer> {
 				return;
 			}
 
-			const isEscape = character === "\u001b";
+			const isEscape = character == "\u001b";
 
 			if (isEscape) {
 				isSkippingEscape = true;
 				return;
 			}
 
-			const isCancel = character === "\u0003";
+			const isCancel = character == "\u0003";
 
 			if (isCancel) {
 				finish({ cancelled: true, line: "" });
 				return;
 			}
 
-			const isEof = character === "\u0004";
+			const isEof = character == "\u0004";
 
 			if (isEof) {
-				const isEmpty = entered.length === 0;
+				const isEmpty = entered.length == 0;
 
 				if (isEmpty) {
 					finish({ cancelled: true, line: "" });
@@ -326,28 +317,28 @@ function readMutedLine(query: string): Promise<LineAnswer> {
 				return;
 			}
 
-			const isCarriageReturn = character === "\r";
+			const isCarriageReturn = character == "\r";
 
 			if (isCarriageReturn) {
 				finish({ cancelled: false, line: entered });
 				return;
 			}
 
-			const isLineFeed = character === "\n";
+			const isLineFeed = character == "\n";
 
 			if (isLineFeed) {
 				finish({ cancelled: false, line: entered });
 				return;
 			}
 
-			const isDelete = character === "\u007f";
+			const isDelete = character == "\u007f";
 
 			if (isDelete) {
 				entered = entered.slice(0, -1);
 				return;
 			}
 
-			const isBackspace = character === "\b";
+			const isBackspace = character == "\b";
 
 			if (isBackspace) {
 				entered = entered.slice(0, -1);
@@ -372,7 +363,7 @@ function readMutedLine(query: string): Promise<LineAnswer> {
 }
 
 async function readSecretLine(query: string): Promise<LineAnswer> {
-	const isTty = stdin.isTTY === true;
+	const isTty = stdin.isTTY == true;
 
 	if (isTty) {
 		return readMutedLine(query);
@@ -382,7 +373,7 @@ async function readSecretLine(query: string): Promise<LineAnswer> {
 }
 
 function pickSubmittedLine(typedLine: string, initial: string): string {
-	const isEmpty = typedLine === "";
+	const isEmpty = typedLine == "";
 
 	if (isEmpty) {
 		return initial;
@@ -408,7 +399,7 @@ function readRejection(
 		return null;
 	}
 
-	const isMessage = typeof verdict === "string";
+	const isMessage = typeof verdict == "string";
 
 	if (isMessage) {
 		return verdict;
@@ -428,7 +419,7 @@ function createTextQuery(
 		return `${message} `;
 	}
 
-	const isInitialEmpty = initial === "";
+	const isInitialEmpty = initial == "";
 
 	if (isInitialEmpty) {
 		return `${message} `;
@@ -489,7 +480,7 @@ function formatChoiceLine<ChoiceValue extends string>(
 	index: number,
 ): string {
 	const choiceNumber = index + 1;
-	const isSelected = choice.selected === true;
+	const isSelected = choice.selected == true;
 
 	if (isSelected) {
 		return `  ${choiceNumber}) ${choice.label} (selected)`;
@@ -509,7 +500,7 @@ function listSelectedIndexes<ChoiceValue extends string>(
 	const indexes: number[] = [];
 
 	for (const [index, choice] of choices.entries()) {
-		const isSelected = choice.selected === true;
+		const isSelected = choice.selected == true;
 
 		if (isSelected) {
 			indexes.push(index);
@@ -527,7 +518,7 @@ function readWholeNumber(piece: string): number | undefined {
 		return undefined;
 	}
 
-	const reprintsTheSame = String(parsed) === piece;
+	const reprintsTheSame = String(parsed) == piece;
 
 	if (!reprintsTheSame) {
 		return undefined;
@@ -548,7 +539,7 @@ function readChoiceIndex(
 	initialIndex: number,
 ): number | null {
 	const trimmed = typedLine.trim();
-	const isEmpty = trimmed === "";
+	const isEmpty = trimmed == "";
 
 	if (isEmpty) {
 		const isNegative = initialIndex < 0;
@@ -595,7 +586,7 @@ function readChoiceIndexes(
 	selectedIndexes: number[],
 ): number[] | null {
 	const trimmed = typedLine.trim();
-	const isEmpty = trimmed === "";
+	const isEmpty = trimmed == "";
 
 	if (isEmpty) {
 		return selectedIndexes.slice();
@@ -606,7 +597,7 @@ function readChoiceIndexes(
 
 	for (const piece of pieces) {
 		const choiceNumber = piece.trim();
-		const isPieceEmpty = choiceNumber === "";
+		const isPieceEmpty = choiceNumber == "";
 
 		if (isPieceEmpty) {
 			return null;
@@ -695,7 +686,7 @@ export async function askSelect<ChoiceValue extends string>(
 	question: AskSelectQuestion<ChoiceValue>,
 ): Promise<Asked<ChoiceValue>> {
 	const choices = question.choices;
-	const hasNoChoices = choices.length === 0;
+	const hasNoChoices = choices.length == 0;
 
 	if (hasNoChoices) {
 		return { cancelled: false, value: undefined };
@@ -744,7 +735,7 @@ export async function askSelect<ChoiceValue extends string>(
 }
 
 function createNumbersQuery(selectedIndexes: number[]): string {
-	const hasNoneSelected = selectedIndexes.length === 0;
+	const hasNoneSelected = selectedIndexes.length == 0;
 
 	if (hasNoneSelected) {
 		return "Numbers (comma-separated): ";
@@ -758,7 +749,7 @@ export async function askMultiselect<ChoiceValue extends string>(
 	question: AskMultiselectQuestion<ChoiceValue>,
 ): Promise<Asked<ChoiceValue[]>> {
 	const choices = question.choices;
-	const hasNoChoices = choices.length === 0;
+	const hasNoChoices = choices.length == 0;
 
 	if (hasNoChoices) {
 		return { cancelled: false, value: [] };
@@ -804,31 +795,31 @@ function readConfirmAnswer(
 	initial: boolean,
 ): boolean | null {
 	const trimmed = typedLine.trim().toLowerCase();
-	const isEmpty = trimmed === "";
+	const isEmpty = trimmed == "";
 
 	if (isEmpty) {
 		return initial;
 	}
 
-	const isY = trimmed === "y";
+	const isY = trimmed == "y";
 
 	if (isY) {
 		return true;
 	}
 
-	const isYes = trimmed === "yes";
+	const isYes = trimmed == "yes";
 
 	if (isYes) {
 		return true;
 	}
 
-	const isN = trimmed === "n";
+	const isN = trimmed == "n";
 
 	if (isN) {
 		return false;
 	}
 
-	const isNo = trimmed === "no";
+	const isNo = trimmed == "no";
 
 	if (isNo) {
 		return false;
@@ -840,7 +831,7 @@ function readConfirmAnswer(
 export async function askConfirm(
 	question: AskConfirmQuestion,
 ): Promise<Asked<boolean>> {
-	const initial = question.initial === true;
+	const initial = question.initial == true;
 	const hint = initial ? "(Y/n)" : "(y/N)";
 	const query = `${question.message} ${hint} `;
 	var typed: LineAnswer;
@@ -902,7 +893,7 @@ function hasRequiredRule(step: TextStep): boolean {
 	}
 
 	for (const rule of rules) {
-		const isRequiredRule = rule.rule === "required";
+		const isRequiredRule = rule.rule == "required";
 
 		if (isRequiredRule) {
 			return true;
@@ -913,7 +904,7 @@ function hasRequiredRule(step: TextStep): boolean {
 }
 
 function validateWizardText(step: TextStep, typedLine: string): true | string {
-	const isBlank = typedLine.trim().length === 0;
+	const isBlank = typedLine.trim().length == 0;
 
 	if (!isBlank) {
 		return true;
@@ -925,7 +916,7 @@ function validateWizardText(step: TextStep, typedLine: string): true | string {
 		return "This field is required";
 	}
 
-	const isRequiredFlag = step.required === true;
+	const isRequiredFlag = step.required == true;
 
 	if (isRequiredFlag) {
 		return "This field is required";
@@ -959,7 +950,7 @@ function finishStep<ChoiceValue>(
 	asked: Asked<ChoiceValue>,
 	onCancel: (() => void) | undefined,
 ): { cancelled: boolean; value: ChoiceValue | undefined } {
-	const isCancelled = asked.cancelled === true;
+	const isCancelled = asked.cancelled == true;
 
 	if (isCancelled) {
 		onCancel?.();
@@ -974,7 +965,7 @@ async function promptStep(
 	optionsOverride: { value: string; label: string }[] | undefined,
 	onCancel?: () => void,
 ): Promise<{ cancelled: boolean; value: PromptValue }> {
-	if (step.type === "note") {
+	if (step.type == "note") {
 		if (step.message) writeCliLine(`\n  ${step.message}`);
 		if (step.description) writeCliLine(`  ${step.description}\n`);
 		return { cancelled: false, value: undefined };
@@ -982,7 +973,7 @@ async function promptStep(
 
 	const listed = listStepChoices(step, optionsOverride);
 
-	if (step.type === "select") {
+	if (step.type == "select") {
 		const selected = await askSelect({
 			message: step.message,
 			choices: listed,
@@ -991,7 +982,7 @@ async function promptStep(
 		return finishStep(selected, onCancel);
 	}
 
-	if (step.type === "multiselect") {
+	if (step.type == "multiselect") {
 		const selected = await askMultiselect({
 			message: step.message,
 			choices: listed,
@@ -999,7 +990,7 @@ async function promptStep(
 		return finishStep(selected, onCancel);
 	}
 
-	if (step.type === "password") {
+	if (step.type == "password") {
 		const secret = await askWizardText(step, true);
 		return finishStep(secret, onCancel);
 	}
@@ -1008,24 +999,10 @@ async function promptStep(
 	return finishStep(typed, onCancel);
 }
 
-/**
- * Runs an interactive setup wizard and returns answers keyed by step id.
- *
- * @param config - Wizard steps and optional metadata.
- * @param runOptions - Optional callbacks and providers for rendering/validation.
- * @returns Answers keyed by step id; returns partial answers when cancelled.
- *
- * @example
- * ```ts
- * const answers = await runWizard(wizardConfig, {
- *   optionsProvider: (stepId) => (stepId === 'environment' ? environments : undefined),
- * });
- * ```
- */
-export const runWizard = async (
+export async function runWizard(
 	config: WizardConfig,
 	runOptions: RunWizardOptions = {},
-): Promise<Record<string, unknown>> => {
+): Promise<Record<string, unknown>> {
 	const answers: Record<string, unknown> = {};
 	const indexByStepId = new Map(
 		config.steps.map((step, index) => [step.id, index]),
@@ -1076,7 +1053,7 @@ export const runWizard = async (
 			return answers;
 		}
 
-		if (step.type !== "note") {
+		if (step.type != "note") {
 			let validationError =
 				runOptions.asyncValidate && attempt.value !== undefined
 					? await runOptions.asyncValidate(step.id, attempt.value)
@@ -1117,4 +1094,4 @@ export const runWizard = async (
 	}
 
 	return answers;
-};
+}

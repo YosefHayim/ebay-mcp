@@ -41,7 +41,7 @@ function style(format: readonly TextFormat[], text: string): string {
 
 function createPaint(formats: readonly TextFormat[]): TerminalText {
 	function paint(text: string): string {
-		const hasNoFormat = formats.length === 0;
+		const hasNoFormat = formats.length == 0;
 
 		if (hasNoFormat) {
 			return text;

@@ -69,7 +69,7 @@ function keepStringUpdates(
 	const stringUpdates: Record<string, string> = {};
 
 	for (const [name, envValue] of Object.entries(updates)) {
-		const isString = typeof envValue === "string";
+		const isString = typeof envValue == "string";
 
 		if (isString) {
 			stringUpdates[name] = envValue;
@@ -90,7 +90,7 @@ function readExistingEnv(envPath: string): Record<string, string> {
 	const existing: Record<string, string> = {};
 
 	for (const [name, envValue] of Object.entries(parsed)) {
-		if (typeof envValue === "string") {
+		if (typeof envValue == "string") {
 			existing[name] = envValue;
 		}
 	}
@@ -142,13 +142,13 @@ export class DotEnvCredentialStore implements CredentialStore {
 		this.getEnvPath = getEnvPath;
 	}
 
-	async write(updates: Record<string, string>): Promise<void> {
+	write = async (updates: Record<string, string>): Promise<void> => {
 		const envPath = this.getEnvPath();
 
 		await queueCredentialWrite(envPath, function writeQueuedEnvFile() {
 			writeCredentialEnvFile(envPath, updates);
 		});
-	}
+	};
 }
 
 export function maskToken(token: string): string {

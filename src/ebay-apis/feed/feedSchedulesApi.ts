@@ -31,39 +31,21 @@ type FeedScheduleTemplateIdInput = z.infer<
 type CreateFeedScheduleInput = z.infer<typeof createFeedScheduleInputSchema>;
 type UpdateFeedScheduleInput = z.infer<typeof updateFeedScheduleInputSchema>;
 
-/** Schedules page for a feed type. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedules */
 export type UserScheduleCollection =
 	components["schemas"]["UserScheduleCollection"];
-/** One schedule. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedule */
 export type UserScheduleResponse =
 	components["schemas"]["UserScheduleResponse"];
-/** Schedule templates page. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplates */
 export type ScheduleTemplateCollection =
 	components["schemas"]["ScheduleTemplateCollection"];
-/** One schedule template. @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplate */
 export type ScheduleTemplateResponse =
 	components["schemas"]["ScheduleTemplateResponse"];
 
-/** Schedule created by createSchedule; eBay reports its ID only in `Location`. */
 interface CreatedFeedSchedule {
 	readonly scheduleId: string;
 	readonly location: string;
 }
 
-/**
- * Creates the Feed API `schedule` resource endpoints: recurring report schedules, their
- * latest result file, and the templates schedules subscribe to.
- * @param client - Shared authenticated HTTP client.
- * @returns Endpoint methods composed into FeedApi.
- */
-export const createFeedScheduleMethods = (client: EbayApiClient) => {
-	/**
-	 * Lists the seller's schedules for a feed type.
-	 * @param input - feedType (required), limit, offset.
-	 * @returns Generated UserScheduleCollection.
-	 * @example feed.getSchedules({ feedType: 'LMS_ORDER_REPORT' })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedules
-	 */
+export function createFeedScheduleMethods(client: EbayApiClient) {
 	const getSchedules = async (
 		input: FeedTypePageInput,
 	): Promise<UserScheduleCollection> => {
@@ -76,13 +58,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		);
 	};
 
-	/**
-	 * Subscribes to a schedule template; eBay answers 201 with the new ID only in Location.
-	 * @param input - CreateUserScheduleRequest body.
-	 * @returns The new schedule ID and Location.
-	 * @example feed.createSchedule({ schedule: { feedType: 'LMS_ORDER_REPORT', scheduleTemplateId: 'T-1' } })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/createSchedule
-	 */
 	const createSchedule = async (
 		input: CreateFeedScheduleInput,
 	): Promise<CreatedFeedSchedule> => {
@@ -95,13 +70,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		return { scheduleId: located.id, location: located.location };
 	};
 
-	/**
-	 * Retrieves one schedule's details and status.
-	 * @param input - Schedule identifier.
-	 * @returns Generated UserScheduleResponse.
-	 * @example feed.getSchedule({ scheduleId: 'S-1' })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getSchedule
-	 */
 	const getSchedule = async (
 		input: FeedScheduleIdInput,
 	): Promise<UserScheduleResponse> => {
@@ -116,13 +84,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		);
 	};
 
-	/**
-	 * Updates a schedule; the input is validated against its (possibly changed) template.
-	 * @param input - Schedule identifier and UpdateUserScheduleRequest body with at least one field.
-	 * @returns Completes on eBay's empty HTTP 204 response.
-	 * @example feed.updateSchedule({ scheduleId: 'S-1', schedule: { preferredTriggerHour: '11Z' } })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/updateSchedule
-	 */
 	const updateSchedule = async (
 		input: UpdateFeedScheduleInput,
 	): Promise<void> => {
@@ -130,7 +91,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 			updateFeedScheduleInputSchema,
 			input,
 		);
-		const hasNoScheduleFields = Object.keys(schedule).length === 0;
+		const hasNoScheduleFields = Object.keys(schedule).length == 0;
 
 		if (hasNoScheduleFields) {
 			throw new Error("Provide at least one schedule field to update");
@@ -143,13 +104,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		);
 	};
 
-	/**
-	 * Deletes a schedule; it stops generating reports.
-	 * @param input - Schedule identifier.
-	 * @returns Completes on eBay's empty HTTP 204 response.
-	 * @example feed.deleteSchedule({ scheduleId: 'S-1' })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/deleteSchedule
-	 */
 	const deleteSchedule = async (input: FeedScheduleIdInput): Promise<void> => {
 		const { scheduleId } = decodeEndpointInputEffect(
 			feedScheduleIdInputSchema,
@@ -162,13 +116,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		);
 	};
 
-	/**
-	 * Downloads the latest report a schedule generated.
-	 * @param input - Schedule identifier.
-	 * @returns File bytes (compressed or plain CSV, XML or JSON) with eBay's type and name.
-	 * @example feed.getLatestResultFile({ scheduleId: 'S-1' })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getLatestResultFile
-	 */
 	const getLatestResultFile = async (
 		input: FeedScheduleIdInput,
 	): Promise<DownloadedFile> => {
@@ -183,13 +130,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		);
 	};
 
-	/**
-	 * Retrieves one schedule template, including the fields a schedule must supply.
-	 * @param input - Schedule template identifier.
-	 * @returns Generated ScheduleTemplateResponse.
-	 * @example feed.getScheduleTemplate({ scheduleTemplateId: 'T-1' })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplate
-	 */
 	const getScheduleTemplate = async (
 		input: FeedScheduleTemplateIdInput,
 	): Promise<ScheduleTemplateResponse> => {
@@ -204,13 +144,6 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		);
 	};
 
-	/**
-	 * Lists the schedule templates for a feed type.
-	 * @param input - feedType (required), limit, offset.
-	 * @returns Generated ScheduleTemplateCollection.
-	 * @example feed.getScheduleTemplates({ feedType: 'LMS_ORDER_REPORT' })
-	 * @see https://developer.ebay.com/api-docs/sell/feed/resources/schedule/methods/getScheduleTemplates
-	 */
 	const getScheduleTemplates = async (
 		input: FeedTypePageInput,
 	): Promise<ScheduleTemplateCollection> => {
@@ -233,4 +166,4 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		getScheduleTemplate,
 		getScheduleTemplates,
 	};
-};
+}

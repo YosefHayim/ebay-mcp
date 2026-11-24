@@ -1,8 +1,3 @@
-/**
- * OAuth 2.1 bearer authentication for the HTTP MCP server.
- * Implements RFC 6750 Bearer Token authentication.
- */
-
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getErrorMessage } from "@/shared/errors.js";
 import type { VerifiedToken } from "./oauthTypes.js";
@@ -10,31 +5,15 @@ import type { TokenVerifier } from "./tokenVerifier.js";
 
 const JSON_CONTENT_TYPE = "application/json; charset=utf-8";
 
-/**
- * Node request with the verified bearer token attached after success.
- */
 export interface AuthenticatedRequest extends IncomingMessage {
-	/** Verified bearer token attached after authentication succeeds. */
 	auth?: VerifiedToken;
 }
 
-/**
- * Configuration for MCP Bearer-token authentication.
- */
 export interface BearerAuthConfig {
-	/**
-	 * Token verifier instance
-	 */
 	verifier: TokenVerifier;
 
-	/**
-	 * Protected Resource Metadata URL for WWW-Authenticate header
-	 */
 	resourceMetadataUrl: string;
 
-	/**
-	 * Realm for WWW-Authenticate header
-	 */
 	realm?: string;
 }
 
@@ -105,13 +84,13 @@ function writeUnauthorized(
 
 function readBearerToken(authorization: string): string | undefined {
 	const parts = authorization.split(" ");
-	const hasTwoParts = parts.length === 2;
+	const hasTwoParts = parts.length == 2;
 
 	if (!hasTwoParts) {
 		return undefined;
 	}
 
-	const isBearerScheme = parts[0] === "Bearer";
+	const isBearerScheme = parts[0] == "Bearer";
 
 	if (!isBearerScheme) {
 		return undefined;
@@ -124,7 +103,7 @@ function readBearerToken(authorization: string): string | undefined {
 		return undefined;
 	}
 
-	const isTokenEmpty = token === "";
+	const isTokenEmpty = token == "";
 
 	if (isTokenEmpty) {
 		return undefined;
@@ -133,11 +112,6 @@ function readBearerToken(authorization: string): string | undefined {
 	return token;
 }
 
-/**
- * Verify a bearer token and attach it to the request.
- *
- * @returns True when the request may continue.
- */
 export async function authenticateBearer(
 	request: AuthenticatedRequest,
 	response: ServerResponse,
@@ -145,7 +119,7 @@ export async function authenticateBearer(
 ): Promise<boolean> {
 	const realm = bearerConfig.realm ?? "mcp";
 	const authorization = request.headers.authorization ?? "";
-	const isAuthorizationMissing = authorization === "";
+	const isAuthorizationMissing = authorization == "";
 
 	if (isAuthorizationMissing) {
 		writeUnauthorized(response, realm, bearerConfig.resourceMetadataUrl, {
@@ -182,11 +156,6 @@ export async function authenticateBearer(
 	return true;
 }
 
-/**
- * Reject the request when the verified token is missing a required scope.
- *
- * @returns True when every required scope is present.
- */
 export function requireScopes(
 	request: AuthenticatedRequest,
 	response: ServerResponse,
@@ -205,7 +174,7 @@ export function requireScopes(
 	const providedScopes = auth.scopes;
 
 	function isScopeMissing(scope: string): boolean {
-		return providedScopes.includes(scope) === false;
+		return providedScopes.includes(scope) == false;
 	}
 
 	const isMissingScope = requiredScopes.some(isScopeMissing);

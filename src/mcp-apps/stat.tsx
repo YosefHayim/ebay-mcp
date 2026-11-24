@@ -1,21 +1,13 @@
-/**
- * Stat archetype view: a responsive grid of headline metric tiles. Backs
- * `ui://ebay/stat.html` and renders API rate-limit headroom (calls remaining
- * against the quota) for the application- and user-scoped rate-limit tools.
- */
-
 import type { ReactNode } from "react";
 import type { StatTile, StatViewModel } from "@/tool-registry/ui/viewModels.js";
 import { AppShell, EmptyState, mount, useViewModel } from "./host.js";
 
-/** Maps a tile tone to its CSS modifier class. */
 function tileClass(tone: StatTile["tone"]): string {
-	return tone && tone !== "neutral"
+	return tone && tone != "neutral"
 		? `stat-tile stat-tile--${tone}`
 		: "stat-tile";
 }
 
-/** Renders the grid of metric tiles. */
 function Stat({ view }: { view: StatViewModel }): ReactNode {
 	return (
 		<div className="stat-view">
@@ -37,7 +29,6 @@ function Stat({ view }: { view: StatViewModel }): ReactNode {
 	);
 }
 
-/** Top-level stat app: handshake state plus the rendered grid. */
 function StatApp(): ReactNode {
 	const { view, isConnected, error } = useViewModel("stat");
 	const hasTiles = view ? view.tiles.length > 0 : false;

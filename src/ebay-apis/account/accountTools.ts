@@ -63,7 +63,6 @@ const emptyResponseSchema: OutputArgs = {
 	description: "Empty response on successful operation",
 };
 
-/** Account Management API tools for seller policies, tax, KYC, privileges, and programs. */
 export const accountEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_custom_policies",

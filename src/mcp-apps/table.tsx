@@ -1,9 +1,3 @@
-/**
- * Table archetype view: a sortable, optionally paginated list whose rows can
- * drill into a detail card. Backs `ui://ebay/table.html` and renders orders,
- * offers, inventory items, locations, fulfillments, and dispute summaries.
- */
-
 import type { App } from "@modelcontextprotocol/ext-apps/react";
 import { type ReactNode, useEffect, useState } from "react";
 import type { TableViewModel } from "@/tool-registry/ui/viewModels.js";
@@ -16,7 +10,6 @@ import {
 	useViewModel,
 } from "./host.js";
 
-/** Renders the live table, owning the rows so "Load more" can append in place. */
 function Table({
 	view,
 	app,
@@ -56,7 +49,7 @@ function Table({
 						{view.columns.map((column) => (
 							<th
 								key={column.key}
-								className={column.align === "right" ? "align-right" : undefined}
+								className={column.align == "right" ? "align-right" : undefined}
 							>
 								{column.label}
 							</th>
@@ -76,7 +69,7 @@ function Table({
 									<td
 										key={column.key}
 										className={
-											column.align === "right" ? "align-right" : undefined
+											column.align == "right" ? "align-right" : undefined
 										}
 									>
 										{formatCell(row.cells[column.key] ?? null)}
@@ -102,7 +95,6 @@ function Table({
 	);
 }
 
-/** Renders a pre-formatted cell value, showing an em dash for empty cells. */
 function formatCell(cell: string | number | null): ReactNode {
 	if (cell === null || cell === "") {
 		return "—";
@@ -110,7 +102,6 @@ function formatCell(cell: string | number | null): ReactNode {
 	return cell;
 }
 
-/** Top-level table app: handshake state plus the rendered table. */
 function TableApp(): ReactNode {
 	const { view, app, isConnected, error } = useViewModel("table");
 	return (

@@ -2,11 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getToolDefinitions } from "@/tool-registry/index.js";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
-/**
- * Exercises the EBAY_MCP_TOOLS gating in createEbayMcpRuntime by mocking McpServer
- * and capturing every registered tool handle, so we can assert which tools are
- * registered and whether dynamic mode disables them at boot.
- */
 const mcpMock = vi.hoisted(() => {
 	interface Handle {
 		name: string;
@@ -66,7 +61,7 @@ vi.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
 const fakeApi = { initialize: vi.fn() } as never;
 const serverConfig = { name: "test-mcp", version: "0.0.0" };
 const inventoryCount = toolCategories.find(
-	(category) => category.key === "inventory",
+	(category) => category.key == "inventory",
 )!.entries.length;
 const META_TOOL_NAMES = [
 	"list_ebay_tools",
@@ -173,7 +168,7 @@ describe("createEbayMcpRuntime — tool gating", () => {
 	it("EBAY_READ_ONLY composes with static family gating", async () => {
 		const { isReadOnlyTool } = await import("@/server/readOnlyFilter.js");
 		const inventoryDefs = toolCategories
-			.find((category) => category.key === "inventory")!
+			.find((category) => category.key == "inventory")!
 			.entries.map((entry) => entry.definition);
 		const expected = inventoryDefs.filter((definition) =>
 			isReadOnlyTool(definition),

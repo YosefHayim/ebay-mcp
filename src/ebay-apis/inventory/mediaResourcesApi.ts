@@ -29,13 +29,11 @@ type CreateImageFromUrlInput = z.infer<typeof createImageFromUrlInputSchema>;
 type DocumentIdInput = z.infer<typeof documentIdInputSchema>;
 type PostOrderMetadata = z.infer<typeof postOrderDocumentMetadataSchema>;
 
-/** Created listing document. @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocument */
 export type CreateDocumentResponse =
 	components["schemas"]["CreateDocumentResponse"];
-/** Listing document status and metadata. @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/getDocument */
 export type DocumentResponse = components["schemas"]["DocumentResponse"];
 
-const uploadForm = (file: MediaUpload): FormData => {
+function uploadForm(file: MediaUpload): FormData {
 	const form = new FormData();
 	form.append(
 		"file",
@@ -43,14 +41,9 @@ const uploadForm = (file: MediaUpload): FormData => {
 		file.fileName,
 	);
 	return form;
-};
+}
 
-/**
- * Creates endpoint methods for image URLs and documents on the Media API.
- * @param client - Shared authenticated HTTP client.
- * @returns Endpoint Effects composed into MediaApi.
- */
-export const createMediaResourceMethods = (client: EbayApiClient) => {
+export function createMediaResourceMethods(client: EbayApiClient) {
 	const url = (path: string, postOrder = false) => {
 		const config = client.getConfig();
 		const base = postOrder
@@ -62,13 +55,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		(method: "GET" | "POST" | "DELETE", path: string) => (cause: unknown) =>
 			createEbayRequestFailure(method, `${BASE_PATH}${path}`, cause);
 
-	/**
-	 * Creates an EPS image from an HTTPS URL, retaining its resource identifier.
-	 * @param input - HTTPS image source.
-	 * @returns Generated image payload and Location metadata.
-	 * @example media.createImageFromUrl({ imageUrl: 'https://example.com/front.jpg' })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/image/methods/createImageFromUrl
-	 */
 	const createImageFromUrl = async (input: CreateImageFromUrlInput) => {
 		const imageSource = decodeEndpointInputEffect(
 			createImageFromUrlInputSchema,
@@ -100,13 +86,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		};
 	};
 
-	/**
-	 * Stages a listing document for subsequent upload.
-	 * @param input - Document type and languages.
-	 * @returns Generated creation response with the document ID.
-	 * @example media.createDocument({ documentType: 'USER_GUIDE_OR_MANUAL', languages: ['ENGLISH'] })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocument
-	 */
 	const createDocument = async (input: CreateDocumentInput) => {
 		const documentRequest = decodeEndpointInputEffect(
 			createDocumentInputSchema,
@@ -126,13 +105,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		}
 	};
 
-	/**
-	 * Creates a listing document from an HTTPS source.
-	 * @param input - Source URL, document type and languages.
-	 * @returns Generated creation response; use getDocument to check acceptance.
-	 * @example media.createDocumentFromUrl({ documentUrl: 'https://example.com/manual.pdf', documentType: 'USER_GUIDE_OR_MANUAL', languages: ['ENGLISH'] })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/createDocumentFromUrl
-	 */
 	const createDocumentFromUrl = async (input: CreateDocumentFromUrlInput) => {
 		const documentRequest = decodeEndpointInputEffect(
 			createDocumentFromUrlInputSchema,
@@ -153,13 +125,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		}
 	};
 
-	/**
-	 * Retrieves the status and metadata of a listing document.
-	 * @param input - Document identifier.
-	 * @returns Generated document response.
-	 * @example media.getDocument({ documentId: 'DOC-1' })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/getDocument
-	 */
 	const getDocument = async (input: DocumentIdInput) => {
 		const { documentId } = decodeEndpointInputEffect(
 			documentIdInputSchema,
@@ -176,13 +141,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		}
 	};
 
-	/**
-	 * Uploads bytes for a previously staged listing document.
-	 * @param input - Document ID and validated local file.
-	 * @returns Generated document status and metadata.
-	 * @example media.uploadDocument({ documentId: 'DOC-1', file })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/document/methods/uploadDocument
-	 */
 	const uploadDocument = async (
 		input: DocumentIdInput & { file: MediaUpload },
 	) => {
@@ -206,13 +164,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		}
 	};
 
-	/**
-	 * Uploads a document for a post-order entity without publishing it.
-	 * @param input - Validated file and post-order association fields.
-	 * @returns Document ID and Location captured from the header-only response.
-	 * @example media.uploadPostOrderDocument({ file, documentUsageType: 'RETURN_SHIPPING_LABEL', entityType: 'RETURNS', entityId: 'R-1' })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/post_order/methods/uploadPostOrderDocument
-	 */
 	const uploadPostOrderDocument = async (
 		input: PostOrderMetadata & { file: MediaUpload },
 	) => {
@@ -251,13 +202,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		return { documentId: resource.id, location: resource.location };
 	};
 
-	/**
-	 * Downloads post-order document bytes. The spec's string[] schema describes a binary PDF body.
-	 * @param input - Document identifier.
-	 * @returns Buffer containing the PDF; protocol formatting occurs at the MCP boundary.
-	 * @example media.downloadPostOrderDocument({ documentId: 'DOC-1' })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/post_order/methods/downloadPostOrderDocument
-	 */
 	const downloadPostOrderDocument = async (input: DocumentIdInput) => {
 		const { documentId } = decodeEndpointInputEffect(
 			documentIdInputSchema,
@@ -276,13 +220,6 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		}
 	};
 
-	/**
-	 * Removes a submitted post-order document. eBay rejects removal after publication.
-	 * @param input - Document identifier.
-	 * @returns An Effect completing on the empty HTTP 204 response.
-	 * @example media.removePostOrderDocument({ documentId: 'DOC-1' })
-	 * @see https://developer.ebay.com/api-docs/commerce/media/resources/post_order/methods/removePostOrderDocument
-	 */
 	const removePostOrderDocument = async (input: DocumentIdInput) => {
 		const { documentId } = decodeEndpointInputEffect(
 			documentIdInputSchema,
@@ -307,4 +244,4 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 		downloadPostOrderDocument,
 		removePostOrderDocument,
 	};
-};
+}

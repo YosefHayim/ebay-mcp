@@ -1,37 +1,13 @@
-/**
- * Browse filter-expression builder.
- *
- * Browse takes its filters as a single comma-separated expression with its own
- * grammar, which is fiddly enough to be worth isolating and testing on its own.
- */
-
-/** Detects a price clause in a caller-supplied raw filter expression. */
 const RAW_PRICE_CLAUSE = /(^|,)\s*price(Currency)?:/;
 
-/**
- * Build the Browse `filter` expression from convenience inputs.
- *
- * Clauses are joined with commas per the Browse filter grammar. A raw
- * `filter` passthrough is appended last so advanced expressions compose with
- * the convenience parameters instead of replacing them.
- *
- * @param input - Validated convenience filter values plus optional raw filter.
- * @returns Combined filter expression, or undefined when no clause applies.
- *
- * @example
- * ```ts
- * buildBrowseFilter({ conditions: ['NEW'], priceMax: 50, priceCurrency: 'USD' });
- * // 'conditions:{NEW},price:[..50],priceCurrency:USD'
- * ```
- */
-export const buildBrowseFilter = (input: {
+export function buildBrowseFilter(input: {
 	readonly conditions?: readonly string[];
 	readonly buyingOptions?: readonly string[];
 	readonly priceMin?: number;
 	readonly priceMax?: number;
 	readonly priceCurrency?: string;
 	readonly filter?: string;
-}): string | undefined => {
+}): string | undefined {
 	const clauses: string[] = [];
 
 	if (input.conditions && input.conditions.length > 0) {
@@ -62,30 +38,19 @@ export const buildBrowseFilter = (input: {
 	}
 
 	return clauses.length > 0 ? clauses.join(",") : undefined;
-};
+}
 
-/**
- * Reject a raw filter that would collide with the generated price clauses.
- *
- * Both are appended to one comma-joined expression, so a caller-supplied
- * `price:`/`priceCurrency:` clause alongside priceMin/priceMax yields a
- * duplicate key that eBay rejects with an opaque 400.
- *
- * @param rawFilter - Optional caller-supplied filter expression.
- * @param hasPriceBounds - Whether priceMin or priceMax was supplied.
- * @returns Unit when the two cannot collide, or a tagged input error.
- */
-export const requireNoPriceFilterConflict = (
+export function requireNoPriceFilterConflict(
 	rawFilter: string | undefined,
 	hasPriceBounds: boolean,
-): void => {
-	const isRawFilterAbsent = rawFilter === undefined || rawFilter.length === 0;
+): void {
+	const isRawFilterAbsent = rawFilter === undefined || rawFilter.length == 0;
 
 	if (isRawFilterAbsent) {
 		return;
 	}
 
-	const hasNoPriceBounds = hasPriceBounds === false;
+	const hasNoPriceBounds = hasPriceBounds == false;
 
 	if (hasNoPriceBounds) {
 		return;
@@ -98,4 +63,4 @@ export const requireNoPriceFilterConflict = (
 			"filter already contains a price clause; use either priceMin/priceMax or a raw price filter, not both",
 		);
 	}
-};
+}

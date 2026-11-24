@@ -1,12 +1,6 @@
 import { z } from "zod";
 import { ReasonForRefund } from "@/shared/ebayEnums.js";
 
-/**
- * Fulfillment/Order Management API Schemas
- *
- * This file contains Zod schemas for all Order Management and Fulfillment endpoints.
- */
-
 // ============================================================================
 // Common Schemas
 // ============================================================================
@@ -199,9 +193,6 @@ const orderSchema = z.object({
 	totalMarketplaceFee: amountSchema.optional(),
 });
 
-/**
- * Validates the Fulfillment API get orders request payload.
- */
 export const getOrdersInputSchema = z.object({
 	fieldGroups: z
 		.string()
@@ -221,10 +212,6 @@ export const getOrdersInputSchema = z.object({
 	orderIds: z.string().optional().describe("Comma-separated list of order IDs"),
 });
 
-/**
- * Shared input for read-only order issue scanners (cancellation / refund helpers).
- * Calls getOrders then filters client-side — no Post-Order API.
- */
 export const scanOrderIssuesInputSchema = z.object({
 	filter: z
 		.string()
@@ -240,15 +227,10 @@ export const scanOrderIssuesInputSchema = z.object({
 		.describe("Maximum orders to scan via getOrders (default 50)"),
 });
 
-/** Input for ebay_get_cancellation_requests. */
 export const getCancellationRequestsInputSchema = scanOrderIssuesInputSchema;
 
-/** Input for ebay_get_refunded_orders. */
 export const getRefundedOrdersInputSchema = scanOrderIssuesInputSchema;
 
-/**
- * Validates the Fulfillment API get orders response payload.
- */
 export const getOrdersOutputSchema = z.object({
 	orders: z.array(orderSchema).optional(),
 	href: z.string().optional(),
@@ -260,9 +242,6 @@ export const getOrdersOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Fulfillment API get order request payload.
- */
 export const getOrderInputSchema = z.object({
 	orderId: z.string().describe("The unique identifier of the order"),
 	fieldGroups: z
@@ -271,9 +250,6 @@ export const getOrderInputSchema = z.object({
 		.describe("Response field group, e.g. TAX_BREAKDOWN"),
 });
 
-/**
- * Validates the Fulfillment API get order response payload.
- */
 export const getOrderOutputSchema = orderSchema.extend({
 	warnings: z.array(errorSchema).optional(),
 });
@@ -282,9 +258,6 @@ export const getOrderOutputSchema = orderSchema.extend({
 // Shipping Fulfillment Schemas
 // ============================================================================
 
-/**
- * Validates the Fulfillment API create shipping fulfillment request payload.
- */
 export const createShippingFulfillmentInputSchema = z.object({
 	orderId: z.string().describe("The unique identifier of the order"),
 	body: z.object({
@@ -311,29 +284,17 @@ export const createShippingFulfillmentInputSchema = z.object({
 	}),
 });
 
-/**
- * Validates the Fulfillment API create shipping fulfillment response payload.
- */
 export const createShippingFulfillmentOutputSchema = z.object({});
 
-/**
- * Validates the Fulfillment API get shipping fulfillments request payload.
- */
 export const getShippingFulfillmentsInputSchema = z.object({
 	orderId: z.string().describe("The unique identifier of the order"),
 });
 
-/**
- * Validates the Fulfillment API get shipping fulfillments response payload.
- */
 export const getShippingFulfillmentsOutputSchema = z.object({
 	fulfillments: z.array(shippingFulfillmentSchema).optional(),
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Fulfillment API get one shipping fulfillment request payload.
- */
 export const getShippingFulfillmentInputSchema = z.object({
 	orderId: z.string().describe("The unique identifier of the order"),
 	fulfillmentId: z
@@ -341,9 +302,6 @@ export const getShippingFulfillmentInputSchema = z.object({
 		.describe("The unique identifier of the shipping fulfillment"),
 });
 
-/**
- * Validates the Fulfillment API get one shipping fulfillment response payload.
- */
 export const getShippingFulfillmentOutputSchema = shippingFulfillmentSchema;
 
 // ============================================================================
@@ -361,9 +319,6 @@ const lineItemRefundSchema = z.object({
 		.optional(),
 });
 
-/**
- * Validates the Fulfillment API issue refund request payload.
- */
 export const issueRefundInputSchema = z.object({
 	orderId: z.string().describe("The unique identifier of the order"),
 	body: z.object({
@@ -384,9 +339,6 @@ export const issueRefundInputSchema = z.object({
 	}),
 });
 
-/**
- * Validates the Fulfillment API issue refund response payload.
- */
 export const issueRefundOutputSchema = z.object({
 	refundId: z.string().optional(),
 	refundStatus: z.string().optional(),
@@ -514,23 +466,14 @@ const updateDisputeEvidenceBodySchema = addDisputeEvidenceBodySchema.extend({
 	evidenceId: z.string().optional().describe("Evidence set ID to update"),
 });
 
-/**
- * Validates the Fulfillment API getPaymentDispute request payload.
- */
 export const getPaymentDisputeInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 });
 
-/**
- * Validates the Fulfillment API getActivities request payload.
- */
 export const getActivitiesInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 });
 
-/**
- * Validates the Fulfillment API getPaymentDisputeSummaries request payload.
- */
 export const getPaymentDisputeSummariesInputSchema = z.object({
 	orderId: z.string().optional().describe("Filter by one order ID"),
 	buyerUsername: z.string().optional().describe("Filter by buyer username"),
@@ -550,9 +493,6 @@ export const getPaymentDisputeSummariesInputSchema = z.object({
 	offset: z.number().optional().describe("Number of disputes to skip"),
 });
 
-/**
- * Validates the Fulfillment API getPaymentDisputeSummaries response payload.
- */
 export const getPaymentDisputeSummariesOutputSchema = z.object({
 	paymentDisputeSummaries: z.array(paymentDisputeSummarySchema).optional(),
 	href: z.string().optional(),
@@ -564,9 +504,6 @@ export const getPaymentDisputeSummariesOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Fulfillment API acceptPaymentDispute request payload.
- */
 export const acceptPaymentDisputeInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 	body: acceptPaymentDisputeBodySchema
@@ -574,9 +511,6 @@ export const acceptPaymentDisputeInputSchema = z.object({
 		.describe("Generated acceptPaymentDispute request body"),
 });
 
-/**
- * Validates the Fulfillment API contestPaymentDispute request payload.
- */
 export const contestPaymentDisputeInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 	body: contestPaymentDisputeBodySchema
@@ -584,9 +518,6 @@ export const contestPaymentDisputeInputSchema = z.object({
 		.describe("Generated contestPaymentDispute request body"),
 });
 
-/**
- * Validates the Fulfillment API addEvidence request payload.
- */
 export const addEvidenceInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 	body: addDisputeEvidenceBodySchema.describe(
@@ -594,9 +525,6 @@ export const addEvidenceInputSchema = z.object({
 	),
 });
 
-/**
- * Validates the Fulfillment API updateEvidence request payload.
- */
 export const updateEvidenceInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 	body: updateDisputeEvidenceBodySchema.describe(
@@ -604,9 +532,6 @@ export const updateEvidenceInputSchema = z.object({
 	),
 });
 
-/**
- * Validates the Fulfillment API uploadEvidenceFile request payload.
- */
 export const uploadEvidenceFileInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 	body: z
@@ -617,9 +542,6 @@ export const uploadEvidenceFileInputSchema = z.object({
 		.describe("Multipart-compatible file body to upload"),
 });
 
-/**
- * Validates the Fulfillment API fetchEvidenceContent request payload.
- */
 export const fetchEvidenceContentInputSchema = z.object({
 	paymentDisputeId: paymentDisputeIdSchema,
 	evidenceId: z.string().describe("The evidence ID"),

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { FormatType } from "@/shared/ebayEnums.js";
 
-/** Listing format selector shared by the Trading listing tools. */
 const listingFormatSchema = z
 	.nativeEnum(FormatType)
 	.optional()
@@ -9,7 +8,6 @@ const listingFormatSchema = z
 		"Listing format, defaulting to FIXED_PRICE. AUCTION switches to the auction-capable Trading calls (AddItem, ReviseItem, EndItem, RelistItem) and enforces the auction Item rules.",
 	);
 
-/** Input accepted by getActiveListings. */
 export const getActiveListingsSchema = z.object({
 	page: z.number().optional().describe("Page number, defaulting to 1"),
 	entriesPerPage: z
@@ -18,12 +16,10 @@ export const getActiveListingsSchema = z.object({
 		.describe("Items per page, defaulting to 50"),
 });
 
-/** Input accepted by getListing. */
 export const getListingSchema = z.object({
 	itemId: z.string().describe("The eBay item ID to retrieve"),
 });
 
-/** Input accepted by createListing. */
 export const createListingSchema = z.object({
 	format: listingFormatSchema,
 	item: z
@@ -33,14 +29,12 @@ export const createListingSchema = z.object({
 		),
 });
 
-/** Input accepted by reviseListing. */
 export const reviseListingSchema = z.object({
 	format: listingFormatSchema,
 	itemId: z.string().describe("The eBay item ID to revise"),
 	fields: z.record(z.unknown()).describe("Trading API Item fields to update"),
 });
 
-/** Input accepted by endListing. */
 export const endListingSchema = z.object({
 	format: listingFormatSchema,
 	itemId: z.string().describe("The eBay item ID to end"),
@@ -58,7 +52,6 @@ export const endListingSchema = z.object({
 		),
 });
 
-/** Input accepted by relistItem. */
 export const relistItemSchema = z.object({
 	format: listingFormatSchema,
 	itemId: z.string().describe("The eBay item ID to relist"),

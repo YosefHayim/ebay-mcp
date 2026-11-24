@@ -2,29 +2,9 @@ function invalidDateInput(message: string): never {
 	throw new Error(message);
 }
 
-/**
- * Convert a date string or Date object to Unix timestamp (milliseconds).
- *
- * Supported formats:
- * - ISO 8601: "2025-01-15T10:30:00Z" or "2025-01-15T10:30:00.000Z"
- * - Date object: new Date()
- * - Unix timestamp (milliseconds): 1736938200000
- * - Unix timestamp (seconds): 1736938200
- * - Relative time: "in 2 hours", "in 7200 seconds"
- *
- * @param dateInput - Date string, Date object, or Unix timestamp
- * @returns Unix timestamp in milliseconds.
- *
- * @example
- * ```ts
- * const timestamp = convertToTimestamp('2026-01-15T10:30:00Z');
- * ```
- */
-export const convertToTimestamp = (
-	dateInput: string | Date | number,
-): number => {
+export function convertToTimestamp(dateInput: string | Date | number): number {
 	// If already a number, handle as timestamp
-	if (typeof dateInput === "number") {
+	if (typeof dateInput == "number") {
 		// If appears to be seconds (less than year 2100 in milliseconds)
 		if (dateInput < 4_102_444_800_000) {
 			// Could be seconds, check if reasonable
@@ -51,7 +31,7 @@ export const convertToTimestamp = (
 	}
 
 	// If string, try parsing
-	if (typeof dateInput === "string") {
+	if (typeof dateInput == "string") {
 		// Handle relative time: "in X hours/minutes/seconds"
 		const relativeMatch =
 			/^in\s+(\d+)\s+(hours?|minutes?|seconds?|days?)$/i.exec(dateInput);
@@ -93,62 +73,26 @@ export const convertToTimestamp = (
 	}
 
 	return invalidDateInput(`Unsupported date input type: ${typeof dateInput}`);
-};
+}
 
-/**
- * Calculate expiry timestamp from duration in seconds
- * Useful for eBay token responses which provide expires_in in seconds
- *
- * @param expiresInSeconds - Duration in seconds (e.g., 7200 for 2 hours)
- * @param fromTimestamp - Optional base timestamp (defaults to now)
- * @returns Expiry timestamp in milliseconds
- *
- * @example
- * ```ts
- * const expiry = calculateExpiry(7200, Date.UTC(2026, 0, 1));
- * ```
- */
-export const calculateExpiry = (
+export function calculateExpiry(
 	expiresInSeconds: number,
 	fromTimestamp?: number,
-): number => {
+): number {
 	const baseTime = fromTimestamp ?? Date.now();
 	return baseTime + expiresInSeconds * 1000;
-};
+}
 
-/**
- * Check if a timestamp is expired
- *
- * @param expiryTimestamp - Expiry timestamp in milliseconds
- * @param bufferSeconds - Optional buffer time in seconds (default: 60)
- * @returns true if expired (or will expire within buffer time)
- *
- * @example
- * ```ts
- * const expired = isExpired(Date.now() - 1, 0);
- * ```
- */
-export const isExpired = (
+export function isExpired(
 	expiryTimestamp: number,
 	bufferSeconds = 60,
-): boolean => {
+): boolean {
 	const now = Date.now();
 	const buffer = bufferSeconds * 1000;
 	return now + buffer >= expiryTimestamp;
-};
+}
 
-/**
- * Get human-readable time remaining until expiry
- *
- * @param expiryTimestamp - Expiry timestamp in milliseconds
- * @returns Human-readable string (e.g., "2 hours 15 minutes")
- *
- * @example
- * ```ts
- * const remaining = getTimeRemaining(Date.now() + 120_000);
- * ```
- */
-export const getTimeRemaining = (expiryTimestamp: number): string => {
+export function getTimeRemaining(expiryTimestamp: number): string {
 	const now = Date.now();
 	const diff = expiryTimestamp - now;
 
@@ -177,48 +121,22 @@ export const getTimeRemaining = (expiryTimestamp: number): string => {
 	}
 
 	return `${seconds} second${seconds > 1 ? "s" : ""}`;
-};
+}
 
-/**
- * Validate token expiry times and provide recommendations
- *
- * @param accessTokenExpiry - Access token expiry timestamp
- * @param refreshTokenExpiry - Refresh token expiry timestamp
- * @returns Validation result with warnings and recommendations
- */
 export interface TokenExpiryValidation {
-	/** True when both access and refresh tokens are still valid. */
 	valid: boolean;
-	/** Access-token expiry bucket. */
 	accessTokenStatus: "valid" | "expiring-soon" | "expired";
-	/** Refresh-token expiry bucket. */
 	refreshTokenStatus: "valid" | "expiring-soon" | "expired";
-	/** Human-readable access-token time remaining. */
 	accessTokenRemaining: string;
-	/** Human-readable refresh-token time remaining. */
 	refreshTokenRemaining: string;
-	/** User-facing warnings for expired or soon-expiring tokens. */
 	warnings: string[];
-	/** User-facing remediation steps for expired or soon-expiring tokens. */
 	recommendations: string[];
 }
 
-/**
- * Validate access and refresh token expiry timestamps and return renewal guidance.
- *
- * @param accessTokenExpiry - Access-token expiry timestamp in milliseconds.
- * @param refreshTokenExpiry - Refresh-token expiry timestamp in milliseconds.
- * @returns Token validity flags, remaining-time labels, warnings, and recommendations.
- *
- * @example
- * ```ts
- * const validation = validateTokenExpiry(accessTokenExpiry, refreshTokenExpiry);
- * ```
- */
-export const validateTokenExpiry = (
+export function validateTokenExpiry(
 	accessTokenExpiry: number,
 	refreshTokenExpiry: number,
-): TokenExpiryValidation => {
+): TokenExpiryValidation {
 	const warnings: string[] = [];
 	const recommendations: string[] = [];
 
@@ -266,4 +184,4 @@ export const validateTokenExpiry = (
 		warnings,
 		recommendations,
 	};
-};
+}

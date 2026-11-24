@@ -74,7 +74,7 @@ describe("refreshCachedSpec", () => {
 		}
 	});
 
-	const serveSpecBody = async (specBody: string): Promise<string> => {
+	async function serveSpecBody(specBody: string): Promise<string> {
 		specServer = createServer((_request, response) => {
 			response.writeHead(200, { "Content-Type": "application/json" });
 			response.end(specBody);
@@ -85,14 +85,14 @@ describe("refreshCachedSpec", () => {
 		);
 		const { port } = server.address() as AddressInfo;
 		return `http://127.0.0.1:${port}/spec.json`;
-	};
+	}
 
-	const cachedSpecPath = (): string => {
+	function cachedSpecPath(): string {
 		cacheDir = mkdtempSync(join(tmpdir(), "ebay-spec-cache-"));
 		const specPath = join(cacheDir, "sell_feed_v1_oas3.json");
 		writeFileSync(specPath, CACHED_SPEC);
 		return specPath;
-	};
+	}
 
 	it("keeps the cached spec when the download is empty", async () => {
 		const url = await serveSpecBody("");

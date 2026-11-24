@@ -1,7 +1,3 @@
-/**
- * Unit tests for LLM Client Detection and Auto-Configuration
- */
-
 import * as fs from "fs";
 import * as os from "os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -62,7 +58,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const claude = clients.find((client) => client.name === "claude");
+			const claude = clients.find((client) => client.name == "claude");
 
 			expect(claude).toBeDefined();
 			expect(claude?.detected).toBe(true);
@@ -75,7 +71,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const zed = clients.find((client) => client.name === "zed");
+			const zed = clients.find((client) => client.name == "zed");
 
 			expect(zed).toBeDefined();
 			expect(zed?.detected).toBe(true);
@@ -88,7 +84,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const cursor = clients.find((client) => client.name === "cursor");
+			const cursor = clients.find((client) => client.name == "cursor");
 
 			expect(cursor).toBeDefined();
 			expect(cursor?.detected).toBe(true);
@@ -101,7 +97,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const windsurf = clients.find((client) => client.name === "windsurf");
+			const windsurf = clients.find((client) => client.name == "windsurf");
 
 			expect(windsurf).toBeDefined();
 			expect(windsurf?.detected).toBe(true);
@@ -114,7 +110,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const roocode = clients.find((client) => client.name === "roocode");
+			const roocode = clients.find((client) => client.name == "roocode");
 
 			expect(roocode).toBeDefined();
 			expect(roocode?.detected).toBe(true);
@@ -127,7 +123,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const claudecode = clients.find((client) => client.name === "claudecode");
+			const claudecode = clients.find((client) => client.name == "claudecode");
 
 			expect(claudecode).toBeDefined();
 			expect(claudecode?.configExists).toBe(true);
@@ -140,7 +136,7 @@ describe("LLM Client Detector", () => {
 			);
 
 			const clients = detectLLMClients();
-			const amazonq = clients.find((client) => client.name === "amazonq");
+			const amazonq = clients.find((client) => client.name == "amazonq");
 
 			expect(amazonq).toBeDefined();
 			expect(amazonq?.detected).toBe(true);
@@ -491,7 +487,7 @@ describe("LLM Client Detector", () => {
 				const clients = detectLLMClients();
 
 				// Claude Desktop uses a platform-specific path.
-				const claude = clients.find((client) => client.name === "claude");
+				const claude = clients.find((client) => client.name == "claude");
 				expect(claude?.configPath).toContain(pathPart);
 			});
 		});

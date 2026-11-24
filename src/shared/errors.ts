@@ -1,34 +1,13 @@
-/**
- * Normalize an unknown thrown value into a human-readable message string.
- *
- * This is the single source of truth for the
- * `error instanceof Error ? error.message : …` idiom that otherwise recurs
- * across the codebase. It returns `error.message` for real `Error` instances
- * and `fallback` for anything else (thrown strings, plain objects, `undefined`).
- *
- * @param error - The value caught in a `catch` block (typed `unknown`).
- * @param fallback - Message to use when `error` is not an `Error`. Pass the
- *   call site's original fallback (e.g. `String(error)` or a domain-specific
- *   string) to preserve existing behavior; defaults to `'Unknown error'`.
- * @returns Human-readable error message.
- *
- * @example
- * ```ts
- * const message = getErrorMessage(error, 'Request failed');
- * ```
- */
-export const getErrorMessage = (
+export function getErrorMessage(
 	error: unknown,
 	fallback = "Unknown error",
-): string => (error instanceof Error ? error.message : fallback);
+): string {
+	return error instanceof Error ? error.message : fallback;
+}
 
-/** Structured eBay failure data recovered from an Effect error cause chain. */
 export interface EbayErrorDetails {
-	/** Most actionable human-readable failure message available. */
 	readonly message: string;
-	/** HTTP status returned by eBay, when the request reached eBay. */
 	readonly status?: number;
-	/** Raw eBay error entries, including identifiers and parameters. */
 	readonly errors?: unknown[];
 }
 
@@ -38,10 +17,11 @@ interface EbayErrorAccumulator {
 	errors?: unknown[];
 }
 
-const asRecord = (value: unknown): Record<string, unknown> | undefined =>
-	typeof value === "object" && value !== null
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+	return typeof value == "object" && value !== null
 		? (value as Record<string, unknown>)
 		: undefined;
+}
 
 const noTaggedCause = Symbol("noTaggedCause");
 
@@ -91,7 +71,7 @@ function readTaggedCause(cause: unknown, tag: string, field: string): unknown {
 	return noTaggedCause;
 }
 
-const nextErrorNode = (node: Record<string, unknown>): unknown => {
+function nextErrorNode(node: Record<string, unknown>): unknown {
 	const fiberCause = (node as Record<symbol, unknown>)[fiberFailureCauseId];
 	const hasNoFiberCause = fiberCause === undefined;
 
@@ -114,29 +94,29 @@ const nextErrorNode = (node: Record<string, unknown>): unknown => {
 	}
 
 	return node["cause"];
-};
+}
 
-const firstEbayErrorMessage = (errors: unknown[]): string | undefined => {
+function firstEbayErrorMessage(errors: unknown[]): string | undefined {
 	const first = asRecord(errors[0]);
 	if (!first) {
 		return;
 	}
 	const detail = first["longMessage"] ?? first["message"];
-	return typeof detail === "string" ? detail : undefined;
-};
+	return typeof detail == "string" ? detail : undefined;
+}
 
-const collectEbayErrorNode = (
+function collectEbayErrorNode(
 	node: Record<string, unknown>,
 	acc: EbayErrorAccumulator,
-): void => {
+): void {
 	const message =
-		typeof node["message"] === "string" && node["message"].length > 0
+		typeof node["message"] == "string" && node["message"].length > 0
 			? node["message"]
 			: undefined;
 	if (message !== undefined) {
 		acc.message = message;
 	}
-	if (typeof node["status"] === "number") {
+	if (typeof node["status"] == "number") {
 		acc.status = node["status"];
 	}
 
@@ -158,21 +138,9 @@ const collectEbayErrorNode = (
 	) {
 		acc.errors = node["cause"];
 	}
-};
+}
 
-/**
- * Recovers status, structured eBay errors, and the best message from nested
- * tagged errors and Effect FiberFailures.
- *
- * @param error - Failure caught at an external boundary.
- * @returns Structured details suitable for an MCP error result.
- *
- * @example
- * ```ts
- * const details = getEbayErrorDetails(error);
- * ```
- */
-export const getEbayErrorDetails = (error: unknown): EbayErrorDetails => {
+export function getEbayErrorDetails(error: unknown): EbayErrorDetails {
 	const acc: EbayErrorAccumulator = { message: getErrorMessage(error) };
 	const seen = new Set<unknown>();
 	let current: unknown = error;
@@ -192,4 +160,4 @@ export const getEbayErrorDetails = (error: unknown): EbayErrorDetails => {
 		...(acc.status === undefined ? {} : { status: acc.status }),
 		...(acc.errors === undefined ? {} : { errors: acc.errors }),
 	};
-};
+}

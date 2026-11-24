@@ -29,10 +29,6 @@ async function caughtError(call: Promise<unknown>): Promise<{
 }
 
 const BASE = "/sell/feed/v1";
-/**
- * Sell Feed v1 operationIds as of the 2026-10-01 spec, pinning the FeedApi facade to them.
- * Spec coverage itself is checked by `pnpm sync --report`, which reads the downloaded spec.
- */
 const FEED_OPERATION_IDS = [
 	"getOrderTasks",
 	"createOrderTask",
@@ -89,7 +85,7 @@ describe("FeedApi", () => {
 
 		expect(
 			FEED_OPERATION_IDS.filter(
-				(operationId) => typeof api[operationId] !== "function",
+				(operationId) => typeof api[operationId] != "function",
 			),
 		).toEqual([]);
 	});

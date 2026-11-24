@@ -32,26 +32,27 @@ const config: EbayConfig = {
 const HOST = "https://api.sandbox.ebay.com";
 const STORE = "/sell/stores/v1/store";
 const CATEGORY_CHANGE_TOOL = /^ebay_(add|rename|move|delete)_store_category$/;
-const taskLocation = (taskId: string) => `${HOST}${STORE}/tasks/${taskId}`;
+function taskLocation(taskId: string) {
+	return `${HOST}${STORE}/tasks/${taskId}`;
+}
 
 let client: Client;
 let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
-/** Calls a stores tool and decodes the single JSON text block every stores tool returns. */
-const callStoresTool = async (
+async function callStoresTool(
 	name: string,
 	args: Record<string, unknown> = {},
-) => {
+) {
 	const toolResult = CallToolResultSchema.parse(
 		await client.callTool({ name, arguments: args }),
 	);
 	const [block] = toolResult.content;
 	return {
-		isError: toolResult.isError === true,
+		isError: toolResult.isError == true,
 		payload:
-			block?.type === "text" ? (JSON.parse(block.text) as unknown) : undefined,
+			block?.type == "text" ? (JSON.parse(block.text) as unknown) : undefined,
 	};
-};
+}
 
 beforeEach(async () => {
 	vi.clearAllMocks();
@@ -109,7 +110,7 @@ describe("stores tool registration", () => {
 		],
 	])("advertises %s with its required inputs and annotations", async (name, required, hints) => {
 		const tool = (await client.listTools()).tools.find(
-			(candidate) => candidate.name === name,
+			(candidate) => candidate.name == name,
 		);
 
 		expect(tool).toBeDefined();

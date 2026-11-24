@@ -1,15 +1,3 @@
-/**
- * Auto-Setup Script for eBay API MCP Server
- *
- * This script automatically:
- * 1. Detects installed MCP clients (Claude Desktop, Gemini, ChatGPT)
- * 2. Generates MCP client configurations from .env
- * 3. Validates environment tokens configuration
- * 4. Validates the setup
- *
- * Usage: npm run autoSetup (or runs automatically after npm install)
- */
-
 import process from "node:process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir, platform } from "os";
@@ -92,10 +80,10 @@ function readRecord(value: unknown): Record<string, unknown> {
 
 function isMCPServerConfig(value: unknown): value is MCPServerConfig {
 	return (
-		typeof value === "object" &&
+		typeof value == "object" &&
 		value !== null &&
 		!Array.isArray(value) &&
-		typeof Reflect.get(value, "command") === "string"
+		typeof Reflect.get(value, "command") == "string"
 	);
 }
 
@@ -131,12 +119,12 @@ function getAutoSetupConfigPaths(): Record<string, string> {
 	const paths: Record<string, string> = {};
 
 	// Claude Desktop config paths
-	if (os === "darwin") {
+	if (os == "darwin") {
 		paths["claude"] = join(
 			home,
 			"Library/Application Support/Claude/claude_desktop_config.json",
 		);
-	} else if (os === "win32") {
+	} else if (os == "win32") {
 		paths["claude"] = join(
 			home,
 			"AppData/Roaming/Claude/claude_desktop_config.json",
@@ -146,12 +134,12 @@ function getAutoSetupConfigPaths(): Record<string, string> {
 	}
 
 	// Cline (VSCode Extension) config paths
-	if (os === "darwin") {
+	if (os == "darwin") {
 		paths["cline"] = join(
 			home,
 			"Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
 		);
-	} else if (os === "win32") {
+	} else if (os == "win32") {
 		paths["cline"] = join(
 			home,
 			"AppData/Roaming/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
@@ -167,9 +155,9 @@ function getAutoSetupConfigPaths(): Record<string, string> {
 	paths["continue"] = join(home, ".continue/config.json");
 
 	// Zed editor config paths
-	if (os === "darwin") {
+	if (os == "darwin") {
 		paths["zed"] = join(home, ".config/zed/settings.json");
-	} else if (os === "win32") {
+	} else if (os == "win32") {
 		paths["zed"] = join(home, "AppData/Roaming/Zed/settings.json");
 	} else {
 		paths["zed"] = join(home, ".config/zed/settings.json");
@@ -182,12 +170,12 @@ function getAutoSetupConfigPaths(): Record<string, string> {
 	paths["windsurf"] = join(home, ".codeium/windsurf/mcp_config.json");
 
 	// Roo Code (VSCode Extension) config paths
-	if (os === "darwin") {
+	if (os == "darwin") {
 		paths["roocode"] = join(
 			home,
 			"Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
 		);
-	} else if (os === "win32") {
+	} else if (os == "win32") {
 		paths["roocode"] = join(
 			home,
 			"AppData/Roaming/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
@@ -288,7 +276,7 @@ function updateClientConfig(
 				// Zed uses context_servers with a different structure
 				if (
 					!config["context_servers"] ||
-					typeof config["context_servers"] !== "object"
+					typeof config["context_servers"] != "object"
 				) {
 					config["context_servers"] = {};
 				}
@@ -309,7 +297,7 @@ function updateClientConfig(
 				// Continue.dev uses experimental.modelContextProtocolServers as an array
 				if (
 					!config["experimental"] ||
-					typeof config["experimental"] !== "object"
+					typeof config["experimental"] != "object"
 				) {
 					config["experimental"] = {};
 				}
@@ -329,7 +317,7 @@ function updateClientConfig(
 				// Check if eBay server already exists and update/add
 				const existingIndex = mcpServers.findIndex(
 					(server) =>
-						server.command === "node" && server.args?.[0]?.includes("ebay-mcp"),
+						server.command == "node" && server.args?.[0]?.includes("ebay-mcp"),
 				);
 				if (existingIndex >= 0) {
 					mcpServers[existingIndex] = serverConfig;
@@ -343,7 +331,7 @@ function updateClientConfig(
 
 			default: {
 				// Standard mcpServers format for Claude Desktop, Cline, Cursor, Windsurf, Roo Code, Claude Code CLI, Amazon Q
-				if (!config["mcpServers"] || typeof config["mcpServers"] !== "object") {
+				if (!config["mcpServers"] || typeof config["mcpServers"] != "object") {
 					config["mcpServers"] = {};
 				}
 				const mcpServers = readRecord(config["mcpServers"]);
@@ -418,11 +406,7 @@ function validateAutoSetupEnvironment(): {
 	}
 
 	const environment = process.env["EBAY_ENVIRONMENT"];
-	if (
-		environment &&
-		environment !== "production" &&
-		environment !== "sandbox"
-	) {
+	if (environment && environment != "production" && environment != "sandbox") {
 		errors.push(
 			`EBAY_ENVIRONMENT must be "production" or "sandbox", got: "${environment}"`,
 		);
@@ -441,7 +425,7 @@ function validateAutoSetupEnvironment(): {
 	}
 
 	return {
-		valid: errors.length === 0,
+		valid: errors.length == 0,
 		errors,
 		warnings,
 	};
@@ -480,7 +464,7 @@ function main(): void {
 	const clients = detectMCPClients();
 	const detectedClients = clients.filter((client) => client.detected);
 
-	if (detectedClients.length === 0) {
+	if (detectedClients.length == 0) {
 		printWarning("No MCP clients detected on this system");
 		printInfo(
 			"Supported clients: Claude Desktop, Cline, Continue.dev, Zed, Cursor, Windsurf, Roo Code, Claude Code CLI, Amazon Q",

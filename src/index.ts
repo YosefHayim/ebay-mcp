@@ -15,10 +15,10 @@ import {
 
 const args = process.argv.slice(2);
 
-const runCliCommand = async (
+async function runCliCommand(
 	label: string,
 	command: () => Promise<void>,
-): Promise<void> => {
+): Promise<void> {
 	try {
 		await command();
 	} catch (error) {
@@ -29,7 +29,7 @@ const runCliCommand = async (
 	}
 
 	process.exit(0);
-};
+}
 
 if (args.includes("setup")) {
 	await runCliCommand("Setup", runSetup);
@@ -44,10 +44,6 @@ if (args.includes("diagnose")) {
 	await runCliCommand("Diagnostics", () => runDiagnostics(exportReport));
 }
 
-/**
- * eBay API MCP Server
- * Provides access to eBay APIs through Model Context Protocol
- */
 class EbayMcpServer {
 	private runtime: EbayMcpRuntime;
 
@@ -56,22 +52,19 @@ class EbayMcpServer {
 		this.setupErrorHandling();
 	}
 
-	/**
-	 * Initialize the API (load tokens from storage)
-	 */
-	private async initialize(): Promise<void> {
+	private initialize = async (): Promise<void> => {
 		await this.runtime.initializeApi();
-	}
+	};
 
-	private setupErrorHandling(): void {
+	private setupErrorHandling = (): void => {
 		process.on("SIGINT", async () => {
 			serverLogger.info("Received SIGINT, shutting down...");
 			await this.runtime.server.close();
 			process.exit(0);
 		});
-	}
+	};
 
-	async run(): Promise<void> {
+	run = async (): Promise<void> => {
 		serverLogger.info("Starting eBay API MCP Server");
 
 		// Validate environment configuration
@@ -117,7 +110,7 @@ class EbayMcpServer {
 		const transport = new StdioServerTransport();
 		await this.runtime.server.connect(transport);
 		serverLogger.info("eBay API MCP Server running on stdio");
-	}
+	};
 }
 
 // Start the server

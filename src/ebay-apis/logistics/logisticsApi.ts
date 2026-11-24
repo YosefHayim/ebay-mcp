@@ -22,9 +22,7 @@ import {
 } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/sellLogisticsV1Oas3.js";
 
-/** Generated request body for createShippingQuote. */
 type ShippingQuoteRequest = components["schemas"]["ShippingQuoteRequest"];
-/** Generated request body for createFromShippingQuote. */
 type CreateShipmentFromQuoteRequest =
 	components["schemas"]["CreateShipmentFromQuoteRequest"];
 type CreateShippingQuoteInput = z.infer<typeof createShippingQuoteInputSchema>;
@@ -34,35 +32,18 @@ type CreateFromShippingQuoteInput = z.infer<
 type ShippingQuoteIdInput = z.infer<typeof shippingQuoteIdInputSchema>;
 type ShipmentIdInput = z.infer<typeof shipmentIdInputSchema>;
 
-/**
- * Builds the per-call marketplace header; without an override the client's configured
- * `EBAY_MARKETPLACE_ID` header still satisfies eBay's required `X-EBAY-C-MARKETPLACE-ID`.
- */
-const marketplaceConfig = (
+function marketplaceConfig(
 	marketplaceId: string | undefined,
-): EbayRequestConfig | undefined =>
-	marketplaceId === undefined
+): EbayRequestConfig | undefined {
+	return marketplaceId === undefined
 		? undefined
 		: { headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId } };
+}
 
-/**
- * Shipping quote returned by createShippingQuote and getShippingQuote.
- *
- * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipping_quote/methods/getShippingQuote
- */
 export type ShippingQuoteResponse = components["schemas"]["ShippingQuote"];
 
-/**
- * Shipment returned by createFromShippingQuote, getShipment, and cancelShipment.
- *
- * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/getShipment
- */
 export type ShipmentResponse = components["schemas"]["Shipment"];
 
-/**
- * Logistics API - shipping quotes, shipments, and shipping labels (limited release; needs the
- * `sell.logistics` scope). Based on: sell_logistics_v1_oas3.json
- */
 export class LogisticsApi {
 	private readonly basePath = "/sell/logistics/v1_beta";
 	private readonly client: EbayApiClient;
@@ -71,22 +52,6 @@ export class LogisticsApi {
 		this.client = client;
 	}
 
-	/**
-	 * Creates a shipping quote with live USPS rates for one package.
-	 *
-	 * @param input - Generated ShippingQuoteRequest body plus optional marketplace header override.
-	 * @returns eBay's generated ShippingQuote, including its rates.
-	 *
-	 * @example
-	 * ```ts
-	 * const quote = await logisticsApi.createShippingQuote({
-	 *   shippingQuoteRequest,
-	 *   marketplaceId: 'EBAY_US',
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipping_quote/methods/createShippingQuote
-	 */
 	public createShippingQuote = async (
 		input: CreateShippingQuoteInput,
 	): Promise<ShippingQuoteResponse> => {
@@ -111,19 +76,6 @@ export class LogisticsApi {
 		);
 	};
 
-	/**
-	 * Retrieves a shipping quote and its rates by ID.
-	 *
-	 * @param input - Shipping quote identifier returned by createShippingQuote.
-	 * @returns eBay's generated ShippingQuote.
-	 *
-	 * @example
-	 * ```ts
-	 * const quote = await logisticsApi.getShippingQuote({ shippingQuoteId: 'QUOTE-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipping_quote/methods/getShippingQuote
-	 */
 	public getShippingQuote = async (
 		input: ShippingQuoteIdInput,
 	): Promise<ShippingQuoteResponse> => {
@@ -142,22 +94,6 @@ export class LogisticsApi {
 		);
 	};
 
-	/**
-	 * Purchases a shipping label by creating a shipment from one rate of a shipping quote. The
-	 * seller's billing agreement is charged the rate's base cost plus any added options.
-	 *
-	 * @param input - Generated CreateShipmentFromQuoteRequest body plus optional marketplace header.
-	 * @returns eBay's generated Shipment, including its shipmentId.
-	 *
-	 * @example
-	 * ```ts
-	 * const shipment = await logisticsApi.createFromShippingQuote({
-	 *   shipmentRequest: { shippingQuoteId: 'QUOTE-1', rateId: 'RATE-1' },
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/createFromShippingQuote
-	 */
 	public createFromShippingQuote = async (
 		input: CreateFromShippingQuoteInput,
 	): Promise<ShipmentResponse> => {
@@ -187,19 +123,6 @@ export class LogisticsApi {
 		);
 	};
 
-	/**
-	 * Retrieves a shipment by ID.
-	 *
-	 * @param input - Shipment identifier returned by createFromShippingQuote.
-	 * @returns eBay's generated Shipment.
-	 *
-	 * @example
-	 * ```ts
-	 * const shipment = await logisticsApi.getShipment({ shipmentId: 'SHIP-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/getShipment
-	 */
 	public getShipment = async (
 		input: ShipmentIdInput,
 	): Promise<ShipmentResponse> =>
@@ -208,20 +131,6 @@ export class LogisticsApi {
 			this.shipmentPath(input, ""),
 		);
 
-	/**
-	 * Cancels a shipment and deletes its shipping label; eBay refunds the total shipping cost.
-	 * A shipment whose label was already used cannot be canceled.
-	 *
-	 * @param input - Shipment identifier returned by createFromShippingQuote.
-	 * @returns eBay's generated Shipment and its cancellation status.
-	 *
-	 * @example
-	 * ```ts
-	 * const canceled = await logisticsApi.cancelShipment({ shipmentId: 'SHIP-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/cancelShipment
-	 */
 	public cancelShipment = async (
 		input: ShipmentIdInput,
 	): Promise<ShipmentResponse> =>
@@ -230,20 +139,6 @@ export class LogisticsApi {
 			this.shipmentPath(input, "/cancel"),
 		);
 
-	/**
-	 * Downloads the shipping label generated for a shipment as a PDF.
-	 *
-	 * @param input - Shipment identifier returned by createFromShippingQuote.
-	 * @returns The label bytes, content type, and file name.
-	 * @throws {DownloadTooLargeError} When the file is too large to return inline over MCP.
-	 *
-	 * @example
-	 * ```ts
-	 * const label = await logisticsApi.downloadLabelFile({ shipmentId: 'SHIP-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/logistics/resources/shipment/methods/downloadLabelFile
-	 */
 	public downloadLabelFile = async (
 		input: ShipmentIdInput,
 	): Promise<DownloadedFile> => {
@@ -254,7 +149,6 @@ export class LogisticsApi {
 		});
 	};
 
-	/** Validates a shipment ID and builds its URL-encoded resource path plus `suffix`. */
 	private readonly shipmentPath = (
 		input: ShipmentIdInput,
 		suffix: string,

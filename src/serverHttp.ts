@@ -1,7 +1,3 @@
-/**
- * eBay API MCP Server with HTTP Transport and OAuth 2.1 Authorization.
- */
-
 import process from "node:process";
 import {
 	createHttpMcpApp,

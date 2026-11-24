@@ -4,18 +4,13 @@ import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { httpRequest, httpRequestEffect } from "@/shared/http.js";
 
-/**
- * A real loopback server is used instead of a fetch mock because the behaviour
- * under test is the response *stream* stalling after the headers have already
- * arrived — something only a live socket reproduces.
- */
 let server: Server;
 let baseUrl: string;
 const openSockets: NodeJS.WritableStream[] = [];
 
 beforeAll(async () => {
 	server = createServer((request, response) => {
-		if (request.url === "/stalled-body") {
+		if (request.url == "/stalled-body") {
 			response.writeHead(200, {
 				"content-type": "application/json",
 				"content-length": "64",
@@ -26,12 +21,12 @@ beforeAll(async () => {
 			return;
 		}
 
-		if (request.url === "/stalled-headers") {
+		if (request.url == "/stalled-headers") {
 			openSockets.push(response);
 			return;
 		}
 
-		if (request.url === "/missing") {
+		if (request.url == "/missing") {
 			response.writeHead(400, { "content-type": "application/json" });
 			response.end(
 				JSON.stringify({
@@ -41,7 +36,7 @@ beforeAll(async () => {
 			return;
 		}
 
-		if (request.url === "/declared-large") {
+		if (request.url == "/declared-large") {
 			response.writeHead(200, {
 				"content-type": "application/gzip",
 				"content-length": "64",
@@ -50,7 +45,7 @@ beforeAll(async () => {
 			return;
 		}
 
-		if (request.url === "/endless-binary") {
+		if (request.url == "/endless-binary") {
 			// Chunked and never ended: only a capped read can return before the timeout.
 			response.writeHead(200, { "content-type": "application/octet-stream" });
 			response.write("x".repeat(32));

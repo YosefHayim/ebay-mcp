@@ -1,138 +1,96 @@
-/**
- * Scope Helper - Manages eBay OAuth scopes
- */
-
 import { writeCliLine } from "@/shared/cliOutput.js";
 import { getDefaultScopes } from "@/shared/environment.js";
 import { paint } from "@/shared/paint.js";
 
-/**
- * Group of related OAuth scopes shown in setup guidance.
- */
 export interface ScopeCategory {
-	/** Human category name shown in setup guidance. */
 	name: string;
-	/** Short explanation of what the category enables. */
 	description: string;
-	/** OAuth scopes in this category. */
 	scopes: string[];
-	/** Whether setup treats the category as recommended baseline access. */
 	required: boolean;
 }
 
-/** Result of comparing token scopes to recommended or required scopes. */
 export interface ScopeCoverageVerification {
-	/** True when every required scope is present on the token. */
 	hasAllRequired: boolean;
-	/** Required scopes missing from the token. */
 	missingScopes: string[];
-	/** Token scopes not present in the required set. */
 	extraScopes: string[];
 }
 
-/**
- * Get all available scope categories
- *
- * @returns Scope categories shown by setup guidance.
- *
- * @example
- * ```ts
- * const categories = getScopeCategories();
- * ```
- */
-export const getScopeCategories = (): ScopeCategory[] => [
-	{
-		name: "Inventory Management",
-		description: "Create, read, update, and delete inventory items",
-		scopes: ["https://api.ebay.com/oauth/api_scope/sell.inventory"],
-		required: true,
-	},
-	{
-		name: "Order Fulfillment",
-		description: "View and manage orders, shipping, and fulfillment",
-		scopes: [
-			"https://api.ebay.com/oauth/api_scope/sell.fulfillment",
-			"https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
-		],
-		required: true,
-	},
-	{
-		name: "Account Management",
-		description: "Manage account settings, policies, and preferences",
-		scopes: [
-			"https://api.ebay.com/oauth/api_scope/sell.account",
-			"https://api.ebay.com/oauth/api_scope/sell.account.readonly",
-		],
-		required: true,
-	},
-	{
-		name: "Analytics & Reports",
-		description: "Access sales analytics and performance reports",
-		scopes: [
-			"https://api.ebay.com/oauth/api_scope/sell.analytics.readonly",
-			"https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly",
-		],
-		required: false,
-	},
-	{
-		name: "Marketing & Promotions",
-		description: "Create and manage marketing campaigns and promotions",
-		scopes: [
-			"https://api.ebay.com/oauth/api_scope/sell.marketing",
-			"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
-		],
-		required: false,
-	},
-	{
-		name: "Finance & Payments",
-		description: "Access financial data and payment information",
-		scopes: ["https://api.ebay.com/oauth/api_scope/sell.finances"],
-		required: false,
-	},
-	{
-		name: "Reputation & Feedback",
-		description: "Manage seller reputation and customer feedback",
-		scopes: ["https://api.ebay.com/oauth/api_scope/sell.reputation"],
-		required: false,
-	},
-	{
-		name: "Commerce Services",
-		description: "Identity verification, notifications, and messaging",
-		scopes: [
-			"https://api.ebay.com/oauth/api_scope/commerce.identity.readonly",
-			"https://api.ebay.com/oauth/api_scope/commerce.notification.subscription",
-			"https://api.ebay.com/oauth/api_scope/sell.stores",
-		],
-		required: false,
-	},
-];
+export function getScopeCategories(): ScopeCategory[] {
+	return [
+		{
+			name: "Inventory Management",
+			description: "Create, read, update, and delete inventory items",
+			scopes: ["https://api.ebay.com/oauth/api_scope/sell.inventory"],
+			required: true,
+		},
+		{
+			name: "Order Fulfillment",
+			description: "View and manage orders, shipping, and fulfillment",
+			scopes: [
+				"https://api.ebay.com/oauth/api_scope/sell.fulfillment",
+				"https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
+			],
+			required: true,
+		},
+		{
+			name: "Account Management",
+			description: "Manage account settings, policies, and preferences",
+			scopes: [
+				"https://api.ebay.com/oauth/api_scope/sell.account",
+				"https://api.ebay.com/oauth/api_scope/sell.account.readonly",
+			],
+			required: true,
+		},
+		{
+			name: "Analytics & Reports",
+			description: "Access sales analytics and performance reports",
+			scopes: [
+				"https://api.ebay.com/oauth/api_scope/sell.analytics.readonly",
+				"https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly",
+			],
+			required: false,
+		},
+		{
+			name: "Marketing & Promotions",
+			description: "Create and manage marketing campaigns and promotions",
+			scopes: [
+				"https://api.ebay.com/oauth/api_scope/sell.marketing",
+				"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
+			],
+			required: false,
+		},
+		{
+			name: "Finance & Payments",
+			description: "Access financial data and payment information",
+			scopes: ["https://api.ebay.com/oauth/api_scope/sell.finances"],
+			required: false,
+		},
+		{
+			name: "Reputation & Feedback",
+			description: "Manage seller reputation and customer feedback",
+			scopes: ["https://api.ebay.com/oauth/api_scope/sell.reputation"],
+			required: false,
+		},
+		{
+			name: "Commerce Services",
+			description: "Identity verification, notifications, and messaging",
+			scopes: [
+				"https://api.ebay.com/oauth/api_scope/commerce.identity.readonly",
+				"https://api.ebay.com/oauth/api_scope/commerce.notification.subscription",
+				"https://api.ebay.com/oauth/api_scope/sell.stores",
+			],
+			required: false,
+		},
+	];
+}
 
-/**
- * Get recommended scopes for the environment
- *
- * @param environment - eBay environment whose recommended scopes should be returned.
- * @returns Recommended OAuth scopes for that environment.
- *
- * @example
- * ```ts
- * const scopes = getRecommendedScopes('sandbox');
- * ```
- */
-export const getRecommendedScopes = (
+export function getRecommendedScopes(
 	environment: "sandbox" | "production",
-): string[] => getDefaultScopes(environment);
+): string[] {
+	return getDefaultScopes(environment);
+}
 
-/**
- * Display scope selection interface
- *
- * @returns Nothing; writes scope category guidance to stdout.
- *
- * @example
- * ```ts
- * displayScopeCategories();
- * ```
- */
-export const displayScopeCategories = (): void => {
+export function displayScopeCategories(): void {
 	writeCliLine(paint.bold.cyan("\n📋 Available OAuth Scopes\n"));
 
 	const categories = getScopeCategories();
@@ -146,24 +104,12 @@ export const displayScopeCategories = (): void => {
 		writeCliLine(paint.gray(`  Scopes: ${category.scopes.length}`));
 		writeCliLine("");
 	}
-};
+}
 
-/**
- * Verify if token has required scopes
- *
- * @param tokenScopes - OAuth scopes present on the token.
- * @param requiredScopes - Scopes expected for the workflow or environment.
- * @returns Scope coverage result with missing and extra scopes.
- *
- * @example
- * ```ts
- * const coverage = verifyScopesCoverage(tokenScopes, requiredScopes);
- * ```
- */
-export const verifyScopesCoverage = (
+export function verifyScopesCoverage(
 	tokenScopes: string[],
 	requiredScopes: string[],
-): ScopeCoverageVerification => {
+): ScopeCoverageVerification {
 	const tokenScopeSet = new Set(tokenScopes);
 	const requiredScopeSet = new Set(requiredScopes);
 
@@ -175,28 +121,16 @@ export const verifyScopesCoverage = (
 	);
 
 	return {
-		hasAllRequired: missingScopes.length === 0,
+		hasAllRequired: missingScopes.length == 0,
 		missingScopes,
 		extraScopes,
 	};
-};
+}
 
-/**
- * Display scope verification results
- *
- * @param tokenScopes - OAuth scopes present on the token.
- * @param environment - eBay environment whose recommended scopes should be checked.
- * @returns Nothing; writes verification guidance to stdout.
- *
- * @example
- * ```ts
- * displayScopeVerification(tokenScopes, 'production');
- * ```
- */
-export const displayScopeVerification = (
+export function displayScopeVerification(
 	tokenScopes: string[],
 	environment: "sandbox" | "production",
-): void => {
+): void {
 	writeCliLine(paint.bold.cyan("\n🔍 Scope Verification\n"));
 
 	const recommendedScopes = getRecommendedScopes(environment);
@@ -255,20 +189,9 @@ export const displayScopeVerification = (
 	}
 
 	writeCliLine("");
-};
+}
 
-/**
- * Get scope description for a full OAuth scope URL.
- *
- * @param scope - Full eBay OAuth scope URL.
- * @returns Human-readable scope description, or a missing-description label.
- *
- * @example
- * ```ts
- * const description = describeScopeFromOAuthUrl(scope);
- * ```
- */
-export const describeScopeFromOAuthUrl = (scope: string): string => {
+export function describeScopeFromOAuthUrl(scope: string): string {
 	const descriptions: Record<string, string> = {
 		"https://api.ebay.com/oauth/api_scope/sell.inventory":
 			"Manage inventory items and offers",
@@ -299,55 +222,26 @@ export const describeScopeFromOAuthUrl = (scope: string): string => {
 	};
 
 	return descriptions[scope] || "No description available";
-};
+}
 
-/**
- * Format scopes for display
- *
- * @param scopes - OAuth scopes to format.
- * @returns Bulleted scope list for CLI display.
- *
- * @example
- * ```ts
- * const text = formatScopesForDisplay(scopes);
- * ```
- */
-export const formatScopesForDisplay = (scopes: string[]): string =>
-	scopes
+export function formatScopesForDisplay(scopes: string[]): string {
+	return scopes
 		.map((scope) => {
 			const shortName = scope.split("/").pop() || scope;
 			return `  • ${shortName}`;
 		})
 		.join("\n");
+}
 
-/**
- * Get all scopes as a space-separated string
- *
- * @param environment - eBay environment whose scopes should be returned.
- * @returns Recommended scopes joined for OAuth URL parameters.
- *
- * @example
- * ```ts
- * const scopeParam = getAllScopesString('sandbox');
- * ```
- */
-export const getAllScopesString = (
+export function getAllScopesString(
 	environment: "sandbox" | "production",
-): string => getRecommendedScopes(environment).join(" ");
+): string {
+	return getRecommendedScopes(environment).join(" ");
+}
 
-/**
- * Parse scope string to array
- *
- * @param scopeString - Space-delimited OAuth scope string.
- * @returns Non-empty scope tokens.
- *
- * @example
- * ```ts
- * const scopes = parseScopeString(scopeParam);
- * ```
- */
-export const parseScopeString = (scopeString: string): string[] =>
-	scopeString
+export function parseScopeString(scopeString: string): string[] {
+	return scopeString
 		.split(/\s+/)
 		.map((scope) => scope.trim())
 		.filter((scope) => scope.length > 0);
+}

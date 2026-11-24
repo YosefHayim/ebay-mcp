@@ -1,7 +1,3 @@
-/**
- * Utility functions for working with eBay OAuth scopes
- */
-
 import {
 	FINANCES_EARNINGS_SCOPE,
 	getDefaultScopes,
@@ -11,14 +7,12 @@ import {
 	validateScopes,
 } from "@/shared/environment.js";
 
-/** Finances tools that need the optional order-earnings scope. */
 const FINANCES_EARNINGS_TOOLS = [
 	"ebay_get_order_earnings",
 	"ebay_get_order_earnings_by_id",
 	"ebay_get_order_earnings_summary",
 ];
 
-/** Logistics tools; the whole API is limited release behind its own scope. */
 const LOGISTICS_TOOLS = [
 	"ebay_create_shipping_quote",
 	"ebay_get_shipping_quote",
@@ -28,75 +22,43 @@ const LOGISTICS_TOOLS = [
 	"ebay_download_shipping_label_file",
 ];
 
-/** Requirement for tools whose scope is recognized but never requested by default. */
-const optionalConsent = (
+function optionalConsent(
 	tools: readonly string[],
 	scope: string,
 	description: string,
-): Record<string, ScopeRequirement> =>
-	Object.fromEntries(
+): Record<string, ScopeRequirement> {
+	return Object.fromEntries(
 		tools.map((tool) => [
 			tool,
 			{ requiredScopes: [scope], minimumScope: scope, description },
 		]),
 	);
+}
 
-/**
- * Result of scope validation
- */
 export interface ScopeValidationResult {
-	/** True when every provided scope is valid for the environment. */
 	isValid: boolean;
-	/** Warnings emitted by environment scope validation. */
 	warnings: string[];
-	/** Input scopes accepted by the selected environment. */
 	validScopes: string[];
-	/** Input scopes rejected by the selected environment. */
 	invalidScopes: string[];
 }
 
-/**
- * Comparison between two sets of scopes
- */
 export interface ScopeDifference {
-	/** Scopes available in both production and sandbox. */
 	inBothEnvironments: string[];
-	/** Scopes available only in production. */
 	productionOnly: string[];
-	/** Scopes available only in sandbox. */
 	sandboxOnly: string[];
 }
 
-/**
- * Scope requirement information for a tool
- */
 export interface ScopeRequirement {
-	/** Scopes that can satisfy the tool requirement. */
 	requiredScopes: string[];
-	/** Helpful extra scopes for related workflow dependencies. */
 	optionalScopes?: string[];
-	/** Smallest scope that satisfies the tool requirement. */
 	minimumScope: string;
-	/** Human explanation of why the tool needs this scope. */
 	description: string;
 }
 
-/**
- * Validate scopes and provide detailed validation results
- *
- * @param scopes - OAuth scopes to validate.
- * @param environment - eBay environment whose scope catalogue should be used.
- * @returns Validity flag plus accepted and rejected scope lists.
- *
- * @example
- * ```ts
- * const scopeValidation = validateScopesDetailed(scopes, 'production');
- * ```
- */
-export const validateScopesDetailed = (
+export function validateScopesDetailed(
 	scopes: string[],
 	environment: "production" | "sandbox",
-): ScopeValidationResult => {
+): ScopeValidationResult {
 	const validation = validateScopes(scopes, environment);
 	const validScopeSet = new Set(getKnownScopes(environment));
 
@@ -112,28 +74,16 @@ export const validateScopesDetailed = (
 	});
 
 	return {
-		isValid: invalidScopes.length === 0,
+		isValid: invalidScopes.length == 0,
 		warnings: validation.warnings,
 		validScopes,
 		invalidScopes,
 	};
-};
+}
 
-/**
- * Get required scopes for a specific tool
- * This maps tool names to their required eBay OAuth scopes
- *
- * @param toolName - MCP tool name to look up.
- * @returns Scope requirement for the tool, or null when unknown.
- *
- * @example
- * ```ts
- * const requirement = getRequiredScopesForTool('ebay_get_inventory_items');
- * ```
- */
-export const getRequiredScopesForTool = (
+export function getRequiredScopesForTool(
 	toolName: string,
-): ScopeRequirement | null => {
+): ScopeRequirement | null {
 	const postOrderTools = [
 		"ebay_upload_post_order_document",
 		"ebay_download_post_order_document",
@@ -318,42 +268,20 @@ export const getRequiredScopesForTool = (
 	};
 
 	return scopeMap[toolName] || null;
-};
+}
 
-/**
- * Check if a token has all required scopes for a tool
- *
- * @param tokenScopes - OAuth scopes present on the token.
- * @param requiredScopes - Alternative scopes that can satisfy the requirement.
- * @returns True when the token has at least one required scope.
- *
- * @example
- * ```ts
- * const allowed = hasRequiredScopes(tokenScopes, requirement.requiredScopes);
- * ```
- */
-export const hasRequiredScopes = (
+export function hasRequiredScopes(
 	tokenScopes: string[],
 	requiredScopes: string[],
-): boolean => {
+): boolean {
 	const tokenScopeSet = new Set(tokenScopes);
 
 	// Check if at least one of the required scopes is present
 	// (Some tools accept either readonly or write scope)
 	return requiredScopes.some((scope) => tokenScopeSet.has(scope));
-};
+}
 
-/**
- * Get the differences between production and sandbox scopes
- *
- * @returns Scopes grouped by production/sandbox availability.
- *
- * @example
- * ```ts
- * const diff = getScopeDifferences();
- * ```
- */
-export const getScopeDifferences = (): ScopeDifference => {
+export function getScopeDifferences(): ScopeDifference {
 	const productionScopes = getDefaultScopes("production");
 	const sandboxScopes = getDefaultScopes("sandbox");
 
@@ -385,41 +313,19 @@ export const getScopeDifferences = (): ScopeDifference => {
 		productionOnly,
 		sandboxOnly,
 	};
-};
+}
 
-/**
- * Format scope for display (remove common prefix for readability)
- *
- * @param scope - OAuth scope URL or custom scope string.
- * @returns Scope without the common eBay OAuth URL prefix when present.
- *
- * @example
- * ```ts
- * const label = formatScopeForDisplay('https://api.ebay.com/oauth/api_scope/sell.inventory');
- * ```
- */
-export const formatScopeForDisplay = (scope: string): string => {
+export function formatScopeForDisplay(scope: string): string {
 	const prefix = "https://api.ebay.com/oauth/";
 	if (scope.startsWith(prefix)) {
 		return scope.substring(prefix.length);
 	}
 	return scope;
-};
+}
 
-/**
- * Group scopes by API category
- *
- * @param scopes - OAuth scopes to group.
- * @returns Scopes grouped into sell, buy, commerce, and other buckets.
- *
- * @example
- * ```ts
- * const grouped = groupScopesByCategory(scopes);
- * ```
- */
-export const groupScopesByCategory = (
+export function groupScopesByCategory(
 	scopes: string[],
-): Record<string, string[]> => {
+): Record<string, string[]> {
 	const sell: string[] = [];
 	const buy: string[] = [];
 	const commerce: string[] = [];
@@ -438,53 +344,21 @@ export const groupScopesByCategory = (
 	});
 
 	return { sell, buy, commerce, other };
-};
+}
 
-/**
- * Check if a scope is readonly
- *
- * @param scope - OAuth scope to inspect.
- * @returns True when the scope name includes `.readonly`.
- *
- * @example
- * ```ts
- * const readonly = isScopeReadonly(scope);
- * ```
- */
-export const isScopeReadonly = (scope: string): boolean =>
-	scope.includes(".readonly");
+export function isScopeReadonly(scope: string): boolean {
+	return scope.includes(".readonly");
+}
 
-/**
- * Get the write version of a readonly scope
- *
- * @param readonlyScope - Readonly OAuth scope to convert.
- * @returns Write scope equivalent, or null when the input is already write-capable.
- *
- * @example
- * ```ts
- * const writeScope = getWriteScope('https://api.ebay.com/oauth/api_scope/sell.inventory.readonly');
- * ```
- */
-export const getWriteScope = (readonlyScope: string): string | null => {
+export function getWriteScope(readonlyScope: string): string | null {
 	if (!isScopeReadonly(readonlyScope)) {
 		return null; // Already a write scope
 	}
 
 	return readonlyScope.replace(".readonly", "");
-};
+}
 
-/**
- * Get the readonly version of a write scope
- *
- * @param writeScope - Write-capable OAuth scope to convert.
- * @returns Readonly scope equivalent when eBay exposes one, otherwise null.
- *
- * @example
- * ```ts
- * const readonlyScope = getReadonlyScope('https://api.ebay.com/oauth/api_scope/sell.inventory');
- * ```
- */
-export const getReadonlyScope = (writeScope: string): string | null => {
+export function getReadonlyScope(writeScope: string): string | null {
 	if (isScopeReadonly(writeScope)) {
 		return null; // Already a readonly scope
 	}
@@ -512,20 +386,9 @@ export const getReadonlyScope = (writeScope: string): string | null => {
 	}
 
 	return null;
-};
+}
 
-/**
- * Get scope description from scope name
- *
- * @param scope - OAuth scope URL or scope type string.
- * @returns Human description for the scope.
- *
- * @example
- * ```ts
- * const description = getScopeTypeDescription('https://api.ebay.com/oauth/api_scope/sell.inventory');
- * ```
- */
-export const getScopeTypeDescription = (scope: string): string => {
+export function getScopeTypeDescription(scope: string): string {
 	// Extract the last part of the scope
 	const parts = scope.split("/");
 	const scopeType = parts[parts.length - 1];
@@ -569,4 +432,4 @@ export const getScopeTypeDescription = (scope: string): string => {
 
 	const description = descriptions[scopeType];
 	return description ?? `Access to ${scopeType}`;
-};
+}

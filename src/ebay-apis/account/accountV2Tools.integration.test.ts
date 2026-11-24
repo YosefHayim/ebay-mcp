@@ -34,7 +34,9 @@ const config: EbayConfig = {
 	marketplaceId: "EBAY_US",
 };
 
-const eur = (amount: string) => ({ currency: "EUR", value: amount });
+function eur(amount: string) {
+	return { currency: "EUR", value: amount };
+}
 const calculatedRules = {
 	calculatedShippingRule: {
 		combinedShippingRuleType: "WEIGHT_OFF",
@@ -87,7 +89,6 @@ const payoutSplit = {
 };
 const rulesRequired = ["marketplaceId", "shippingRules"];
 
-/** Every Account v2 write tool: its MCP contract and the exact eBay request it must send. */
 const writeCases = [
 	{
 		tool: "ebay_update_rate_table_shipping_cost",
@@ -148,7 +149,6 @@ const writeCases = [
 	},
 ];
 
-/** Every Account v2 read tool: its MCP contract and the eBay GET it must relay. */
 const readCases = [
 	{
 		tool: "ebay_get_rate_table",
@@ -201,14 +201,14 @@ const readCases = [
 let client: Client;
 let runtime: ReturnType<typeof createEbayMcpRuntime>;
 
-const callTool = async (name: string, args: Record<string, unknown>) => {
+async function callTool(name: string, args: Record<string, unknown>) {
 	const toolResult = await client.callTool({ name, arguments: args });
 	const [block] = toolResult.content as { type: string; text: string }[];
 	return {
 		isError: toolResult.isError === true,
 		payload: JSON.parse(block.text) as unknown,
 	};
-};
+}
 
 beforeEach(async () => {
 	vi.clearAllMocks();

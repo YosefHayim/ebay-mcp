@@ -1,17 +1,5 @@
 import { z } from "zod";
 
-/**
- * Zod schemas for Translation API input validation
- * Based on: src/ebay-apis/other/translation/translationApi.ts
- * OpenAPI spec: commerce_translation_v1_beta_oas3.json
- * Types from: src/ebay-openapi-types/commerceTranslationV1BetaOas3.ts
- */
-
-/**
- * Schema for translate method
- * Endpoint: POST /translate
- * Body: TranslateRequest - from, to, translationContext, text
- */
 export const translateSchema = z.object({
 	from: z
 		.string({

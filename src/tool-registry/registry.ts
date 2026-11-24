@@ -6,70 +6,40 @@ import type {
 	ViewModel,
 } from "@/tool-registry/ui/viewModels.js";
 
-/**
- * Interactive-UI binding resolved onto a {@link ToolEntry} when a tool opts into
- * the MCP Apps layer via `defineTool({ ui })`.
- *
- * `map` is intentionally type-erased to `(handlerOutput: unknown) => ViewModel` so the
- * entry stays non-generic and uniform across all 298 tools. The erasure is safe:
- * `defineTool` proves, against the handler's concrete return type, that `map`
- * produces the archetype's view model before erasing it here — so a drift between
- * handler shape and mapper is a compile error at the call site, not a runtime
- * surprise at this boundary. The runtime seam consumes `resourceUri` (to register
- * and advertise the view) and `map` (to project results into `structuredContent`).
- */
 export interface ResolvedToolUi {
 	archetype: ViewArchetype;
 	resourceUri: string;
 	map: (handlerOutput: unknown) => ViewModel;
 }
 
-/** Runtime registry entry pairing a public tool definition with its executable handler. */
 export interface ToolEntry {
 	definition: ToolDefinition;
 	handler: ToolHandler;
-	/** Optional formatting of endpoint data into protocol content. */
 	formatResult?: (
 		handlerOutput: unknown,
 		args: Record<string, unknown>,
 	) => CallToolResult;
-	/** Present only for tools that render an interactive view; consumed by the runtime seam. */
 	ui?: ResolvedToolUi;
 }
 
-/** Validation report for duplicate definitions and definition-handler mismatches. */
 export interface ToolRegistryValidation {
 	duplicateToolNames: string[];
 	missingHandlers: string[];
 	orphanHandlers: string[];
 }
 
-/** Handler lookup keyed by registered public tool name. */
 const handlerByName: Record<string, ToolHandler> = Object.fromEntries(
 	registeredEntries.map((entry) => [entry.definition.name, entry.handler]),
 );
 
 let cachedEntries: ToolEntry[] | undefined;
 
-/**
- * Validates that tool definitions have unique names and matching handlers.
- *
- * @param definitions - Public tool definitions to validate, defaulting to registered tools.
- * @param handlers - Handler lookup used to verify every definition can execute.
- * @returns Duplicate definition names plus missing or orphaned handlers.
- *
- * @example
- * ```ts
- * const validation = validateToolRegistry();
- * const hasDuplicates = validation.duplicateToolNames.length > 0;
- * ```
- */
-export const validateToolRegistry = (
+export function validateToolRegistry(
 	definitions: ToolDefinition[] = registeredEntries.map(
 		(entry) => entry.definition,
 	),
 	handlers: Record<string, ToolHandler> = handlerByName,
-): ToolRegistryValidation => {
+): ToolRegistryValidation {
 	const seenNames = new Set<string>();
 	const duplicateNames = new Set<string>();
 
@@ -92,9 +62,9 @@ export const validateToolRegistry = (
 			.filter((name) => !seenNames.has(name))
 			.sort(),
 	};
-};
+}
 
-const validateRunnableRegistry = (): void => {
+function validateRunnableRegistry(): void {
 	const validation = validateToolRegistry();
 	const failures = [
 		validation.duplicateToolNames.length > 0
@@ -109,19 +79,9 @@ const validateRunnableRegistry = (): void => {
 	if (hasFailures) {
 		throw new Error(`Invalid tool registry: ${failures.join("; ")}`);
 	}
-};
+}
 
-/**
- * Returns cached runnable registry entries after validating definitions and handlers.
- *
- * @returns Registered tool entries in execution order.
- *
- * @example
- * ```ts
- * const entries = getToolEntries();
- * ```
- */
-export const getToolEntries = (): ToolEntry[] => {
+export function getToolEntries(): ToolEntry[] {
 	if (cachedEntries) {
 		return cachedEntries;
 	}
@@ -129,53 +89,21 @@ export const getToolEntries = (): ToolEntry[] => {
 	validateRunnableRegistry();
 	cachedEntries = registeredEntries;
 	return cachedEntries;
-};
+}
 
-/**
- * Returns public tool definitions in registry execution order.
- *
- * @returns MCP tool definitions advertised to clients.
- *
- * @example
- * ```ts
- * const definitions = getToolDefinitions();
- * ```
- */
-export const getToolDefinitions = (): ToolDefinition[] =>
-	getToolEntries().map((entry) => entry.definition);
+export function getToolDefinitions(): ToolDefinition[] {
+	return getToolEntries().map((entry) => entry.definition);
+}
 
-/**
- * Looks up the handler registered for a tool name, if one exists.
- *
- * @param toolName - MCP tool name to resolve.
- * @returns The registered handler, or undefined when the name is unknown.
- *
- * @example
- * ```ts
- * const handler = getToolHandler('ebay_get_custom_policies');
- * ```
- */
-export const getToolHandler = (toolName: string): ToolHandler | undefined =>
-	handlerByName[toolName];
+export function getToolHandler(toolName: string): ToolHandler | undefined {
+	return handlerByName[toolName];
+}
 
-/**
- * Executes a registered tool handler and rejects when the tool name is unknown.
- *
- * @param api - eBay API facade passed to the selected tool handler.
- * @param toolName - MCP tool name to execute.
- * @param args - Raw transport arguments parsed by the selected tool entry.
- * @returns The selected handler's result.
- *
- * @example
- * ```ts
- * const customPolicies = await executeTool(api, 'ebay_get_custom_policies', {});
- * ```
- */
-export const executeTool = async (
+export async function executeTool(
 	api: Parameters<ToolHandler>[0],
 	toolName: string,
 	args: Parameters<ToolHandler>[1],
-): Promise<unknown> => {
+): Promise<unknown> {
 	const handler = getToolHandler(toolName);
 
 	const isUnknownTool = handler == null;
@@ -184,4 +112,4 @@ export const executeTool = async (
 	}
 
 	return await handler(api, args);
-};
+}

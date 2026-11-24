@@ -1,9 +1,3 @@
-/**
- * Unit tests for `loadExistingConfig` in `setupShared`: values written with
- * `quoteEnvValue` (e.g. eBay OAuth tokens containing `#`) must read back
- * without the surrounding quotes.
- */
-
 import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";

@@ -24,12 +24,13 @@ export const generatedNamespaceNames: Readonly<Record<string, NamespaceNames>> =
 		},
 	};
 
-export const renameGeneratedNamespaces = (
+export function renameGeneratedNamespaces(
 	generatedTypes: string,
 	names: NamespaceNames,
-): string =>
-	generatedTypes
+): string {
+	return generatedTypes
 		.replace(COMPONENTS_DECLARATION, `interface ${names.components}`)
 		.replace(COMPONENTS_REFERENCE, `${names.components}[`)
 		.replace(OPERATIONS_DECLARATION, `interface ${names.operations}`)
 		.replace(OPERATIONS_REFERENCE, `${names.operations}[`);
+}

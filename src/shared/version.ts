@@ -11,7 +11,7 @@ interface PackageJson {
 let cachedPackageJson: PackageJson | null = null;
 
 function isPackageJson(candidate: unknown): candidate is PackageJson {
-	if (typeof candidate !== "object") {
+	if (typeof candidate != "object") {
 		return false;
 	}
 
@@ -22,11 +22,11 @@ function isPackageJson(candidate: unknown): candidate is PackageJson {
 	const name = Reflect.get(candidate, "name");
 	const version = Reflect.get(candidate, "version");
 
-	if (typeof name !== "string") {
+	if (typeof name != "string") {
 		return false;
 	}
 
-	return typeof version === "string";
+	return typeof version == "string";
 }
 
 function readPackageFile(): unknown {

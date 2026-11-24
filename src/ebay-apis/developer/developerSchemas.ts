@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Input accepted by the public eBay API status feed tool. */
 export const getApiStatusInputSchema = z.object({
 	limit: z
 		.number()
@@ -16,7 +15,6 @@ export const getApiStatusInputSchema = z.object({
 	api: z.string().optional().describe("Optional API-name substring filter"),
 });
 
-/** Input accepted by Developer Analytics API getRateLimits. */
 export const getRateLimitsInputSchema = z.object({
 	apiContext: z
 		.string()
@@ -32,10 +30,8 @@ export const getRateLimitsInputSchema = z.object({
 		),
 });
 
-/** Input accepted by Developer Analytics API getUserRateLimits. */
 export const getUserRateLimitsInputSchema = getRateLimitsInputSchema;
 
-/** Generated client-registration request fields accepted by eBay. */
 export const clientSettingsSchema = z.object({
 	client_name: z
 		.string()
@@ -60,17 +56,14 @@ export const clientSettingsSchema = z.object({
 		.describe("Base64-encoded Software Statement Assertion JWT"),
 });
 
-/** Input accepted by Developer Client Registration API registerClient. */
 export const registerClientInputSchema = z.object({
 	clientSettings: clientSettingsSchema.describe(
 		"Generated ClientSettings request body",
 	),
 });
 
-/** Input accepted by Developer Key Management API getSigningKeys. */
 export const getSigningKeysInputSchema = z.object({});
 
-/** Generated create-signing-key request body accepted by eBay. */
 export const createSigningKeyRequestSchema = z.object({
 	signingKeyCipher: z
 		.string()
@@ -78,14 +71,12 @@ export const createSigningKeyRequestSchema = z.object({
 		.describe("Cipher for the generated keypair, e.g. ED25519 or RSA"),
 });
 
-/** Input accepted by Developer Key Management API createSigningKey. */
 export const createSigningKeyInputSchema = z.object({
 	request: createSigningKeyRequestSchema
 		.optional()
 		.describe("Optional signing-key request body"),
 });
 
-/** Input accepted by Developer Key Management API getSigningKey. */
 export const getSigningKeyInputSchema = z.object({
 	signingKeyId: z
 		.string()
@@ -112,12 +103,10 @@ const rateLimitSchema = z.object({
 	resources: z.array(resourceSchema).optional(),
 });
 
-/** Response returned by Developer Analytics rate-limit endpoints. */
 export const rateLimitsResponseSchema = z.object({
 	rateLimits: z.array(rateLimitSchema).optional(),
 });
 
-/** Response returned by Developer Client Registration API registerClient. */
 export const clientDetailsSchema = z.object({
 	client_id: z.string().optional(),
 	client_id_issued_at: z.number().int().optional(),
@@ -133,7 +122,6 @@ export const clientDetailsSchema = z.object({
 	software_statement: z.string().optional(),
 });
 
-/** Response returned by Developer Key Management signing-key endpoints. */
 export const signingKeySchema = z.object({
 	creationTime: z.number().int().optional(),
 	expirationTime: z.number().int().optional(),
@@ -144,7 +132,6 @@ export const signingKeySchema = z.object({
 	signingKeyId: z.string().optional(),
 });
 
-/** Response returned by Developer Key Management API getSigningKeys. */
 export const querySigningKeysResponseSchema = z.object({
 	signingKeys: z.array(signingKeySchema).optional(),
 });

@@ -26,8 +26,7 @@ vi.mock("../../auth/oauth.js", () => ({
 const HOST = "https://api.sandbox.ebay.com";
 const SEARCH = "/buy/browse/v1/item_summary/search";
 
-/** Capture the query eBay would have received for a single search call. */
-const captureSearchQuery = (): { current: Record<string, string> } => {
+function captureSearchQuery(): { current: Record<string, string> } {
 	const captured: { current: Record<string, string> } = { current: {} };
 	nock(HOST)
 		.get(SEARCH)
@@ -37,7 +36,7 @@ const captureSearchQuery = (): { current: Record<string, string> } => {
 		})
 		.reply(200, { total: 0, itemSummaries: [] });
 	return captured;
-};
+}
 
 // The shared transport lifecycle keeps these end-to-end assertions in one contract suite.
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: registered MCP contract setup is intentionally colocated
@@ -91,7 +90,7 @@ describe("browse tools registered MCP contract", () => {
 
 	it("advertises the search contract and its pagination rule", async () => {
 		const definition = (await client.listTools()).tools.find(
-			(tool) => tool.name === "ebay_find_active_items",
+			(tool) => tool.name == "ebay_find_active_items",
 		);
 
 		expect(definition?.inputSchema.required).toContain("query");

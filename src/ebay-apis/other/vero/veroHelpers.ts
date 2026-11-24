@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-/**
- * Zod schemas for VERO API input validation
- * Based on: src/ebay-apis/other/vero/veroApi.ts
- * OpenAPI spec: commerce_vero_v1_oas3.json
- * Types from: src/ebay-openapi-types/commerceVeroV1Oas3.ts
- *
- * Note: The VERO API is only available for members of the Verified Rights Owner (VeRO) Program
- */
-
 // Reusable schema for filter parameter
 const filterSchema = z
 	.string({
@@ -52,11 +43,6 @@ const reportItemSchema = z
 	})
 	.passthrough();
 
-/**
- * Schema for createVeroReport method
- * Endpoint: POST /vero_report
- * Body: VeroReportItemsRequest - report data
- */
 export const createVeroReportSchema = z.object({
 	reportData: z
 		.object({
@@ -65,11 +51,6 @@ export const createVeroReportSchema = z.object({
 		.passthrough(),
 });
 
-/**
- * Schema for getVeroReport method
- * Endpoint: GET /vero_report/{vero_report_id}
- * Path: vero_report_id
- */
 export const getVeroReportSchema = z.object({
 	veroReportId: z
 		.string({
@@ -81,22 +62,12 @@ export const getVeroReportSchema = z.object({
 		.min(1, "VERO report ID cannot be empty"),
 });
 
-/**
- * Schema for getVeroReportItems method
- * Endpoint: GET /vero_report_items
- * Query: filter, limit, offset
- */
 export const getVeroReportItemsSchema = z.object({
 	filter: filterSchema,
 	limit: limitSchema,
 	offset: offsetSchema,
 });
 
-/**
- * Schema for getVeroReasonCode method
- * Endpoint: GET /vero_reason_code/{vero_reason_code_id}
- * Path: vero_reason_code_id
- */
 export const getVeroReasonCodeSchema = z.object({
 	veroReasonCodeId: z
 		.string({
@@ -108,9 +79,4 @@ export const getVeroReasonCodeSchema = z.object({
 		.min(1, "VERO reason code ID cannot be empty"),
 });
 
-/**
- * Schema for getVeroReasonCodes method
- * Endpoint: GET /vero_reason_code
- * No parameters required
- */
 export const getVeroReasonCodesSchema = z.object({});

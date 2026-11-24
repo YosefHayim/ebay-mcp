@@ -86,18 +86,11 @@ export type {
 	WithdrawOfferResponse,
 } from "./offersApi.js";
 
-/**
- * Inventory API surface: items, offers, and locations.
- * Implementation is split by subdomain; `new InventoryApi(client)` keeps stable method names.
- */
 export interface InventoryApi
 	extends InventoryItemsMethods,
 		InventoryOffersMethods,
 		InventoryLocationsMethods {}
 
-/**
- * Composes Inventory subdomain method maps onto one facade instance.
- */
 export class InventoryApi {
 	public constructor(client: EbayApiClient) {
 		Object.assign(

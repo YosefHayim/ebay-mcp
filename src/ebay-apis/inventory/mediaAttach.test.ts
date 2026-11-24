@@ -6,18 +6,17 @@ import type { LocalMediaFile } from "@/shared/localMedia.js";
 
 type AttachItems = Parameters<typeof createMediaAttachMethods>[0];
 
-const mediaFile = (
-	source: string,
-	kind: "image" | "video",
-): LocalMediaFile => ({
-	source,
-	path: source,
-	fileName: source.split("/").at(-1) ?? source,
-	mimeType: kind === "image" ? "image/jpeg" : "video/mp4",
-	size: 4,
-	kind,
-	bytes: Buffer.from([1, 2, 3, 4]),
-});
+function mediaFile(source: string, kind: "image" | "video"): LocalMediaFile {
+	return {
+		source,
+		path: source,
+		fileName: source.split("/").at(-1) ?? source,
+		mimeType: kind == "image" ? "image/jpeg" : "video/mp4",
+		size: 4,
+		kind,
+		bytes: Buffer.from([1, 2, 3, 4]),
+	};
+}
 
 const existingItem = {
 	sku: "SKU-1",

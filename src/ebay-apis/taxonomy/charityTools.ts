@@ -8,7 +8,6 @@ import type { ToolEntry } from "@/tool-registry/registry.js";
 const CHARITY_AUTH_NOTE =
 	"Supports marketplaceId EBAY_US or EBAY_GB only. Uses an application (client-credentials) token, so EBAY_CLIENT_ID and EBAY_CLIENT_SECRET are enough; no user consent is needed.";
 
-/** Charity API tools for finding charitable organizations supported by eBay for Charity. */
 export const charityEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_charity_org",

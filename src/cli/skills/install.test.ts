@@ -48,7 +48,6 @@ function codexTarget(layer: SkillLayer = "using"): SkillTarget {
 	};
 }
 
-/** Owned-file payloads carry the ownership marker the renderer embeds. */
 const OWNED = "<!-- ebay-mcp:skill:using (generated) -->\n# Using\nbody";
 
 describe("owned-file writes", () => {

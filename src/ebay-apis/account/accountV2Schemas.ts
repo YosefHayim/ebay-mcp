@@ -1,15 +1,6 @@
 import { z } from "zod";
 import { MarketplaceId } from "@/shared/ebayEnums.js";
 
-/**
- * Account API v2 Schemas
- *
- * Zod tool/endpoint input schemas for rate tables, payout settings,
- * combined shipping rules, and user preferences. Request bodies mirror the
- * generated `sellAccountV2Oas3` DTOs; enum fields stay strings and list their
- * eBay values in the description.
- */
-
 const nonempty = z
 	.string()
 	.min(1)
@@ -199,11 +190,6 @@ const endOfAuctionEmailPreferencesSchema = z.object({
 		.describe("Use customized text in winning-bidder emails"),
 });
 
-/**
- * PATCH body for setUserPreferences, mirroring the generated SetUserPreferencesRequest
- * (the GetUserPreferencesResponse `*PreferencesType` containers, with
- * SetItemsAwaitingPaymentPreferencesType for unpaid-item settings).
- */
 const setUserPreferencesSchema = z.object({
 	combinedPaymentPreferences: z
 		.object({
@@ -278,14 +264,12 @@ const setUserPreferencesSchema = z.object({
 // Rate table
 // ============================================================================
 
-/** Input for Account API v2 getRateTable. */
 export const getRateTableInputSchema = z.object({
 	rateTableId: nonempty.describe(
 		"Shipping rate table ID (from Account API v1 getRateTables)",
 	),
 });
 
-/** Input for updateShippingCost: rate table path ID plus the RateTableUpdate body. */
 export const updateShippingCostInputSchema = z.object({
 	rateTableId: nonempty.describe(
 		"Shipping rate table ID (from Account API v1 getRateTables)",
@@ -306,10 +290,8 @@ export const updateShippingCostInputSchema = z.object({
 // Payout settings
 // ============================================================================
 
-/** Input for getPayoutSettings (no parameters). */
 export const getPayoutSettingsInputSchema = z.object({});
 
-/** Input for updatePayoutPercentage: the UpdatePayoutPercentageRequest body. */
 export const updatePayoutPercentageInputSchema = z.object({
 	payoutSplit: z
 		.object({
@@ -340,10 +322,8 @@ export const updatePayoutPercentageInputSchema = z.object({
 // Combined shipping rules
 // ============================================================================
 
-/** Input for getCombinedShippingRules: the marketplace header only. */
 export const getCombinedShippingRulesInputSchema = z.object({ marketplaceId });
 
-/** Input for create/updateCalculatedShippingRules: marketplace header plus request body. */
 export const calculatedShippingRulesInputSchema = z.object({
 	marketplaceId,
 	shippingRules: z
@@ -359,7 +339,6 @@ export const calculatedShippingRulesInputSchema = z.object({
 		.describe("Create/UpdateCalculatedShippingRulesRequest body"),
 });
 
-/** Input for create/updateFlatShippingRules: marketplace header plus request body. */
 export const flatShippingRulesInputSchema = z.object({
 	marketplaceId,
 	shippingRules: z
@@ -372,7 +351,6 @@ export const flatShippingRulesInputSchema = z.object({
 		.describe("Create/UpdateFlatShippingRulesRequest body"),
 });
 
-/** Input for create/updatePromotionalShippingRule: marketplace header plus request body. */
 export const promotionalShippingRuleInputSchema = z.object({
 	marketplaceId,
 	shippingRules: z
@@ -387,7 +365,6 @@ export const promotionalShippingRuleInputSchema = z.object({
 		.describe("Create/UpdatePromotionalShippingRuleRequest body"),
 });
 
-/** Input for updateCombinedPayments: marketplace header plus request body. */
 export const updateCombinedPaymentsInputSchema = z.object({
 	marketplaceId,
 	combinedPayments: z
@@ -401,7 +378,6 @@ export const updateCombinedPaymentsInputSchema = z.object({
 // User preferences
 // ============================================================================
 
-/** Input for getUserPreferences: marketplace header plus optional field groups. */
 export const getUserPreferencesInputSchema = z.object({
 	marketplaceId,
 	fieldgroups: z
@@ -412,7 +388,6 @@ export const getUserPreferencesInputSchema = z.object({
 		),
 });
 
-/** Input for setUserPreferences: marketplace header plus the preferences PATCH body. */
 export const setUserPreferencesInputSchema = z.object({
 	marketplaceId,
 	preferences: setUserPreferencesSchema.describe(

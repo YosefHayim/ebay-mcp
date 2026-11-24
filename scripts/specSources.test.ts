@@ -12,7 +12,7 @@ describe("specFileName", () => {
 	});
 
 	it("keeps the Account v2 cache name while downloading from the API portal", () => {
-		const accountV2 = specSources.find(({ api }) => api === "Account API (v2)");
+		const accountV2 = specSources.find(({ api }) => api == "Account API (v2)");
 		expect(accountV2?.url).toBe(
 			"https://developer.ebay.com/develop/api/spec/account_api_v2.json",
 		);

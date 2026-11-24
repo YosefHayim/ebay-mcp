@@ -13,53 +13,44 @@ const COMPAT_LEVEL = "1451";
 const TRADING_ENDPOINT_PATH = "/ws/api.dll";
 const TRADING_XMLNS = "urn:ebay:apis:eBLBaseComponents";
 
-/** Context required to report a failed Trading API call. */
 interface TradingFailureContext {
-	/** Trading API call name, such as GetItem. */
 	readonly callName: string;
-	/** Absolute Trading API request URL. */
 	readonly path: string;
 }
 
-/** Values required to create an authorized Trading API header set. */
 interface TradingAuthContext extends TradingFailureContext {
-	/** REST client that owns OAuth configuration for the seller account. */
 	readonly restClient: EbayApiClient;
-	/** Base Trading API headers before optional OAuth injection. */
 	readonly headers: Record<string, string>;
 }
 
-/** Values required to send one Trading API XML request. */
 interface TradingPostContext extends TradingFailureContext {
-	/** Request headers sent to the Trading API endpoint. */
 	readonly headers: Record<string, string>;
-	/** XML request body. */
 	readonly xmlBody: string;
 }
 
-/** Values required to parse a Trading API XML response. */
 interface TradingParseContext extends TradingFailureContext {
-	/** XML parser configured for Trading API response shapes. */
 	readonly parser: XMLParser;
-	/** XML response body returned by the Trading API endpoint. */
 	readonly responseText: string;
 }
 
-const buildTradingPath = (baseUrl: string): string =>
-	`${baseUrl}${TRADING_ENDPOINT_PATH}`;
+function buildTradingPath(baseUrl: string): string {
+	return `${baseUrl}${TRADING_ENDPOINT_PATH}`;
+}
 
-const buildTradingHeaders = (callName: string): Record<string, string> => ({
-	"X-EBAY-API-SITEID": getTradingSiteId(),
-	"X-EBAY-API-COMPATIBILITY-LEVEL": COMPAT_LEVEL,
-	"X-EBAY-API-CALL-NAME": callName,
-	"Content-Type": "text/xml",
-});
+function buildTradingHeaders(callName: string): Record<string, string> {
+	return {
+		"X-EBAY-API-SITEID": getTradingSiteId(),
+		"X-EBAY-API-COMPATIBILITY-LEVEL": COMPAT_LEVEL,
+		"X-EBAY-API-CALL-NAME": callName,
+		"Content-Type": "text/xml",
+	};
+}
 
-const buildTradingXmlBody = (
+function buildTradingXmlBody(
 	builder: XmlBuilderInstance,
 	requestTag: string,
 	params: Record<string, unknown>,
-): string => {
+): string {
 	const xmlObject: Record<string, unknown> = {
 		[requestTag]: {
 			"@_xmlns": TRADING_XMLNS,
@@ -68,7 +59,7 @@ const buildTradingXmlBody = (
 	};
 
 	return `<?xml version="1.0" encoding="utf-8"?>\n${builder.build(xmlObject)}`;
-};
+}
 
 function createTradingApiError(
 	{ callName, path }: TradingFailureContext,
@@ -171,7 +162,7 @@ function readTradingPayload(
 	);
 }
 
-const extractTradingErrorMessage = (errors: unknown): string => {
+function extractTradingErrorMessage(errors: unknown): string {
 	const firstError = Array.isArray(errors) ? errors[0] : errors;
 
 	if (!isRecord(firstError)) {
@@ -179,17 +170,17 @@ const extractTradingErrorMessage = (errors: unknown): string => {
 	}
 
 	const shortMessage = firstError["ShortMessage"];
-	if (typeof shortMessage === "string" && shortMessage !== "") {
+	if (typeof shortMessage == "string" && shortMessage != "") {
 		return shortMessage;
 	}
 
 	const longMessage = firstError["LongMessage"];
-	if (typeof longMessage === "string" && longMessage !== "") {
+	if (typeof longMessage == "string" && longMessage != "") {
 		return longMessage;
 	}
 
 	return "Trading API returned a failure without an error message";
-};
+}
 
 function tradingCallFailure(path: string, cause: unknown): Error {
 	if (cause instanceof Error) {
@@ -239,9 +230,6 @@ function validateTradingAck(
 	return tradingPayload;
 }
 
-/**
- * XML-based client for eBay Trading API calls that are not covered by REST APIs.
- */
 export class TradingApiClient {
 	private readonly restClient: EbayApiClient;
 	private readonly baseUrl: string;
@@ -282,36 +270,12 @@ export class TradingApiClient {
 		});
 	}
 
-	/**
-	 * Return the Trading API base URL for the configured eBay environment.
-	 *
-	 * @returns The Trading API base URL derived from the configured environment.
-	 *
-	 * @example
-	 * ```ts
-	 * const baseUrl = tradingClient.getTradingBaseUrl();
-	 * ```
-	 */
 	getTradingBaseUrl = (): string => this.baseUrl;
 
-	/**
-	 * Execute a named Trading API call with XML request/response conversion.
-	 *
-	 * @param callName - Trading API call name, such as GetItem or AddFixedPriceItem.
-	 * @param params - XML request payload fields nested under the generated request tag.
-	 * @returns The parsed response payload.
-	 *
-	 * @example
-	 * ```ts
-	 * const tradingReply = await tradingClient.execute("GetItem", {
-	 *   ItemID: "12345",
-	 * });
-	 * ```
-	 */
-	private async runCall(
+	private runCall = async (
 		callName: string,
 		params: Record<string, unknown>,
-	): Promise<Record<string, unknown>> {
+	): Promise<Record<string, unknown>> => {
 		const requestTag = `${callName}Request`;
 		const responseTag = `${callName}Response`;
 		const path = buildTradingPath(this.baseUrl);
@@ -344,7 +308,7 @@ export class TradingApiClient {
 		});
 
 		return validateTradingAck(tradingPayload, { callName, path });
-	}
+	};
 
 	execute = async (
 		callName: string,

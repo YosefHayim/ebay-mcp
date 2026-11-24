@@ -3,18 +3,22 @@ import { dirname } from "node:path";
 import { getErrorMessage } from "@/shared/errors.js";
 import { httpRequestEffect, readHttpFailureMessage } from "@/shared/http.js";
 
-const isVersionText = (version: unknown): boolean =>
-	typeof version === "string" && version.trim() !== "";
+function isVersionText(version: unknown): boolean {
+	return typeof version == "string" && version.trim() != "";
+}
 
-const hasSpecVersion = (spec: unknown): boolean =>
-	spec !== null &&
-	typeof spec === "object" &&
-	(("openapi" in spec && isVersionText(spec.openapi)) ||
-		("swagger" in spec && isVersionText(spec.swagger)));
+function hasSpecVersion(spec: unknown): boolean {
+	return (
+		spec !== null &&
+		typeof spec == "object" &&
+		(("openapi" in spec && isVersionText(spec.openapi)) ||
+			("swagger" in spec && isVersionText(spec.swagger)))
+	);
+}
 
 export function checkSpecDownload(specBytes: Buffer): Buffer {
 	const specText = specBytes.toString("utf-8");
-	const isEmpty = specText.trim() === "";
+	const isEmpty = specText.trim() == "";
 
 	if (isEmpty) {
 		throw new Error("empty response");

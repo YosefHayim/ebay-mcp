@@ -27,18 +27,12 @@ import {
 	getIdentityBaseUrl,
 } from "@/shared/environment.js";
 
-/** Response returned by Developer Analytics rate-limit endpoints. */
 type RateLimitsResponse = AnalyticsComponents["schemas"]["RateLimitsResponse"];
-/** Request body for registering a developer client. */
 type ClientSettings = ClientComponents["schemas"]["ClientSettings"];
-/** Response returned after registering a developer client. */
 type ClientDetails = ClientComponents["schemas"]["ClientDetails"];
-/** Signing key response returned by Developer Key Management endpoints. */
 type SigningKey = KeyComponents["schemas"]["SigningKey"];
-/** Response returned by the list signing keys endpoint. */
 type QuerySigningKeysResponse =
 	KeyComponents["schemas"]["QuerySigningKeysResponse"];
-/** Request body for creating a signing key. */
 type CreateSigningKeyRequest =
 	KeyComponents["schemas"]["CreateSigningKeyRequest"];
 type GetRateLimitsInput = z.infer<typeof getRateLimitsInputSchema>;
@@ -48,28 +42,16 @@ type GetSigningKeysInput = z.infer<typeof getSigningKeysInputSchema>;
 type CreateSigningKeyInput = z.infer<typeof createSigningKeyInputSchema>;
 type GetSigningKeyInput = z.infer<typeof getSigningKeyInputSchema>;
 
-/**
- * Developer API - Rate limits, client registration, and signing keys
- * Based on:
- * - developer_analytics_v1_beta_oas3.json
- * - developer_client_registration_v1_oas3.json
- * - developer_key_management_v1_oas3.json
- */
 export class DeveloperApi {
 	private readonly analyticsBasePath = "/developer/analytics/v1_beta";
 	private readonly clientBasePath = "/developer/registration/v1";
 	private readonly keyBasePath = "/developer/key_management/v1";
 
-	/**
-	 * Key Management is served from the apiz host (api.ebay.com answers 404) and
-	 * authenticates with a client-credentials application token.
-	 */
 	private readonly keyRequestConfig: EbayRequestConfig = {
 		absolute: true,
 		tokenType: "application",
 	};
 
-	/** Full apiz URL for a Key Management path, honouring EBAY_MCP_API_BASE_URL. */
 	private readonly keyUrl = (path: string): string => {
 		const { environment, apiBaseUrl } = this.client.getConfig();
 		const identityBaseUrl = getIdentityBaseUrl(environment, apiBaseUrl);
@@ -98,19 +80,6 @@ export class DeveloperApi {
 	// RATE LIMITS (Analytics API)
 	// ========================================
 
-	/**
-	 * Retrieves application rate-limit usage across eBay APIs.
-	 *
-	 * @param input - Optional API context and API name filters.
-	 * @returns eBay's generated RateLimitsResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const limits = await developerApi.getRateLimits({ apiContext: 'sell', apiName: 'inventory' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/developer/analytics/resources/rate_limit/methods/getRateLimits
-	 */
 	public getRateLimits = (
 		input: GetRateLimitsInput = {},
 	): Promise<RateLimitsResponse> => {
@@ -126,19 +95,6 @@ export class DeveloperApi {
 		);
 	};
 
-	/**
-	 * Retrieves user-specific rate-limit usage across eBay APIs.
-	 *
-	 * @param input - Optional API context and API name filters.
-	 * @returns eBay's generated RateLimitsResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const limits = await developerApi.getUserRateLimits({ apiContext: 'sell' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/developer/analytics/resources/user_rate_limit/methods/getUserRateLimits
-	 */
 	public getUserRateLimits = (
 		input: GetUserRateLimitsInput = {},
 	): Promise<RateLimitsResponse> => {
@@ -158,19 +114,6 @@ export class DeveloperApi {
 	// CLIENT REGISTRATION
 	// ========================================
 
-	/**
-	 * Registers a third-party financial application with eBay through the tppz host.
-	 *
-	 * @param input - Generated ClientSettings request body.
-	 * @returns eBay's generated ClientDetails response.
-	 *
-	 * @example
-	 * ```ts
-	 * const client = await developerApi.registerClient({ clientSettings });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/developer/client_registration/resources/client/methods/registerClient
-	 */
 	public registerClient = (
 		input: RegisterClientInput,
 	): Promise<ClientDetails> => {
@@ -191,19 +134,6 @@ export class DeveloperApi {
 	// SIGNING KEY MANAGEMENT
 	// ========================================
 
-	/**
-	 * Retrieves all signing keys for the application.
-	 *
-	 * @param input - Empty endpoint input object.
-	 * @returns eBay's QuerySigningKeysResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const keys = await developerApi.getSigningKeys({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/developer/key_management/resources/signing_key/methods/getSigningKeys
-	 */
 	public getSigningKeys = (
 		input: GetSigningKeysInput = {},
 	): Promise<QuerySigningKeysResponse> => {
@@ -213,21 +143,6 @@ export class DeveloperApi {
 		);
 	};
 
-	/**
-	 * Creates a signing keypair for API digital signatures.
-	 *
-	 * @param input - Optional signing-key cipher request body.
-	 * @returns eBay's SigningKey response.
-	 *
-	 * @example
-	 * ```ts
-	 * const key = await developerApi.createSigningKey({
-	 *   request: { signingKeyCipher: "RSA" },
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/developer/key_management/resources/signing_key/methods/createSigningKey
-	 */
 	public createSigningKey = async (
 		input: CreateSigningKeyInput = {},
 	): Promise<SigningKey> => {
@@ -247,19 +162,6 @@ export class DeveloperApi {
 		}
 	};
 
-	/**
-	 * Retrieves a specific signing key by eBay signing key ID.
-	 *
-	 * @param input - eBay-generated signing key identifier.
-	 * @returns eBay's SigningKey response.
-	 *
-	 * @example
-	 * ```ts
-	 * const key = await developerApi.getSigningKey({ signingKeyId: "key_001" });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/developer/key_management/resources/signing_key/methods/getSigningKey
-	 */
 	public getSigningKey = async (
 		input: GetSigningKeyInput,
 	): Promise<SigningKey> => {

@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
-/** One input field of a tool, as shown on the website and in the README. */
 export interface ToolCatalogField {
 	name: string;
 	type: string;
@@ -13,7 +12,6 @@ export interface ToolCatalogField {
 	description: string;
 }
 
-/** One tool with its flags and input fields. */
 export interface ToolCatalogTool {
 	name: string;
 	title: string;
@@ -23,7 +21,6 @@ export interface ToolCatalogTool {
 	fields: ToolCatalogField[];
 }
 
-/** One tool family (for example inventory) with its tools. */
 export interface ToolCatalogFamily {
 	key: string;
 	title: string;
@@ -31,7 +28,6 @@ export interface ToolCatalogFamily {
 	tools: ToolCatalogTool[];
 }
 
-/** The full tool catalog: every family and every tool. */
 export interface ToolCatalog {
 	toolCount: number;
 	familyCount: number;
@@ -76,7 +72,7 @@ function unwrapFieldSchema(schema: z.ZodTypeAny): z.ZodTypeAny | null {
 
 function fieldDescription(schema: z.ZodTypeAny): string {
 	const written = schema.description ?? "";
-	const hasDescription = written !== "";
+	const hasDescription = written != "";
 
 	if (hasDescription) {
 		return written;
@@ -162,7 +158,7 @@ function shortTypeName(schema: z.ZodTypeAny): string {
 function firstVariantType(options: readonly z.ZodTypeAny[]): string {
 	for (const option of options) {
 		const typeName = shortTypeName(option);
-		const isValue = typeName !== "null";
+		const isValue = typeName != "null";
 
 		if (isValue) {
 			return typeName;
@@ -198,7 +194,6 @@ function fieldsOf(inputSchema: z.ZodRawShape): ToolCatalogField[] {
 	return Object.entries(inputSchema).map(toCatalogField);
 }
 
-/** Builds the catalog of every registered tool, grouped by family. */
 export function createToolCatalog(): ToolCatalog {
 	const families: ToolCatalogFamily[] = toolCategories.map((category) => {
 		const tools = category.entries.map(
@@ -225,7 +220,7 @@ export function createToolCatalog(): ToolCatalog {
 	};
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] == fileURLToPath(import.meta.url)) {
 	const outFile = process.argv[2];
 	if (!outFile) {
 		console.error("Usage: tsx scripts/buildToolCatalog.ts <outFile>");

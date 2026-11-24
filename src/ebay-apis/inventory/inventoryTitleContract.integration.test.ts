@@ -67,7 +67,7 @@ afterEach(async () => {
 describe("inventory title advertised MCP schema", () => {
 	it("advertises the title maximum on the registered MCP schema", async () => {
 		const definition = (await client.listTools()).tools.find(
-			(tool) => tool.name === "ebay_create_or_replace_inventory_item",
+			(tool) => tool.name == "ebay_create_or_replace_inventory_item",
 		);
 
 		expect(definition?.inputSchema).toMatchObject({

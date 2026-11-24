@@ -1,15 +1,6 @@
 import { z } from "zod";
 import { FeedbackRating, MessageReferenceType } from "@/shared/ebayEnums.js";
 
-/**
- * Communication API Schemas - Messages, Feedback, and Notifications
- *
- * This file contains Zod schemas for all Communication endpoints including:
- * - Message API
- * - Feedback API
- * - Notification API
- */
-
 // ============================================================================
 // Common Schemas
 // ============================================================================
@@ -49,9 +40,6 @@ const messageMediaSchema = z.object({
 	mediaType: z.string().optional(),
 });
 
-/**
- * Validates the Communication API send message request payload.
- */
 export const sendMessageInputSchema = z.object({
 	messageText: z.string().describe("The text content of the message"),
 	conversationId: z
@@ -77,9 +65,6 @@ export const sendMessageInputSchema = z.object({
 		.describe("Whether to send an email copy to the sender"),
 });
 
-/**
- * Validates the Communication API send message response payload.
- */
 export const sendMessageOutputSchema = z.object({
 	messageId: z.string().optional(),
 	conversationId: z.string().optional(),
@@ -96,18 +81,12 @@ const messageSchema = z.object({
 	messageMedia: z.array(messageMediaSchema).optional(),
 });
 
-/**
- * Validates the Communication API get conversations request payload.
- */
 export const getConversationsInputSchema = z.object({
 	limit: z.number().optional().describe("Number of conversations to return"),
 	offset: z.number().optional().describe("Number of conversations to skip"),
 	status: z.string().optional().describe("Filter by conversation status"),
 });
 
-/**
- * Validates the Communication API get conversations response payload.
- */
 export const getConversationsOutputSchema = z.object({
 	conversations: z
 		.array(
@@ -131,18 +110,12 @@ export const getConversationsOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get conversation request payload.
- */
 export const getConversationInputSchema = z.object({
 	conversationId: z
 		.string()
 		.describe("The unique identifier of the conversation"),
 });
 
-/**
- * Validates the Communication API get conversation response payload.
- */
 export const getConversationOutputSchema = z.object({
 	conversationId: z.string().optional(),
 	messages: z.array(messageSchema).optional(),
@@ -156,9 +129,6 @@ export const getConversationOutputSchema = z.object({
 // Feedback API Schemas
 // ============================================================================
 
-/**
- * Validates the Communication API leave feedback request payload.
- */
 export const leaveFeedbackInputSchema = z.object({
 	orderLineItemId: z
 		.string()
@@ -169,18 +139,12 @@ export const leaveFeedbackInputSchema = z.object({
 	feedbackText: z.string().optional().describe("The feedback comment text"),
 });
 
-/**
- * Validates the Communication API leave feedback response payload.
- */
 export const leaveFeedbackOutputSchema = z.object({
 	feedbackId: z.string().optional(),
 	transactionId: z.string().optional(),
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get feedback request payload.
- */
 export const getFeedbackInputSchema = z.object({
 	transactionId: z.string().describe("The transaction ID"),
 });
@@ -196,17 +160,11 @@ const feedbackDetailSchema = z.object({
 	orderLineItemId: z.string().optional(),
 });
 
-/**
- * Validates the Communication API get feedback response payload.
- */
 export const getFeedbackOutputSchema = z.object({
 	feedback: feedbackDetailSchema.optional(),
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get feedback summary response payload.
- */
 export const getFeedbackSummaryOutputSchema = z.object({
 	positiveFeedbackPercent: z.string().optional(),
 	uniquePositiveFeedbackCount: z.number().optional(),
@@ -216,9 +174,6 @@ export const getFeedbackSummaryOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get awaiting feedback request payload.
- */
 export const getItemsAwaitingFeedbackInputSchema = z.object({
 	filter: z
 		.string()
@@ -228,9 +183,6 @@ export const getItemsAwaitingFeedbackInputSchema = z.object({
 	offset: z.number().optional().describe("Number of items to skip"),
 });
 
-/**
- * Validates the Communication API get awaiting feedback response payload.
- */
 export const getItemsAwaitingFeedbackOutputSchema = z.object({
 	items: z
 		.array(
@@ -254,17 +206,11 @@ export const getItemsAwaitingFeedbackOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API respond to feedback request payload.
- */
 export const respondToFeedbackInputSchema = z.object({
 	feedbackId: z.string().describe("The unique identifier of the feedback"),
 	responseText: z.string().describe("The response text"),
 });
 
-/**
- * Validates the Communication API respond to feedback response payload.
- */
 export const respondToFeedbackOutputSchema = z.object({
 	responseId: z.string().optional(),
 	warnings: z.array(errorSchema).optional(),
@@ -279,9 +225,6 @@ const deliveryConfigSchema = z.object({
 	format: z.string().optional(),
 });
 
-/**
- * Validates the Communication API create notification destination request payload.
- */
 export const createNotificationDestinationInputSchema = z.object({
 	name: z.string().describe("The name of the notification destination"),
 	endpoint: z.string().describe("The endpoint URL for notifications"),
@@ -291,25 +234,16 @@ export const createNotificationDestinationInputSchema = z.object({
 		.describe("Verification token for the endpoint"),
 });
 
-/**
- * Validates the Communication API create notification destination response payload.
- */
 export const createNotificationDestinationOutputSchema = z.object({
 	destinationId: z.string().optional(),
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get notification destinations request payload.
- */
 export const getNotificationDestinationsInputSchema = z.object({
 	limit: z.number().optional().describe("Number of destinations to return"),
 	continuationToken: z.string().optional().describe("Token for pagination"),
 });
 
-/**
- * Validates the Communication API get notification destinations response payload.
- */
 export const getNotificationDestinationsOutputSchema = z.object({
 	destinations: z
 		.array(
@@ -327,9 +261,6 @@ export const getNotificationDestinationsOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API create notification subscription request payload.
- */
 export const createNotificationSubscriptionInputSchema = z.object({
 	topicId: z.string().describe("The topic ID to subscribe to"),
 	destinationId: z.string().describe("The destination ID for notifications"),
@@ -338,25 +269,16 @@ export const createNotificationSubscriptionInputSchema = z.object({
 		.describe("Delivery configuration"),
 });
 
-/**
- * Validates the Communication API create notification subscription response payload.
- */
 export const createNotificationSubscriptionOutputSchema = z.object({
 	subscriptionId: z.string().optional(),
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get notification subscriptions request payload.
- */
 export const getNotificationSubscriptionsInputSchema = z.object({
 	limit: z.number().optional().describe("Number of subscriptions to return"),
 	continuationToken: z.string().optional().describe("Token for pagination"),
 });
 
-/**
- * Validates the Communication API get notification subscriptions response payload.
- */
 export const getNotificationSubscriptionsOutputSchema = z.object({
 	subscriptions: z
 		.array(
@@ -375,9 +297,6 @@ export const getNotificationSubscriptionsOutputSchema = z.object({
 	warnings: z.array(errorSchema).optional(),
 });
 
-/**
- * Validates the Communication API get notification topics response payload.
- */
 export const getNotificationTopicsOutputSchema = z.object({
 	topics: z
 		.array(
@@ -395,9 +314,6 @@ export const getNotificationTopicsOutputSchema = z.object({
 // Negotiation API Schemas
 // ============================================================================
 
-/**
- * Validates the Communication API send offer to interested buyers request payload.
- */
 export const sendOfferToInterestedBuyersInputSchema = z.object({
 	allowCounterOffer: z
 		.boolean()
@@ -416,9 +332,6 @@ export const sendOfferToInterestedBuyersInputSchema = z.object({
 		.describe("Items to include in the offer"),
 });
 
-/**
- * Validates the Communication API send offer to interested buyers response payload.
- */
 export const sendOfferToInterestedBuyersOutputSchema = z.object({
 	offerToInterestedBuyersId: z.string().optional(),
 	warnings: z.array(errorSchema).optional(),

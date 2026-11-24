@@ -6,38 +6,26 @@ import type {
 	ToolOutputSchema,
 } from "@/tool-registry/types.js";
 
-/** Public tool contract shape exposed to consumers after registry normalization. */
 export interface ToolContract {
-	/** Optional MCP annotations copied from the public tool definition. */
 	annotations?: ToolAnnotations | undefined;
-	/** Human-readable description advertised for the tool. */
 	description: string;
-	/** Stable MCP tool name used by clients and handlers. */
 	name: string;
-	/** Zod raw shape advertised as the tool input schema. */
 	inputSchema: ToolDefinition["inputSchema"];
-	/** Optional JSON schema or Zod object describing structured tool output. */
 	outputSchema?: ToolOutputSchema | undefined;
-	/** Optional display title shown by MCP hosts that support it. */
 	title?: string | undefined;
 }
 
-/** Validation report for duplicate, incomplete, or malformed tool contracts. */
 export interface ToolContractValidation {
-	/** Tool names declared more than once. */
 	duplicateContracts: string[];
-	/** Input fields that are not Zod schemas. */
 	invalidInputSchemaFields: string[];
-	/** Tool names whose output schema is not an object or reference schema. */
 	malformedOutputSchemas: string[];
-	/** Tool names missing a non-empty description. */
 	missingDescriptions: string[];
-	/** Tool names missing an input schema object. */
 	missingInputSchemas: string[];
 }
 
-const isJsonObject = (value: unknown): value is Record<string, unknown> =>
-	typeof value === "object" && value !== null && !Array.isArray(value);
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+	return typeof value == "object" && value !== null && !Array.isArray(value);
+}
 
 function isObjectOutputSchema(outputSchema: unknown): boolean {
 	const isZodSchema = outputSchema instanceof z.ZodType;
@@ -72,18 +60,8 @@ function hasObjectType(outputSchema: Record<string, unknown>): boolean {
 	return "$ref" in outputSchema;
 }
 
-/**
- * Builds public tool contracts from the validated tool registry entries.
- *
- * @returns Normalized tool contracts in registry execution order.
- *
- * @example
- * ```ts
- * const contracts = getToolContracts();
- * ```
- */
-export const getToolContracts = (): ToolContract[] =>
-	getToolEntries().map(({ definition }) => ({
+export function getToolContracts(): ToolContract[] {
+	return getToolEntries().map(({ definition }) => ({
 		annotations: definition.annotations,
 		description: definition.description,
 		name: definition.name,
@@ -91,21 +69,11 @@ export const getToolContracts = (): ToolContract[] =>
 		outputSchema: definition.outputSchema,
 		title: definition.title,
 	}));
+}
 
-/**
- * Validates tool contracts for unique names, descriptions, input schemas, and output schemas.
- *
- * @param contracts - Contracts to validate, defaulting to the current registry projection.
- * @returns Duplicate names and malformed contract fields grouped by failure type.
- *
- * @example
- * ```ts
- * const validation = validateToolContracts(getToolContracts());
- * ```
- */
-export const validateToolContracts = (
+export function validateToolContracts(
 	contracts: ToolContract[] = getToolContracts(),
-): ToolContractValidation => {
+): ToolContractValidation {
 	const seenNames = new Set<string>();
 	const duplicateContracts = new Set<string>();
 	const invalidInputSchemaFields: string[] = [];
@@ -119,7 +87,7 @@ export const validateToolContracts = (
 		}
 		seenNames.add(contract.name);
 
-		if (!contract.inputSchema || typeof contract.inputSchema !== "object") {
+		if (!contract.inputSchema || typeof contract.inputSchema != "object") {
 			missingInputSchemas.push(contract.name);
 		} else {
 			for (const [fieldName, schema] of Object.entries(contract.inputSchema)) {
@@ -152,4 +120,4 @@ export const validateToolContracts = (
 		missingDescriptions: missingDescriptions.sort(),
 		missingInputSchemas: missingInputSchemas.sort(),
 	};
-};
+}

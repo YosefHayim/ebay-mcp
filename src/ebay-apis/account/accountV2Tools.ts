@@ -19,7 +19,6 @@ const SPLIT_PAYOUT_NOTE =
 const COMBINED_RULES_NOTE =
 	"marketplaceId is sent as the required X-EBAY-C-MARKETPLACE-ID header. Returns success (eBay 204 No Content); confirm with ebay_get_combined_shipping_rules. Requires sell.account.";
 
-/** Account API v2 tools for rate tables, payout settings, combined shipping rules, and user preferences. */
 export const accountV2Entries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_rate_table",

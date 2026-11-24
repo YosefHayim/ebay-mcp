@@ -1,12 +1,5 @@
 import { z } from "zod";
 
-/**
- * Zod schemas for token utility tools
- */
-
-/**
- * Input schema for converting date strings or timestamps into milliseconds.
- */
 export const ConvertDateToTimestampSchema = z
 	.object({
 		dateInput: z
@@ -17,9 +10,6 @@ export const ConvertDateToTimestampSchema = z
 	})
 	.passthrough();
 
-/**
- * Input schema for validating access and refresh token expiry values.
- */
 export const ValidateTokenExpirySchema = z
 	.object({
 		accessTokenExpiry: z
@@ -35,9 +25,6 @@ export const ValidateTokenExpirySchema = z
 	})
 	.passthrough();
 
-/**
- * Input schema for storing user tokens with optional expiry metadata.
- */
 export const SetUserTokensWithExpirySchema = z
 	.object({
 		accessToken: z.string().min(1).describe("eBay user access token"),

@@ -19,85 +19,36 @@ import type {
 	issueRefundInputSchema,
 } from "./ordersSchemas.js";
 
-/**
- * Response returned by eBay Fulfillment API getOrders.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrders
- */
 export type OrderSearchPagedCollection =
 	components["schemas"]["OrderSearchPagedCollection"];
 
-/**
- * Response returned by eBay Fulfillment API getOrder.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrder
- */
 export type Order = components["schemas"]["Order"];
 
-/**
- * Request payload accepted by eBay Fulfillment API createShippingFulfillment.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/createShippingFulfillment
- */
 export type ShippingFulfillmentDetails =
 	components["schemas"]["ShippingFulfillmentDetails"];
 
-/**
- * Response returned by eBay Fulfillment API createShippingFulfillment.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/createShippingFulfillment
- */
 export type CreateShippingFulfillmentResponse =
 	operations["createShippingFulfillment"]["responses"][201]["content"]["application/json"];
 
-/**
- * Response returned by eBay Fulfillment API getShippingFulfillments.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/getShippingFulfillments
- */
 export type ShippingFulfillmentPagedCollection =
 	components["schemas"]["ShippingFulfillmentPagedCollection"];
 
-/**
- * Response returned by eBay Fulfillment API getShippingFulfillment.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/getShippingFulfillment
- */
 export type ShippingFulfillment = components["schemas"]["ShippingFulfillment"];
 
-/**
- * Request payload accepted by eBay Fulfillment API issueRefund.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/issueRefund
- */
 export type IssueRefundRequest = components["schemas"]["IssueRefundRequest"];
 
-/**
- * Response returned by eBay Fulfillment API issueRefund.
- *
- * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/issueRefund
- */
 export type Refund = components["schemas"]["Refund"];
 
-/** Filters and pagination accepted by getOrders. */
 export interface GetOrdersInput {
-	/** Response field group requested from eBay, such as TAX_BREAKDOWN. */
 	readonly fieldGroups?: string | undefined;
-	/** eBay filter expression used to narrow returned orders. */
 	readonly filter?: string | undefined;
-	/** Maximum number of orders to return. */
 	readonly limit?: number | undefined;
-	/** Number of orders to skip before returning the first result. */
 	readonly offset?: number | undefined;
-	/** Comma-separated order IDs; when present, other filters are ignored by eBay. */
 	readonly orderIds?: string | undefined;
 }
 
-/** Input required to retrieve one order. */
 export interface GetOrderInput {
-	/** eBay order identifier from getOrders. */
 	readonly orderId: string;
-	/** Response field group requested from eBay, such as TAX_BREAKDOWN. */
 	readonly fieldGroups?: string | undefined;
 }
 
@@ -105,23 +56,17 @@ export type CreateShippingFulfillmentInput = z.infer<
 	typeof createShippingFulfillmentInputSchema
 >;
 
-/** Input required to retrieve all shipping fulfillments for one order. */
 export interface GetShippingFulfillmentsInput {
-	/** eBay order identifier whose shipping fulfillments are requested. */
 	readonly orderId: string;
 }
 
-/** Input required to retrieve one shipping fulfillment. */
 export interface GetShippingFulfillmentInput {
-	/** eBay order identifier that owns the shipping fulfillment. */
 	readonly orderId: string;
-	/** eBay shipping fulfillment identifier to retrieve. */
 	readonly fulfillmentId: string;
 }
 
 export type IssueRefundInput = z.infer<typeof issueRefundInputSchema>;
 
-/** eBay Fulfillment order, shipping fulfillment, and refund endpoints. */
 export class FulfillmentApi {
 	private readonly basePath = "/sell/fulfillment/v1";
 
@@ -131,24 +76,6 @@ export class FulfillmentApi {
 		this.client = client;
 	}
 
-	/**
-	 * Retrieves seller orders.
-	 *
-	 * @param input - Optional order filters, field groups, and pagination controls.
-	 * @returns An Effect that succeeds with eBay's generated OrderSearchPagedCollection.
-	 *
-	 * @example
-	 * ```ts
-	 * const orders = await Effect.runPromise(
-	 *   fulfillmentApi.getOrders({
-	 *     filter: 'orderfulfillmentstatus:{NOT_STARTED|IN_PROGRESS}',
-	 *     limit: 50,
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrders
-	 */
 	public getOrders = async (
 		input: GetOrdersInput = {},
 	): Promise<OrderSearchPagedCollection> => {
@@ -179,21 +106,6 @@ export class FulfillmentApi {
 		);
 	};
 
-	/**
-	 * Retrieves one order.
-	 *
-	 * @param input - Order identifier and optional field group.
-	 * @returns An Effect that succeeds with eBay's generated Order response.
-	 *
-	 * @example
-	 * ```ts
-	 * const order = await Effect.runPromise(
-	 *   fulfillmentApi.getOrder({ orderId: '01-12345-67890' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/getOrder
-	 */
 	public getOrder = async (input: GetOrderInput): Promise<Order> => {
 		const orderId = requireStringEffect(input.orderId, "orderId");
 		const fieldGroups = optionalStringEffect(input.fieldGroups, "fieldGroups");
@@ -205,24 +117,6 @@ export class FulfillmentApi {
 		return await requestGetEffect<Order>(this.client, path, params);
 	};
 
-	/**
-	 * Creates a shipping fulfillment for one order.
-	 *
-	 * @param input - Order identifier and generated shipping fulfillment payload.
-	 * @returns An Effect that succeeds with eBay's generated create response object.
-	 *
-	 * @example
-	 * ```ts
-	 * await Effect.runPromise(
-	 *   fulfillmentApi.createShippingFulfillment({
-	 *     orderId: '01-12345-67890',
-	 *     body: { lineItems: [{ lineItemId: 'LINE-1', quantity: 1 }] },
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/createShippingFulfillment
-	 */
 	public createShippingFulfillment = async (
 		input: CreateShippingFulfillmentInput,
 	): Promise<CreateShippingFulfillmentResponse> => {
@@ -240,21 +134,6 @@ export class FulfillmentApi {
 		);
 	};
 
-	/**
-	 * Retrieves all shipping fulfillments for one order.
-	 *
-	 * @param input - Order identifier whose shipping fulfillments are requested.
-	 * @returns An Effect that succeeds with eBay's generated ShippingFulfillmentPagedCollection.
-	 *
-	 * @example
-	 * ```ts
-	 * const fulfillments = await Effect.runPromise(
-	 *   fulfillmentApi.getShippingFulfillments({ orderId: '01-12345-67890' }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/getShippingFulfillments
-	 */
 	public getShippingFulfillments = async (
 		input: GetShippingFulfillmentsInput,
 	): Promise<ShippingFulfillmentPagedCollection> => {
@@ -267,24 +146,6 @@ export class FulfillmentApi {
 		);
 	};
 
-	/**
-	 * Retrieves one shipping fulfillment for one order.
-	 *
-	 * @param input - Order identifier and shipping fulfillment identifier.
-	 * @returns An Effect that succeeds with eBay's generated ShippingFulfillment response.
-	 *
-	 * @example
-	 * ```ts
-	 * const fulfillment = await Effect.runPromise(
-	 *   fulfillmentApi.getShippingFulfillment({
-	 *     orderId: '01-12345-67890',
-	 *     fulfillmentId: '9405509699937003457459',
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/shipping_fulfillment/methods/getShippingFulfillment
-	 */
 	public getShippingFulfillment = async (
 		input: GetShippingFulfillmentInput,
 	): Promise<ShippingFulfillment> => {
@@ -298,27 +159,6 @@ export class FulfillmentApi {
 		return await requestGetEffect<ShippingFulfillment>(this.client, path);
 	};
 
-	/**
-	 * Issues a full or partial refund for one order.
-	 *
-	 * @param input - Order identifier and generated refund request payload.
-	 * @returns An Effect that succeeds with eBay's generated Refund response.
-	 *
-	 * @example
-	 * ```ts
-	 * const refund = await Effect.runPromise(
-	 *   fulfillmentApi.issueRefund({
-	 *     orderId: '01-12345-67890',
-	 *     body: {
-	 *       reasonForRefund: 'BUYER_CANCEL',
-	 *       orderLevelRefundAmount: { value: '10.00', currency: 'USD' },
-	 *     },
-	 *   }),
-	 * );
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/fulfillment/resources/order/methods/issueRefund
-	 */
 	public issueRefund = async (input: IssueRefundInput): Promise<Refund> => {
 		const orderId = requireStringEffect(input.orderId, "orderId");
 		const refundRequest = requireObjectEffect<IssueRefundRequest>(

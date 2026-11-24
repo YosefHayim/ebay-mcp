@@ -23,8 +23,9 @@ import type { ToolEntry } from "@/tool-registry/registry.js";
 const MEDIA_ACCESS_NOTE =
 	"Local file access is opt-in: the file must sit inside a directory listed in EBAY_MCP_MEDIA_DIRS (or under EBAY_MCP_MEDIA_ROOT, which also anchors media://<relative-path> references). Symlinks are resolved before the check.";
 
-const toMilliseconds = (seconds: number | undefined): number | undefined =>
-	seconds === undefined ? undefined : seconds * 1000;
+function toMilliseconds(seconds: number | undefined): number | undefined {
+	return seconds === undefined ? undefined : seconds * 1000;
+}
 
 function thrownError(cause: unknown): Error {
 	if (cause instanceof Error) {
@@ -34,11 +35,6 @@ function thrownError(cause: unknown): Error {
 	return new Error(String(cause));
 }
 
-/**
- * Media tools. These are the only tools that read the local filesystem, and the
- * attach tool is the one deliberate composite (read item → upload → rewrite media
- * fields); both are documented exceptions to the one-endpoint-per-tool rule.
- */
 export const mediaEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_create_image_from_url",

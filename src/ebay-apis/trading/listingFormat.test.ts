@@ -15,29 +15,32 @@ const auctionItem = {
 	ListingDuration: "Days_7",
 };
 
-const auctionCreate = (tradingItem: Record<string, unknown>) =>
-	findTradingListingFormatViolation({
+function auctionCreate(tradingItem: Record<string, unknown>) {
+	return findTradingListingFormatViolation({
 		item: tradingItem,
 		format: FormatType.AUCTION,
 		parameter: "item",
 		isCreate: true,
 	});
+}
 
-const auctionRevise = (tradingItem: Record<string, unknown>) =>
-	findTradingListingFormatViolation({
+function auctionRevise(tradingItem: Record<string, unknown>) {
+	return findTradingListingFormatViolation({
 		item: tradingItem,
 		format: FormatType.AUCTION,
 		parameter: "fields",
 		isCreate: false,
 	});
+}
 
-const fixedPrice = (tradingItem: Record<string, unknown>) =>
-	findTradingListingFormatViolation({
+function fixedPrice(tradingItem: Record<string, unknown>) {
+	return findTradingListingFormatViolation({
 		item: tradingItem,
 		format: FormatType.FIXED_PRICE,
 		parameter: "item",
 		isCreate: true,
 	});
+}
 
 describe("auction Item rules", () => {
 	it("accepts a complete auction with reserve and Buy It Now above the opening bid", () => {

@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-/**
- * Zod schemas for Message API input validation.
- * OpenAPI spec: commerce_message_v1_oas3.json
- */
-
-/** Optional positive page size accepted by Message list endpoints. */
 const limitSchema = z
 	.number({
 		invalid_type_error: "limit must be a number",
@@ -14,7 +8,6 @@ const limitSchema = z
 	.positive("limit must be a positive number")
 	.optional();
 
-/** Optional zero-based page offset accepted by Message list endpoints. */
 const offsetSchema = z
 	.number({
 		invalid_type_error: "offset must be a number",
@@ -23,7 +16,6 @@ const offsetSchema = z
 	.min(0, "offset must be a non-negative number")
 	.optional();
 
-/** Schema for bulkUpdateConversation input. */
 export const bulkUpdateConversationSchema = z.object({
 	conversations: z
 		.array(
@@ -57,7 +49,6 @@ export const bulkUpdateConversationSchema = z.object({
 		.optional(),
 });
 
-/** Schema for getConversations input. */
 export const getConversationsSchema = z.object({
 	conversationType: z.string({
 		message: "Conversation type is required",
@@ -105,7 +96,6 @@ export const getConversationsSchema = z.object({
 		.optional(),
 });
 
-/** Schema for getConversation input. */
 export const getConversationSchema = z.object({
 	conversationId: z.string({
 		message: "Conversation ID is required",
@@ -123,7 +113,6 @@ export const getConversationSchema = z.object({
 	offset: offsetSchema,
 });
 
-/** Schema for sendMessage input. */
 export const sendMessageSchema = z.object({
 	conversationId: z
 		.string({
@@ -206,7 +195,6 @@ export const sendMessageSchema = z.object({
 		.optional(),
 });
 
-/** Schema for updateConversation input. */
 export const updateConversationSchema = z.object({
 	conversationId: z
 		.string({

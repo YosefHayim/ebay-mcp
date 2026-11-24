@@ -3,14 +3,16 @@ import { StoresApi } from "@/ebay-apis/stores/storesApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 
 const STORE = "/sell/stores/v1/store";
-const taskLocation = (taskId: string) =>
-	`https://api.ebay.com${STORE}/tasks/${taskId}`;
-/** Header-only eBay answer to a category change, pointing at its store task. */
-const taskAccepted = (status: number, taskId: string) => ({
-	status,
-	data: undefined,
-	headers: { location: taskLocation(taskId) },
-});
+function taskLocation(taskId: string) {
+	return `https://api.ebay.com${STORE}/tasks/${taskId}`;
+}
+function taskAccepted(status: number, taskId: string) {
+	return {
+		status,
+		data: undefined,
+		headers: { location: taskLocation(taskId) },
+	};
+}
 const client = {
 	get: vi.fn(),
 	postForResponse: vi.fn(),

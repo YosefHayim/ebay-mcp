@@ -22,7 +22,6 @@ import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 
-/** Miscellaneous eBay API tools that do not fit the primary seller API categories. */
 export const otherEntries: ToolEntry[] = [
 	// Identity API
 	defineTool({

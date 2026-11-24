@@ -1,11 +1,3 @@
-/**
- * Unit tests for `isEntryModule`, which decides whether a script runs its CLI.
- *
- * The regression guarded here: Node keeps `process.argv[1]` as the symlink path
- * but reports `import.meta.url` as the real path, so a plain path comparison
- * silently skipped the CLI when it was launched through a symlinked bin.
- */
-
 import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -24,7 +16,7 @@ describe("isEntryModule", () => {
 		mkdirSync(fixtureDir, { recursive: true });
 		writeFileSync(scriptPath, "");
 		rmSync(linkPath, { force: true });
-		if (process.platform !== "win32") {
+		if (process.platform != "win32") {
 			symlinkSync(scriptPath, linkPath);
 		}
 	});
@@ -43,7 +35,7 @@ describe("isEntryModule", () => {
 		expect(isEntryModule(scriptUrl)).toBe(true);
 	});
 
-	it.skipIf(process.platform === "win32")(
+	it.skipIf(process.platform == "win32")(
 		"is true when Node was started through a symlink to the module file",
 		() => {
 			process.argv = [process.argv0, linkPath];

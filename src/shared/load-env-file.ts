@@ -1,7 +1,7 @@
 import { loadEnvFile } from "node:process";
 
 function isMissingEnvFile(error: unknown): boolean {
-	if (typeof error !== "object") {
+	if (typeof error != "object") {
 		return false;
 	}
 

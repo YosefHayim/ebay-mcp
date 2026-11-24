@@ -4,29 +4,24 @@ import { defineTool } from "@/tool-registry/defineTool.js";
 import { formatFileResult } from "@/tool-registry/fileResult.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 
-/** Tool input for Taxonomy API getDefaultCategoryTreeId. */
 const getDefaultCategoryTreeIdSchema = z.object({
 	marketplaceId: z.string().describe("Marketplace ID (e.g., EBAY_US)"),
 });
 
-/** Tool input for Taxonomy API getCategoryTree. */
 const getCategoryTreeSchema = z.object({
 	categoryTreeId: z.string().describe("Category tree ID"),
 });
 
-/** Tool input for Taxonomy API getCategorySuggestions. */
 const getCategorySuggestionsSchema = z.object({
 	categoryTreeId: z.string().describe("Category tree ID"),
 	query: z.string().describe("Search query for category suggestions"),
 });
 
-/** Tool input for Taxonomy API getItemAspectsForCategory. */
 const getItemAspectsForCategorySchema = z.object({
 	categoryTreeId: z.string().describe("Category tree ID"),
 	categoryId: z.string().describe("Category ID"),
 });
 
-/** Taxonomy API tools for category trees, category suggestions, and compatibility metadata. */
 export const taxonomyEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_default_category_tree_id",

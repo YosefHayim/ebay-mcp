@@ -1,9 +1,3 @@
-/**
- * Card archetype view: a single-entity detail panel with status badges and
- * grouped field sections. Backs `ui://ebay/card.html` and renders one order,
- * offer, inventory item, dispute, or seller standards profile.
- */
-
 import type { ReactNode } from "react";
 import type {
 	CardBadge,
@@ -11,12 +5,10 @@ import type {
 } from "@/tool-registry/ui/viewModels.js";
 import { AppShell, EmptyState, mount, useViewModel } from "./host.js";
 
-/** Maps a badge tone to its CSS modifier class. */
 function badgeClass(tone: CardBadge["tone"]): string {
-	return tone && tone !== "neutral" ? `badge badge--${tone}` : "badge";
+	return tone && tone != "neutral" ? `badge badge--${tone}` : "badge";
 }
 
-/** Renders the header, badges, and sections of a detail card. */
 function Card({ view }: { view: CardViewModel }): ReactNode {
 	return (
 		<div className="card-view">
@@ -57,7 +49,6 @@ function Card({ view }: { view: CardViewModel }): ReactNode {
 	);
 }
 
-/** Top-level card app: handshake state plus the rendered card. */
 function CardApp(): ReactNode {
 	const { view, isConnected, error } = useViewModel("card");
 	return (

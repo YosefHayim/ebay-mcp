@@ -29,9 +29,6 @@ import { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import { TradingApiClient } from "@/ebay-client/tradingApiClient.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 
-/**
- * Main API facade providing access to all eBay APIs
- */
 export class EbaySellerApi {
 	private client: EbayApiClient;
 	private readonly config: EbayConfig;
@@ -100,28 +97,16 @@ export class EbaySellerApi {
 		this.trading = new TradingApi(tradingClient);
 	}
 
-	/**
-	 * Initialize the API (load tokens from storage)
-	 */
 	initialize = (): Promise<void> => this.client.initialize();
 
-	/**
-	 * Check if the API client is authenticated
-	 */
-	isAuthenticated(): boolean {
+	isAuthenticated = (): boolean => {
 		return this.client.isAuthenticated();
-	}
+	};
 
-	/**
-	 * Check if user tokens are available
-	 */
-	hasUserTokens(): boolean {
+	hasUserTokens = (): boolean => {
 		return this.client.hasUserTokens();
-	}
+	};
 
-	/**
-	 * Set user access and refresh tokens
-	 */
 	setUserTokens = (
 		accessToken: string,
 		refreshToken: string,
@@ -135,33 +120,17 @@ export class EbaySellerApi {
 			refreshTokenExpiry,
 		);
 
-	/**
-	 * Get OAuth client for advanced operations
-	 */
-	getAuthClient(): EbayApiClient {
+	getAuthClient = (): EbayApiClient => {
 		return this.client;
-	}
+	};
 
-	/**
-	 * Returns the validated runtime configuration used to construct this API facade.
-	 *
-	 * @returns eBay API runtime configuration with credentials, environment, and proxy flags.
-	 *
-	 * @example
-	 * ```ts
-	 * const environment = api.getConfig().environment;
-	 * ```
-	 */
-	getConfig(): EbayConfig {
+	getConfig = (): EbayConfig => {
 		return this.config;
-	}
+	};
 
-	/**
-	 * Get token information for debugging
-	 */
-	getTokenInfo() {
+	getTokenInfo = () => {
 		return this.client.getTokenInfo();
-	}
+	};
 }
 
 export * from "@/ebay-apis/account/accountApi.js";

@@ -6,11 +6,6 @@ import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 
-/**
- * Browse tools for public marketplace search data.
- *
- * Gated as family `browse` via `EBAY_MCP_TOOLS=browse`.
- */
 export const browseEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_find_active_items",

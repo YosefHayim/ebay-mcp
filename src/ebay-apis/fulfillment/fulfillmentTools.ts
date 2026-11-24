@@ -38,10 +38,8 @@ import {
 	mapOrderToCard,
 } from "@/tool-registry/ui/maps.js";
 
-/** Default number of recent orders scanned by cancellation/refund helpers. */
 const DEFAULT_ORDER_SCAN_LIMIT = 50;
 
-/** Fulfillment API tools for orders, shipping fulfillments, refunds, and payment disputes. */
 export const fulfillmentEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_orders",

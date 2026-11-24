@@ -1,8 +1,3 @@
-/**
- * OAuth metadata endpoints for MCP server
- * Implements RFC 9728 Protected Resource Metadata
- */
-
 import type {
 	IncomingMessage,
 	RequestListener,
@@ -15,45 +10,19 @@ import type {
 
 const JSON_CONTENT_TYPE = "application/json; charset=utf-8";
 
-/**
- * Inputs for the MCP OAuth protected-resource metadata endpoints.
- */
 export interface MetadataConfig {
-	/**
-	 * Resource server URL (e.g., "http://localhost:3000")
-	 */
 	resourceServerUrl: string;
 
-	/**
-	 * Authorization server URL or metadata
-	 */
 	authServerMetadata: string | OAuthServerMetadata;
 
-	/**
-	 * Scopes supported by this resource server
-	 */
 	scopesSupported: string[];
 
-	/**
-	 * Optional documentation URL for this resource server
-	 */
 	resourceDocumentation?: string;
 
-	/**
-	 * Resource name for display purposes
-	 */
 	resourceName?: string;
 
-	/**
-	 * eBay environment (production or sandbox) - optional
-	 * Used to indicate which eBay environment the server is configured for
-	 */
 	ebayEnvironment?: "production" | "sandbox";
 
-	/**
-	 * eBay-specific OAuth scopes - optional
-	 * Separate from MCP OAuth scopes, indicates what eBay API access is available
-	 */
 	ebayScopes?: string[];
 }
 
@@ -96,7 +65,7 @@ function readRequestPath(requestUrl: string | undefined): string {
 function listAuthorizationServers(metadataConfig: MetadataConfig): string[] {
 	const authServerMetadata = metadataConfig.authServerMetadata;
 
-	if (typeof authServerMetadata === "string") {
+	if (typeof authServerMetadata == "string") {
 		return [authServerMetadata];
 	}
 
@@ -112,7 +81,7 @@ function createProtectedResourceMetadata(
 		scopes_supported: metadataConfig.scopesSupported,
 	};
 	const documentation = metadataConfig.resourceDocumentation ?? "";
-	const hasDocumentation = documentation !== "";
+	const hasDocumentation = documentation != "";
 
 	if (hasDocumentation) {
 		metadata.resource_documentation = documentation;
@@ -122,7 +91,7 @@ function createProtectedResourceMetadata(
 }
 
 function readEbayBaseUrl(ebayEnvironment: "production" | "sandbox"): string {
-	if (ebayEnvironment === "production") {
+	if (ebayEnvironment == "production") {
 		return "https://api.ebay.com";
 	}
 
@@ -138,7 +107,7 @@ function createMcpServerInfo(metadataConfig: MetadataConfig): McpServerInfo {
 		scopes_supported: metadataConfig.scopesSupported,
 	};
 	const documentation = metadataConfig.resourceDocumentation ?? "";
-	const hasDocumentation = documentation !== "";
+	const hasDocumentation = documentation != "";
 
 	if (hasDocumentation) {
 		serverInfo.documentation = documentation;
@@ -162,17 +131,12 @@ function createMcpServerInfo(metadataConfig: MetadataConfig): McpServerInfo {
 	return serverInfo;
 }
 
-/**
- * Answer a metadata GET when the path is one of the well-known routes.
- *
- * @returns True when the response was written.
- */
 export function serveMetadataRoute(
 	request: IncomingMessage,
 	response: ServerResponse,
 	metadataConfig: MetadataConfig,
 ): boolean {
-	const isGet = request.method === "GET";
+	const isGet = request.method == "GET";
 
 	if (!isGet) {
 		return false;
@@ -180,14 +144,14 @@ export function serveMetadataRoute(
 
 	const pathname = readRequestPath(request.url);
 	const isProtectedResource =
-		pathname === "/.well-known/oauth-protected-resource";
+		pathname == "/.well-known/oauth-protected-resource";
 
 	if (isProtectedResource) {
 		writeJson(response, 200, createProtectedResourceMetadata(metadataConfig));
 		return true;
 	}
 
-	const isServerInfo = pathname === "/.well-known/mcp-server-info";
+	const isServerInfo = pathname == "/.well-known/mcp-server-info";
 
 	if (isServerInfo) {
 		writeJson(response, 200, createMcpServerInfo(metadataConfig));
@@ -197,12 +161,6 @@ export function serveMetadataRoute(
 	return false;
 }
 
-/**
- * Request listener for the OAuth protected-resource metadata routes.
- *
- * @param metadataConfig - Protected resource metadata and optional eBay context.
- * @returns Listener exposing the well-known metadata paths.
- */
 export function createMetadataRouter(
 	metadataConfig: MetadataConfig,
 ): RequestListener {
@@ -223,19 +181,8 @@ export function createMetadataRouter(
 	return serveMetadata;
 }
 
-/**
- * Helper to get Protected Resource Metadata URL from server URL
- *
- * @param serverUrl - Public HTTP server URL.
- * @returns URL for the RFC 9728 protected-resource metadata endpoint.
- *
- * @example
- * ```ts
- * const url = getProtectedResourceMetadataUrl('http://localhost:3000');
- * ```
- */
-export const getProtectedResourceMetadataUrl = (serverUrl: string): string => {
+export function getProtectedResourceMetadataUrl(serverUrl: string): string {
 	const url = new URL(serverUrl);
 	url.pathname = "/.well-known/oauth-protected-resource";
 	return url.toString();
-};
+}

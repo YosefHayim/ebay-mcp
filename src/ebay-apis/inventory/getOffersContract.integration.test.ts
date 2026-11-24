@@ -69,7 +69,7 @@ describe("ebay_get_offers registered MCP contract", () => {
 
 	it("advertises a required SKU and the inventory-enumeration workflow", async () => {
 		const definition = (await client.listTools()).tools.find(
-			(tool) => tool.name === "ebay_get_offers",
+			(tool) => tool.name == "ebay_get_offers",
 		);
 
 		expect(definition?.inputSchema.required).toContain("sku");

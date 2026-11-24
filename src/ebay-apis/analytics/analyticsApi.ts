@@ -26,41 +26,17 @@ type GetCustomerServiceMetricInput = z.infer<
 	typeof getCustomerServiceMetricInputSchema
 >;
 
-/**
- * Traffic report response returned by eBay Analytics getTrafficReport.
- *
- * @see https://developer.ebay.com/api-docs/sell/analytics/resources/traffic_report/methods/getTrafficReport
- */
 export type GetTrafficReportResponse = components["schemas"]["Report"];
 
-/**
- * Seller standards profile response returned by eBay Analytics getSellerStandardsProfile.
- *
- * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/getSellerStandardsProfile
- */
 export type GetSellerStandardsProfileResponse =
 	components["schemas"]["StandardsProfile"];
 
-/**
- * Seller standards profile collection returned by eBay Analytics findSellerStandardsProfiles.
- *
- * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/findSellerStandardsProfiles
- */
 export type FindSellerStandardsProfilesResponse =
 	components["schemas"]["FindSellerStandardsProfilesResponse"];
 
-/**
- * Customer service metric response returned by eBay Analytics getCustomerServiceMetric.
- *
- * @see https://developer.ebay.com/api-docs/sell/analytics/resources/customer_service_metric/methods/getCustomerServiceMetric
- */
 export type GetCustomerServiceMetricResponse =
 	components["schemas"]["GetCustomerServiceMetricResponse"];
 
-/**
- * Analytics API - Sales and traffic analytics
- * Based on: sell_analytics_v1_oas3.json
- */
 export class AnalyticsApi {
 	private readonly basePath = "/sell/analytics/v1";
 	private readonly client: EbayApiClient;
@@ -69,23 +45,6 @@ export class AnalyticsApi {
 		this.client = client;
 	}
 
-	/**
-	 * Retrieves listing traffic report metrics.
-	 *
-	 * @param input - Traffic report dimension, filter, metric, and optional sort expression.
-	 * @returns A promise that resolves with eBay's generated traffic report response.
-	 *
-	 * @example
-	 * ```ts
-	 * const report = await analyticsApi.getTrafficReport({
-	 *     dimension: 'LISTING',
-	 *     filter: 'listing_ids:{123}',
-	 *     metric: 'IMPRESSION',
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/traffic_report/methods/getTrafficReport
-	 */
 	getTrafficReport = async (
 		input: GetTrafficReportInput,
 	): Promise<GetTrafficReportResponse> => {
@@ -118,19 +77,6 @@ export class AnalyticsApi {
 		return requestGetEffect<GetTrafficReportResponse>(client, path, params);
 	};
 
-	/**
-	 * Retrieves every seller standards profile available for the seller.
-	 *
-	 * @param input - Empty endpoint input object.
-	 * @returns A promise that resolves with eBay's generated seller standards profile collection.
-	 *
-	 * @example
-	 * ```ts
-	 * const profiles = await analyticsApi.findSellerStandardsProfiles({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/findSellerStandardsProfiles
-	 */
 	findSellerStandardsProfiles = (
 		input: FindSellerStandardsProfilesInput = {},
 	): Promise<FindSellerStandardsProfilesResponse> => {
@@ -141,22 +87,6 @@ export class AnalyticsApi {
 		);
 	};
 
-	/**
-	 * Retrieves one seller standards profile by program and cycle.
-	 *
-	 * @param input - Seller standards program identifier and cycle.
-	 * @returns A promise that resolves with eBay's generated StandardsProfile response.
-	 *
-	 * @example
-	 * ```ts
-	 * const profile = await analyticsApi.getSellerStandardsProfile({
-	 *     program: 'CUSTOMER_SERVICE',
-	 *     cycle: 'CURRENT',
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/seller_standards_profile/methods/getSellerStandardsProfile
-	 */
 	getSellerStandardsProfile = async (
 		input: GetSellerStandardsProfileInput,
 	): Promise<GetSellerStandardsProfileResponse> => {
@@ -177,23 +107,6 @@ export class AnalyticsApi {
 		);
 	};
 
-	/**
-	 * Retrieves customer service metric benchmarks for a marketplace.
-	 *
-	 * @param input - Metric type, evaluation type, and marketplace identifier.
-	 * @returns A promise that resolves with eBay's generated customer service metric response.
-	 *
-	 * @example
-	 * ```ts
-	 * const metric = await analyticsApi.getCustomerServiceMetric({
-	 *     customerServiceMetricType: 'ITEM_NOT_AS_DESCRIBED',
-	 *     evaluationType: 'CURRENT',
-	 *     evaluationMarketplaceId: 'EBAY_US',
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/analytics/resources/customer_service_metric/methods/getCustomerServiceMetric
-	 */
 	getCustomerServiceMetric = async (
 		input: GetCustomerServiceMetricInput,
 	): Promise<GetCustomerServiceMetricResponse> => {

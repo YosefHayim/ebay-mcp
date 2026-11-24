@@ -1,10 +1,3 @@
-/**
- * OAuth 2.1 types for MCP server authorization
- */
-
-/**
- * OAuth 2.0 Authorization Server Metadata (RFC 8414)
- */
 export interface OAuthServerMetadata {
 	issuer: string;
 	authorization_endpoint: string;
@@ -19,9 +12,6 @@ export interface OAuthServerMetadata {
 	code_challenge_methods_supported?: string[];
 }
 
-/**
- * Protected Resource Metadata (RFC 9728)
- */
 export interface ProtectedResourceMetadata {
 	resource: string;
 	authorization_servers: string[];
@@ -30,9 +20,6 @@ export interface ProtectedResourceMetadata {
 	resource_signing_alg_values_supported?: string[];
 }
 
-/**
- * Verified access token payload
- */
 export interface VerifiedToken {
 	token: string;
 	clientId: string;
@@ -42,9 +29,6 @@ export interface VerifiedToken {
 	subject?: string;
 }
 
-/**
- * Token introspection request (RFC 7662)
- */
 export interface TokenIntrospectionRequest {
 	token: string;
 	token_type_hint?: "access_token" | "refresh_token";
@@ -52,9 +36,6 @@ export interface TokenIntrospectionRequest {
 	client_secret?: string;
 }
 
-/**
- * Token introspection response (RFC 7662)
- */
 export interface TokenIntrospectionResponse {
 	active: boolean;
 	scope?: string;

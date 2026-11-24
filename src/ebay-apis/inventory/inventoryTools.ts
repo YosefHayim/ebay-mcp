@@ -54,16 +54,17 @@ const emptyOutputSchema = {
 	description: "No content returned on success",
 } as OutputArgs;
 
-const generatedBodySchema = <Body>(description: string) =>
-	z
+function generatedBodySchema<Body>(description: string) {
+	return z
 		.custom<Body>(
 			(value) =>
-				value !== null && typeof value === "object" && !Array.isArray(value),
+				value !== null && typeof value == "object" && !Array.isArray(value),
 			{
 				message: description,
 			},
 		)
 		.describe(description);
+}
 
 const skuInputSchema = z.object({
 	sku: z.string().describe("The seller-defined SKU"),
@@ -230,7 +231,6 @@ const listingFeesOutputSchema = z
 	})
 	.passthrough();
 
-/** Inventory API tools for seller inventory items, offers, locations, and bulk operations. */
 export const inventoryEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_get_inventory_items",

@@ -1,10 +1,3 @@
-/**
- * Chart archetype view: a dependency-free inline-SVG line or bar chart. Backs
- * `ui://ebay/chart.html` and renders the traffic report (line) and customer
- * service metrics (bar). Kept deliberately small — one shared coordinate space,
- * a line branch and a bar branch — rather than pulling in a charting library.
- */
-
 import type { ReactNode } from "react";
 import type {
 	ChartSeries,
@@ -12,7 +5,6 @@ import type {
 } from "@/tool-registry/ui/viewModels.js";
 import { AppShell, EmptyState, mount, useViewModel } from "./host.js";
 
-/** Fallback series colours, assigned by index when a series sets no explicit colour. */
 const PALETTE = [
 	"#3b82f6",
 	"#ef4444",
@@ -29,32 +21,32 @@ const PLOT_W = WIDTH - PAD.left - PAD.right;
 const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
 const BASELINE = PAD.top + PLOT_H;
 
-/** Returns the colour for a series, falling back to the palette by index. */
 function seriesColor(series: ChartSeries, index: number): string {
 	const fallbackColor = PALETTE[index % PALETTE.length] ?? "#64748b";
 	return series.color ?? fallbackColor;
 }
 
-/** Picks a label stride so at most ~12 x-axis labels render without crowding. */
 function labelStride(count: number): number {
 	return count > 12 ? Math.ceil(count / 12) : 1;
 }
 
-/** Renders the chart SVG plus a legend. */
 function Chart({ view }: { view: ChartViewModel }): ReactNode {
 	const labels = view.series[0]?.points.map((point) => point.x) ?? [];
 	const allValues = view.series.flatMap((series) =>
 		series.points.map((point) => point.y),
 	);
 	const maxY = Math.max(1, ...allValues);
-	const yFor = (y: number): number => BASELINE - (y / maxY) * PLOT_H;
+	function yFor(y: number): number {
+		return BASELINE - (y / maxY) * PLOT_H;
+	}
 	const stride = labelStride(labels.length);
 
 	// Line points are spread edge-to-edge; bar groups each get an equal slot.
-	const lineX = (index: number): number =>
-		labels.length > 1
+	function lineX(index: number): number {
+		return labels.length > 1
 			? PAD.left + (index / (labels.length - 1)) * PLOT_W
 			: PAD.left + PLOT_W / 2;
+	}
 	const groupWidth = labels.length > 0 ? PLOT_W / labels.length : PLOT_W;
 	const barWidth = (groupWidth * 0.8) / Math.max(1, view.series.length);
 
@@ -89,7 +81,7 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 					{maxY}
 				</text>
 
-				{view.kind === "line"
+				{view.kind == "line"
 					? view.series.map((series, seriesIndex) => (
 							<polyline
 								// biome-ignore lint/suspicious/noArrayIndexKey: series names can repeat
@@ -123,13 +115,13 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 						)}
 
 				{labels.map((label, index) =>
-					index % stride === 0 ? (
+					index % stride == 0 ? (
 						<text
 							// biome-ignore lint/suspicious/noArrayIndexKey: axis labels can repeat
 							key={`${label}-${index}`}
 							className="chart-label"
 							x={
-								view.kind === "line"
+								view.kind == "line"
 									? lineX(index)
 									: PAD.left + (index + 0.5) * groupWidth
 							}
@@ -158,7 +150,6 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 	);
 }
 
-/** Top-level chart app: handshake state plus the rendered chart. */
 function ChartApp(): ReactNode {
 	const { view, isConnected, error } = useViewModel("chart");
 	const hasData = view

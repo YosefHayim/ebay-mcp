@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InventoryApi } from "@/ebay-apis/inventory/inventoryApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 
-const expectEndpointInputError = async (
+async function expectEndpointInputError(
 	program: Promise<unknown>,
 	parameter: string,
-): Promise<void> => {
+): Promise<void> {
 	let thrown: unknown;
 
 	try {
@@ -21,7 +21,7 @@ const expectEndpointInputError = async (
 		expect(thrown).toBeInstanceOf(Error);
 		expect(thrown.message).toContain(parameter);
 	}
-};
+}
 
 describe("InventoryApi", () => {
 	let client: EbayApiClient;

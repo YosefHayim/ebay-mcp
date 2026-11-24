@@ -56,26 +56,26 @@ let fixture: MediaFixture;
 let client: Client;
 let runtime: EbayMcpRuntime;
 
-const callTool = async (name: string, args: Record<string, unknown>) => {
+async function callTool(name: string, args: Record<string, unknown>) {
 	const toolResult = CallToolResultSchema.parse(
 		await client.callTool({ name, arguments: args }),
 	);
 	const text = toolResult.content
-		.map((block) => (block.type === "text" ? block.text : ""))
+		.map((block) => (block.type == "text" ? block.text : ""))
 		.join("");
 	return {
-		isError: toolResult.isError === true,
+		isError: toolResult.isError == true,
 		text,
 		content: toolResult.content,
 	};
-};
-const payloadOf = async (name: string, args: Record<string, unknown>) => {
+}
+async function payloadOf(name: string, args: Record<string, unknown>) {
 	const toolResult = await callTool(name, args);
 	return {
 		isError: toolResult.isError,
 		payload: JSON.parse(toolResult.text) as unknown,
 	};
-};
+}
 
 beforeAll(async () => {
 	fixture = await createMediaFixture();
@@ -159,13 +159,13 @@ describe("feed family registration", () => {
 		);
 		expect(advertised).toEqual(expected);
 		const createOrder = tools.find(
-			(tool) => tool.name === "ebay_create_order_task",
+			(tool) => tool.name == "ebay_create_order_task",
 		);
 		expect(createOrder?.inputSchema.properties?.task).toMatchObject({
 			required: ["feedType", "schemaVersion"],
 		});
 		const upload = tools.find(
-			(tool) => tool.name === "ebay_upload_feed_task_file",
+			(tool) => tool.name == "ebay_upload_feed_task_file",
 		);
 		expect(upload?.description).toContain("EBAY_MCP_MEDIA_DIRS");
 	});
@@ -358,7 +358,7 @@ describe("feed read tools", () => {
 			`feed.bin (${mimeType}, ${bytes.length} bytes)`,
 		);
 		expect(
-			downloadResult.content.find((block) => block.type === "resource"),
+			downloadResult.content.find((block) => block.type == "resource"),
 		).toEqual({
 			type: "resource",
 			resource: { uri, mimeType, blob: bytes.toString("base64") },

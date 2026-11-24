@@ -1,17 +1,6 @@
 import { existsSync, readFileSync } from "fs";
 
-/**
- * Parse a dotenv-style KEY=VALUE file into a simple map.
- *
- * @param filePath - Path to the dotenv-style file.
- * @returns Parsed environment map, or an empty object when the file is absent.
- *
- * @example
- * ```ts
- * const env = parseEnvFile('.env');
- * ```
- */
-export const parseEnvFile = (filePath: string): Record<string, string> => {
+export function parseEnvFile(filePath: string): Record<string, string> {
 	const env: Record<string, string> = {};
 
 	if (!existsSync(filePath)) {
@@ -60,4 +49,4 @@ export const parseEnvFile = (filePath: string): Record<string, string> => {
 	}
 
 	return env;
-};
+}

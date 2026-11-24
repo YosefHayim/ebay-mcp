@@ -513,15 +513,11 @@ describe("EbayOAuthClient", () => {
 
 		const writeFileSyncMock = vi.mocked(fs.writeFileSync);
 
-		/**
-		 * Locate the most recent fs.writeFileSync call targeting `.env`
-		 * and return its parsed content. Used to verify token persistence.
-		 */
-		const getLastEnvWrite = (): {
+		function getLastEnvWrite(): {
 			filePath: string;
 			content: string;
 			parsed: NodeJS.Dict<string>;
-		} => {
+		} {
 			const envWrite = [...writeFileSyncMock.mock.calls]
 				.reverse()
 				.find(([filePath]) => String(filePath).endsWith(`${path.sep}.env`));
@@ -538,7 +534,7 @@ describe("EbayOAuthClient", () => {
 				content: envContent,
 				parsed: parseEnv(envContent),
 			};
-		};
+		}
 
 		beforeEach(() => {
 			originalCwd = process.cwd();

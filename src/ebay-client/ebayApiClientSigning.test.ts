@@ -46,7 +46,6 @@ const signingConfig: EbayConfig = {
 	signing: { keyJwe: JWE, privateKey: PRIVATE_KEY_B64 },
 };
 
-/** Capture the headers and body of the next request nock intercepts. */
 const captureRequest = () => {
 	const captured: { headers: Record<string, string>; requestBody: string } = {
 		headers: {},
@@ -61,7 +60,7 @@ const captureRequest = () => {
 			captured.headers[name] = String(value);
 		}
 		captured.requestBody =
-			typeof requestBody === "string"
+			typeof requestBody == "string"
 				? requestBody
 				: JSON.stringify(requestBody);
 		return [200, { ok: true }] as nock.ReplyFnResult;

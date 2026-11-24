@@ -11,7 +11,6 @@ import type { ToolEntry } from "@/tool-registry/registry.js";
 
 const LOGISTICS_ACCESS_NOTE = `Logistics API is limited release (eBay-approved developers only, USPS rates and labels only) and needs the ${LOGISTICS_SCOPE} scope, which is not requested by default: eligible keysets add it to ${OAUTH_SCOPES_ENV} and re-consent.`;
 
-/** Logistics API tools for shipping quotes, shipments, and shipping labels. */
 export const logisticsEntries: ToolEntry[] = [
 	defineTool({
 		name: "ebay_create_shipping_quote",

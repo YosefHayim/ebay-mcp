@@ -25,12 +25,6 @@ import {
 	mapUserRateLimitsToStat,
 } from "@/tool-registry/ui/maps.js";
 
-/**
- * Builds a traffic-report `Value` leaf. The OpenAPI generator types the leaf as
- * `Record<string, never>`, but at runtime eBay returns a number or numeric
- * string — the gotcha `toNumber`/`toLabel` exist to absorb. The documented
- * `unknown` hop keeps the fixture honest about the real wire shape.
- */
 function reportValue(metricValue: string | number): {
 	value: Record<string, never>;
 	applicable: boolean;
@@ -285,13 +279,13 @@ describe("card mappers", () => {
 			{ label: "Paid", tone: "success" },
 		]);
 		const summary = view.sections.find(
-			(section) => section.heading === "Summary",
+			(section) => section.heading == "Summary",
 		);
 		expect(summary?.fields).toContainEqual({
 			label: "Total",
 			value: "25.99 USD",
 		});
-		const items = view.sections.find((section) => section.heading === "Items");
+		const items = view.sections.find((section) => section.heading == "Items");
 		expect(items?.fields[0]).toEqual({ label: "Widget", value: "×2" });
 	});
 
@@ -310,7 +304,7 @@ describe("card mappers", () => {
 		expect(view.badges?.[0]).toEqual({ label: "Published", tone: "success" });
 		expect(view.badges?.[1]).toEqual({ label: "Fixed price" });
 		const pricing = view.sections.find(
-			(section) => section.heading === "Pricing",
+			(section) => section.heading == "Pricing",
 		);
 		expect(pricing?.fields[0]).toEqual({ label: "Price", value: "9.99 USD" });
 	});
@@ -330,7 +324,7 @@ describe("card mappers", () => {
 		});
 		expect(view.badges).toContainEqual({ label: "Auction" });
 		const pricing = view.sections.find(
-			(section) => section.heading === "Pricing",
+			(section) => section.heading == "Pricing",
 		);
 		expect(pricing?.fields).toEqual([
 			{ label: "Starting bid", value: "9.99 USD" },
@@ -356,7 +350,7 @@ describe("card mappers", () => {
 		});
 		expect(view.title).toBe("SKU SKU-1");
 		const product = view.sections.find(
-			(section) => section.heading === "Product",
+			(section) => section.heading == "Product",
 		);
 		expect(product?.fields).toContainEqual({ label: "Brand", value: "Acme" });
 	});
@@ -374,7 +368,7 @@ describe("card mappers", () => {
 		});
 		expect(view.title).toBe("Dispute d1");
 		const actions = view.sections.find(
-			(section) => section.heading === "Available actions",
+			(section) => section.heading == "Available actions",
 		);
 		expect(actions?.fields.map((field) => field.label)).toEqual([
 			"Accept",
@@ -394,7 +388,7 @@ describe("card mappers", () => {
 		});
 		expect(view.badges?.[0]).toEqual({ label: "Top rated", tone: "success" });
 		const metrics = view.sections.find(
-			(section) => section.heading === "Metrics",
+			(section) => section.heading == "Metrics",
 		);
 		expect(metrics?.fields[0]).toEqual({
 			label: "Transaction count",

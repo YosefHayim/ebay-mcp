@@ -1,54 +1,27 @@
-/**
- * LLM Client Detection and Auto-Configuration
- *
- * Detects installed LLM clients and provides utilities to auto-configure them
- * with the eBay MCP server settings.
- */
-
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir, platform } from "os";
 import { dirname, join } from "path";
 import { getErrorMessage } from "./errors.js";
 import { setupLogger } from "./logger.js";
 
-/**
- * Detection result for an MCP-capable client configuration location.
- */
 export interface DetectedMCPClient {
-	/** Stable client key used by setup flags and configuration routing. */
 	name: string;
-	/** Absolute path to the client configuration file. */
 	configPath: string;
-	/** Whether the client configuration directory exists. */
 	detected: boolean;
 }
 
-/**
- * LLM client metadata shown during setup and auto-configuration.
- */
 export interface LLMClient extends DetectedMCPClient {
-	/** Human-readable client name shown in setup prompts. */
 	displayName: string;
-	/** Whether the expected configuration file exists. */
 	configExists: boolean;
 }
 
-/**
- * MCP server command block written into client configuration files.
- */
 export interface MCPServerConfig {
-	/** Executable command used by the client to start the MCP server. */
 	command: string;
-	/** Arguments passed to the MCP server command. */
 	args?: string[];
-	/** Optional environment variables injected by the client. */
 	env?: Record<string, string>;
 }
 
-/**
- * Gets the config file path for Claude Desktop based on OS.
- */
-const getClaudeConfigPath = (): string => {
+function getClaudeConfigPath(): string {
 	const os = platform();
 	const home = homedir();
 
@@ -74,12 +47,9 @@ const getClaudeConfigPath = (): string => {
 		default:
 			return join(home, ".config", "Claude", "claude_desktop_config.json");
 	}
-};
+}
 
-/**
- * Gets the config file path for Cline (VSCode extension).
- */
-const getClineConfigPath = (): string => {
+function getClineConfigPath(): string {
 	const home = homedir();
 	const os = platform();
 
@@ -120,20 +90,14 @@ const getClineConfigPath = (): string => {
 				"cline_mcp_settings.json",
 			);
 	}
-};
+}
 
-/**
- * Gets the config path for Continue.dev.
- */
-const getContinueConfigPath = (): string => {
+function getContinueConfigPath(): string {
 	const home = homedir();
 	return join(home, ".continue", "config.json");
-};
+}
 
-/**
- * Gets the config path for Zed editor.
- */
-const getZedConfigPath = (): string => {
+function getZedConfigPath(): string {
 	const home = homedir();
 	const os = platform();
 
@@ -145,12 +109,9 @@ const getZedConfigPath = (): string => {
 		default:
 			return join(home, ".config", "zed", "settings.json");
 	}
-};
+}
 
-/**
- * Gets the config path for Cursor IDE.
- */
-const getCursorConfigPath = (): string => {
+function getCursorConfigPath(): string {
 	const home = homedir();
 	const os = platform();
 
@@ -162,12 +123,9 @@ const getCursorConfigPath = (): string => {
 		default:
 			return join(home, ".cursor", "mcp.json");
 	}
-};
+}
 
-/**
- * Gets the config path for Windsurf (Codeium).
- */
-const getWindsurfConfigPath = (): string => {
+function getWindsurfConfigPath(): string {
 	const home = homedir();
 	const os = platform();
 
@@ -179,12 +137,9 @@ const getWindsurfConfigPath = (): string => {
 		default:
 			return join(home, ".codeium", "windsurf", "mcp_config.json");
 	}
-};
+}
 
-/**
- * Gets the config path for Roo Code (VSCode extension).
- */
-const getRooCodeConfigPath = (): string => {
+function getRooCodeConfigPath(): string {
 	const home = homedir();
 	const os = platform();
 
@@ -225,20 +180,14 @@ const getRooCodeConfigPath = (): string => {
 				"mcp_settings.json",
 			);
 	}
-};
+}
 
-/**
- * Gets the config path for Claude Code CLI.
- */
-const getClaudeCodeConfigPath = (): string => {
+function getClaudeCodeConfigPath(): string {
 	const home = homedir();
 	return join(home, ".claude.json");
-};
+}
 
-/**
- * Gets the config path for Amazon Q Developer.
- */
-const getAmazonQConfigPath = (): string => {
+function getAmazonQConfigPath(): string {
 	const home = homedir();
 	const os = platform();
 
@@ -250,18 +199,9 @@ const getAmazonQConfigPath = (): string => {
 		default:
 			return join(home, ".aws", "amazonq", "mcp.json");
 	}
-};
+}
 
-/**
- * Detects all supported LLM clients and their configuration file locations.
- *
- * @returns LLM clients annotated with config file and installation-directory presence.
- * @example
- * ```ts
- * const clients = detectLLMClients();
- * ```
- */
-export const detectLLMClients = (): LLMClient[] => {
+export function detectLLMClients(): LLMClient[] {
 	const clients: LLMClient[] = [
 		{
 			name: "claude",
@@ -337,12 +277,9 @@ export const detectLLMClients = (): LLMClient[] => {
 	}
 
 	return clients;
-};
+}
 
-/**
- * Reads and parses a JSON config file safely.
- */
-const readJSONConfig = (path: string): Record<string, unknown> => {
+function readJSONConfig(path: string): Record<string, unknown> {
 	try {
 		if (!existsSync(path)) {
 			return {};
@@ -353,15 +290,9 @@ const readJSONConfig = (path: string): Record<string, unknown> => {
 	} catch {
 		return {};
 	}
-};
+}
 
-/**
- * Writes a JSON config file safely.
- */
-const writeJSONConfig = (
-	path: string,
-	config: Record<string, unknown>,
-): void => {
+function writeJSONConfig(path: string, config: Record<string, unknown>): void {
 	// Ensure directory exists
 	const dir = dirname(path);
 	if (!existsSync(dir)) {
@@ -369,12 +300,12 @@ const writeJSONConfig = (
 	}
 
 	writeFileSync(path, JSON.stringify(config, null, 2), "utf-8");
-};
+}
 
-const runClientConfigurator = (
+function runClientConfigurator(
 	clientLabel: string,
 	configure: () => void,
-): boolean => {
+): boolean {
 	try {
 		configure();
 		return true;
@@ -384,19 +315,19 @@ const runClientConfigurator = (
 		});
 		return false;
 	}
-};
+}
 
-const ensureMcpServersConfig = (
+function ensureMcpServersConfig(
 	config: Record<string, unknown>,
-): Record<string, MCPServerConfig> => {
-	if (!config["mcpServers"] || typeof config["mcpServers"] !== "object") {
+): Record<string, MCPServerConfig> {
+	if (!config["mcpServers"] || typeof config["mcpServers"] != "object") {
 		config["mcpServers"] = {};
 	}
 
 	return config["mcpServers"] as Record<string, MCPServerConfig>;
-};
+}
 
-const hasMcpServerConfig = (configPath: string): boolean => {
+function hasMcpServerConfig(configPath: string): boolean {
 	if (!existsSync(configPath)) {
 		return false;
 	}
@@ -407,19 +338,9 @@ const hasMcpServerConfig = (configPath: string): boolean => {
 		| undefined;
 
 	return !!mcpServers?.["ebay-mcp-server"];
-};
+}
 
-/**
- * Configures Claude Desktop with the eBay MCP server command.
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureClaudeDesktop(process.cwd());
- * ```
- */
-export const configureClaudeDesktop = (projectRoot: string): boolean => {
+export function configureClaudeDesktop(projectRoot: string): boolean {
 	return runClientConfigurator("Claude Desktop", () => {
 		const configPath = getClaudeConfigPath();
 		const config = readJSONConfig(configPath);
@@ -434,19 +355,9 @@ export const configureClaudeDesktop = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Cline (VSCode extension) with the eBay MCP server command.
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureCline(process.cwd());
- * ```
- */
-export const configureCline = (projectRoot: string): boolean => {
+export function configureCline(projectRoot: string): boolean {
 	return runClientConfigurator("Cline", () => {
 		const configPath = getClineConfigPath();
 		const config = readJSONConfig(configPath);
@@ -461,25 +372,15 @@ export const configureCline = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Continue.dev with the eBay MCP server command.
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureContinue(process.cwd());
- * ```
- */
-export const configureContinue = (projectRoot: string): boolean => {
+export function configureContinue(projectRoot: string): boolean {
 	return runClientConfigurator("Continue.dev", () => {
 		const configPath = getContinueConfigPath();
 		const config = readJSONConfig(configPath);
 
 		// Initialize experimental.modelContextProtocolServers if it doesn't exist
-		if (!config["experimental"] || typeof config["experimental"] !== "object") {
+		if (!config["experimental"] || typeof config["experimental"] != "object") {
 			config["experimental"] = {};
 		}
 
@@ -501,7 +402,7 @@ export const configureContinue = (projectRoot: string): boolean => {
 		// Check if eBay server already exists
 		const existingIndex = mcpServers.findIndex(
 			(server) =>
-				server.command === "node" && server.args?.[0]?.includes("ebay-mcp"),
+				server.command == "node" && server.args?.[0]?.includes("ebay-mcp"),
 		);
 
 		const serverConfig: MCPServerConfig = {
@@ -519,21 +420,9 @@ export const configureContinue = (projectRoot: string): boolean => {
 		config["experimental"] = experimental;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Zed editor with the eBay MCP server command.
- *
- * Zed uses context_servers in settings.json
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureZed(process.cwd());
- * ```
- */
-export const configureZed = (projectRoot: string): boolean => {
+export function configureZed(projectRoot: string): boolean {
 	return runClientConfigurator("Zed", () => {
 		const configPath = getZedConfigPath();
 		const config = readJSONConfig(configPath);
@@ -541,7 +430,7 @@ export const configureZed = (projectRoot: string): boolean => {
 		// Initialize context_servers if it doesn't exist
 		if (
 			!config["context_servers"] ||
-			typeof config["context_servers"] !== "object"
+			typeof config["context_servers"] != "object"
 		) {
 			config["context_servers"] = {};
 		}
@@ -560,21 +449,9 @@ export const configureZed = (projectRoot: string): boolean => {
 		config["context_servers"] = contextServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Cursor IDE with the eBay MCP server command.
- *
- * Cursor uses mcpServers in mcp.json
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureCursor(process.cwd());
- * ```
- */
-export const configureCursor = (projectRoot: string): boolean => {
+export function configureCursor(projectRoot: string): boolean {
 	return runClientConfigurator("Cursor", () => {
 		const configPath = getCursorConfigPath();
 		const config = readJSONConfig(configPath);
@@ -589,19 +466,9 @@ export const configureCursor = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Windsurf (Codeium) with the eBay MCP server command.
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureWindsurf(process.cwd());
- * ```
- */
-export const configureWindsurf = (projectRoot: string): boolean => {
+export function configureWindsurf(projectRoot: string): boolean {
 	return runClientConfigurator("Windsurf", () => {
 		const configPath = getWindsurfConfigPath();
 		const config = readJSONConfig(configPath);
@@ -616,19 +483,9 @@ export const configureWindsurf = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Roo Code (VSCode extension) with the eBay MCP server command.
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureRooCode(process.cwd());
- * ```
- */
-export const configureRooCode = (projectRoot: string): boolean => {
+export function configureRooCode(projectRoot: string): boolean {
 	return runClientConfigurator("Roo Code", () => {
 		const configPath = getRooCodeConfigPath();
 		const config = readJSONConfig(configPath);
@@ -643,21 +500,9 @@ export const configureRooCode = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Claude Code CLI with the eBay MCP server command.
- *
- * Claude Code CLI uses mcpServers in ~/.claude.json
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureClaudeCode(process.cwd());
- * ```
- */
-export const configureClaudeCode = (projectRoot: string): boolean => {
+export function configureClaudeCode(projectRoot: string): boolean {
 	return runClientConfigurator("Claude Code CLI", () => {
 		const configPath = getClaudeCodeConfigPath();
 		const config = readJSONConfig(configPath);
@@ -672,19 +517,9 @@ export const configureClaudeCode = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures Amazon Q Developer with the eBay MCP server command.
- *
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the client config file was updated.
- * @example
- * ```ts
- * const configured = configureAmazonQ(process.cwd());
- * ```
- */
-export const configureAmazonQ = (projectRoot: string): boolean => {
+export function configureAmazonQ(projectRoot: string): boolean {
 	return runClientConfigurator("Amazon Q", () => {
 		const configPath = getAmazonQConfigPath();
 		const config = readJSONConfig(configPath);
@@ -699,23 +534,12 @@ export const configureAmazonQ = (projectRoot: string): boolean => {
 		config["mcpServers"] = mcpServers;
 		writeJSONConfig(configPath, config);
 	});
-};
+}
 
-/**
- * Configures a supported LLM client with the eBay MCP server command.
- *
- * @param clientName Stable client key such as `claude`, `cursor`, or `amazonq`.
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns `true` when the named client configuration was updated.
- * @example
- * ```ts
- * const configured = configureLLMClient('cursor', process.cwd());
- * ```
- */
-export const configureLLMClient = (
+export function configureLLMClient(
 	clientName: string,
 	projectRoot: string,
-): boolean => {
+): boolean {
 	switch (clientName) {
 		case "claude":
 			return configureClaudeDesktop(projectRoot);
@@ -738,23 +562,12 @@ export const configureLLMClient = (
 		default:
 			return false;
 	}
-};
+}
 
-/**
- * Gets human-readable instructions for manual client configuration.
- *
- * @param clientName Stable client key such as `claude`, `cursor`, or `amazonq`.
- * @param projectRoot Absolute project root containing `build/index.js`.
- * @returns A formatted setup snippet for the requested client.
- * @example
- * ```ts
- * const instructions = getManualConfigInstructions('claude', process.cwd());
- * ```
- */
-export const getManualConfigInstructions = (
+export function getManualConfigInstructions(
 	clientName: string,
 	projectRoot: string,
-): string => {
+): string {
 	const buildPath = join(projectRoot, "build", "index.js");
 
 	switch (clientName) {
@@ -883,23 +696,12 @@ Add this to ${getAmazonQConfigPath()}:
 		default:
 			return "Manual configuration instructions not available for this client.";
 	}
-};
+}
 
-/**
- * Verifies that a client has an eBay MCP server entry.
- *
- * @param clientName Stable client key such as `claude`, `cursor`, or `amazonq`.
- * @param _projectRoot Reserved project root parameter kept for signature parity with configuration helpers.
- * @returns `true` when the expected eBay MCP server entry is present.
- * @example
- * ```ts
- * const ready = verifyClientConfiguration('cursor', process.cwd());
- * ```
- */
-export const verifyClientConfiguration = (
+export function verifyClientConfiguration(
 	clientName: string,
 	_projectRoot: string,
-): boolean => {
+): boolean {
 	try {
 		switch (clientName) {
 			case "claude":
@@ -958,40 +760,23 @@ export const verifyClientConfiguration = (
 	} catch {
 		return false;
 	}
-};
+}
 
-/**
- * Gets all supported LLM client keys.
- *
- * @returns Stable client keys accepted by setup and configuration helpers.
- * @example
- * ```ts
- * const clientNames = getAllSupportedClients();
- * ```
- */
-export const getAllSupportedClients = (): string[] => [
-	"claude",
-	"cline",
-	"continue",
-	"zed",
-	"cursor",
-	"windsurf",
-	"roocode",
-	"claudecode",
-	"amazonq",
-];
+export function getAllSupportedClients(): string[] {
+	return [
+		"claude",
+		"cline",
+		"continue",
+		"zed",
+		"cursor",
+		"windsurf",
+		"roocode",
+		"claudecode",
+		"amazonq",
+	];
+}
 
-/**
- * Checks if a client key supports native MCP configuration.
- *
- * @param clientName Stable client key to test.
- * @returns `true` when this setup utility can configure the named client.
- * @example
- * ```ts
- * const supported = supportsNativeMCP('claude');
- * ```
- */
-export const supportsNativeMCP = (clientName: string): boolean => {
+export function supportsNativeMCP(clientName: string): boolean {
 	// All these clients support MCP (Model Context Protocol)
 	const supportedClients = [
 		"claude",
@@ -1005,4 +790,4 @@ export const supportsNativeMCP = (clientName: string): boolean => {
 		"amazonq",
 	];
 	return supportedClients.includes(clientName.toLowerCase());
-};
+}

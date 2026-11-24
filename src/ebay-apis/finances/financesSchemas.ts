@@ -1,13 +1,5 @@
 import { z } from "zod";
 
-/**
- * Finances API input schemas.
- *
- * Each schema is the single source of truth for one Finances API operation: the
- * MCP tool advertises its `.shape`, and the endpoint method decodes its input with it.
- * Filter and sort values keep eBay's own expression syntax as plain strings.
- */
-
 const marketplaceId = z
 	.string()
 	.min(1)
@@ -25,31 +17,25 @@ const offset = z
 		"Zero-based number of records to skip before the page starts (eBay default 0)",
 	);
 
-/**
- * Builds the page-size field for an operation's documented maximum and default.
- *
- * @param maximum - Largest page size eBay documents for the operation.
- * @param fallback - Page size eBay applies when the field is omitted.
- * @returns Optional positive-integer schema describing the operation's paging limits.
- */
-const limit = (maximum: number, fallback: number) =>
-	z
+function limit(maximum: number, fallback: number) {
+	return z
 		.number()
 		.int()
 		.min(1)
 		.max(maximum)
 		.optional()
 		.describe(`Records per page, up to ${maximum} (eBay default ${fallback})`);
+}
 
 const NON_BLANK = /\S/;
 
-/** Builds a required, non-blank path identifier with its caller-facing description. */
-const identifier = (description: string) =>
-	z
+function identifier(description: string) {
+	return z
 		.string()
 		.min(1)
 		.regex(NON_BLANK, "Must contain a non-whitespace character")
 		.describe(description);
+}
 
 const COMBINE_NOTE = "Separate multiple criteria with commas.";
 
@@ -67,7 +53,6 @@ const payoutDateFilter =
 const transactionCriteria =
 	"transactionDate:[2024-10-23T00:00:01.000Z..2024-11-09T00:00:01.000Z] (last five years, range up to 36 months); transactionType:{SALE} (TransactionTypeEnum); transactionStatus:{PAYOUT} (TransactionStatusEnum, sales only); buyerUsername:{buyer1234}; payoutId:{5********8}; orderId:{0*-0***0-3***3}; transactionId:{0*-0***0-3***3}, which must be combined with transactionType";
 
-/** Input for Finances API getOrderEarnings. */
 export const getOrderEarningsInputSchema = z.object({
 	marketplaceId,
 	filter: orderEarningsFilter,
@@ -83,7 +68,6 @@ export const getOrderEarningsInputSchema = z.object({
 		),
 });
 
-/** Input for Finances API getOrderEarningsById. */
 export const getOrderEarningsByIdInputSchema = z.object({
 	orderId: identifier(
 		"eBay order ID whose earnings are requested, e.g. 12-12345-12345",
@@ -91,13 +75,11 @@ export const getOrderEarningsByIdInputSchema = z.object({
 	marketplaceId,
 });
 
-/** Input for Finances API getOrderEarningsSummary. */
 export const getOrderEarningsSummaryInputSchema = z.object({
 	marketplaceId,
 	filter: orderEarningsFilter,
 });
 
-/** Input for Finances API getPayout. */
 export const getPayoutInputSchema = z.object({
 	payoutId: identifier(
 		"Payout ID from ebay_get_payouts or Seller Hub. A split-payout payoutReference returns 404.",
@@ -105,7 +87,6 @@ export const getPayoutInputSchema = z.object({
 	marketplaceId,
 });
 
-/** Input for Finances API getPayouts. */
 export const getPayoutsInputSchema = z.object({
 	marketplaceId,
 	filter: z
@@ -126,7 +107,6 @@ export const getPayoutsInputSchema = z.object({
 		),
 });
 
-/** Input for Finances API getPayoutSummary. */
 export const getPayoutSummaryInputSchema = z.object({
 	marketplaceId,
 	filter: z
@@ -137,10 +117,8 @@ export const getPayoutSummaryInputSchema = z.object({
 		),
 });
 
-/** Input for Finances API getSellerFundsSummary. */
 export const getSellerFundsSummaryInputSchema = z.object({ marketplaceId });
 
-/** Input for Finances API getTransactions. */
 export const getTransactionsInputSchema = z.object({
 	marketplaceId,
 	filter: z
@@ -161,7 +139,6 @@ export const getTransactionsInputSchema = z.object({
 		),
 });
 
-/** Input for Finances API getTransactionSummary. */
 export const getTransactionSummaryInputSchema = z.object({
 	marketplaceId,
 	filter: z
@@ -172,7 +149,6 @@ export const getTransactionSummaryInputSchema = z.object({
 		),
 });
 
-/** Input for Finances API getTransfer. */
 export const getTransferInputSchema = z.object({
 	transferId: identifier(
 		"TRANSFER transaction ID: the transactionId returned by ebay_get_transactions with filter transactionType:{TRANSFER}. Other transaction types return 404.",
@@ -180,7 +156,6 @@ export const getTransferInputSchema = z.object({
 	marketplaceId,
 });
 
-/** Input for Finances API getBillingActivities. */
 export const getBillingActivitiesInputSchema = z.object({
 	acceptLanguage: z
 		.string()

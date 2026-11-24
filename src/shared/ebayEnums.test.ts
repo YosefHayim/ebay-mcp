@@ -1,7 +1,3 @@
-/**
- * Tests for eBay enum types
- */
-
 import { describe, expect, it } from "vitest";
 import {
 	CampaignStatus,
@@ -387,18 +383,22 @@ describe("eBay Enums", () => {
 	describe("Enum Type Safety", () => {
 		it("only accept valid enum values", () => {
 			// This is a compile-time check, but we can verify the enum structure
-			const acceptOnlyValidMarketplace = (mp: MarketplaceId): boolean =>
-				Object.values(MarketplaceId).includes(mp);
+			function acceptOnlyValidMarketplace(mp: MarketplaceId): boolean {
+				return Object.values(MarketplaceId).includes(mp);
+			}
 
 			expect(acceptOnlyValidMarketplace(MarketplaceId.EBAY_US)).toBe(true);
 			expect(acceptOnlyValidMarketplace(MarketplaceId.EBAY_GB)).toBe(true);
 		});
 
 		it("reject invalid string values at runtime", () => {
-			const isValidMarketplace = (
+			function isValidMarketplace(
 				candidate: string,
-			): candidate is MarketplaceId =>
-				Object.values(MarketplaceId).includes(candidate as MarketplaceId);
+			): candidate is MarketplaceId {
+				return Object.values(MarketplaceId).includes(
+					candidate as MarketplaceId,
+				);
+			}
 
 			expect(isValidMarketplace("EBAY_US")).toBe(true);
 			expect(isValidMarketplace("INVALID_MARKETPLACE")).toBe(false);

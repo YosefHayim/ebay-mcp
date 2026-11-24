@@ -3,13 +3,6 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-/**
- * Guards the published packaging of `diagnose` / `setup` / `skills`.
- *
- * Global installs ship only `build/**` (see package.json `files`). Scripts that
- * invoke `tsx src/cli/...` fail for end users because neither `tsx` nor
- * `src/` is present. The bin must also route `ebay-mcp diagnose`.
- */
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 type PackageManifest = {

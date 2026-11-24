@@ -40,16 +40,6 @@ type RenameStoreCategoryInput = z.infer<typeof renameStoreCategoryInputSchema>;
 type DeleteStoreCategoryInput = z.infer<typeof deleteStoreCategoryInputSchema>;
 type MoveStoreCategoryInput = z.infer<typeof moveStoreCategoryInputSchema>;
 
-/**
- * Sends one asynchronous category change and reads its store task from `Location`.
- * A missing or foreign header fails with an EbayApiError naming this request.
- *
- * @param method - HTTP method of the category change.
- * @param path - eBay REST path of the category change, used in failures.
- * @param send - Client call that keeps the response headers.
- * @returns The store task ID and Location. Throws EbayApiError when the request
- * fails or Location is missing or foreign.
- */
 async function startCategoryTask(
 	method: "POST" | "PUT" | "DELETE",
 	path: string,
@@ -78,46 +68,22 @@ async function startCategoryTask(
 	}
 }
 
-/**
- * Response returned by getStore.
- *
- * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStore
- */
 export type GetStoreResponse = components["schemas"]["GetStoreResponseType"];
 
-/**
- * Response returned by getStoreCategories.
- *
- * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreCategories
- */
 export type GetStoreCategoriesResponse =
 	components["schemas"]["GetStoreCategoriesResponseType"];
 
-/**
- * Response returned by getStoreTask.
- *
- * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreTask
- */
 export type GetStoreTaskResponse =
 	components["schemas"]["GetStoreTaskResponseType"];
 
-/**
- * Response returned by getStoreTasks.
- *
- * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreTasks
- */
 export type GetStoreTasksResponse =
 	components["schemas"]["GetStoreTasksResponseType"];
 
-/** Store task started by an asynchronous category change; poll it with getStoreTask. */
 export interface StoreCategoryTask {
-	/** Store task ID decoded from the `Location` header, accepted by getStoreTask. */
 	readonly taskId: string;
-	/** getStoreTask URI exactly as eBay returned it in the `Location` header. */
 	readonly location: string;
 }
 
-/** Stores API - eBay Store details and store category management. */
 export class StoresApi {
 	private readonly client: EbayApiClient;
 
@@ -125,35 +91,9 @@ export class StoresApi {
 		this.client = client;
 	}
 
-	/**
-	 * Retrieves the seller's eBay Store details: name, URL, description, and logo.
-	 *
-	 * @param _input - Empty object accepted for tool/API shape consistency.
-	 * @returns eBay's GetStoreResponseType.
-	 *
-	 * @example
-	 * ```ts
-	 * const store = await storesApi.getStore({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStore
-	 */
 	public getStore = (_input: EmptyStoreInput = {}): Promise<GetStoreResponse> =>
 		requestGetEffect<GetStoreResponse>(this.client, STORE_PATH);
 
-	/**
-	 * Retrieves the store's custom category hierarchy (up to three levels).
-	 *
-	 * @param _input - Empty object accepted for tool/API shape consistency.
-	 * @returns eBay's GetStoreCategoriesResponseType.
-	 *
-	 * @example
-	 * ```ts
-	 * const { storeCategories } = await storesApi.getStoreCategories({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreCategories
-	 */
 	public getStoreCategories = (
 		_input: EmptyStoreInput = {},
 	): Promise<GetStoreCategoriesResponse> =>
@@ -162,19 +102,6 @@ export class StoresApi {
 			`${STORE_PATH}/categories`,
 		);
 
-	/**
-	 * Retrieves the status of one asynchronous store category task.
-	 *
-	 * @param input - Store task ID returned by a category change.
-	 * @returns eBay's GetStoreTaskResponseType.
-	 *
-	 * @example
-	 * ```ts
-	 * const { task } = await storesApi.getStoreTask({ taskId: 'TASK-1' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreTask
-	 */
 	public getStoreTask = async (
 		input: GetStoreTaskInput,
 	): Promise<GetStoreTaskResponse> => {
@@ -192,39 +119,11 @@ export class StoresApi {
 		);
 	};
 
-	/**
-	 * Retrieves the status of all asynchronous store tasks; each finishes as FAILED or COMPLETED
-	 * within 24 hours.
-	 *
-	 * @param _input - Empty object accepted for tool/API shape consistency.
-	 * @returns eBay's GetStoreTasksResponseType.
-	 *
-	 * @example
-	 * ```ts
-	 * const { task } = await storesApi.getStoreTasks({});
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/getStoreTasks
-	 */
 	public getStoreTasks = (
 		_input: EmptyStoreInput = {},
 	): Promise<GetStoreTasksResponse> =>
 		requestGetEffect<GetStoreTasksResponse>(this.client, TASKS_PATH);
 
-	/**
-	 * Starts adding one custom store category. eBay answers 202 with the store task URI in
-	 * `Location`; only one category change can be in flight at a time.
-	 *
-	 * @param input - Category name plus optional parent and listing-destination store category IDs.
-	 * @returns The store task ID and Location to poll.
-	 *
-	 * @example
-	 * ```ts
-	 * const { taskId } = await storesApi.addStoreCategory({ categoryName: 'Vintage Cameras' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/addStoreCategory
-	 */
 	public addStoreCategory = async (
 		input: AddStoreCategoryInput,
 	): Promise<StoreCategoryTask> => {
@@ -257,20 +156,6 @@ export class StoresApi {
 		);
 	};
 
-	/**
-	 * Starts renaming one custom store category. eBay answers with the store task URI in
-	 * `Location`; only one category change can be in flight at a time.
-	 *
-	 * @param input - Store category ID (path) and its new name.
-	 * @returns The store task ID and Location to poll.
-	 *
-	 * @example
-	 * ```ts
-	 * const { taskId } = await storesApi.renameStoreCategory({ categoryId: '1234', categoryName: 'Film Cameras' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/renameStoreCategory
-	 */
 	public renameStoreCategory = async (
 		input: RenameStoreCategoryInput,
 	): Promise<StoreCategoryTask> => {
@@ -296,21 +181,6 @@ export class StoresApi {
 		);
 	};
 
-	/**
-	 * Starts deleting one custom store category. eBay answers 202 with the store task URI in
-	 * `Location`; only one category change can be in flight at a time. The body is sent only
-	 * with a listing destination; without one eBay applies its default (the Other category, ID 1).
-	 *
-	 * @param input - Store category ID to delete and an optional listing-destination store category.
-	 * @returns The store task ID and Location to poll.
-	 *
-	 * @example
-	 * ```ts
-	 * const { taskId } = await storesApi.deleteStoreCategory({ categoryId: '1234' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/deleteStoreCategory
-	 */
 	public deleteStoreCategory = async (
 		input: DeleteStoreCategoryInput,
 	): Promise<StoreCategoryTask> => {
@@ -338,20 +208,6 @@ export class StoresApi {
 		);
 	};
 
-	/**
-	 * Starts moving one custom store category under a new parent. eBay answers 202 with the
-	 * store task URI in `Location`; only one category change can be in flight at a time.
-	 *
-	 * @param input - Store category to move, its new parent, and an optional listing destination.
-	 * @returns The store task ID and Location to poll.
-	 *
-	 * @example
-	 * ```ts
-	 * const { taskId } = await storesApi.moveStoreCategory({ categoryId: '1234', destinationParentCategoryId: '-999' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/stores/resources/store/methods/moveStoreCategory
-	 */
 	public moveStoreCategory = async (
 		input: MoveStoreCategoryInput,
 	): Promise<StoreCategoryTask> => {

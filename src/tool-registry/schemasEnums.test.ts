@@ -1,7 +1,3 @@
-/**
- * Tests for Zod schema validation with native enums
- */
-
 import { describe, expect, it } from "vitest";
 import {
 	Condition,

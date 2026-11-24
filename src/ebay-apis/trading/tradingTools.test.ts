@@ -2,8 +2,8 @@ import { expect, it, vi } from "vitest";
 import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import { executeTool } from "@/tool-registry/index.js";
 
-const createTradingApiMock = (): EbaySellerApi =>
-	({
+function createTradingApiMock(): EbaySellerApi {
+	return {
 		trading: {
 			getActiveListings: vi.fn(),
 			getListing: vi.fn(),
@@ -12,7 +12,8 @@ const createTradingApiMock = (): EbaySellerApi =>
 			endListing: vi.fn(),
 			relistItem: vi.fn(),
 		},
-	}) as unknown as EbaySellerApi;
+	} as unknown as EbaySellerApi;
+}
 
 it("passes getActiveListings args through unchanged", async () => {
 	const api = createTradingApiMock();

@@ -35,64 +35,32 @@ export {
 } from "@/cli/skills/targets.js";
 export * from "@/cli/skills/types.js";
 
-/**
- * Returns the canonical document for a layer with the live registry injected.
- *
- * @param layer Which audience the skill serves.
- * @param snapshot Live registry snapshot (defaults to a fresh one).
- * @returns Provider-neutral skill document for the requested layer.
- *
- * @example
- * ```ts
- * const doc = buildSkillDoc('using');
- * ```
- */
-export const buildSkillDoc = (
+export function buildSkillDoc(
 	layer: SkillLayer,
 	snapshot: RegistrySnapshot = buildRegistrySnapshot(),
-): SkillDoc =>
-	layer === "using" ? buildUsingDoc(snapshot) : buildContributingDoc(snapshot);
+): SkillDoc {
+	return layer == "using"
+		? buildUsingDoc(snapshot)
+		: buildContributingDoc(snapshot);
+}
 
-/** Inputs for {@link buildSkillPlans}. */
 export interface BuildPlansOptions {
-	/** Providers to render skills for. */
 	providers: readonly SkillProvider[];
-	/** Skill layers to render. */
 	layers: readonly SkillLayer[];
-	/** Requested install scope. */
 	scope: SkillScope;
-	/** Optional project root override. */
 	cwd?: string;
-	/** Optional home directory override. */
 	home?: string;
-	/** Optional precomputed registry snapshot. */
 	snapshot?: RegistrySnapshot;
 }
 
-/** A resolved target paired with its rendered payload, ready to plan/apply. */
 export interface RenderedTarget {
-	/** Concrete file/block destination for this rendered payload. */
 	target: SkillTarget;
-	/** Full file for owned targets; inner block content for managed targets. */
 	payload: string;
 }
 
-/**
- * The end-to-end core: resolves targets for the chosen providers × layers,
- * renders each into its provider's native format, and returns idempotent write
- * plans — without touching disk. Both the wizard and tests build on this.
- *
- * @param options Providers, layers, scope, and optional cwd/home/snapshot overrides.
- * @returns One {@link RenderedTarget} per provider/layer target.
- *
- * @example
- * ```ts
- * const rendered = renderSkillTargets({ providers: ['codex'], layers: ['using'], scope: 'project' });
- * ```
- */
-export const renderSkillTargets = (
+export function renderSkillTargets(
 	options: BuildPlansOptions,
-): RenderedTarget[] => {
+): RenderedTarget[] {
 	const snapshot = options.snapshot ?? buildRegistrySnapshot();
 	const docByLayer: Record<SkillLayer, SkillDoc> = {
 		using: buildUsingDoc(snapshot),
@@ -113,25 +81,10 @@ export const renderSkillTargets = (
 			target.layer,
 		),
 	}));
-};
+}
 
-/**
- * Builds preview write plans for the chosen providers × layers. Note: when two
- * managed-block targets share a file (both Codex layers → one `AGENTS.md`), each
- * plan here is computed against the same on-disk content, so apply each write
- * by re-planning from {@link RenderedTarget} (see the wizard) rather than
- * applying these plans directly — otherwise the second same-file write would not
- * see the first.
- *
- * @param options Providers, layers, scope, and optional cwd/home/snapshot overrides.
- * @returns One {@link WritePlan} per provider/layer target.
- *
- * @example
- * ```ts
- * const plans = buildSkillPlans({ providers: ['codex'], layers: ['using'], scope: 'project' });
- * ```
- */
-export const buildSkillPlans = (options: BuildPlansOptions): WritePlan[] =>
-	renderSkillTargets(options).map((rendered) =>
+export function buildSkillPlans(options: BuildPlansOptions): WritePlan[] {
+	return renderSkillTargets(options).map((rendered) =>
 		planWrite(rendered.target, rendered.payload),
 	);
+}

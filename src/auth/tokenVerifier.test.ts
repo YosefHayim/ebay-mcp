@@ -206,7 +206,7 @@ describe("TokenVerifier", () => {
 				.post(INTROSPECT_PATH, (introspectionBody) => {
 					// nock parses urlencoded bodies into objects; credentials must not appear here
 					const params =
-						typeof introspectionBody === "string"
+						typeof introspectionBody == "string"
 							? Object.fromEntries(new URLSearchParams(introspectionBody))
 							: (introspectionBody as Record<string, string>);
 					expect(params["token"]).toBe("test-token");
@@ -256,14 +256,14 @@ describe("TokenVerifier", () => {
 			nock(ORIGIN)
 				.post(INTROSPECT_PATH, (introspectionBody) => {
 					capturedBody =
-						typeof introspectionBody === "string"
+						typeof introspectionBody == "string"
 							? introspectionBody
 							: new URLSearchParams(introspectionBody).toString();
 					return true;
 				})
 				.matchHeader("Authorization", (authorizationHeader) => {
 					capturedAuth = authorizationHeader;
-					return authorizationHeader === expectedBasic;
+					return authorizationHeader == expectedBasic;
 				})
 				.reply(200, {
 					active: true,
@@ -294,7 +294,7 @@ describe("TokenVerifier", () => {
 				.post(INTROSPECT_PATH)
 				.matchHeader(
 					"Authorization",
-					(authorizationHeader) => authorizationHeader === undefined,
+					(authorizationHeader) => authorizationHeader == undefined,
 				)
 				.reply(200, {
 					active: true,

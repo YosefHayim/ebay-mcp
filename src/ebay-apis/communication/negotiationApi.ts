@@ -22,28 +22,13 @@ type FindEligibleItemsInput = z.infer<typeof findEligibleItemsSchema>;
 type SendOfferToInterestedBuyersInput = z.infer<
 	typeof sendOfferToInterestedBuyersSchema
 >;
-/** Request body accepted by sendOfferToInterestedBuyers. */
 type CreateOffersRequest = components["schemas"]["CreateOffersRequest"];
 
-/**
- * Response returned by eBay Negotiation findEligibleItems.
- *
- * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/findEligibleItems
- */
 export type FindEligibleItemsResponse =
 	components["schemas"]["PagedEligibleItemCollection"];
-/**
- * Response returned by eBay Negotiation sendOfferToInterestedBuyers.
- *
- * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/sendOfferToInterestedBuyers
- */
 export type SendOfferToInterestedBuyersResponse =
 	components["schemas"]["SendOfferToInterestedBuyersCollectionResponse"];
 
-/**
- * Negotiation API - Buyer-seller negotiations and offers
- * Based on: sell_negotiation_v1_oas3.json
- */
 export class NegotiationApi {
 	private readonly basePath = "/sell/negotiation/v1";
 	private readonly client: EbayApiClient;
@@ -52,19 +37,6 @@ export class NegotiationApi {
 		this.client = client;
 	}
 
-	/**
-	 * Finds listings eligible for a seller-initiated offer.
-	 *
-	 * @param input - Optional marketplace header override plus pagination query parameters.
-	 * @returns eBay's generated PagedEligibleItemCollection.
-	 *
-	 * @example
-	 * ```ts
-	 * const eligible = await negotiationApi.findEligibleItems({ marketplaceId: 'EBAY_US', limit: 10 });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/findEligibleItems
-	 */
 	findEligibleItems = async (
 		input: FindEligibleItemsInput = {},
 	): Promise<FindEligibleItemsResponse> => {
@@ -103,22 +75,6 @@ export class NegotiationApi {
 		);
 	};
 
-	/**
-	 * Sends an offer to buyers interested in a listing.
-	 *
-	 * @param input - Offer body fields plus optional marketplace header override.
-	 * @returns eBay's generated offer collection response.
-	 *
-	 * @example
-	 * ```ts
-	 * const offers = await negotiationApi.sendOfferToInterestedBuyers({
-	 *     marketplaceId: 'EBAY_US',
-	 *     message: 'Limited offer',
-	 *   });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/sell/negotiation/resources/offer/methods/sendOfferToInterestedBuyers
-	 */
 	sendOfferToInterestedBuyers = async (
 		input: SendOfferToInterestedBuyersInput,
 	): Promise<SendOfferToInterestedBuyersResponse> => {

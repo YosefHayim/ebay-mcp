@@ -83,7 +83,7 @@ function formatLogLine(
 }
 
 function logFilePaths(level: LogLevelName): string[] {
-	if (level === "error") {
+	if (level == "error") {
 		return [COMBINED_LOG_PATH, ERROR_LOG_PATH, DEBUG_LOG_PATH];
 	}
 
@@ -193,7 +193,7 @@ function listedParams(
 		return undefined;
 	}
 
-	if (Object.keys(params).length === 0) {
+	if (Object.keys(params).length == 0) {
 		return undefined;
 	}
 

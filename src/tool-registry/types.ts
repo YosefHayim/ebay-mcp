@@ -1,7 +1,6 @@
 import type { z } from "zod";
 import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 
-/** JSON-schema-like output contract attached to a tool definition. */
 export interface OutputArgs {
 	[x: string]: unknown;
 	type: "object";
@@ -9,10 +8,8 @@ export interface OutputArgs {
 	required?: string[];
 }
 
-/** Output contract: a Zod object, or a JSON Schema object already written by hand. */
 export type ToolOutputSchema = OutputArgs | z.ZodTypeAny;
 
-/** Optional MCP annotations that describe tool execution behavior to clients. */
 export interface ToolAnnotations {
 	[x: string]: unknown;
 	title?: string;
@@ -22,7 +19,6 @@ export interface ToolAnnotations {
 	openWorldHint?: boolean;
 }
 
-/** Public definition for a tool, including name, Zod schemas, metadata, and annotations. */
 export interface ToolDefinition {
 	name: string;
 	description: string;
@@ -33,11 +29,9 @@ export interface ToolDefinition {
 	_meta?: Record<string, unknown>;
 }
 
-/** Executes a tool against the configured eBay seller API client and parsed arguments. */
 export type ToolHandler = (
 	api: EbaySellerApi,
 	args: Record<string, unknown>,
 ) => unknown;
 
-/** Lookup table that binds registered tool names to their execution handlers. */
 export type ToolHandlerMap = Record<string, ToolHandler>;

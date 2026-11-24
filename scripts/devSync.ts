@@ -29,7 +29,6 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, "..");
-/** Local, git-ignored cache of downloaded eBay OpenAPI specs. */
 const SPECS_DIR = join(PROJECT_ROOT, ".cache/ebay-specs");
 const TYPES_DIR = join(PROJECT_ROOT, "src/ebay-openapi-types");
 const TOOLS_DIRS = [
@@ -48,10 +47,7 @@ const ui = {
 	bold: paint.bold,
 };
 
-const applyNamespaceNames = (
-	outputPath: string,
-	camelCaseName: string,
-): void => {
+function applyNamespaceNames(outputPath: string, camelCaseName: string): void {
 	const names = generatedNamespaceNames[camelCaseName];
 	if (!names) {
 		return;
@@ -60,7 +56,7 @@ const applyNamespaceNames = (
 	const generatedTypes = readFileSync(outputPath, "utf-8");
 	const renamedTypes = renameGeneratedNamespaces(generatedTypes, names);
 	writeFileSync(outputPath, renamedTypes);
-};
+}
 
 function showSpinner(message: string): () => void {
 	const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
@@ -147,7 +143,7 @@ async function downloadSpecs(): Promise<{
 		}
 	}
 
-	if (unavailable.length > 0 && downloaded === 0) {
+	if (unavailable.length > 0 && downloaded == 0) {
 		console.log(
 			ui.error(
 				`\n  ✗ All ${unavailable.length} spec downloads failed — eBay is likely blocking automated requests (HTTP 403).`,
@@ -195,7 +191,7 @@ function generateTypes(): number {
 				const camelCaseName = baseFileName
 					.split(/[_.-]/)
 					.map((part, i) =>
-						i === 0
+						i == 0
 							? part.toLowerCase()
 							: part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(),
 					)
@@ -207,7 +203,7 @@ function generateTypes(): number {
 					const { spec, danglingRefs } = replaceDanglingSchemaRefs(
 						JSON.parse(content),
 					);
-					if (danglingRefs.length === 0) {
+					if (danglingRefs.length == 0) {
 						execSync(
 							`npx openapi-typescript "${fullPath}" -o "${outputPath}" --silent`,
 							{
@@ -315,7 +311,7 @@ function collectToolNames(dir: string, tools: Set<string>): void {
 			collectToolNames(fullPath, tools);
 		} else if (
 			entry.isFile() &&
-			(entry.name.endsWith("Tools.ts") || entry.name === "toolCategories.ts")
+			(entry.name.endsWith("Tools.ts") || entry.name == "toolCategories.ts")
 		) {
 			const content = readFileSync(fullPath, "utf-8");
 			const nameMatches = content.matchAll(/name:\s*['"`]([^'"`]+)['"`]/g);
@@ -336,9 +332,6 @@ function getImplementedTools(): Set<string> {
 	return tools;
 }
 
-/**
- * Get all implemented API methods from source files
- */
 function getImplementedApiMethods(): Set<string> {
 	const methods = new Set<string>();
 	const apiDirs = [
@@ -377,7 +370,7 @@ function getImplementedApiMethods(): Set<string> {
 				for (const match of methodMatches) {
 					const name = match[1] || match[2];
 					// Skip common non-method bindings that the broader regex can catch.
-					if (!name || name === "const" || name === "let" || name === "var")
+					if (!name || name == "const" || name == "let" || name == "var")
 						continue;
 					methods.add(name);
 				}
@@ -427,9 +420,9 @@ function analyzeEndpoints(): CoverageAnalysis {
 
 	for (const endpoint of uniqueEndpoints) {
 		const coverage = classifyOperation(endpoint.operationId, implemented);
-		if (coverage === "exact") {
+		if (coverage == "exact") {
 			exact++;
-		} else if (coverage === "fuzzy") {
+		} else if (coverage == "fuzzy") {
 			fuzzy.push(endpoint);
 		} else {
 			missing.push(endpoint);
@@ -463,7 +456,7 @@ function analyzeEndpoints(): CoverageAnalysis {
 }
 
 function showFuzzyMatches(fuzzy: EndpointInfo[]): void {
-	if (fuzzy.length === 0) {
+	if (fuzzy.length == 0) {
 		return;
 	}
 
@@ -481,7 +474,7 @@ function showFuzzyMatches(fuzzy: EndpointInfo[]): void {
 }
 
 function showMissingEndpoints(missing: EndpointInfo[]): void {
-	if (missing.length === 0) {
+	if (missing.length == 0) {
 		console.log(ui.success("\n  ✓ All endpoints appear to be implemented!\n"));
 		return;
 	}
@@ -587,7 +580,7 @@ ${ui.bold("What this does:")}
 	// not eBay's current API. Flag it loudly so a stale run is never mistaken for
 	// a clean "100% coverage, 0 missing" result.
 	const usingStaleSpecs =
-		!(reportOnly || skipDownload) && report.specsDownloaded === 0;
+		!(reportOnly || skipDownload) && report.specsDownloaded == 0;
 
 	// Don't regenerate types when nothing was downloaded: the inputs on disk are
 	// unchanged, so a regen only risks churn (and can break the build if the

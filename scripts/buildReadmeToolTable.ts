@@ -3,16 +3,13 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { createToolCatalog, type ToolCatalog } from "./buildToolCatalog.js";
 
-/** Markers that wrap the generated tool family list in README.md. */
 export const TOOL_FAMILIES_START_MARKER = "<!-- tool-families:start -->";
 export const TOOL_FAMILIES_END_MARKER = "<!-- tool-families:end -->";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 
-/** Files that carry a generated tool family block, as paths from the repository root. */
 export const TOOL_FAMILY_DOCUMENTS = ["README.md"] as const;
 
-/** Markdown table of every tool family: key, title, tool count and one example tool. */
 export function createReadmeToolTable(catalog: ToolCatalog): string {
 	const rows = catalog.families.map((family) => {
 		const exampleTool =
@@ -26,14 +23,13 @@ export function createReadmeToolTable(catalog: ToolCatalog): string {
 	].join("\n");
 }
 
-/** Returns the document with the text between the two markers replaced. */
 export function replaceToolFamilyBlock(
 	document: string,
 	block: string,
 ): string {
 	const start = document.indexOf(TOOL_FAMILIES_START_MARKER);
 	const end = document.indexOf(TOOL_FAMILIES_END_MARKER);
-	if (start === -1 || end === -1 || end < start) {
+	if (start == -1 || end == -1 || end < start) {
 		throw new Error(
 			`Missing ${TOOL_FAMILIES_START_MARKER} / ${TOOL_FAMILIES_END_MARKER} markers`,
 		);
@@ -43,18 +39,17 @@ export function replaceToolFamilyBlock(
 	return `${before}\n${block}\n${after}`;
 }
 
-/** The generated block that belongs in the given document. */
 export function createToolFamilyBlock(
 	documentName: string,
 	catalog: ToolCatalog,
 ): string {
-	const isReadme = documentName === "README.md";
+	const isReadme = documentName == "README.md";
 	if (!isReadme) throw new Error(`${documentName} has no tool family block`);
 
 	return createReadmeToolTable(catalog);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] == fileURLToPath(import.meta.url)) {
 	const checkOnly = process.argv.includes("--check");
 	const catalog = createToolCatalog();
 	let stale = false;
@@ -65,7 +60,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 			current,
 			createToolFamilyBlock(documentName, catalog),
 		);
-		const isDocumentStale = updated !== current;
+		const isDocumentStale = updated != current;
 
 		if (isDocumentStale && checkOnly) {
 			console.error(

@@ -25,37 +25,23 @@ import {
 	validateTradingListingFormatEffect,
 } from "./listingFormatHelpers.js";
 
-/** Input accepted by getActiveListings. */
 type GetActiveListingsInput = z.infer<typeof getActiveListingsSchema>;
-/** Input accepted by getListing. */
 type GetListingInput = z.infer<typeof getListingSchema>;
-/** Input accepted by createListing. */
 type CreateListingInput = z.infer<typeof createListingSchema>;
-/** Input accepted by reviseListing. */
 type ReviseListingInput = z.infer<typeof reviseListingSchema>;
-/** Input accepted by endListing. */
 type EndListingInput = z.infer<typeof endListingSchema>;
-/** Input accepted by relistItem. */
 type RelistItemInput = z.infer<typeof relistItemSchema>;
 
-const asRecordArray = (rawField: unknown): Record<string, unknown>[] => {
+function asRecordArray(rawField: unknown): Record<string, unknown>[] {
 	if (!Array.isArray(rawField)) {
 		return [];
 	}
 
 	return rawField.filter(isRecord);
-};
+}
 
-/**
- * Parsed Trading API object payload returned unchanged from XML calls.
- *
- * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/index.html
- */
 export type TradingRecordResponse = Record<string, unknown>;
 
-/**
- * High-level wrapper for seller listing operations backed by eBay Trading API calls.
- */
 export class TradingApi {
 	private readonly client: TradingApiClient;
 
@@ -63,22 +49,6 @@ export class TradingApi {
 		this.client = client;
 	}
 
-	/**
-	 * Fetches active seller listings with Trading API pagination metadata.
-	 *
-	 * @param input - Optional page number and entries-per-page values.
-	 * @returns The parsed GetMyeBaySelling response payload.
-	 *
-	 * @example
-	 * ```ts
-	 * const tradingRecord = await tradingApi.getActiveListings({
-	 *   page: 2,
-	 *   entriesPerPage: 25,
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/getmyebayselling.html
-	 */
 	getActiveListings = async (
 		input: GetActiveListingsInput = {},
 	): Promise<TradingRecordResponse> => {
@@ -105,19 +75,6 @@ export class TradingApi {
 		});
 	};
 
-	/**
-	 * Fetches a single listing by eBay item ID with full Trading API detail.
-	 *
-	 * @param input - eBay item identifier.
-	 * @returns The parsed Trading API item payload.
-	 *
-	 * @example
-	 * ```ts
-	 * const listing = await tradingApi.getListing({ itemId: '12345' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/getitem.html
-	 */
 	getListing = async (
 		input: GetListingInput,
 	): Promise<TradingRecordResponse> => {
@@ -133,29 +90,6 @@ export class TradingApi {
 		return firstItem ?? getItemResponse;
 	};
 
-	/**
-	 * Creates a listing using the supplied Trading API item payload.
-	 *
-	 * Fixed-price listings go through AddFixedPriceItem (with `ListingDuration` GTC
-	 * when supplied). Auctions go through AddItem with `ListingType` Chinese added to
-	 * the item, after the auction rules pass: a day-count `ListingDuration`, a
-	 * `StartPrice` opening bid, a single unit, a reserve above the opening bid, a Buy
-	 * It Now price at least 30% above it, and Best Offer only without Buy It Now.
-	 *
-	 * @param input - Trading API Item payload nested under `item`, plus the optional listing format.
-	 * @returns The parsed AddFixedPriceItem or AddItem response.
-	 *
-	 * @example
-	 * ```ts
-	 * const auction = await tradingApi.createListing({
-	 *   format: FormatType.AUCTION,
-	 *   item: { Title: 'Rare coin', StartPrice: 9.99, ListingDuration: 'Days_7' },
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/AddFixedPriceItem.html
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/AddItem.html
-	 */
 	createListing = async (
 		input: CreateListingInput,
 	): Promise<TradingRecordResponse> => {
@@ -174,7 +108,7 @@ export class TradingApi {
 			parameter: "item",
 			isCreate: true,
 		});
-		const isAuction = format === FormatType.AUCTION;
+		const isAuction = format == FormatType.AUCTION;
 		const auctionItem = {
 			...tradingItem,
 			ListingType: TRADING_AUCTION_LISTING_TYPE,
@@ -186,26 +120,6 @@ export class TradingApi {
 		});
 	};
 
-	/**
-	 * Revises a listing by merging changes with the eBay item ID.
-	 *
-	 * Fixed-price listings go through ReviseFixedPriceItem; auctions go through
-	 * ReviseItem after the auction field rules pass.
-	 *
-	 * @param input - eBay item identifier plus Trading API Item fields to update and the optional listing format.
-	 * @returns The parsed ReviseFixedPriceItem or ReviseItem response.
-	 *
-	 * @example
-	 * ```ts
-	 * const listing = await tradingApi.reviseListing({
-	 *   itemId: '12345',
-	 *   fields: { Quantity: 10 },
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/ReviseFixedPriceItem.html
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/ReviseItem.html
-	 */
 	reviseListing = async (
 		input: ReviseListingInput,
 	): Promise<TradingRecordResponse> => {
@@ -231,23 +145,6 @@ export class TradingApi {
 		});
 	};
 
-	/**
-	 * Ends a listing with the provided Trading API ending reason.
-	 *
-	 * Fixed-price listings go through EndFixedPriceItem; auctions go through EndItem,
-	 * the only call that accepts the SellToHighBidder reason.
-	 *
-	 * @param input - eBay item identifier plus optional Trading API ending reason and listing format.
-	 * @returns The parsed EndFixedPriceItem or EndItem response.
-	 *
-	 * @example
-	 * ```ts
-	 * await tradingApi.endListing({ itemId: '12345', reason: 'NotAvailable' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/endfixedpriceitem.html
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/EndItem.html
-	 */
 	endListing = async (
 		input: EndListingInput,
 	): Promise<TradingRecordResponse> => {
@@ -264,26 +161,6 @@ export class TradingApi {
 		});
 	};
 
-	/**
-	 * Relists an ended item with optional listing modifications.
-	 *
-	 * Fixed-price listings go through RelistFixedPriceItem; auctions go through
-	 * RelistItem after the auction field rules pass on the modifications.
-	 *
-	 * @param input - eBay item identifier plus optional Trading API Item modifications and listing format.
-	 * @returns The parsed RelistFixedPriceItem or RelistItem response.
-	 *
-	 * @example
-	 * ```ts
-	 * const listing = await tradingApi.relistItem({
-	 *   itemId: '12345',
-	 *   modifications: { Quantity: 20 },
-	 * });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/relistfixedpriceitem.html
-	 * @see https://developer.ebay.com/devzone/xml/docs/reference/ebay/RelistItem.html
-	 */
 	relistItem = async (
 		input: RelistItemInput,
 	): Promise<TradingRecordResponse> => {

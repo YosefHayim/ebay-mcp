@@ -46,7 +46,7 @@ let client: Client;
 let runtime: EbayMcpRuntime;
 let originalEnv: NodeJS.ProcessEnv;
 
-const callTool = async (name: string, args: Record<string, unknown>) => {
+async function callTool(name: string, args: Record<string, unknown>) {
 	const toolResult = await client.callTool({ name, arguments: args });
 	const text = Array.isArray(toolResult.content)
 		? toolResult.content
@@ -58,10 +58,10 @@ const callTool = async (name: string, args: Record<string, unknown>) => {
 		text,
 		payload: JSON.parse(text) as unknown,
 	};
-};
+}
 
-const mockImageUpload = (imageUrl: string) =>
-	nock(MEDIA_HOST)
+function mockImageUpload(imageUrl: string) {
+	return nock(MEDIA_HOST)
 		.post(`${MEDIA_PATH}/image/create_image_from_file`)
 		.reply(
 			201,
@@ -70,6 +70,7 @@ const mockImageUpload = (imageUrl: string) =>
 				Location: `${MEDIA_HOST}${MEDIA_PATH}/image/IMG-${imageUrl.length}`,
 			},
 		);
+}
 
 beforeAll(async () => {
 	fixture = await createMediaFixture();
@@ -129,7 +130,7 @@ describe("media tools registration", () => {
 			]),
 		);
 		const attach = tools.find(
-			(tool) => tool.name === "ebay_attach_media_to_inventory_item",
+			(tool) => tool.name == "ebay_attach_media_to_inventory_item",
 		);
 		expect(attach?.inputSchema).toMatchObject({
 			properties: {
@@ -387,16 +388,14 @@ describe("document and image URL tools", () => {
 			"download_post_order_document",
 			"remove_post_order_document",
 		]) {
-			expect(
-				tools.find((tool) => tool.name === `ebay_${suffix}`),
-			).toBeDefined();
+			expect(tools.find((tool) => tool.name == `ebay_${suffix}`)).toBeDefined();
 		}
 		expect(
-			tools.find((tool) => tool.name === "ebay_download_post_order_document")
+			tools.find((tool) => tool.name == "ebay_download_post_order_document")
 				?.annotations?.readOnlyHint,
 		).toBe(true);
 		expect(
-			tools.find((tool) => tool.name === "ebay_remove_post_order_document")
+			tools.find((tool) => tool.name == "ebay_remove_post_order_document")
 				?.annotations?.destructiveHint,
 		).toBe(true);
 	});
@@ -529,7 +528,7 @@ describe("document and image URL tools", () => {
 		);
 		expect(downloadResult.isError).not.toBe(true);
 		const resource = downloadResult.content.find(
-			(block) => block.type === "resource",
+			(block) => block.type == "resource",
 		);
 		expect(resource?.resource).toEqual({
 			uri: "ebay-media://post-order/document/P-1",
@@ -559,7 +558,7 @@ describe("document and image URL tools", () => {
 		];
 		const downloadScope = nock(POST_ORDER_HOST)
 			.get(`${MEDIA_PATH}/post_order/document/P-1`)
-			.times(status === 401 ? 2 : 1)
+			.times(status == 401 ? 2 : 1)
 			.reply(status, { errors }, { "Retry-After": "5" });
 		const failedDownload = await callTool("ebay_download_post_order_document", {
 			documentId: "P-1",

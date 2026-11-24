@@ -1,9 +1,3 @@
-/**
- * Setup Validation Module
- *
- * Tests the configuration after setup to ensure everything is working properly.
- */
-
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { EbayOAuthClient } from "@/auth/oauth.js";
@@ -14,38 +8,21 @@ import { parseEnvFile } from "@/shared/envParser.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import { paint } from "@/shared/paint.js";
 
-/**
- * Result for one setup validation test.
- */
 export interface ValidationResult {
-	/** Human-readable validation name printed in diagnostics output. */
 	test: string;
-	/** Whether the validation completed successfully. */
 	passed: boolean;
-	/** User-facing summary of the validation outcome. */
 	message: string;
-	/** Optional remediation or failure detail. */
 	error?: string;
 }
 
-/**
- * Aggregate result returned after all setup validation tests run.
- */
 export interface ValidationSummary {
-	/** Number of validation checks that were executed. */
 	totalTests: number;
-	/** Number of checks that passed. */
 	passed: number;
-	/** Number of checks that failed. */
 	failed: number;
-	/** Ordered list of individual validation outcomes. */
 	results: ValidationResult[];
 }
 
-/**
- * Validates that the .env file exists and is readable.
- */
-const validateEnvFile = (projectRoot: string): ValidationResult => {
+function validateEnvFile(projectRoot: string): ValidationResult {
 	const envPath = join(projectRoot, ".env");
 
 	if (!existsSync(envPath)) {
@@ -73,14 +50,11 @@ const validateEnvFile = (projectRoot: string): ValidationResult => {
 		passed: true,
 		message: "Configuration file exists and is readable",
 	};
-};
+}
 
-/**
- * Validates that required app credentials are present.
- */
-const validateAppCredentials = (
+function validateAppCredentials(
 	envVars: Record<string, string>,
-): ValidationResult => {
+): ValidationResult {
 	const required = [
 		"EBAY_CLIENT_ID",
 		"EBAY_CLIENT_SECRET",
@@ -89,7 +63,7 @@ const validateAppCredentials = (
 	const missing: string[] = [];
 
 	for (const key of required) {
-		if (!envVars[key] || envVars[key].trim() === "") {
+		if (!envVars[key] || envVars[key].trim() == "") {
 			missing.push(key);
 		}
 	}
@@ -108,17 +82,14 @@ const validateAppCredentials = (
 		passed: true,
 		message: "All required app credentials are present",
 	};
-};
+}
 
-/**
- * Validates the configured eBay environment value.
- */
-const validateEnvironment = (
+function validateEnvironment(
 	envVars: Record<string, string>,
-): ValidationResult => {
+): ValidationResult {
 	const env = envVars["EBAY_ENVIRONMENT"] || "sandbox";
 
-	if (env !== "sandbox" && env !== "production") {
+	if (env != "sandbox" && env != "production") {
 		return {
 			test: "Environment Setting",
 			passed: false,
@@ -132,17 +103,12 @@ const validateEnvironment = (
 		passed: true,
 		message: `Environment set to "${env}"`,
 	};
-};
+}
 
-/**
- * Checks whether optional user tokens are configured.
- */
-const validateUserTokens = (
-	envVars: Record<string, string>,
-): ValidationResult => {
+function validateUserTokens(envVars: Record<string, string>): ValidationResult {
 	const hasRefreshToken =
 		envVars["EBAY_USER_REFRESH_TOKEN"] &&
-		envVars["EBAY_USER_REFRESH_TOKEN"].trim() !== "";
+		envVars["EBAY_USER_REFRESH_TOKEN"].trim() != "";
 
 	if (!hasRefreshToken) {
 		return {
@@ -158,14 +124,11 @@ const validateUserTokens = (
 		passed: true,
 		message: "User refresh token is configured",
 	};
-};
+}
 
-/**
- * Tests OAuth client initialization.
- */
-const validateOAuthInitialization = async (
+async function validateOAuthInitialization(
 	config: EbayConfig,
-): Promise<ValidationResult> => {
+): Promise<ValidationResult> {
 	try {
 		const oauthClient = new EbayOAuthClient(config);
 		await oauthClient.initialize();
@@ -183,12 +146,9 @@ const validateOAuthInitialization = async (
 		passed: true,
 		message: "OAuth client initialized successfully",
 	};
-};
+}
 
-/**
- * Tests OAuth URL generation.
- */
-const validateOAuthURL = (config: EbayConfig): ValidationResult => {
+function validateOAuthURL(config: EbayConfig): ValidationResult {
 	const redirectUri = config.redirectUri;
 	if (!redirectUri) {
 		return {
@@ -230,21 +190,11 @@ const validateOAuthURL = (config: EbayConfig): ValidationResult => {
 		passed: true,
 		message: "OAuth URL can be generated",
 	};
-};
+}
 
-/**
- * Runs all setup validation tests and prints their CLI summary.
- *
- * @param projectRoot Absolute project root containing the `.env` file to validate.
- * @returns A summary containing individual validation results and pass/fail counts.
- * @example
- * ```ts
- * const summary = await validateSetup(process.cwd());
- * ```
- */
-export const validateSetup = async (
+export async function validateSetup(
 	projectRoot: string,
-): Promise<ValidationSummary> => {
+): Promise<ValidationSummary> {
 	const results: ValidationResult[] = [];
 
 	writeCliLine(paint.bold.cyan("\n🧪 Running Configuration Tests...\n"));
@@ -290,7 +240,7 @@ export const validateSetup = async (
 	const hasAppCredentials = appCredsResult.passed;
 
 	async function testStoredOAuth(): Promise<void> {
-		const skippedOAuth = hasAppCredentials === false;
+		const skippedOAuth = hasAppCredentials == false;
 
 		if (skippedOAuth) {
 			return;
@@ -318,7 +268,7 @@ export const validateSetup = async (
 		results.push(oauthInitResult);
 		printResult(oauthInitResult);
 
-		const didOAuthFail = oauthInitResult.passed === false;
+		const didOAuthFail = oauthInitResult.passed == false;
 
 		if (didOAuthFail) {
 			return;
@@ -343,7 +293,7 @@ export const validateSetup = async (
 	writeCliLine(`  ${paint.green("✓ Passed:")} ${passed}`);
 	writeCliLine(`  ${paint.red("✗ Failed:")} ${failed}`);
 
-	if (failed === 0) {
+	if (failed == 0) {
 		writeCliLine(
 			paint.green.bold("\n✨ All tests passed! Configuration is valid.\n"),
 		);
@@ -361,12 +311,9 @@ export const validateSetup = async (
 		failed,
 		results,
 	};
-};
+}
 
-/**
- * Prints a single validation result.
- */
-const printResult = (validation: ValidationResult): void => {
+function printResult(validation: ValidationResult): void {
 	const icon = validation.passed ? paint.green("✓") : paint.red("✗");
 	const status = validation.passed ? paint.green("PASS") : paint.red("FAIL");
 
@@ -378,22 +325,12 @@ const printResult = (validation: ValidationResult): void => {
 	}
 
 	writeCliLine("");
-};
+}
 
-/**
- * Displays setup recommendations based on validation results.
- *
- * @param summary Setup validation summary returned by `validateSetup`.
- * @returns Nothing; recommendations are written to stdout.
- * @example
- * ```ts
- * displayRecommendations(summary);
- * ```
- */
-export const displayRecommendations = (summary: ValidationSummary): void => {
+export function displayRecommendations(summary: ValidationSummary): void {
 	const hasUserTokens = summary.results.some(
 		(validation) =>
-			validation.test === "User Tokens" &&
+			validation.test == "User Tokens" &&
 			validation.passed &&
 			!validation.error,
 	);
@@ -442,4 +379,4 @@ export const displayRecommendations = (summary: ValidationSummary): void => {
 			),
 		);
 	}
-};
+}

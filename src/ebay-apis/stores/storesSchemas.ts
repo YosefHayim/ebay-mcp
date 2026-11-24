@@ -13,17 +13,14 @@ const categoryName = nonempty
 		"Seller-specified store category name (max 35 characters); cannot be empty or 'Other'",
 	);
 
-/** Empty input for Stores API reads that take no parameters (getStore, getStoreCategories, getStoreTasks). */
 export const emptyStoreInputSchema = z.object({});
 
-/** Input for Stores API getStoreTask. */
 export const getStoreTaskInputSchema = z.object({
 	taskId: nonempty.describe(
 		"Store task ID returned as taskId by the add, rename, move, or delete store category tools",
 	),
 });
 
-/** Input for Stores API addStoreCategory; fields map 1:1 to AddStoreCategoryRequestType. */
 export const addStoreCategoryInputSchema = z.object({
 	categoryName,
 	destinationParentCategoryId: nonempty
@@ -38,13 +35,11 @@ export const addStoreCategoryInputSchema = z.object({
 		),
 });
 
-/** Input for Stores API renameStoreCategory: path ID plus RenameStoreCategoryRequestType. */
 export const renameStoreCategoryInputSchema = z.object({
 	categoryId: storeCategoryId,
 	categoryName,
 });
 
-/** Input for Stores API deleteStoreCategory: path ID plus DeleteStoreCategoryRequestType. */
 export const deleteStoreCategoryInputSchema = z.object({
 	categoryId: storeCategoryId,
 	listingDestinationCategoryId: nonempty
@@ -54,7 +49,6 @@ export const deleteStoreCategoryInputSchema = z.object({
 		),
 });
 
-/** Input for Stores API moveStoreCategory; fields map 1:1 to MoveStoreCategoryRequestType. */
 export const moveStoreCategoryInputSchema = z.object({
 	categoryId: storeCategoryId,
 	destinationParentCategoryId: nonempty.describe(

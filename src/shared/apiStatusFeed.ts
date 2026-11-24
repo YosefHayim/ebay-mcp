@@ -1,31 +1,16 @@
-/**
- * Fetches and parses the eBay API Status RSS feed (public, no auth).
- * Used by the ebay_get_api_status MCP tool and optionally by the docs sync script.
- */
-
 import { XMLParser } from "fast-xml-parser";
 import { getErrorMessage } from "@/shared/errors.js";
 import { httpRequestEffect } from "./http.js";
 
 const RSS_URL = "https://developer.ebay.com/rss/api-status";
 
-/**
- * Parsed eBay API status feed entry exposed to MCP tools.
- */
 export interface ApiStatusItem {
-	/** Feed item title. */
 	title: string;
-	/** Short plain-text summary. */
 	summary: string;
-	/** Source link for the status item. */
 	link: string;
-	/** eBay API named by the feed item. */
 	api: string;
-	/** eBay site/marketplace named by the feed item. */
 	site: string;
-	/** Current incident status label. */
 	status: string;
-	/** Last updated timestamp text from the feed. */
 	lastUpdated: string;
 }
 
@@ -40,21 +25,22 @@ interface RssItemRaw {
 	lastUpdated?: string;
 }
 
-const stripHtml = (html: string): string =>
-	html
+function stripHtml(html: string): string {
+	return html
 		.replace(/<[^>]+>/g, " ")
 		.replace(/\s+/g, " ")
 		.trim();
+}
 
-const normalizeString = (field: unknown): string => {
+function normalizeString(field: unknown): string {
 	if (field == null) return "";
-	if (typeof field === "string") return field.trim();
-	if (typeof field === "number" || typeof field === "boolean")
+	if (typeof field == "string") return field.trim();
+	if (typeof field == "number" || typeof field == "boolean")
 		return String(field).trim();
 	return "";
-};
+}
 
-const parseItem = (raw: RssItemRaw): ApiStatusItem => {
+function parseItem(raw: RssItemRaw): ApiStatusItem {
 	const summary =
 		normalizeString(raw.summary) ||
 		stripHtml(normalizeString(raw.description)).slice(0, 300) ||
@@ -68,39 +54,23 @@ const parseItem = (raw: RssItemRaw): ApiStatusItem => {
 		status: normalizeString(raw.status) || "",
 		lastUpdated: normalizeString(raw.lastUpdated) || "",
 	};
-};
+}
 
 interface RssRoot {
 	rss?: { channel?: { item?: RssItemRaw | RssItemRaw[] } };
 }
 
-/**
- * Filters and pagination options for the eBay API status feed.
- */
 export interface GetApiStatusFeedOptions {
-	/** Maximum number of items to return. */
 	limit?: number;
-	/** Optional status filter. */
 	status?: "Resolved" | "Unresolved";
-	/** Optional API-name substring filter. */
 	api?: string;
 }
 
-/** Parsed API status feed response returned to tools and docs sync. */
 export interface ApiStatusFeedResult {
-	/** Filtered feed items. */
 	items: ApiStatusItem[];
-	/** Recoverable fetch or parse error, when available. */
 	error?: string;
 }
 
-/**
- * Fetches the eBay API Status RSS feed, parses it, and returns items
- * optionally filtered by status and API name, limited to `limit` items.
- *
- * @param options - Optional status/API filters and item limit.
- * @returns Parsed feed items, or an empty list plus a recoverable error string.
- */
 export async function getApiStatusFeed(
 	options: GetApiStatusFeedOptions = {},
 ): Promise<ApiStatusFeedResult> {
@@ -144,7 +114,7 @@ export async function getApiStatusFeed(
 
 		if (statusFilter) {
 			items = items.filter(
-				(entry) => entry.status.toLowerCase() === statusFilter.toLowerCase(),
+				(entry) => entry.status.toLowerCase() == statusFilter.toLowerCase(),
 			);
 		}
 

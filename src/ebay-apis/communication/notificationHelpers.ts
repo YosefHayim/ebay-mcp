@@ -1,12 +1,6 @@
 import { z } from "zod";
 import { idSchema } from "@/shared/schemaHelpers.js";
 
-/**
- * Zod schemas for Notification API input validation.
- * OpenAPI spec: commerce_notification_v1_oas3.json
- */
-
-/** Optional positive page size accepted by Notification list endpoints. */
 const limitSchema = z
 	.number({
 		invalid_type_error: "limit must be a number",
@@ -15,7 +9,6 @@ const limitSchema = z
 	.positive("limit must be a positive number")
 	.optional();
 
-/** Optional continuation cursor accepted by Notification list endpoints. */
 const continuationTokenSchema = z
 	.string({
 		message: "Continuation token must be a string",
@@ -24,7 +17,6 @@ const continuationTokenSchema = z
 	})
 	.optional();
 
-/** Destination delivery configuration schema shared by destination write tools. */
 const deliveryConfigSchema = z
 	.object({
 		endpoint: z
@@ -52,7 +44,6 @@ const deliveryConfigSchema = z
 	})
 	.optional();
 
-/** Subscription payload detail schema shared by subscription write tools. */
 const payloadSchema = z
 	.object({
 		deliveryProtocol: z
@@ -76,7 +67,6 @@ const payloadSchema = z
 	})
 	.optional();
 
-/** Schema for getPublicKey input. */
 export const getPublicKeySchema = z.object({
 	publicKeyId: idSchema(
 		"Public key ID",
@@ -84,10 +74,8 @@ export const getPublicKeySchema = z.object({
 	),
 });
 
-/** Schema for getConfig input. */
 export const getConfigSchema = z.object({});
 
-/** Schema for updateConfig input. */
 export const updateConfigSchema = z.object({
 	alertEmail: z
 		.string({
@@ -100,13 +88,11 @@ export const updateConfigSchema = z.object({
 		.optional(),
 });
 
-/** Schema for getDestinations input. */
 export const getDestinationsSchema = z.object({
 	continuationToken: continuationTokenSchema,
 	limit: limitSchema,
 });
 
-/** Schema for getDestination input. */
 export const getDestinationSchema = z.object({
 	destinationId: idSchema(
 		"Destination ID",
@@ -114,7 +100,6 @@ export const getDestinationSchema = z.object({
 	),
 });
 
-/** Schema for createDestination input. */
 export const createDestinationSchema = z.object({
 	deliveryConfig: deliveryConfigSchema,
 	name: z
@@ -131,7 +116,6 @@ export const createDestinationSchema = z.object({
 		.optional(),
 });
 
-/** Schema for updateDestination input. */
 export const updateDestinationSchema = z.object({
 	destinationId: idSchema(
 		"Destination ID",
@@ -152,7 +136,6 @@ export const updateDestinationSchema = z.object({
 		.optional(),
 });
 
-/** Schema for deleteDestination input. */
 export const deleteDestinationSchema = z.object({
 	destinationId: idSchema(
 		"Destination ID",
@@ -160,13 +143,11 @@ export const deleteDestinationSchema = z.object({
 	),
 });
 
-/** Schema for getSubscriptions input. */
 export const getSubscriptionsSchema = z.object({
 	limit: limitSchema,
 	continuationToken: continuationTokenSchema,
 });
 
-/** Schema for createSubscription input. */
 export const createSubscriptionSchema = z.object({
 	destinationId: z
 		.string({
@@ -189,7 +170,6 @@ export const createSubscriptionSchema = z.object({
 		.optional(),
 });
 
-/** Schema for getSubscription input. */
 export const getSubscriptionSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -197,7 +177,6 @@ export const getSubscriptionSchema = z.object({
 	),
 });
 
-/** Schema for updateSubscription input. */
 export const updateSubscriptionSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -218,7 +197,6 @@ export const updateSubscriptionSchema = z.object({
 		.optional(),
 });
 
-/** Schema for deleteSubscription input. */
 export const deleteSubscriptionSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -226,7 +204,6 @@ export const deleteSubscriptionSchema = z.object({
 	),
 });
 
-/** Schema for disableSubscription input. */
 export const disableSubscriptionSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -234,7 +211,6 @@ export const disableSubscriptionSchema = z.object({
 	),
 });
 
-/** Schema for enableSubscription input. */
 export const enableSubscriptionSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -242,7 +218,6 @@ export const enableSubscriptionSchema = z.object({
 	),
 });
 
-/** Schema for testSubscription input. */
 export const testSubscriptionSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -250,18 +225,15 @@ export const testSubscriptionSchema = z.object({
 	),
 });
 
-/** Schema for getTopic input. */
 export const getTopicSchema = z.object({
 	topicId: idSchema("Topic ID", "The unique identifier for the topic"),
 });
 
-/** Schema for getTopics input. */
 export const getTopicsSchema = z.object({
 	limit: limitSchema,
 	continuationToken: continuationTokenSchema,
 });
 
-/** Schema for createSubscriptionFilter input. */
 export const createSubscriptionFilterSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -275,7 +247,6 @@ export const createSubscriptionFilterSchema = z.object({
 		),
 });
 
-/** Schema for getSubscriptionFilter input. */
 export const getSubscriptionFilterSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",
@@ -284,7 +255,6 @@ export const getSubscriptionFilterSchema = z.object({
 	filterId: idSchema("Filter ID", "The unique identifier for the filter"),
 });
 
-/** Schema for deleteSubscriptionFilter input. */
 export const deleteSubscriptionFilterSchema = z.object({
 	subscriptionId: idSchema(
 		"Subscription ID",

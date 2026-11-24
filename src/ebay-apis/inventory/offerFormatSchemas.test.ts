@@ -4,7 +4,9 @@ import {
 	updateOfferBodySchema,
 } from "@/ebay-apis/inventory/inventorySchemas.js";
 
-const usd = (amount: string) => ({ currency: "USD", value: amount });
+function usd(amount: string) {
+	return { currency: "USD", value: amount };
+}
 
 describe("offer schema listing formats", () => {
 	it("accepts auction pricing and a day-count duration", () => {

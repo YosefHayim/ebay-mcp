@@ -80,7 +80,7 @@ describe("MCP runtime", () => {
 
 		const createLocationCall = [...mcpMock.registerTool.mock.calls]
 			.reverse()
-			.find(([name]) => name === "ebay_create_inventory_location");
+			.find(([name]) => name == "ebay_create_inventory_location");
 		expect(createLocationCall).toBeDefined();
 		const handler = createLocationCall?.[2] as (
 			args: Record<string, unknown>,
@@ -144,7 +144,7 @@ describe("MCP runtime", () => {
 
 		const createLocationCall = [...mcpMock.registerTool.mock.calls]
 			.reverse()
-			.find(([name]) => name === "ebay_create_inventory_location");
+			.find(([name]) => name == "ebay_create_inventory_location");
 		const handler = createLocationCall?.[2] as (
 			args: Record<string, unknown>,
 		) => Promise<{

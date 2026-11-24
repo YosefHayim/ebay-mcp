@@ -32,120 +32,70 @@ import { getErrorMessage } from "@/shared/errors.js";
 import { serverLogger } from "@/shared/logger.js";
 import { getVersion } from "@/shared/version.js";
 
-/**
- * OAuth settings for protecting the HTTP MCP transport.
- */
 export interface HttpOAuthConfig {
-	/** OAuth authorization server issuer/base URL. */
 	authServerUrl: string;
-	/** Optional client ID used for token introspection. */
 	clientId?: string | undefined;
-	/** Optional client secret used for token introspection. */
 	clientSecret?: string | undefined;
-	/** OAuth scopes required to access MCP tools over HTTP. */
 	requiredScopes: string[];
-	/** Whether bearer tokens are validated through introspection. */
 	useIntrospection: boolean;
 }
 
-/**
- * Runtime configuration for the HTTP MCP server.
- */
 export interface HttpTransportConfig {
-	/** Enables OAuth bearer-token middleware when true. */
 	authEnabled: boolean;
-	/** Browser origins allowed to call the server cross-origin. */
 	corsOrigins: (string | RegExp)[];
-	/** Optional eBay config override used by tests and embedded callers. */
 	ebayConfig?: EbayConfig;
-	/** Host interface for the HTTP server. */
 	host: string;
-	/** OAuth protection settings for the HTTP transport. */
 	oauth: HttpOAuthConfig;
-	/** TCP port for the HTTP server. */
 	port: number;
-	/**
-	 * Optional static bearer token. When set, HTTP MCP routes require
-	 * `Authorization: Bearer <token>` and skip the OAuth token verifier.
-	 */
 	staticAuthToken?: string | undefined;
 }
 
 const LOOPBACK_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
-const parseCorsOrigins = (value: string | undefined): (string | RegExp)[] => {
+function parseCorsOrigins(value: string | undefined): (string | RegExp)[] {
 	const origins = (value || "")
 		.split(",")
 		.map((origin) => origin.trim())
 		.filter(Boolean);
-	if (origins.length === 0) {
+	if (origins.length == 0) {
 		return [LOOPBACK_ORIGIN];
 	}
 	return origins;
-};
+}
 
-/**
- * Build HTTP transport configuration from process environment variables.
- *
- * @param env - Environment object to read transport and OAuth settings from.
- * @returns HTTP transport config with defaults filled in.
- *
- * @example
- * ```ts
- * const config = createHttpTransportConfigFromEnv(process.env);
- * ```
- */
-export const createHttpTransportConfigFromEnv = (
+export function createHttpTransportConfigFromEnv(
 	env: NodeJS.ProcessEnv,
-): HttpTransportConfig => ({
-	// Cloud platforms (Railway, Render, Fly, etc.) inject PORT; bind all interfaces
-	// by default so the container is reachable unless MCP_HOST is set explicitly.
-	host: env["MCP_HOST"] || (env["PORT"] ? "0.0.0.0" : "localhost"),
-	port: Number(env["MCP_PORT"]) || Number(env["PORT"]) || 3000,
-	oauth: {
-		authServerUrl:
-			env["OAUTH_AUTH_SERVER_URL"] ?? "http://localhost:8080/realms/master",
-		clientId: env["OAUTH_CLIENT_ID"],
-		clientSecret: env["OAUTH_CLIENT_SECRET"],
-		requiredScopes: (env["OAUTH_REQUIRED_SCOPES"] || "mcp:tools")
-			.split(",")
-			.map((scope) => scope.trim()),
-		useIntrospection: env["OAUTH_USE_INTROSPECTION"] !== "false",
-	},
-	authEnabled: env["OAUTH_ENABLED"] !== "false",
-	corsOrigins: parseCorsOrigins(env["MCP_CORS_ORIGINS"]),
-	staticAuthToken: env["MCP_AUTH_TOKEN"],
-});
+): HttpTransportConfig {
+	return {
+		// Cloud platforms (Railway, Render, Fly, etc.) inject PORT; bind all interfaces
+		// by default so the container is reachable unless MCP_HOST is set explicitly.
+		host: env["MCP_HOST"] || (env["PORT"] ? "0.0.0.0" : "localhost"),
+		port: Number(env["MCP_PORT"]) || Number(env["PORT"]) || 3000,
+		oauth: {
+			authServerUrl:
+				env["OAUTH_AUTH_SERVER_URL"] ?? "http://localhost:8080/realms/master",
+			clientId: env["OAUTH_CLIENT_ID"],
+			clientSecret: env["OAUTH_CLIENT_SECRET"],
+			requiredScopes: (env["OAUTH_REQUIRED_SCOPES"] || "mcp:tools")
+				.split(",")
+				.map((scope) => scope.trim()),
+			useIntrospection: env["OAUTH_USE_INTROSPECTION"] != "false",
+		},
+		authEnabled: env["OAUTH_ENABLED"] != "false",
+		corsOrigins: parseCorsOrigins(env["MCP_CORS_ORIGINS"]),
+		staticAuthToken: env["MCP_AUTH_TOKEN"],
+	};
+}
 
-/**
- * Build the public server URL used for MCP metadata and OAuth audience checks.
- *
- * @param config - HTTP host and port values.
- * @returns Public HTTP server URL.
- *
- * @example
- * ```ts
- * const url = getHttpServerUrl({ host: 'localhost', port: 3000 });
- * ```
- */
-export const getHttpServerUrl = (
+export function getHttpServerUrl(
 	config: Pick<HttpTransportConfig, "host" | "port">,
-): string => `http://${config.host}:${config.port}`;
+): string {
+	return `http://${config.host}:${config.port}`;
+}
 
-/**
- * Resolve the OAuth authorization-server metadata endpoint for the configured issuer.
- *
- * @param config - HTTP OAuth config containing the authorization server URL.
- * @returns Well-known OAuth/OIDC metadata URL for the issuer.
- *
- * @example
- * ```ts
- * const metadataUrl = getAuthServerMetadataUrl({ oauth: config.oauth });
- * ```
- */
-export const getAuthServerMetadataUrl = (
+export function getAuthServerMetadataUrl(
 	config: Pick<HttpTransportConfig, "oauth">,
-): string => {
+): string {
 	const baseUrl = config.oauth.authServerUrl;
 
 	if (baseUrl.includes("/realms/")) {
@@ -153,7 +103,7 @@ export const getAuthServerMetadataUrl = (
 	}
 
 	return `${baseUrl}/.well-known/oauth-authorization-server`;
-};
+}
 
 function createServerConfig(): Implementation {
 	return {
@@ -233,7 +183,7 @@ function createSessionId(): string {
 }
 
 function copyChunk(chunk: Buffer | string): Buffer {
-	if (typeof chunk === "string") {
+	if (typeof chunk == "string") {
 		return Buffer.from(chunk);
 	}
 
@@ -254,7 +204,7 @@ function readRequestPath(requestUrl: string | undefined): string {
 function readHeaderValue(request: IncomingMessage, name: string): string {
 	const header = request.headers[name];
 
-	if (typeof header === "string") {
+	if (typeof header == "string") {
 		return header;
 	}
 
@@ -314,7 +264,7 @@ function allowStaticToken(
 	staticToken: string,
 ): boolean {
 	const authorization = readHeaderValue(request, "authorization");
-	const isMatch = authorization === `Bearer ${staticToken}`;
+	const isMatch = authorization == `Bearer ${staticToken}`;
 
 	if (isMatch) {
 		return true;
@@ -332,7 +282,7 @@ async function createHttpAuthorizer(
 	serverUrl: string,
 ): Promise<AllowHttpRequest> {
 	const staticToken = config.staticAuthToken ?? "";
-	const hasStaticToken = staticToken !== "";
+	const hasStaticToken = staticToken != "";
 
 	if (hasStaticToken) {
 		serverLogger.info("Static bearer auth enabled via MCP_AUTH_TOKEN.");
@@ -347,7 +297,7 @@ async function createHttpAuthorizer(
 		return allowStaticBearer;
 	}
 
-	if (config.authEnabled === false) {
+	if (config.authEnabled == false) {
 		serverLogger.warn(
 			"OAuth is disabled. Server running in unauthenticated mode.",
 		);
@@ -413,24 +363,24 @@ function attachRequestLog(
 function isJsonContentType(request: IncomingMessage): boolean {
 	const header = request.headers["content-type"];
 
-	if (typeof header !== "string") {
+	if (typeof header != "string") {
 		return false;
 	}
 
 	const mediaType = header.split(";")[0]?.trim().toLowerCase() ?? "";
-	return mediaType === "application/json";
+	return mediaType == "application/json";
 }
 
 function methodHasBody(method: string): boolean {
-	if (method === "POST") {
+	if (method == "POST") {
 		return true;
 	}
 
-	if (method === "PUT") {
+	if (method == "PUT") {
 		return true;
 	}
 
-	return method === "PATCH";
+	return method == "PATCH";
 }
 
 function readJsonBody(request: IncomingMessage): Promise<JsonBody> {
@@ -468,7 +418,7 @@ function readJsonBody(request: IncomingMessage): Promise<JsonBody> {
 			cleanup();
 			const receivedUtf8 = Buffer.concat(chunks).toString("utf8");
 
-			if (receivedUtf8 === "") {
+			if (receivedUtf8 == "") {
 				complete({ kind: "parsed", parsedBody: {} });
 				return;
 			}
@@ -523,7 +473,7 @@ async function readBodyIfPresent(
 	}
 
 	const jsonBody = await readParsedJsonBody(request);
-	const isTooLarge = jsonBody.kind === "too_large";
+	const isTooLarge = jsonBody.kind == "too_large";
 
 	if (isTooLarge) {
 		writeJson(response, 413, {
@@ -533,7 +483,7 @@ async function readBodyIfPresent(
 		return { kind: "rejected" };
 	}
 
-	const isInvalid = jsonBody.kind === "invalid";
+	const isInvalid = jsonBody.kind == "invalid";
 
 	if (isInvalid) {
 		writeJson(response, 400, {
@@ -543,7 +493,7 @@ async function readBodyIfPresent(
 		return { kind: "rejected" };
 	}
 
-	if (jsonBody.kind === "parsed") {
+	if (jsonBody.kind == "parsed") {
 		return { kind: "ready", parsedBody: jsonBody.parsedBody };
 	}
 
@@ -560,7 +510,7 @@ function originMatchesAllowed(
 		return allowedOrigin.test(origin);
 	}
 
-	return allowedOrigin === origin;
+	return allowedOrigin == origin;
 }
 
 function originIsListed(
@@ -585,13 +535,13 @@ function reflectAllowedOrigin(
 ): void {
 	const requestOrigin = readHeaderValue(request, "origin");
 
-	if (requestOrigin === "") {
+	if (requestOrigin == "") {
 		return;
 	}
 
 	const isAllowed = originIsListed(requestOrigin, allowedOrigins);
 
-	if (isAllowed === false) {
+	if (isAllowed == false) {
 		return;
 	}
 
@@ -607,7 +557,7 @@ function applyCors(
 	reflectAllowedOrigin(request, response, allowedOrigins);
 	response.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
 
-	const isOptions = request.method === "OPTIONS";
+	const isOptions = request.method == "OPTIONS";
 
 	if (!isOptions) {
 		return false;
@@ -617,7 +567,7 @@ function applyCors(
 		request,
 		"access-control-request-headers",
 	);
-	const hasRequestedHeaders = requestedHeaders !== "";
+	const hasRequestedHeaders = requestedHeaders != "";
 
 	if (hasRequestedHeaders) {
 		response.setHeader("Vary", "Origin, Access-Control-Request-Headers");
@@ -637,11 +587,11 @@ function applyCors(
 function readSessionId(request: IncomingMessage): string | undefined {
 	const header = request.headers["mcp-session-id"];
 
-	if (typeof header !== "string") {
+	if (typeof header != "string") {
 		return undefined;
 	}
 
-	if (header === "") {
+	if (header == "") {
 		return undefined;
 	}
 
@@ -712,7 +662,7 @@ async function handleMcpPost(
 	const authenticated = request as AuthenticatedRequest;
 	const isAllowed = await routes.allowRequest(authenticated, response);
 
-	if (isAllowed === false) {
+	if (isAllowed == false) {
 		return;
 	}
 
@@ -747,7 +697,7 @@ async function handleMcpSession(
 	const authenticated = request as AuthenticatedRequest;
 	const isAllowed = await routes.allowRequest(authenticated, response);
 
-	if (isAllowed === false) {
+	if (isAllowed == false) {
 		return;
 	}
 
@@ -763,11 +713,11 @@ async function handleMcpSession(
 }
 
 function isHealthGet(method: string, pathname: string): boolean {
-	if (method !== "GET") {
+	if (method != "GET") {
 		return false;
 	}
 
-	return pathname === "/health";
+	return pathname == "/health";
 }
 
 async function routeHttpRequest(
@@ -786,7 +736,7 @@ async function routeHttpRequest(
 	const method = request.method ?? "GET";
 	const bodyRead = await readBodyIfPresent(request, response, method);
 
-	if (bodyRead.kind === "rejected") {
+	if (bodyRead.kind == "rejected") {
 		return;
 	}
 
@@ -803,29 +753,29 @@ async function routeHttpRequest(
 		return;
 	}
 
-	const isRoot = pathname === "/";
+	const isRoot = pathname == "/";
 
-	if (isRoot === false) {
+	if (isRoot == false) {
 		writeNotFound(response);
 		return;
 	}
 
 	const parsedBody = bodyRead.parsedBody;
-	const isPost = method === "POST";
+	const isPost = method == "POST";
 
 	if (isPost) {
 		await handleMcpPost(request, response, routes, parsedBody);
 		return;
 	}
 
-	const isGet = method === "GET";
+	const isGet = method == "GET";
 
 	if (isGet) {
 		await handleMcpSession(request, response, routes);
 		return;
 	}
 
-	const isDelete = method === "DELETE";
+	const isDelete = method == "DELETE";
 
 	if (isDelete) {
 		await handleMcpSession(request, response, routes);
@@ -847,7 +797,7 @@ async function serveHttp(
 			error: getErrorMessage(error, String(error)),
 		});
 
-		const canReply = response.headersSent === false;
+		const canReply = response.headersSent == false;
 
 		if (!canReply) {
 			return;
@@ -866,17 +816,6 @@ async function serveHttp(
 	}
 }
 
-/**
- * Create the HTTP server that serves OAuth metadata and streamable HTTP MCP sessions.
- *
- * @param config - HTTP transport config including OAuth settings.
- * @returns Node HTTP server with MCP, metadata, and health routes.
- *
- * @example
- * ```ts
- * const app = await createHttpMcpApp(createHttpTransportConfigFromEnv());
- * ```
- */
 export async function createHttpMcpApp(
 	config: HttpTransportConfig,
 ): Promise<Server> {

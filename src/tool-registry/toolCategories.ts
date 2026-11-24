@@ -1,45 +1,32 @@
+import { tokenManagementEntries } from "@/auth/tokenManagementTools.js";
+import { accountEntries } from "@/ebay-apis/account/accountTools.js";
+import { accountV2Entries } from "@/ebay-apis/account/accountV2Tools.js";
+import { analyticsEntries } from "@/ebay-apis/analytics/analyticsTools.js";
+import { browseEntries } from "@/ebay-apis/browse/browseTools.js";
+import { communicationEntries } from "@/ebay-apis/communication/communicationTools.js";
+import { developerEntries } from "@/ebay-apis/developer/developerTools.js";
+import { feedEntries } from "@/ebay-apis/feed/feedTools.js";
+import { financesEntries } from "@/ebay-apis/finances/financesTools.js";
+import { fulfillmentEntries } from "@/ebay-apis/fulfillment/fulfillmentTools.js";
+import { inventoryEntries } from "@/ebay-apis/inventory/inventoryTools.js";
+import { mediaEntries } from "@/ebay-apis/inventory/mediaTools.js";
+import { logisticsEntries } from "@/ebay-apis/logistics/logisticsTools.js";
+import { marketingEntries } from "@/ebay-apis/marketing/marketingTools.js";
+import { metadataEntries } from "@/ebay-apis/metadata/metadataTools.js";
+import { otherEntries } from "@/ebay-apis/other/otherTools.js";
+import { storesEntries } from "@/ebay-apis/stores/storesTools.js";
+import { charityEntries } from "@/ebay-apis/taxonomy/charityTools.js";
+import { taxonomyEntries } from "@/ebay-apis/taxonomy/taxonomyTools.js";
+import { tradingEntries } from "@/ebay-apis/trading/tradingTools.js";
+import { connectorEntries } from "@/server/connectorTools.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
-import { tokenManagementEntries } from "../auth/tokenManagementTools.js";
-import { accountEntries } from "../ebay-apis/account/accountTools.js";
-import { accountV2Entries } from "../ebay-apis/account/accountV2Tools.js";
-import { analyticsEntries } from "../ebay-apis/analytics/analyticsTools.js";
-import { browseEntries } from "../ebay-apis/browse/browseTools.js";
-import { communicationEntries } from "../ebay-apis/communication/communicationTools.js";
-import { developerEntries } from "../ebay-apis/developer/developerTools.js";
-import { feedEntries } from "../ebay-apis/feed/feedTools.js";
-import { financesEntries } from "../ebay-apis/finances/financesTools.js";
-import { fulfillmentEntries } from "../ebay-apis/fulfillment/fulfillmentTools.js";
-import { inventoryEntries } from "../ebay-apis/inventory/inventoryTools.js";
-import { mediaEntries } from "../ebay-apis/inventory/mediaTools.js";
-import { logisticsEntries } from "../ebay-apis/logistics/logisticsTools.js";
-import { marketingEntries } from "../ebay-apis/marketing/marketingTools.js";
-import { metadataEntries } from "../ebay-apis/metadata/metadataTools.js";
-import { otherEntries } from "../ebay-apis/other/otherTools.js";
-import { storesEntries } from "../ebay-apis/stores/storesTools.js";
-import { charityEntries } from "../ebay-apis/taxonomy/charityTools.js";
-import { taxonomyEntries } from "../ebay-apis/taxonomy/taxonomyTools.js";
-import { tradingEntries } from "../ebay-apis/trading/tradingTools.js";
-import { connectorEntries } from "../server/connectorTools.js";
 
-/**
- * A named group of registered tool entries, owned by one eBay API area (or the
- * ChatGPT connector). This is the single source of truth for both the registry
- * order and any feature that needs the tool catalogue grouped by family — e.g.
- * the skills generator's live family index. `key` is the stable identifier;
- * `title` is a short human label.
- */
 export interface ToolCategory {
 	key: string;
 	title: string;
 	entries: ToolEntry[];
 }
 
-/**
- * Registered tool families in registry execution order. Connector tools
- * (`search`/`fetch`) are registered ahead of the eBay API tools, matching the
- * prior registry. {@link registeredEntries} is derived from this list, so adding
- * a family here both registers its tools and surfaces it in the family index.
- */
 export const toolCategories: ToolCategory[] = [
 	{ key: "connector", title: "Connector", entries: connectorEntries },
 	{
@@ -81,10 +68,6 @@ export const toolCategories: ToolCategory[] = [
 	{ key: "trading", title: "Trading", entries: tradingEntries },
 ];
 
-/**
- * Registered tool entries in registry execution order, flattened from
- * {@link toolCategories}.
- */
 export const registeredEntries: ToolEntry[] = toolCategories.flatMap(
 	(category) => category.entries,
 );

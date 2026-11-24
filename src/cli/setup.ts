@@ -86,7 +86,6 @@ const ui = {
 const DEVELOPER_NAME = "Yosef Hayim Sabag";
 const DEVELOPER_LINKEDIN = "https://www.linkedin.com/in/yosef-hayim-sabag/";
 
-/** Render the wizard's branding header: logo, title, and developer credit. */
 function printWizardBanner(): void {
 	console.log(LOGO);
 	console.log(
@@ -138,7 +137,6 @@ interface TokenExchangeResult extends EbayTokenCore {
 	refreshTokenExpiresIn: number;
 }
 
-/** eBay OAuth token endpoint response (snake_case as returned by the API). */
 interface OAuthTokenResponse {
 	access_token: string;
 	refresh_token?: string;
@@ -163,7 +161,7 @@ async function exchangeAuthorizationCode(
 	environment: "sandbox" | "production",
 ): Promise<TokenExchangeResult> {
 	const baseUrl =
-		environment === "production"
+		environment == "production"
 			? "https://api.ebay.com"
 			: "https://api.sandbox.ebay.com";
 	const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
@@ -196,7 +194,7 @@ async function getAppAccessToken(
 	environment: "sandbox" | "production",
 ): Promise<string> {
 	const baseUrl =
-		environment === "production"
+		environment == "production"
 			? "https://api.ebay.com"
 			: "https://api.sandbox.ebay.com";
 	const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
@@ -224,7 +222,7 @@ async function verifyRefreshToken(
 	environment: "sandbox" | "production",
 ): Promise<{ accessToken: string; userInfo: EbayUserInfo }> {
 	const baseUrl =
-		environment === "production"
+		environment == "production"
 			? "https://api.ebay.com"
 			: "https://api.sandbox.ebay.com";
 	const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
@@ -246,7 +244,7 @@ async function verifyRefreshToken(
 	});
 	const accessToken = tokenResponse.data.access_token;
 	const identityBase =
-		environment === "production"
+		environment == "production"
 			? "https://apiz.ebay.com"
 			: "https://apiz.sandbox.ebay.com";
 	const userResponse = await httpRequest<EbayUserInfo>({
@@ -264,7 +262,7 @@ async function fetchEbayUserInfo(
 	environment: "sandbox" | "production",
 ): Promise<EbayUserInfo> {
 	const identityBase =
-		environment === "production"
+		environment == "production"
 			? "https://apiz.ebay.com"
 			: "https://apiz.sandbox.ebay.com";
 	const userResponse = await httpRequest<EbayUserInfo>({
@@ -277,40 +275,23 @@ async function fetchEbayUserInfo(
 	return userResponse.data;
 }
 
-/**
- * Resolve Claude Desktop config path for the current operating system.
- *
- * @returns Absolute path to Claude Desktop config JSON.
- */
 function getClaudeDesktopConfigPath(): string {
 	const home = homedir();
 	const os = platform();
-	if (os === "darwin")
+	if (os == "darwin")
 		return join(
 			home,
 			"Library/Application Support/Claude/claude_desktop_config.json",
 		);
-	if (os === "win32")
+	if (os == "win32")
 		return join(home, "AppData/Roaming/Claude/claude_desktop_config.json");
 	return join(home, ".config/Claude/claude_desktop_config.json");
 }
 
-/**
- * Check whether Claude Desktop appears to be installed locally.
- *
- * @returns `true` when the Claude Desktop config directory exists.
- */
 function isClaudeDesktopInstalled(): boolean {
 	return existsSync(dirname(getClaudeDesktopConfigPath()));
 }
 
-/**
- * Merge eBay MCP settings into Claude Desktop config.
- *
- * @param envConfig Current setup environment values to persist.
- * @param environment Target eBay environment name.
- * @returns Update result with success state, config path, and optional error details.
- */
 function updateClaudeDesktopConfig(
 	envConfig: Record<string, string>,
 	environment: string,
@@ -343,7 +324,7 @@ function updateClaudeDesktopConfig(
 
 			existing = parsed;
 		}
-		if (!existing["mcpServers"] || typeof existing["mcpServers"] !== "object")
+		if (!existing["mcpServers"] || typeof existing["mcpServers"] != "object")
 			existing["mcpServers"] = {};
 		const mcpServers = existing["mcpServers"] as Record<string, unknown>;
 		const envVars: Record<string, string> = {
@@ -376,7 +357,7 @@ function updateClaudeDesktopConfig(
 		};
 		writeFileSync(configPath, JSON.stringify(existing, null, 2));
 		const otherServers = Object.keys(mcpServers).filter(
-			(serverName) => serverName !== "ebay",
+			(serverName) => serverName != "ebay",
 		);
 		return {
 			success: true,
@@ -517,19 +498,8 @@ function displayUserInfo(userInfo: EbayUserInfo): void {
 	console.log("");
 }
 
-/** Default loopback port for the OAuth auto-capture callback server. */
 const DEFAULT_CALLBACK_PORT = 3000;
 
-/**
- * Resolve the loopback port for the auto-capture callback server. Reads the
- * `EBAY_OAUTH_CALLBACK_PORT` override and falls back to
- * {@link DEFAULT_CALLBACK_PORT} for anything non-numeric or out of range.
- *
- * Note: eBay rejects `http://` and `localhost` for a RuName's auth-accepted URL
- * (HTTPS is mandatory), so the loopback server must be fronted by an HTTPS
- * tunnel that forwards to this port — the registered URL is the tunnel's, not
- * `http://localhost:<port>`.
- */
 function getCallbackPort(): number {
 	const raw = process.env["EBAY_OAUTH_CALLBACK_PORT"];
 	const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
@@ -538,11 +508,6 @@ function getCallbackPort(): number {
 		: DEFAULT_CALLBACK_PORT;
 }
 
-/**
- * Exchange an authorization code for tokens, verify the eBay account, mint an app
- * token, report expiry, and sync Claude Desktop config. Shared by the paste-code
- * and auto-capture OAuth paths so both behave identically; mutates `tokens` in place.
- */
 async function completeOAuthWithCode(
 	authCode: string,
 	params: {
@@ -642,16 +607,7 @@ async function completeOAuthWithCode(
 
 // ─── Setup wizard ─────────────────────────────────────────────────────────────
 
-/**
- * Runs the interactive eBay MCP setup wizard from the script entry point.
- *
- * @returns A promise that resolves after setup completes.
- * @example
- * ```ts
- * await runSetup();
- * ```
- */
-export const runSetup = async (): Promise<void> => {
+export async function runSetup(): Promise<void> {
 	const existingConfig = loadExistingConfig(PROJECT_ROOT);
 	const detectedClients = detectLLMClients();
 	const availableClients = detectedClients.filter((client) => client.detected);
@@ -864,7 +820,7 @@ export const runSetup = async (): Promise<void> => {
 
 	const answers = await runWizard(wizardConfig, {
 		optionsProvider: (stepId) => {
-			if (stepId === "oauth-method") {
+			if (stepId == "oauth-method") {
 				const hasToken =
 					existingConfig["EBAY_USER_REFRESH_TOKEN"]?.startsWith("v^1.1#");
 				if (hasToken) {
@@ -893,7 +849,7 @@ export const runSetup = async (): Promise<void> => {
 		},
 
 		asyncValidate: (stepId, answer) => {
-			if (stepId === "oauth-token") {
+			if (stepId == "oauth-token") {
 				const clean = String(answer)
 					.trim()
 					.replace(/^["']|["']$/g, "");
@@ -901,7 +857,7 @@ export const runSetup = async (): Promise<void> => {
 				if (!clean.startsWith("v^1.1#"))
 					return "Token should start with v^1.1#";
 			}
-			if (stepId === "oauth-code") {
+			if (stepId == "oauth-code") {
 				const code = parseAuthorizationCode(String(answer));
 				if (!code)
 					return "Could not find authorization code. Paste the full redirect URL or the code parameter.";
@@ -926,7 +882,7 @@ export const runSetup = async (): Promise<void> => {
 				existingConfig["EBAY_REDIRECT_URI"] ||
 				"";
 
-			if (stepId === "environment" && args.quick) {
+			if (stepId == "environment" && args.quick) {
 				showInfo(
 					"Quick setup enabled — skipping optional marketplace configuration.",
 				);
@@ -934,7 +890,7 @@ export const runSetup = async (): Promise<void> => {
 			}
 
 			// ── oauth-method: dispatch to correct sub-flow ─────────────────────────
-			if (stepId === "oauth-method") {
+			if (stepId == "oauth-method") {
 				const method = answer as string;
 
 				switch (method) {
@@ -1166,7 +1122,7 @@ export const runSetup = async (): Promise<void> => {
 			}
 
 			// ── oauth-token: verify pasted refresh token ───────────────────────────
-			if (stepId === "oauth-token") {
+			if (stepId == "oauth-token") {
 				const rawToken = String(answer)
 					.trim()
 					.replace(/^["']|["']$/g, "");
@@ -1237,7 +1193,7 @@ export const runSetup = async (): Promise<void> => {
 			}
 
 			// ── oauth-code: exchange authorization code for tokens ─────────────────
-			if (stepId === "oauth-code") {
+			if (stepId == "oauth-code") {
 				const authCode = parseAuthorizationCode(String(answer));
 				if (!authCode) return;
 				await completeOAuthWithCode(
@@ -1255,11 +1211,11 @@ export const runSetup = async (): Promise<void> => {
 			}
 
 			// ── mcp-clients: configure selected clients ────────────────────────────
-			if (stepId === "mcp-clients") {
+			if (stepId == "mcp-clients") {
 				const selectedNames = answer as string[];
 				for (const name of selectedNames) {
 					const client = detectedClients.find(
-						(detected) => detected.name === name,
+						(detected) => detected.name == name,
 					);
 					if (!client) continue;
 					const stopSpinner = showSetupProgress(
@@ -1373,7 +1329,7 @@ export const runSetup = async (): Promise<void> => {
 				"Install eBay AI skills (Codex / Claude Code / Cursor) so your assistant drives the tools faster?",
 			initial: true,
 		});
-		const wantsSkills = wantSkills.value === true;
+		const wantsSkills = wantSkills.value == true;
 
 		if (wantsSkills) {
 			await runSkillsWizard({ fromSetup: true });
@@ -1382,20 +1338,20 @@ export const runSetup = async (): Promise<void> => {
 
 		showInfo("You can install them later with: npm run skills");
 	}
-};
+}
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
-const parseArgs = (): { help: boolean; quick: boolean; diagnose: boolean } => {
+function parseArgs(): { help: boolean; quick: boolean; diagnose: boolean } {
 	const args = process.argv.slice(2);
 	return {
 		help: args.includes("--help") || args.includes("-h"),
 		quick: args.includes("--quick") || args.includes("-q"),
 		diagnose: args.includes("--diagnose") || args.includes("-d"),
 	};
-};
+}
 
-const showHelp = (): void => {
+function showHelp(): void {
 	console.log(`
 ${paint.bold("eBay MCP Server Setup")}  ${paint.dim("interactive setup")}
 
@@ -1412,9 +1368,9 @@ ${paint.bold("Examples:")}
   npm run setup --quick      Skip optional configuration
   npm run setup --diagnose   Check system health
 `);
-};
+}
 
-const main = async (): Promise<void> => {
+async function main(): Promise<void> {
 	const args = parseArgs();
 
 	if (args.help) {
@@ -1433,7 +1389,7 @@ const main = async (): Promise<void> => {
 	}
 
 	await runSetup();
-};
+}
 
 process.on("SIGINT", () => {
 	console.log(ui.warning("\n\n  Setup interrupted.\n"));

@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-/**
- * Zod schemas for Feedback API input validation.
- * OpenAPI spec: commerce_feedback_v1_beta_oas3.json
- */
-
-/** Optional feedback filter expression. */
 const filterSchema = z
 	.string({
 		message: "Filter must be a string",
@@ -14,7 +8,6 @@ const filterSchema = z
 	})
 	.optional();
 
-/** Optional positive page size accepted by Feedback list endpoints. */
 const limitSchema = z
 	.number({
 		invalid_type_error: "limit must be a number",
@@ -23,7 +16,6 @@ const limitSchema = z
 	.positive("limit must be a positive number")
 	.optional();
 
-/** Optional zero-based page offset accepted by Feedback list endpoints. */
 const offsetSchema = z
 	.number({
 		invalid_type_error: "offset must be a number",
@@ -32,7 +24,6 @@ const offsetSchema = z
 	.min(0, "offset must be a non-negative number")
 	.optional();
 
-/** Optional feedback result sort order. */
 const sortSchema = z
 	.string({
 		invalid_type_error: "sort must be a string",
@@ -40,7 +31,6 @@ const sortSchema = z
 	})
 	.optional();
 
-/** Schema for getItemsAwaitingFeedback input. */
 export const getItemsAwaitingFeedbackSchema = z.object({
 	filter: filterSchema,
 	limit: limitSchema,
@@ -48,7 +38,6 @@ export const getItemsAwaitingFeedbackSchema = z.object({
 	sort: sortSchema,
 });
 
-/** Schema for getFeedback input. */
 export const getFeedbackSchema = z.object({
 	userId: z.string({
 		message: "User ID is required",
@@ -92,7 +81,6 @@ export const getFeedbackSchema = z.object({
 		.optional(),
 });
 
-/** Schema for getFeedbackRatingSummary input. */
 export const getFeedbackRatingSummarySchema = z.object({
 	userId: z.string({
 		message: "User ID is required",
@@ -108,7 +96,6 @@ export const getFeedbackRatingSummarySchema = z.object({
 	}),
 });
 
-/** Schema for leaveFeedback input. */
 export const leaveFeedbackSchema = z.object({
 	commentText: z
 		.string({
@@ -183,7 +170,6 @@ export const leaveFeedbackSchema = z.object({
 		.optional(),
 });
 
-/** Schema for respondToFeedback input. */
 export const respondToFeedbackSchema = z.object({
 	feedbackId: z
 		.string({

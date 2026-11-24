@@ -11,64 +11,38 @@ import {
 } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/commerceMessageV1Oas3.js";
 
-/** Query parameters accepted by getConversations. */
 export interface GetConversationsInput {
-	/** Required conversation type such as FROM_EBAY or FROM_MEMBERS. */
 	readonly conversationType: string;
-	/** Optional conversation status filter. */
 	readonly conversationStatus?: string;
-	/** Optional ISO-8601 end time. */
 	readonly endTime?: string;
-	/** Optional page size. */
 	readonly limit?: number;
-	/** Optional zero-based page offset. */
 	readonly offset?: number;
-	/** Optional other party username filter. */
 	readonly otherPartyUsername?: string;
-	/** Optional reference ID filter. */
 	readonly referenceId?: string;
-	/** Optional reference type filter. */
 	readonly referenceType?: string;
-	/** Optional ISO-8601 start time. */
 	readonly startTime?: string;
 }
 
-/** Path and query parameters accepted by getConversation. */
 export interface GetConversationInput {
-	/** Conversation identifier in the path. */
 	readonly conversationId: string;
-	/** Required conversation type such as FROM_EBAY or FROM_MEMBERS. */
 	readonly conversationType: string;
-	/** Optional page size for messages in the conversation. */
 	readonly limit?: number;
-	/** Optional zero-based page offset. */
 	readonly offset?: number;
 }
 
-/** Request body accepted by bulkUpdateConversation. */
 type BulkUpdateConversationsRequest =
 	components["schemas"]["BulkUpdateConversationsRequest"];
-/** Response returned by bulkUpdateConversation. */
 type BulkUpdateConversationsResponse =
 	components["schemas"]["BulkUpdateConversationsResponse"];
-/** Response returned by getConversations. */
 type GetAllMyConversationsResponse =
 	components["schemas"]["GetAllMyConversationsResponse"];
-/** Response returned by getConversation. */
 type GetMessagesByConversationIdResponse =
 	components["schemas"]["GetMessagesByConversationIdResponse"];
-/** Request body accepted by sendMessage. */
 type SendMessageRequest = components["schemas"]["SendMessageRequest"];
-/** Response returned by sendMessage. */
 type SendMessageResponse = components["schemas"]["SendMessageResponse"];
-/** Request body accepted by updateConversation. */
 type UpdateConversationRequest =
 	components["schemas"]["UpdateConversationRequest"];
 
-/**
- * Message API - Buyer-seller messaging
- * Based on: commerce_message_v1_oas3.json
- */
 export class MessageApi {
 	private readonly basePath = "/commerce/message/v1";
 
@@ -78,19 +52,6 @@ export class MessageApi {
 		this.client = client;
 	}
 
-	/**
-	 * Updates multiple conversations in one request.
-	 *
-	 * @param updateData - Generated BulkUpdateConversationsRequest body.
-	 * @returns eBay's generated bulk update response.
-	 *
-	 * @example
-	 * ```ts
-	 * const updatedConversations = await messageApi.bulkUpdateConversation({ conversations: [{ conversationId: 'c1' }] });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/bulk_update_conversation/methods/bulkUpdateConversation
-	 */
 	bulkUpdateConversation = async (
 		updateData: BulkUpdateConversationsRequest,
 	): Promise<BulkUpdateConversationsResponse> => {
@@ -110,19 +71,6 @@ export class MessageApi {
 		);
 	};
 
-	/**
-	 * Retrieves buyer-seller conversations.
-	 *
-	 * @param input - Required conversation type plus optional filters and pagination.
-	 * @returns eBay's generated conversation collection response.
-	 *
-	 * @example
-	 * ```ts
-	 * const conversations = await messageApi.getConversations({ conversationType: 'FROM_MEMBERS', limit: 25 });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/conversation/methods/getConversations
-	 */
 	getConversations = async (
 		input: GetConversationsInput,
 	): Promise<GetAllMyConversationsResponse> => {
@@ -191,19 +139,6 @@ export class MessageApi {
 		);
 	};
 
-	/**
-	 * Retrieves messages in a specific conversation.
-	 *
-	 * @param input - Conversation path ID plus required type and optional pagination.
-	 * @returns eBay's generated conversation message response.
-	 *
-	 * @example
-	 * ```ts
-	 * const conversation = await messageApi.getConversation({ conversationId: 'c1', conversationType: 'FROM_MEMBERS' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/conversation/methods/getConversation
-	 */
 	getConversation = async (
 		input: GetConversationInput,
 	): Promise<GetMessagesByConversationIdResponse> => {
@@ -243,19 +178,6 @@ export class MessageApi {
 		);
 	};
 
-	/**
-	 * Sends a message to another eBay user.
-	 *
-	 * @param messageData - Generated SendMessageRequest body.
-	 * @returns eBay's generated SendMessageResponse.
-	 *
-	 * @example
-	 * ```ts
-	 * const sent = await messageApi.sendMessage({ messageText: 'Hello', otherPartyUsername: 'buyer_123' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/send_message/methods/sendMessage
-	 */
 	sendMessage = async (
 		messageData: SendMessageRequest,
 	): Promise<SendMessageResponse> => {
@@ -274,19 +196,6 @@ export class MessageApi {
 		);
 	};
 
-	/**
-	 * Updates a conversation status.
-	 *
-	 * @param updateData - Generated UpdateConversationRequest body.
-	 * @returns A promise that resolves when eBay accepts the update.
-	 *
-	 * @example
-	 * ```ts
-	 * await messageApi.updateConversation({ conversationId: 'c1', conversationStatus: 'READ' });
-	 * ```
-	 *
-	 * @see https://developer.ebay.com/api-docs/commerce/message/resources/update_conversation/methods/updateConversation
-	 */
 	updateConversation = async (
 		updateData: UpdateConversationRequest,
 	): Promise<void> => {

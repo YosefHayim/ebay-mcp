@@ -66,7 +66,7 @@ describe("media scopes and discovery", () => {
 		const definitions = mediaEntries
 			.filter((entry) =>
 				[...listing, ...postOrder].some(
-					(name) => entry.definition.name === `ebay_${name}`,
+					(name) => entry.definition.name == `ebay_${name}`,
 				),
 			)
 			.map((entry) => entry.definition);

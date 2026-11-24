@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { MarketplaceId } from "@/shared/ebayEnums.js";
 
-/**
- * Input shared by the five Metadata API `shipping:marketplace` methods (carriers, services,
- * locations, excluded locations, and handling times): one path parameter and one header.
- */
 export const shippingMetadataInputSchema = z.object({
 	marketplaceId: z
 		.nativeEnum(MarketplaceId)
