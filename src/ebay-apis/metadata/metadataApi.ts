@@ -357,7 +357,10 @@ export class MetadataApi {
 	/** Metadata API getShippingServices endpoint; see createMetadataShippingMethods. */
 	public readonly getShippingServices: MetadataShippingMethods["getShippingServices"];
 
-	public constructor(private readonly client: EbayApiClient) {
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
 		const shipping = createMetadataShippingMethods(client);
 		this.getExcludeShippingLocations = shipping.getExcludeShippingLocations;
 		this.getHandlingTimes = shipping.getHandlingTimes;

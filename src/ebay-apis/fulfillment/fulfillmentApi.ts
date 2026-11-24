@@ -125,7 +125,11 @@ export type IssueRefundInput = z.infer<typeof issueRefundInputSchema>;
 export class FulfillmentApi {
 	private readonly basePath = "/sell/fulfillment/v1";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Retrieves seller orders.

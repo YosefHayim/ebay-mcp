@@ -70,11 +70,16 @@ export class EbayOAuthClient {
 	private appAccessToken: string | null = null;
 	private appAccessTokenExpiry = 0;
 	private userTokens: StoredTokenData | null = null;
+	private config: EbayConfig;
+	private credentialStore: CredentialStore;
 
 	constructor(
-		private config: EbayConfig,
-		private credentialStore: CredentialStore = new DotEnvCredentialStore(),
-	) {}
+		config: EbayConfig,
+		credentialStore: CredentialStore = new DotEnvCredentialStore(),
+	) {
+		this.config = config;
+		this.credentialStore = credentialStore;
+	}
 
 	private requestOAuthToken = async <TokenBody>(
 		failureMessage: string,

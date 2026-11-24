@@ -199,7 +199,11 @@ const apizUrl = (client: EbayApiClient, path: string): string => {
 
 /** eBay Fulfillment payment dispute endpoints, served from the apiz host only. */
 export class DisputeApi {
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Retrieves one payment dispute.

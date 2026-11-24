@@ -72,7 +72,11 @@ type UpdateConversationRequest =
 export class MessageApi {
 	private readonly basePath = "/commerce/message/v1";
 
-	constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Updates multiple conversations in one request.

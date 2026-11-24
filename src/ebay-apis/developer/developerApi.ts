@@ -88,7 +88,11 @@ export class DeveloperApi {
 		}
 	};
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	// ========================================
 	// RATE LIMITS (Analytics API)

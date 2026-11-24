@@ -4,9 +4,9 @@ import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import { formatZodIssues } from "@/shared/zodIssues.js";
 import type { ResolvedToolUi, ToolEntry } from "@/tool-registry/registry.js";
 import type {
-	OutputArgs,
 	ToolAnnotations,
 	ToolHandler,
+	ToolOutputSchema,
 } from "@/tool-registry/types.js";
 import { uiArchetypes } from "@/tool-registry/ui/archetypes.js";
 import type {
@@ -57,7 +57,7 @@ export interface ToolSpec<Shape extends z.ZodRawShape, Result = unknown> {
 	/** Zod raw shape; doubles as the MCP wire schema and handler arg types. */
 	inputSchema: Shape;
 	title?: string;
-	outputSchema?: OutputArgs;
+	outputSchema?: ToolOutputSchema;
 	annotations?: ToolAnnotations;
 	/** Opaque MCP metadata (e.g. connector category/version) passed through verbatim. */
 	_meta?: Record<string, unknown>;

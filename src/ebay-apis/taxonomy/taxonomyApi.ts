@@ -162,7 +162,11 @@ export type GetExpiredCategoriesResponse =
 export class TaxonomyApi {
 	private readonly basePath = "/commerce/taxonomy/v1";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Retrieves the default category tree ID for a marketplace.

@@ -146,52 +146,57 @@ export interface EbayApiError {
 /**
  * API category identifiers matching docs structure
  */
-export enum EbayApiCategory {
-	ACCOUNT_MANAGEMENT = "account-management",
-	ANALYTICS_AND_REPORT = "analytics-and-report",
-	COMMUNICATION = "communication",
-	LISTING_MANAGEMENT = "listing-management",
-	LISTING_METADATA = "listing-metadata",
-	MARKETING_AND_PROMOTIONS = "marketing-and-promotions",
-	ORDER_MANAGEMENT = "order-management",
-	OTHER = "other",
-}
+export const EbayApiCategory = {
+	ACCOUNT_MANAGEMENT: "account-management",
+	ANALYTICS_AND_REPORT: "analytics-and-report",
+	COMMUNICATION: "communication",
+	LISTING_MANAGEMENT: "listing-management",
+	LISTING_METADATA: "listing-metadata",
+	MARKETING_AND_PROMOTIONS: "marketing-and-promotions",
+	ORDER_MANAGEMENT: "order-management",
+	OTHER: "other",
+} as const;
+
+export type EbayApiCategory =
+	(typeof EbayApiCategory)[keyof typeof EbayApiCategory];
 
 /**
  * Specific API identifiers
  */
-export enum EbayApi {
+export const EbayApi = {
 	// Account Management
-	ACCOUNT = "sell/account/v1",
+	ACCOUNT: "sell/account/v1",
 
 	// Analytics and Report
-	ANALYTICS = "sell/analytics/v1",
+	ANALYTICS: "sell/analytics/v1",
 
 	// Communication
-	NEGOTIATION = "sell/negotiation/v1",
-	MESSAGE = "commerce/message/v1",
-	NOTIFICATION = "commerce/notification/v1",
-	FEEDBACK = "commerce/feedback/v1",
+	NEGOTIATION: "sell/negotiation/v1",
+	MESSAGE: "commerce/message/v1",
+	NOTIFICATION: "commerce/notification/v1",
+	FEEDBACK: "commerce/feedback/v1",
 
 	// Listing Management
-	INVENTORY = "sell/inventory/v1",
+	INVENTORY: "sell/inventory/v1",
 
 	// Listing Metadata
-	METADATA = "sell/metadata/v1",
+	METADATA: "sell/metadata/v1",
 
 	// Marketing and Promotions
-	MARKETING = "sell/marketing/v1",
-	RECOMMENDATION = "sell/recommendation/v1",
+	MARKETING: "sell/marketing/v1",
+	RECOMMENDATION: "sell/recommendation/v1",
 
 	// Order Management
-	FULFILLMENT = "sell/fulfillment/v1",
+	FULFILLMENT: "sell/fulfillment/v1",
 
 	// Other APIs
-	IDENTITY = "commerce/identity/v1",
-	VERO = "commerce/vero/v1",
-	TRANSLATION = "commerce/translation/v1",
-	EDELIVERY = "sell/logistics/v1",
-}
+	IDENTITY: "commerce/identity/v1",
+	VERO: "commerce/vero/v1",
+	TRANSLATION: "commerce/translation/v1",
+	EDELIVERY: "sell/logistics/v1",
+} as const;
+
+export type EbayApi = (typeof EbayApi)[keyof typeof EbayApi];
 
 /**
  * OAuth scopes requested for production eBay authorization flows.
@@ -269,13 +274,15 @@ export const sandboxScopes = [
 /**
  * OAuth API endpoints
  */
-export enum EbayOAuthApi {
-	TOKEN = "/identity/v1/oauth2/token",
-	AUTHORIZE_SANDBOX = "https://auth.sandbox.ebay.com/oauth2/authorize",
-	AUTHORIZE_PRODUCTION = "https://auth.ebay.com/oauth2/authorize",
-	SIGNIN_SANDBOX = "https://signin.sandbox.ebay.com/signin",
-	SIGNIN_PRODUCTION = "https://signin.ebay.com/signin",
-}
+export const EbayOAuthApi = {
+	TOKEN: "/identity/v1/oauth2/token",
+	AUTHORIZE_SANDBOX: "https://auth.sandbox.ebay.com/oauth2/authorize",
+	AUTHORIZE_PRODUCTION: "https://auth.ebay.com/oauth2/authorize",
+	SIGNIN_SANDBOX: "https://signin.sandbox.ebay.com/signin",
+	SIGNIN_PRODUCTION: "https://signin.ebay.com/signin",
+} as const;
+
+export type EbayOAuthApi = (typeof EbayOAuthApi)[keyof typeof EbayOAuthApi];
 
 /**
  * OAuth parameter descriptions

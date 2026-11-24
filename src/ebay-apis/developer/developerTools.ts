@@ -1,4 +1,3 @@
-import { zodToJsonSchema } from "zod-to-json-schema";
 import {
 	clientDetailsSchema,
 	createSigningKeyInputSchema,
@@ -16,7 +15,6 @@ import { getApiStatusFeed } from "@/shared/apiStatusFeed.js";
 import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
-import type { OutputArgs } from "@/tool-registry/types.js";
 import {
 	mapRateLimitsToStat,
 	mapUserRateLimitsToStat,
@@ -72,10 +70,7 @@ export const developerEntries: ToolEntry[] = [
 		description:
 			"Get application rate limits for eBay APIs. Returns call quota, remaining calls, and time until reset for each API resource.",
 		inputSchema: getRateLimitsInputSchema.shape,
-		outputSchema: zodToJsonSchema(rateLimitsResponseSchema, {
-			name: "GetRateLimitsOutput",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: rateLimitsResponseSchema,
 		handler: (api, args) => api.developer.getRateLimits(args),
 		ui: { archetype: "stat", map: mapRateLimitsToStat },
 	}),
@@ -84,10 +79,7 @@ export const developerEntries: ToolEntry[] = [
 		description:
 			"Get user-specific rate limits for eBay APIs. Returns call quota per user for APIs that limit by user.",
 		inputSchema: getUserRateLimitsInputSchema.shape,
-		outputSchema: zodToJsonSchema(rateLimitsResponseSchema, {
-			name: "GetUserRateLimitsOutput",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: rateLimitsResponseSchema,
 		handler: (api, args) => api.developer.getUserRateLimits(args),
 		ui: { archetype: "stat", map: mapUserRateLimitsToStat },
 	}),
@@ -96,10 +88,7 @@ export const developerEntries: ToolEntry[] = [
 		description:
 			"Register a third party financial application with eBay (Open Banking / PSD2). Requires valid eIDAS certificate via MTLS.",
 		inputSchema: registerClientInputSchema.shape,
-		outputSchema: zodToJsonSchema(clientDetailsSchema, {
-			name: "RegisterClientOutput",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: clientDetailsSchema,
 		handler: (api, args) => api.developer.registerClient(args),
 	}),
 	defineTool({
@@ -107,10 +96,7 @@ export const developerEntries: ToolEntry[] = [
 		description:
 			"Get all signing keys for the application. Returns public keys and metadata (private keys are not stored by eBay).",
 		inputSchema: getSigningKeysInputSchema.shape,
-		outputSchema: zodToJsonSchema(querySigningKeysResponseSchema, {
-			name: "GetSigningKeysOutput",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: querySigningKeysResponseSchema,
 		handler: (api, args) => api.developer.getSigningKeys(args),
 	}),
 	defineTool({
@@ -118,10 +104,7 @@ export const developerEntries: ToolEntry[] = [
 		description:
 			"Create a new signing keypair for API digital signatures. Supports ED25519 (recommended) or RSA ciphers. IMPORTANT: Save the private key immediately as eBay does not store it. To sign the calls eBay requires signatures on for EU/UK sellers (Finances API, issueRefund), set EBAY_SIGNING_KEY_JWE to the returned jwe and EBAY_SIGNING_PRIVATE_KEY to the returned privateKey, then restart the server.",
 		inputSchema: createSigningKeyInputSchema.shape,
-		outputSchema: zodToJsonSchema(signingKeySchema, {
-			name: "CreateSigningKeyOutput",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: signingKeySchema,
 		handler: (api, args) => api.developer.createSigningKey(args),
 	}),
 	defineTool({
@@ -129,10 +112,7 @@ export const developerEntries: ToolEntry[] = [
 		description:
 			"Get a specific signing key by ID. Returns public key and metadata (private key is not stored by eBay).",
 		inputSchema: getSigningKeyInputSchema.shape,
-		outputSchema: zodToJsonSchema(signingKeySchema, {
-			name: "GetSigningKeyOutput",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: signingKeySchema,
 		handler: (api, args) => api.developer.getSigningKey(args),
 	}),
 ];

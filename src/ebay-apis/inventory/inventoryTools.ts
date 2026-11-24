@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import type {
 	BulkCreateOrReplaceInventoryItemRequest,
 	BulkGetInventoryItemRequest,
@@ -238,10 +237,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Retrieve all inventory items for the seller.\n\nRequired OAuth Scope: sell.inventory.readonly or sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory.readonly",
 		inputSchema: inventoryPaginationInputSchema.shape,
-		outputSchema: zodToJsonSchema(getInventoryItemsOutputSchema, {
-			name: "GetInventoryItemsResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getInventoryItemsOutputSchema,
 		handler: (api, args) => api.inventory.getInventoryItems(args),
 		ui: { archetype: "table", map: mapInventoryItemsToTable },
 	}),
@@ -250,10 +246,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Get a specific inventory item by SKU.\n\nRequired OAuth Scope: sell.inventory.readonly or sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory.readonly",
 		inputSchema: skuInputSchema.shape,
-		outputSchema: zodToJsonSchema(getInventoryItemOutputSchema, {
-			name: "GetInventoryItemResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getInventoryItemOutputSchema,
 		handler: (api, args) => api.inventory.getInventoryItem(args),
 		ui: { archetype: "card", map: mapInventoryItemToCard },
 	}),
@@ -262,10 +255,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Create or replace an inventory item.\n\nRequired OAuth Scope: sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory",
 		inputSchema: createOrReplaceInventoryItemInputSchema.shape,
-		outputSchema: zodToJsonSchema(createInventoryItemOutputSchema, {
-			name: "CreateOrReplaceInventoryItemResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createInventoryItemOutputSchema,
 		handler: (api, args) => api.inventory.createOrReplaceInventoryItem(args),
 	}),
 	defineTool({
@@ -280,10 +270,7 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_bulk_create_or_replace_inventory_item",
 		description: "Bulk create or replace multiple inventory items",
 		inputSchema: bulkCreateOrReplaceInventoryItemInputSchema.shape,
-		outputSchema: zodToJsonSchema(bulkInventoryItemResponseSchema, {
-			name: "BulkInventoryItemResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: bulkInventoryItemResponseSchema,
 		handler: (api, args) =>
 			api.inventory.bulkCreateOrReplaceInventoryItem(args),
 	}),
@@ -291,30 +278,21 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_bulk_get_inventory_item",
 		description: "Bulk get multiple inventory items",
 		inputSchema: bulkGetInventoryItemInputSchema.shape,
-		outputSchema: zodToJsonSchema(bulkInventoryItemResponseSchema, {
-			name: "BulkGetInventoryItemResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: bulkInventoryItemResponseSchema,
 		handler: (api, args) => api.inventory.bulkGetInventoryItem(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_update_price_quantity",
 		description: "Bulk update price and quantity for multiple offers",
 		inputSchema: bulkUpdatePriceQuantityInputSchema.shape,
-		outputSchema: zodToJsonSchema(bulkOfferResponseSchema, {
-			name: "BulkUpdatePriceQuantityResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: bulkOfferResponseSchema,
 		handler: (api, args) => api.inventory.bulkUpdatePriceQuantity(args),
 	}),
 	defineTool({
 		name: "ebay_get_product_compatibility",
 		description: "Get product compatibility information for an inventory item",
 		inputSchema: skuInputSchema.shape,
-		outputSchema: zodToJsonSchema(getProductCompatibilityOutputSchema, {
-			name: "GetProductCompatibilityResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getProductCompatibilityOutputSchema,
 		handler: (api, args) => api.inventory.getProductCompatibility(args),
 	}),
 	defineTool({
@@ -322,10 +300,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Create or replace product compatibility for an inventory item",
 		inputSchema: createOrReplaceProductCompatibilityInputSchema.shape,
-		outputSchema: zodToJsonSchema(createInventoryItemOutputSchema, {
-			name: "CreateProductCompatibilityResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createInventoryItemOutputSchema,
 		handler: (api, args) =>
 			api.inventory.createOrReplaceProductCompatibility(args),
 	}),
@@ -340,20 +315,14 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_get_inventory_item_group",
 		description: "Get an inventory item group (variation group)",
 		inputSchema: inventoryItemGroupKeyInputSchema.shape,
-		outputSchema: zodToJsonSchema(getInventoryItemGroupOutputSchema, {
-			name: "GetInventoryItemGroupResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getInventoryItemGroupOutputSchema,
 		handler: (api, args) => api.inventory.getInventoryItemGroup(args),
 	}),
 	defineTool({
 		name: "ebay_create_or_replace_inventory_item_group",
 		description: "Create or replace an inventory item group",
 		inputSchema: createOrReplaceInventoryItemGroupInputSchema.shape,
-		outputSchema: zodToJsonSchema(createInventoryItemOutputSchema, {
-			name: "CreateInventoryItemGroupResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createInventoryItemOutputSchema,
 		handler: (api, args) =>
 			api.inventory.createOrReplaceInventoryItemGroup(args),
 	}),
@@ -368,10 +337,7 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_get_inventory_locations",
 		description: "Get all inventory locations",
 		inputSchema: inventoryPaginationInputSchema.shape,
-		outputSchema: zodToJsonSchema(getInventoryLocationsOutputSchema, {
-			name: "GetInventoryLocationsResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getInventoryLocationsOutputSchema,
 		handler: (api, args) => api.inventory.getInventoryLocations(args),
 		ui: { archetype: "table", map: mapLocationsToTable },
 	}),
@@ -379,20 +345,14 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_get_inventory_location",
 		description: "Get a specific inventory location",
 		inputSchema: merchantLocationKeyInputSchema.shape,
-		outputSchema: zodToJsonSchema(createInventoryLocationOutputSchema, {
-			name: "GetInventoryLocationResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createInventoryLocationOutputSchema,
 		handler: (api, args) => api.inventory.getInventoryLocation(args),
 	}),
 	defineTool({
 		name: "ebay_create_inventory_location",
 		description: "Create an inventory location",
 		inputSchema: createInventoryLocationInputSchema.shape,
-		outputSchema: zodToJsonSchema(createInventoryLocationOutputSchema, {
-			name: "CreateInventoryLocationResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createInventoryLocationOutputSchema,
 		handler: (api, args) => api.inventory.createInventoryLocation(args),
 	}),
 	defineTool({
@@ -420,10 +380,7 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_update_inventory_location",
 		description: "Update an inventory location",
 		inputSchema: updateInventoryLocationInputSchema.shape,
-		outputSchema: zodToJsonSchema(createInventoryLocationOutputSchema, {
-			name: "UpdateInventoryLocationResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createInventoryLocationOutputSchema,
 		handler: (api, args) => api.inventory.updateInventoryLocation(args),
 	}),
 	defineTool({
@@ -431,10 +388,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Get offers for one seller-defined SKU. To enumerate offers across SKUs, call ebay_get_inventory_items first, then call this tool once per SKU.",
 		inputSchema: getOffersInputSchema.shape,
-		outputSchema: zodToJsonSchema(getOffersOutputSchema, {
-			name: "GetOffersResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getOffersOutputSchema,
 		handler: (api, args) => api.inventory.getOffers(args),
 		ui: { archetype: "table", map: mapOffersToTable },
 	}),
@@ -443,20 +397,14 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Get offers for 1-25 SKUs. Exact duplicates are queried once, at most 3 eBay requests run concurrently, and every SKU has its own success or failure result.",
 		inputSchema: getOffersBySkusInputSchema.shape,
-		outputSchema: zodToJsonSchema(getOffersBySkusOutputSchema, {
-			name: "GetOffersBySkusResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getOffersBySkusOutputSchema,
 		handler: (api, args) => api.inventory.getOffersBySkus(args),
 	}),
 	defineTool({
 		name: "ebay_get_offer",
 		description: "Get a specific offer by ID",
 		inputSchema: offerIdInputSchema.shape,
-		outputSchema: zodToJsonSchema(offerResponseSchema, {
-			name: "GetOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: offerResponseSchema,
 		handler: (api, args) => api.inventory.getOffer(args),
 		ui: { archetype: "card", map: mapOfferToCard },
 	}),
@@ -465,10 +413,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Create a new offer (unpublished listing draft) for an inventory item SKU.\n\nFIXED_PRICE offers take pricingSummary.price and listingDuration GTC. AUCTION offers take pricingSummary.auctionStartPrice (opening bid), an optional auctionReservePrice above it, an optional pricingSummary.price as Buy It Now (at least 30% above the opening bid, and not together with Best Offer), a day-count listingDuration (DAYS_1/3/5/7/10, or DAYS_14/21/30 where the category allows; never GTC), availableQuantity omitted or 1, and no per-buyer limit or eBay Plus. Do not add listingStartDate unless the user asked for a scheduled start (it can incur a fee). Bodies that mix the two formats are rejected before any eBay request.\n\nCheck ebay_get_listing_type_policies for the formats and durations the category allows, then ebay_get_listing_fees (reserve prices carry a fee) before ebay_publish_offer.",
 		inputSchema: createOfferInputSchema.shape,
-		outputSchema: zodToJsonSchema(createOfferOutputSchema, {
-			name: "CreateOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createOfferOutputSchema,
 		handler: (api, args) => api.inventory.createOffer(args),
 	}),
 	defineTool({
@@ -476,10 +421,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Update an existing offer. Send the full offer details; the format itself cannot change. Auction fields (auctionStartPrice, auctionReservePrice, day-count listingDuration) follow the same rules as ebay_create_offer, and a reserve price must stay above the starting bid.",
 		inputSchema: updateOfferInputSchema.shape,
-		outputSchema: zodToJsonSchema(offerResponseSchema, {
-			name: "UpdateOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: offerResponseSchema,
 		handler: (api, args) => api.inventory.updateOffer(args),
 	}),
 	defineTool({
@@ -493,20 +435,14 @@ export const inventoryEntries: ToolEntry[] = [
 		name: "ebay_publish_offer",
 		description: "Publish an offer to create a listing",
 		inputSchema: offerIdInputSchema.shape,
-		outputSchema: zodToJsonSchema(publishOfferOutputSchema, {
-			name: "PublishOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: publishOfferOutputSchema,
 		handler: (api, args) => api.inventory.publishOffer(args),
 	}),
 	defineTool({
 		name: "ebay_withdraw_offer",
 		description: "Withdraw a published offer",
 		inputSchema: offerIdInputSchema.shape,
-		outputSchema: zodToJsonSchema(publishOfferOutputSchema, {
-			name: "WithdrawOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: publishOfferOutputSchema,
 		handler: (api, args) => api.inventory.withdrawOffer(args),
 	}),
 	defineTool({
@@ -514,40 +450,28 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Bulk create up to 25 offers in one request. Each request follows the ebay_create_offer rules: FIXED_PRICE offers take pricingSummary.price and listingDuration GTC. AUCTION offers take pricingSummary.auctionStartPrice (opening bid), an optional auctionReservePrice above it, an optional pricingSummary.price as Buy It Now (at least 30% above the opening bid, and not together with Best Offer), a day-count listingDuration (DAYS_1/3/5/7/10, or DAYS_14/21/30 where the category allows; never GTC), availableQuantity omitted or 1, and no per-buyer limit or eBay Plus. Do not add listingStartDate unless the user asked for a scheduled start (it can incur a fee). Bodies that mix the two formats are rejected before any eBay request.",
 		inputSchema: bulkCreateOfferInputSchema.shape,
-		outputSchema: zodToJsonSchema(bulkOfferResponseSchema, {
-			name: "BulkCreateOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: bulkOfferResponseSchema,
 		handler: (api, args) => api.inventory.bulkCreateOffer(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_publish_offer",
 		description: "Bulk publish multiple offers",
 		inputSchema: bulkPublishOfferInputSchema.shape,
-		outputSchema: zodToJsonSchema(bulkPublishResponseSchema, {
-			name: "BulkPublishOfferResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: bulkPublishResponseSchema,
 		handler: (api, args) => api.inventory.bulkPublishOffer(args),
 	}),
 	defineTool({
 		name: "ebay_get_listing_fees",
 		description: "Get listing fees for offers before publishing",
 		inputSchema: getListingFeesInputSchema.shape,
-		outputSchema: zodToJsonSchema(listingFeesOutputSchema, {
-			name: "GetListingFeesResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: listingFeesOutputSchema,
 		handler: (api, args) => api.inventory.getListingFees(args),
 	}),
 	defineTool({
 		name: "ebay_bulk_migrate_listing",
 		description: "Bulk migrate listings to the inventory model",
 		inputSchema: bulkMigrateListingInputSchema.shape,
-		outputSchema: zodToJsonSchema(bulkOfferResponseSchema, {
-			name: "BulkMigrateListingResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: bulkOfferResponseSchema,
 		handler: (api, args) => api.inventory.bulkMigrateListing(args),
 	}),
 	defineTool({
@@ -555,10 +479,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Get inventory locations for a specific listing and SKU.\n\nRequired OAuth Scope: sell.inventory.readonly or sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory.readonly",
 		inputSchema: skuLocationMappingInputSchema.shape,
-		outputSchema: zodToJsonSchema(locationMappingOutputSchema, {
-			name: "GetSkuLocationMappingResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: locationMappingOutputSchema,
 		handler: (api, args) => api.inventory.getSkuLocationMapping(args),
 	}),
 	defineTool({
@@ -583,10 +504,7 @@ export const inventoryEntries: ToolEntry[] = [
 		description:
 			"Publish an offer for an inventory item group (variation listing).\n\nRequired OAuth Scope: sell.inventory\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.inventory",
 		inputSchema: publishOfferByInventoryItemGroupInputSchema.shape,
-		outputSchema: zodToJsonSchema(publishOfferOutputSchema, {
-			name: "PublishOfferByInventoryItemGroupResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: publishOfferOutputSchema,
 		handler: (api, args) =>
 			api.inventory.publishOfferByInventoryItemGroup(args),
 	}),

@@ -402,7 +402,11 @@ export type CreateComplaintResponse =
 export class EDeliveryApi {
 	private readonly basePath = "/sell/edelivery_international_shipping/v1";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Retrieves actual package weights and costs by tracking numbers or transaction time range.

@@ -23,7 +23,11 @@ export type TranslateResponse = components["schemas"]["TranslateResponse"];
 export class TranslationApi {
 	private readonly basePath = "/commerce/translation/v1_beta";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Translates listing title or description text from one language into another.

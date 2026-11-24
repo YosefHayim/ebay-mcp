@@ -1,7 +1,7 @@
 /**
  * Comprehensive eBay API Enum Definitions
  *
- * This file contains TypeScript enums for common eBay API values.
+ * This file contains the eBay API values shared across tools.
  * These enums are extracted from eBay's OpenAPI specifications and
  * official developer documentation.
  *
@@ -15,130 +15,132 @@
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/ba:MarketplaceIdEnum
  */
-export enum MarketplaceId {
+export const MarketplaceId = {
 	/** Austria - https://www.ebay.at */
-	EBAY_AT = "EBAY_AT",
+	EBAY_AT: "EBAY_AT",
 
 	/** Australia - https://www.ebay.com.au */
-	EBAY_AU = "EBAY_AU",
+	EBAY_AU: "EBAY_AU",
 
 	/** Belgium - https://www.ebay.be/ */
-	EBAY_BE = "EBAY_BE",
+	EBAY_BE: "EBAY_BE",
 
 	/** Canada - https://www.ebay.ca */
-	EBAY_CA = "EBAY_CA",
+	EBAY_CA: "EBAY_CA",
 
 	/** Switzerland - https://www.ebay.ch */
-	EBAY_CH = "EBAY_CH",
+	EBAY_CH: "EBAY_CH",
 
 	/** China - Reserved for future use */
-	EBAY_CN = "EBAY_CN",
+	EBAY_CN: "EBAY_CN",
 
 	/** Czech Republic - Reserved for future use */
-	EBAY_CZ = "EBAY_CZ",
+	EBAY_CZ: "EBAY_CZ",
 
 	/** Germany - https://www.ebay.de */
-	EBAY_DE = "EBAY_DE",
+	EBAY_DE: "EBAY_DE",
 
 	/** Denmark - Reserved for future use */
-	EBAY_DK = "EBAY_DK",
+	EBAY_DK: "EBAY_DK",
 
 	/** Spain - https://www.ebay.es */
-	EBAY_ES = "EBAY_ES",
+	EBAY_ES: "EBAY_ES",
 
 	/** Finland - Reserved for future use */
-	EBAY_FI = "EBAY_FI",
+	EBAY_FI: "EBAY_FI",
 
 	/** France - https://www.ebay.fr */
-	EBAY_FR = "EBAY_FR",
+	EBAY_FR: "EBAY_FR",
 
 	/** United Kingdom - https://www.ebay.co.uk */
-	EBAY_GB = "EBAY_GB",
+	EBAY_GB: "EBAY_GB",
 
 	/** Greece - Reserved for future use */
-	EBAY_GR = "EBAY_GR",
+	EBAY_GR: "EBAY_GR",
 
 	/** Hong Kong - https://www.ebay.com.hk */
-	EBAY_HK = "EBAY_HK",
+	EBAY_HK: "EBAY_HK",
 
 	/** Hungary - Reserved for future use */
-	EBAY_HU = "EBAY_HU",
+	EBAY_HU: "EBAY_HU",
 
 	/** Indonesia - Reserved for future use */
-	EBAY_ID = "EBAY_ID",
+	EBAY_ID: "EBAY_ID",
 
 	/** Ireland - https://www.ebay.ie */
-	EBAY_IE = "EBAY_IE",
+	EBAY_IE: "EBAY_IE",
 
 	/** Israel - Reserved for future use */
-	EBAY_IL = "EBAY_IL",
+	EBAY_IL: "EBAY_IL",
 
 	/** India - Reserved for future use */
-	EBAY_IN = "EBAY_IN",
+	EBAY_IN: "EBAY_IN",
 
 	/** Italy - https://www.ebay.it */
-	EBAY_IT = "EBAY_IT",
+	EBAY_IT: "EBAY_IT",
 
 	/** Japan - Reserved for future use */
-	EBAY_JP = "EBAY_JP",
+	EBAY_JP: "EBAY_JP",
 
 	/** Malaysia - https://www.ebay.com.my */
-	EBAY_MY = "EBAY_MY",
+	EBAY_MY: "EBAY_MY",
 
 	/** Netherlands - https://www.ebay.nl */
-	EBAY_NL = "EBAY_NL",
+	EBAY_NL: "EBAY_NL",
 
 	/** Norway - Reserved for future use */
-	EBAY_NO = "EBAY_NO",
+	EBAY_NO: "EBAY_NO",
 
 	/** New Zealand - Reserved for future use */
-	EBAY_NZ = "EBAY_NZ",
+	EBAY_NZ: "EBAY_NZ",
 
 	/** Peru - Reserved for future use */
-	EBAY_PE = "EBAY_PE",
+	EBAY_PE: "EBAY_PE",
 
 	/** Philippines - https://www.ebay.ph */
-	EBAY_PH = "EBAY_PH",
+	EBAY_PH: "EBAY_PH",
 
 	/** Poland - https://www.ebay.pl */
-	EBAY_PL = "EBAY_PL",
+	EBAY_PL: "EBAY_PL",
 
 	/** Puerto Rico - Reserved for future use */
-	EBAY_PR = "EBAY_PR",
+	EBAY_PR: "EBAY_PR",
 
 	/** Portugal - Reserved for future use */
-	EBAY_PT = "EBAY_PT",
+	EBAY_PT: "EBAY_PT",
 
 	/** Russia - Reserved for future use */
-	EBAY_RU = "EBAY_RU",
+	EBAY_RU: "EBAY_RU",
 
 	/** Sweden - Reserved for future use */
-	EBAY_SE = "EBAY_SE",
+	EBAY_SE: "EBAY_SE",
 
 	/** Singapore - https://www.ebay.com.sg */
-	EBAY_SG = "EBAY_SG",
+	EBAY_SG: "EBAY_SG",
 
 	/** Thailand - https://info.ebay.co.th */
-	EBAY_TH = "EBAY_TH",
+	EBAY_TH: "EBAY_TH",
 
 	/** Taiwan - https://www.ebay.com.tw */
-	EBAY_TW = "EBAY_TW",
+	EBAY_TW: "EBAY_TW",
 
 	/** United States - https://www.ebay.com */
-	EBAY_US = "EBAY_US",
+	EBAY_US: "EBAY_US",
 
 	/** Vietnam - https://www.ebay.vn */
-	EBAY_VN = "EBAY_VN",
+	EBAY_VN: "EBAY_VN",
 
 	/** South Africa - Reserved for future use */
-	EBAY_ZA = "EBAY_ZA",
+	EBAY_ZA: "EBAY_ZA",
 
 	/** eBay Half.com US - No longer used */
-	EBAY_HALF_US = "EBAY_HALF_US",
+	EBAY_HALF_US: "EBAY_HALF_US",
 
 	/** eBay Motors US - Parent category for Auto Parts and Vehicles on EBAY_US */
-	EBAY_MOTORS_US = "EBAY_MOTORS_US",
-}
+	EBAY_MOTORS_US: "EBAY_MOTORS_US",
+} as const;
+
+export type MarketplaceId = (typeof MarketplaceId)[keyof typeof MarketplaceId];
 
 /**
  * Item Condition Enums
@@ -147,87 +149,91 @@ export enum MarketplaceId {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:ConditionEnum
  */
-export enum Condition {
+export const Condition = {
 	/** Brand-new, unopened item in its original packaging */
-	NEW = "NEW",
+	NEW: "NEW",
 
 	/** Item opened but very lightly used; for trading cards indicates Graded status */
-	LIKE_NEW = "LIKE_NEW",
+	LIKE_NEW: "LIKE_NEW",
 
 	/** New, unused item missing original packaging or not sealed */
-	NEW_OTHER = "NEW_OTHER",
+	NEW_OTHER: "NEW_OTHER",
 
 	/** New item with defects like scuffs or missing buttons */
-	NEW_WITH_DEFECTS = "NEW_WITH_DEFECTS",
+	NEW_WITH_DEFECTS: "NEW_WITH_DEFECTS",
 
 	/** @deprecated Use CERTIFIED_REFURBISHED instead */
-	MANUFACTURER_REFURBISHED = "MANUFACTURER_REFURBISHED",
+	MANUFACTURER_REFURBISHED: "MANUFACTURER_REFURBISHED",
 
 	/** Pristine, like-new condition inspected and refurbished by manufacturer */
-	CERTIFIED_REFURBISHED = "CERTIFIED_REFURBISHED",
+	CERTIFIED_REFURBISHED: "CERTIFIED_REFURBISHED",
 
 	/** Like new condition, refurbished with minimal wear */
-	EXCELLENT_REFURBISHED = "EXCELLENT_REFURBISHED",
+	EXCELLENT_REFURBISHED: "EXCELLENT_REFURBISHED",
 
 	/** Minimal wear, refurbished by manufacturer or approved vendor */
-	VERY_GOOD_REFURBISHED = "VERY_GOOD_REFURBISHED",
+	VERY_GOOD_REFURBISHED: "VERY_GOOD_REFURBISHED",
 
 	/** Moderate wear, inspected and refurbished */
-	GOOD_REFURBISHED = "GOOD_REFURBISHED",
+	GOOD_REFURBISHED: "GOOD_REFURBISHED",
 
 	/** Restored to working order by seller or third party */
-	SELLER_REFURBISHED = "SELLER_REFURBISHED",
+	SELLER_REFURBISHED: "SELLER_REFURBISHED",
 
 	/** Used but excellent condition; for apparel means Pre-owned Good */
-	USED_EXCELLENT = "USED_EXCELLENT",
+	USED_EXCELLENT: "USED_EXCELLENT",
 
 	/** Used but very good condition; for trading cards means Ungraded */
-	USED_VERY_GOOD = "USED_VERY_GOOD",
+	USED_VERY_GOOD: "USED_VERY_GOOD",
 
 	/** Used but in good condition */
-	USED_GOOD = "USED_GOOD",
+	USED_GOOD: "USED_GOOD",
 
 	/** Used item in acceptable condition */
-	USED_ACCEPTABLE = "USED_ACCEPTABLE",
+	USED_ACCEPTABLE: "USED_ACCEPTABLE",
 
 	/** Item not fully functioning; needs repair or parts harvesting */
-	FOR_PARTS_OR_NOT_WORKING = "FOR_PARTS_OR_NOT_WORKING",
+	FOR_PARTS_OR_NOT_WORKING: "FOR_PARTS_OR_NOT_WORKING",
 
 	/** Previously owned, excellent condition; apparel categories only */
-	PRE_OWNED_EXCELLENT = "PRE_OWNED_EXCELLENT",
+	PRE_OWNED_EXCELLENT: "PRE_OWNED_EXCELLENT",
 
 	/** Previously owned with significant visible flaws; apparel only */
-	PRE_OWNED_FAIR = "PRE_OWNED_FAIR",
-}
+	PRE_OWNED_FAIR: "PRE_OWNED_FAIR",
+} as const;
+
+export type Condition = (typeof Condition)[keyof typeof Condition];
 
 /** Listing locales (language/region) */
-export enum LocaleEnum {
-	en_US = "en-US",
-	en_CA = "en-CA",
-	fr_CA = "fr-CA",
-	en_GB = "en-GB",
-	en_AU = "en-AU",
-	en_IN = "en-IN",
-	de_AT = "de-AT",
-	fr_BE = "fr-BE",
-	fr_FR = "fr-FR",
-	de_DE = "de-DE",
-	it_IT = "it-IT",
-	nl_BE = "nl-BE",
-	nl_NL = "nl-NL",
-	es_ES = "es-ES",
-	de_CH = "de-CH",
-	fi_FI = "fi-FI",
-	zh_HK = "zh-HK",
-	hu_HU = "hu-HU",
-	en_PH = "en-PH",
-	pl_PL = "pl-PL",
-	pt_PT = "pt-PT",
-	ru_RU = "ru-RU",
-	en_SG = "en-SG",
-	en_IE = "en-IE",
-	en_MY = "en-MY",
-}
+export const LocaleEnum = {
+	en_US: "en-US",
+	en_CA: "en-CA",
+	fr_CA: "fr-CA",
+	en_GB: "en-GB",
+	en_AU: "en-AU",
+	en_IN: "en-IN",
+	de_AT: "de-AT",
+	fr_BE: "fr-BE",
+	fr_FR: "fr-FR",
+	de_DE: "de-DE",
+	it_IT: "it-IT",
+	nl_BE: "nl-BE",
+	nl_NL: "nl-NL",
+	es_ES: "es-ES",
+	de_CH: "de-CH",
+	fi_FI: "fi-FI",
+	zh_HK: "zh-HK",
+	hu_HU: "hu-HU",
+	en_PH: "en-PH",
+	pl_PL: "pl-PL",
+	pt_PT: "pt-PT",
+	ru_RU: "ru-RU",
+	en_SG: "en-SG",
+	en_IE: "en-IE",
+	en_MY: "en-MY",
+} as const;
+
+export type LocaleEnum = (typeof LocaleEnum)[keyof typeof LocaleEnum];
 
 /**
  * Listing Format Types
@@ -236,13 +242,15 @@ export enum LocaleEnum {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:FormatTypeEnum
  */
-export enum FormatType {
+export const FormatType = {
 	/** Auction listing format */
-	AUCTION = "AUCTION",
+	AUCTION: "AUCTION",
 
 	/** Fixed-price listing format */
-	FIXED_PRICE = "FIXED_PRICE",
-}
+	FIXED_PRICE: "FIXED_PRICE",
+} as const;
+
+export type FormatType = (typeof FormatType)[keyof typeof FormatType];
 
 /**
  * Listing Duration
@@ -252,34 +260,37 @@ export enum FormatType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:ListingDurationEnum
  */
-export enum ListingDuration {
+export const ListingDuration = {
 	/** One-day listing (auction only) */
-	DAYS_1 = "DAYS_1",
+	DAYS_1: "DAYS_1",
 
 	/** Three-day listing (auction only) */
-	DAYS_3 = "DAYS_3",
+	DAYS_3: "DAYS_3",
 
 	/** Five-day listing (auction only) */
-	DAYS_5 = "DAYS_5",
+	DAYS_5: "DAYS_5",
 
 	/** Seven-day listing (auction only) */
-	DAYS_7 = "DAYS_7",
+	DAYS_7: "DAYS_7",
 
 	/** Ten-day listing (auction only) */
-	DAYS_10 = "DAYS_10",
+	DAYS_10: "DAYS_10",
 
 	/** Fourteen-day listing (auction only, category dependent) */
-	DAYS_14 = "DAYS_14",
+	DAYS_14: "DAYS_14",
 
 	/** Twenty-one-day listing (auction only, category dependent) */
-	DAYS_21 = "DAYS_21",
+	DAYS_21: "DAYS_21",
 
 	/** Thirty-day listing (auction only, category dependent) */
-	DAYS_30 = "DAYS_30",
+	DAYS_30: "DAYS_30",
 
 	/** Good 'Til Cancelled — required for fixed-price listings, never valid for auctions */
-	GTC = "GTC",
-}
+	GTC: "GTC",
+} as const;
+
+export type ListingDuration =
+	(typeof ListingDuration)[keyof typeof ListingDuration];
 
 /**
  * Order Payment Status
@@ -288,22 +299,25 @@ export enum ListingDuration {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:OrderPaymentStatusEnum
  */
-export enum OrderPaymentStatus {
+export const OrderPaymentStatus = {
 	/** Buyer payment or refund has failed */
-	FAILED = "FAILED",
+	FAILED: "FAILED",
 
 	/** Full amount of the order has been refunded to the buyer */
-	FULLY_REFUNDED = "FULLY_REFUNDED",
+	FULLY_REFUNDED: "FULLY_REFUNDED",
 
 	/** Order has been paid in full. Safe for seller to ship */
-	PAID = "PAID",
+	PAID: "PAID",
 
 	/** Partial amount of the order has been refunded to the buyer */
-	PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",
+	PARTIALLY_REFUNDED: "PARTIALLY_REFUNDED",
 
 	/** Buyer payment or seller refund is in pending state */
-	PENDING = "PENDING",
-}
+	PENDING: "PENDING",
+} as const;
+
+export type OrderPaymentStatus =
+	(typeof OrderPaymentStatus)[keyof typeof OrderPaymentStatus];
 
 /**
  * Marketing Campaign Status
@@ -312,34 +326,37 @@ export enum OrderPaymentStatus {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/marketing/types/pls:CampaignStatusEnum
  */
-export enum CampaignStatus {
+export const CampaignStatus = {
 	/** Campaign is deleted and no longer accessible */
-	DELETED = "DELETED",
+	DELETED: "DELETED",
 
 	/** Campaign is inactive and in draft status */
-	DRAFT = "DRAFT",
+	DRAFT: "DRAFT",
 
 	/** Campaign has ended and cannot be restarted */
-	ENDED = "ENDED",
+	ENDED: "ENDED",
 
 	/** Request to end campaign received, system is processing */
-	ENDING_SOON = "ENDING_SOON",
+	ENDING_SOON: "ENDING_SOON",
 
 	/** Campaign is paused, listings not being promoted */
-	PAUSED = "PAUSED",
+	PAUSED: "PAUSED",
 
 	/** Criterion-based campaign in process of being created */
-	PENDING = "PENDING",
+	PENDING: "PENDING",
 
 	/** Campaign is active, listings are being promoted */
-	RUNNING = "RUNNING",
+	RUNNING: "RUNNING",
 
 	/** Campaign created but scheduled to start on future date */
-	SCHEDULED = "SCHEDULED",
+	SCHEDULED: "SCHEDULED",
 
 	/** System-generated pause due to seller's Below Standard level */
-	SYSTEM_PAUSED = "SYSTEM_PAUSED",
-}
+	SYSTEM_PAUSED: "SYSTEM_PAUSED",
+} as const;
+
+export type CampaignStatus =
+	(typeof CampaignStatus)[keyof typeof CampaignStatus];
 
 /**
  * Refund Method Types
@@ -348,13 +365,15 @@ export enum CampaignStatus {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:RefundMethodEnum
  */
-export enum RefundMethod {
+export const RefundMethod = {
 	/** Refund in money back to buyer */
-	MONEY_BACK = "MONEY_BACK",
+	MONEY_BACK: "MONEY_BACK",
 
 	/** Refund as merchandise credit */
-	MERCHANDISE_CREDIT = "MERCHANDISE_CREDIT",
-}
+	MERCHANDISE_CREDIT: "MERCHANDISE_CREDIT",
+} as const;
+
+export type RefundMethod = (typeof RefundMethod)[keyof typeof RefundMethod];
 
 /**
  * Return Method Types
@@ -363,13 +382,15 @@ export enum RefundMethod {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:ReturnMethodEnum
  */
-export enum ReturnMethod {
+export const ReturnMethod = {
 	/** Replacement item provided */
-	REPLACEMENT = "REPLACEMENT",
+	REPLACEMENT: "REPLACEMENT",
 
 	/** Item exchange */
-	EXCHANGE = "EXCHANGE",
-}
+	EXCHANGE: "EXCHANGE",
+} as const;
+
+export type ReturnMethod = (typeof ReturnMethod)[keyof typeof ReturnMethod];
 
 /**
  * Return Shipping Cost Payer
@@ -378,13 +399,16 @@ export enum ReturnMethod {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:ReturnShippingCostPayerEnum
  */
-export enum ReturnShippingCostPayer {
+export const ReturnShippingCostPayer = {
 	/** Buyer pays for return shipping */
-	BUYER = "BUYER",
+	BUYER: "BUYER",
 
 	/** Seller pays for return shipping */
-	SELLER = "SELLER",
-}
+	SELLER: "SELLER",
+} as const;
+
+export type ReturnShippingCostPayer =
+	(typeof ReturnShippingCostPayer)[keyof typeof ReturnShippingCostPayer];
 
 /**
  * Time Duration Units
@@ -393,34 +417,37 @@ export enum ReturnShippingCostPayer {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/ba:TimeDurationUnitEnum
  */
-export enum TimeDurationUnit {
+export const TimeDurationUnit = {
 	/** Year */
-	YEAR = "YEAR",
+	YEAR: "YEAR",
 
 	/** Month */
-	MONTH = "MONTH",
+	MONTH: "MONTH",
 
 	/** Day */
-	DAY = "DAY",
+	DAY: "DAY",
 
 	/** Hour */
-	HOUR = "HOUR",
+	HOUR: "HOUR",
 
 	/** Calendar day */
-	CALENDAR_DAY = "CALENDAR_DAY",
+	CALENDAR_DAY: "CALENDAR_DAY",
 
 	/** Business day */
-	BUSINESS_DAY = "BUSINESS_DAY",
+	BUSINESS_DAY: "BUSINESS_DAY",
 
 	/** Minute */
-	MINUTE = "MINUTE",
+	MINUTE: "MINUTE",
 
 	/** Second */
-	SECOND = "SECOND",
+	SECOND: "SECOND",
 
 	/** Millisecond */
-	MILLISECOND = "MILLISECOND",
-}
+	MILLISECOND: "MILLISECOND",
+} as const;
+
+export type TimeDurationUnit =
+	(typeof TimeDurationUnit)[keyof typeof TimeDurationUnit];
 
 /**
  * Shipping Cost Types
@@ -429,16 +456,19 @@ export enum TimeDurationUnit {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:ShippingCostTypeEnum
  */
-export enum ShippingCostType {
+export const ShippingCostType = {
 	/** Flat rate shipping */
-	FLAT_RATE = "FLAT_RATE",
+	FLAT_RATE: "FLAT_RATE",
 
 	/** Calculated shipping based on weight/dimensions */
-	CALCULATED = "CALCULATED",
+	CALCULATED: "CALCULATED",
 
 	/** Not specified */
-	NOT_SPECIFIED = "NOT_SPECIFIED",
-}
+	NOT_SPECIFIED: "NOT_SPECIFIED",
+} as const;
+
+export type ShippingCostType =
+	(typeof ShippingCostType)[keyof typeof ShippingCostType];
 
 /**
  * Shipping Option Types
@@ -447,13 +477,16 @@ export enum ShippingCostType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:ShippingOptionTypeEnum
  */
-export enum ShippingOptionType {
+export const ShippingOptionType = {
 	/** Domestic shipping */
-	DOMESTIC = "DOMESTIC",
+	DOMESTIC: "DOMESTIC",
 
 	/** International shipping */
-	INTERNATIONAL = "INTERNATIONAL",
-}
+	INTERNATIONAL: "INTERNATIONAL",
+} as const;
+
+export type ShippingOptionType =
+	(typeof ShippingOptionType)[keyof typeof ShippingOptionType];
 
 /**
  * Category Types
@@ -462,13 +495,15 @@ export enum ShippingOptionType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:CategoryTypeEnum
  */
-export enum CategoryType {
+export const CategoryType = {
 	/** All categories */
-	ALL_EXCLUDING_MOTORS_VEHICLES = "ALL_EXCLUDING_MOTORS_VEHICLES",
+	ALL_EXCLUDING_MOTORS_VEHICLES: "ALL_EXCLUDING_MOTORS_VEHICLES",
 
 	/** Motors vehicles category */
-	MOTORS_VEHICLES = "MOTORS_VEHICLES",
-}
+	MOTORS_VEHICLES: "MOTORS_VEHICLES",
+} as const;
+
+export type CategoryType = (typeof CategoryType)[keyof typeof CategoryType];
 
 /**
  * Payment Method Types
@@ -477,52 +512,55 @@ export enum CategoryType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:PaymentMethodTypeEnum
  */
-export enum PaymentMethodType {
+export const PaymentMethodType = {
 	/** Credit card payment */
-	CREDIT_CARD = "CREDIT_CARD", // This payment method is no longer valid.
+	CREDIT_CARD: "CREDIT_CARD", // This payment method is no longer valid.
 
 	/** PayPal payment */
-	PAYPAL = "PAYPAL", // This payment method is no longer valid.
+	PAYPAL: "PAYPAL", // This payment method is no longer valid.
 
 	/** Personal check */
-	PERSONAL_CHECK = "PERSONAL_CHECK", // This enumeration value indicates that the payment method will be a Personal check.
+	PERSONAL_CHECK: "PERSONAL_CHECK", // This enumeration value indicates that the payment method will be a Personal check.
 
 	/** Money order or cashier's check */
-	MONEY_ORDER_CASHIERS_CHECK = "MONEY_ORDER_CASHIERS_CHECK", // This enumeration value indicates that the payment method will be a Cashier Check.
+	MONEY_ORDER_CASHIERS_CHECK: "MONEY_ORDER_CASHIERS_CHECK", // This enumeration value indicates that the payment method will be a Cashier Check.
 
 	/** Cash on delivery */
-	CASH_ON_DELIVERY = "CASH_ON_DELIVERY", // This enumeration value indicates that the payment method will be cash, and the transaction will occur after the item is delivered to the buyer.
+	CASH_ON_DELIVERY: "CASH_ON_DELIVERY", // This enumeration value indicates that the payment method will be cash, and the transaction will occur after the item is delivered to the buyer.
 
 	/** Cash on pickup */
-	CASH_ON_PICKUP = "CASH_ON_PICKUP", // This enumeration value indicates that the payment method will be cash, and the transaction will occur when the buyer picks up the item.
+	CASH_ON_PICKUP: "CASH_ON_PICKUP", // This enumeration value indicates that the payment method will be cash, and the transaction will occur when the buyer picks up the item.
 
 	/** This enumeration value indicates that the payment method will be cash, and the transaction will occur in-person. */
-	CASH_IN_PERSON = "CASH_IN_PERSON",
+	CASH_IN_PERSON: "CASH_IN_PERSON",
 
 	/** This enumeration value indicates that escrow was used as the payment method to pay for the order. This form of payment is used for high-value orders. */
-	ESCROW = "ESCROW",
+	ESCROW: "ESCROW",
 
 	/** This payment method is no longer valid. */
-	INTEGRATED_MERCHANT_CREDIT_CARD = "INTEGRATED_MERCHANT_CREDIT_CARD",
+	INTEGRATED_MERCHANT_CREDIT_CARD: "INTEGRATED_MERCHANT_CREDIT_CARD",
 
 	/** This payment method is no longer valid. */
-	LOAN_CHECK = "LOAN_CHECK",
+	LOAN_CHECK: "LOAN_CHECK",
 
 	/** This enumeration value indicates that the payment method will be by a Money Order. */
-	MONEY_ORDER = "MONEY_ORDER",
+	MONEY_ORDER: "MONEY_ORDER",
 
 	/** This payment method is no longer valid. */
-	PAISA_PAY = "PAISA_PAY",
+	PAISA_PAY: "PAISA_PAY",
 
 	/** This payment method is no longer valid. */
-	PAISA_PAY_ESCROW = "PAISA_PAY_ESCROW",
+	PAISA_PAY_ESCROW: "PAISA_PAY_ESCROW",
 
 	/** This payment method is no longer valid. */
-	PAISA_PAY_ESCROW_EMI = "PAISA_PAY_ESCROW_EMI",
+	PAISA_PAY_ESCROW_EMI: "PAISA_PAY_ESCROW_EMI",
 
 	/** This enumeration value indicates that the seller is offering an offline payment method not otherwise covered. */
-	OTHER = "OTHER",
-}
+	OTHER: "OTHER",
+} as const;
+
+export type PaymentMethodType =
+	(typeof PaymentMethodType)[keyof typeof PaymentMethodType];
 
 /**
  * Line Item Fulfillment Status
@@ -531,16 +569,19 @@ export enum PaymentMethodType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:LineItemFulfillmentStatusEnum
  */
-export enum LineItemFulfillmentStatus {
+export const LineItemFulfillmentStatus = {
 	/** Line item has been fulfilled */
-	FULFILLED = "FULFILLED",
+	FULFILLED: "FULFILLED",
 
 	/** In process of fulfillment */
-	IN_PROGRESS = "IN_PROGRESS",
+	IN_PROGRESS: "IN_PROGRESS",
 
 	/** Not started */
-	NOT_STARTED = "NOT_STARTED",
-}
+	NOT_STARTED: "NOT_STARTED",
+} as const;
+
+export type LineItemFulfillmentStatus =
+	(typeof LineItemFulfillmentStatus)[keyof typeof LineItemFulfillmentStatus];
 
 /**
  * Offer Status
@@ -549,13 +590,15 @@ export enum LineItemFulfillmentStatus {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:OfferStatusEnum
  */
-export enum OfferStatus {
+export const OfferStatus = {
 	/** Offer is published and active */
-	PUBLISHED = "PUBLISHED",
+	PUBLISHED: "PUBLISHED",
 
 	/** Offer is unpublished */
-	UNPUBLISHED = "UNPUBLISHED",
-}
+	UNPUBLISHED: "UNPUBLISHED",
+} as const;
+
+export type OfferStatus = (typeof OfferStatus)[keyof typeof OfferStatus];
 
 /**
  * Listing Status
@@ -564,28 +607,30 @@ export enum OfferStatus {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:ListingStatusEnum
  */
-export enum ListingStatus {
+export const ListingStatus = {
 	/** Listing is active */
-	ACTIVE = "ACTIVE", // This enumeration value indicates that the eBay listing associated with the offer is active.
+	ACTIVE: "ACTIVE", // This enumeration value indicates that the eBay listing associated with the offer is active.
 
 	/** Listing is out of stock */
-	OUT_OF_STOCK = "OUT_OF_STOCK", // This enumeration value indicates that the eBay listing associated with the offer is still active, but that the product is currently out-of-stock. If a single-variation listing is out-of-stock, that listing will be kept alive but hidden from search. If a variation inside a multiple-variation listing is out-of-stock, only that variation is hidden, but the listing remains active and discoverable.
+	OUT_OF_STOCK: "OUT_OF_STOCK", // This enumeration value indicates that the eBay listing associated with the offer is still active, but that the product is currently out-of-stock. If a single-variation listing is out-of-stock, that listing will be kept alive but hidden from search. If a variation inside a multiple-variation listing is out-of-stock, only that variation is hidden, but the listing remains active and discoverable.
 
 	/** Listing has ended */
-	ENDED = "ENDED", // This enumeration value indicates that the eBay listing associated with the offer has ended.
+	ENDED: "ENDED", // This enumeration value indicates that the eBay listing associated with the offer has ended.
 
 	/** Listing is inactive */
-	INACTIVE = "INACTIVE", // This enumeration value indicates that the eBay listing associated with the offer is currently inactive.
+	INACTIVE: "INACTIVE", // This enumeration value indicates that the eBay listing associated with the offer is currently inactive.
 
 	/** This enumeration value indicates that the eBay customer service has administratively ended the eBay listing associated with the offer. */
-	EBAY_ENDED = "EBAY_ENDED",
+	EBAY_ENDED: "EBAY_ENDED",
 
 	/** This enumeration value indicates that the eBay listing associated with the offer has yet to be listed. */
-	NOT_LISTED = "NOT_LISTED",
+	NOT_LISTED: "NOT_LISTED",
 
 	/** This enumeration value indicates that the eBay listing associated with the offer has ended. */
 	// ENDED = 'ENDED', // Duplicate, already defined above
-}
+} as const;
+
+export type ListingStatus = (typeof ListingStatus)[keyof typeof ListingStatus];
 
 /**
  * Language Codes (ISO 639-1)
@@ -595,112 +640,114 @@ export enum ListingStatus {
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:LocaleEnum
  */
 // This enumeration type contains the different locales that can be used. The locale value indicates the language that is used to express the inventory item details.
-export enum LanguageCode {
+export const LanguageCode = {
 	/** This value indicates the content is localized for US English. */
-	EN_US = "en_US",
+	EN_US: "en_US",
 
 	/** This value indicates the content is localized for Canadian English. */
-	EN_CA = "en_CA",
+	EN_CA: "en_CA",
 
 	/** This value indicates the content is localized for Canadian French. */
-	FR_CA = "fr_CA",
+	FR_CA: "fr_CA",
 
 	/** This value indicates the content is localized for UK English. */
-	EN_GB = "en_GB",
+	EN_GB: "en_GB",
 
 	/** This value indicates the content is localized for Australian English. */
-	EN_AU = "en_AU",
+	EN_AU: "en_AU",
 
 	/** This value indicates the content is localized for English but on the India site. Note: eBay India is no longer a functioning eBay marketplace. */
-	EN_IN = "en_IN",
+	EN_IN: "en_IN",
 
 	/** This value indicates the content is localized for German speakers on the Austria site. */
-	DE_AT = "de_AT",
+	DE_AT: "de_AT",
 
 	/** This value indicates the content is localized for French speakers on the Belgium site. */
-	FR_BE = "fr_BE",
+	FR_BE: "fr_BE",
 
 	/** This value indicates the content is localized for French speakers on the France site. */
-	FR_FR = "fr_FR",
+	FR_FR: "fr_FR",
 
 	/** This value indicates the content is localized for German speakers on the Germany site. */
-	DE_DE = "de_DE",
+	DE_DE: "de_DE",
 
 	/** This value indicates the content is localized for Italian speakers on the Italy site. */
-	IT_IT = "it_IT",
+	IT_IT: "it_IT",
 
 	/** This value indicates the content is localized for Dutch speakers on the Belgium site. */
-	NL_BE = "nl_BE",
+	NL_BE: "nl_BE",
 
 	/** This value indicates the content is localized for Dutch speakers on the Netherlands site. */
-	NL_NL = "nl_NL",
+	NL_NL: "nl_NL",
 
 	/** This value indicates the content is localized for Spanish speakers on the Spain site. */
-	ES_ES = "es_ES",
+	ES_ES: "es_ES",
 
 	/** This value indicates the content is localized for Germany speakers on the Switzerland site. */
-	DE_CH = "de_CH",
+	DE_CH: "de_CH",
 
 	/** This value indicates the content is localized for Finnish speakers. */
-	FI_FI = "fi_FI",
+	FI_FI: "fi_FI",
 
 	/** This value indicates the content is localized for Chinese speakers on the Hong Kong site. */
-	ZH_HK = "zh_HK",
+	ZH_HK: "zh_HK",
 
 	/** This value indicates the content is localized for Hungarian speakers. */
-	HU_HU = "hu_HU",
+	HU_HU: "hu_HU",
 
 	/** This value indicates the content is localized for English speakers on the Philippines site. */
-	EN_PH = "en_PH",
+	EN_PH: "en_PH",
 
 	/** This value indicates the content is localized for Polish speakers on the Poland site. */
-	PL_PL = "pl_PL",
+	PL_PL: "pl_PL",
 
 	/** This value indicates the content is localized for Portuguese speakers. */
-	PT_PT = "pt_PT",
+	PT_PT: "pt_PT",
 
 	/** This value indicates the content is localized for Russian speakers. */
-	RU_RU = "ru_RU",
+	RU_RU: "ru_RU",
 
 	/** This value indicates the content is localized for English on the Singapore site. */
-	EN_SG = "en_SG",
+	EN_SG: "en_SG",
 
 	/** This value indicates the content is localized for English on the Ireland site. */
-	EN_IE = "en_IE",
+	EN_IE: "en_IE",
 
 	/** This value indicates the content is localized for English on the Malaysia site. */
-	EN_MY = "en_MY",
+	EN_MY: "en_MY",
 
 	/** English (generic) */
-	EN = "en", // Keep generic 'en' for broader compatibility if needed
+	EN: "en", // Keep generic 'en' for broader compatibility if needed
 
 	/** German (generic) */
-	DE = "de", // Keep generic 'de' for broader compatibility if needed
+	DE: "de", // Keep generic 'de' for broader compatibility if needed
 
 	/** French (generic) */
-	FR = "fr", // Keep generic 'fr' for broader compatibility if needed
+	FR: "fr", // Keep generic 'fr' for broader compatibility if needed
 
 	/** Spanish (generic) */
-	ES = "es", // Keep generic 'es' for broader compatibility if needed
+	ES: "es", // Keep generic 'es' for broader compatibility if needed
 
 	/** Italian (generic) */
-	IT = "it", // Keep generic 'it' for broader compatibility if needed
+	IT: "it", // Keep generic 'it' for broader compatibility if needed
 
 	/** Dutch (generic) */
-	NL = "nl", // Keep generic 'nl' for broader compatibility if needed
+	NL: "nl", // Keep generic 'nl' for broader compatibility if needed
 
 	/** Chinese (Simplified) (generic) */
-	ZH_CN = "zh-CN",
+	ZH_CN: "zh-CN",
 
 	/** Chinese (Traditional) */
-	ZH_TW = "zh-TW",
+	ZH_TW: "zh-TW",
 
 	/** Japanese */
-	JA = "ja",
+	JA: "ja",
 
 	/** Korean */
-	KO = "ko",
-}
+	KO: "ko",
+} as const;
+
+export type LanguageCode = (typeof LanguageCode)[keyof typeof LanguageCode];
 
 /**
  * Weight Units of Measure
@@ -709,19 +756,21 @@ export enum LanguageCode {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:WeightUnitOfMeasureEnum
  */
-export enum WeightUnit {
+export const WeightUnit = {
 	/** Pound */
-	POUND = "POUND",
+	POUND: "POUND",
 
 	/** Kilogram */
-	KILOGRAM = "KILOGRAM",
+	KILOGRAM: "KILOGRAM",
 
 	/** Ounce */
-	OUNCE = "OUNCE",
+	OUNCE: "OUNCE",
 
 	/** Gram */
-	GRAM = "GRAM",
-}
+	GRAM: "GRAM",
+} as const;
+
+export type WeightUnit = (typeof WeightUnit)[keyof typeof WeightUnit];
 
 /**
  * Length Units of Measure
@@ -730,19 +779,21 @@ export enum WeightUnit {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:LengthUnitOfMeasureEnum
  */
-export enum LengthUnit {
+export const LengthUnit = {
 	/** Inch */
-	INCH = "INCH",
+	INCH: "INCH",
 
 	/** Feet */
-	FEET = "FEET",
+	FEET: "FEET",
 
 	/** Centimeter */
-	CENTIMETER = "CENTIMETER",
+	CENTIMETER: "CENTIMETER",
 
 	/** Meter */
-	METER = "METER",
-}
+	METER: "METER",
+} as const;
+
+export type LengthUnit = (typeof LengthUnit)[keyof typeof LengthUnit];
 
 /**
  * Currency Codes (ISO 4217)
@@ -752,318 +803,320 @@ export enum LengthUnit {
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/ba:CurrencyCodeEnum
  */
 // This enumerated type lists the three-letter ISO 4217 codes representing the supported world currencies.
-export enum CurrencyCode {
+export const CurrencyCode = {
 	/** US Dollar */
-	USD = "USD",
+	USD: "USD",
 	/** Canadian Dollar */
-	CAD = "CAD",
+	CAD: "CAD",
 	/** Euro */
-	EUR = "EUR",
+	EUR: "EUR",
 	/** British Pound */
-	GBP = "GBP",
+	GBP: "GBP",
 	/** Australian Dollar */
-	AUD = "AUD",
+	AUD: "AUD",
 	/** Swiss Franc */
-	CHF = "CHF",
+	CHF: "CHF",
 	/** Hong Kong Dollar */
-	HKD = "HKD",
+	HKD: "HKD",
 	/** Malaysian Ringgit */
-	MYR = "MYR",
+	MYR: "MYR",
 	/** Philippine Peso */
-	PHP = "PHP",
+	PHP: "PHP",
 	/** Polish Zloty */
-	PLN = "PLN",
+	PLN: "PLN",
 	/** Singapore Dollar */
-	SGD = "SGD",
+	SGD: "SGD",
 	/** New Taiwan Dollar */
-	TWD = "TWD",
+	TWD: "TWD",
 	/** Thai Baht */
-	THB = "THB",
+	THB: "THB",
 	/** Japanese Yen */
-	JPY = "JPY",
+	JPY: "JPY",
 	/** The currency is the United Arab Emirates dirham. */
-	AED = "AED",
+	AED: "AED",
 	/** The currency is the Afghan afghani. */
-	AFN = "AFN",
+	AFN: "AFN",
 	/** The currency is the Albanian lek. */
-	ALL = "ALL",
+	ALL: "ALL",
 	/** The currency is the Armenian dram. */
-	AMD = "AMD",
+	AMD: "AMD",
 	/** The currency is the Netherlands Antillean guilder. */
-	ANG = "ANG",
+	ANG: "ANG",
 	/** The currency is the Angolan kwanza. */
-	AOA = "AOA",
+	AOA: "AOA",
 	/** The currency is the Argentine peso. */
-	ARS = "ARS",
+	ARS: "ARS",
 	/** The currency is the Aruban florin. */
-	AWG = "AWG",
+	AWG: "AWG",
 	/** The currency is the Azerbaijani manat. */
-	AZN = "AZN",
+	AZN: "AZN",
 	/** The currency is the Bosnia and Herzegovina convertible mark. */
-	BAM = "BAM",
+	BAM: "BAM",
 	/** The currency is the Barbados dollar. */
-	BBD = "BBD",
+	BBD: "BBD",
 	/** The currency is the Bangladeshi taka. */
-	BDT = "BDT",
+	BDT: "BDT",
 	/** The currency is the Bulgarian lev. */
-	BGN = "BGN",
+	BGN: "BGN",
 	/** The currency is the Bahraini dinar. */
-	BHD = "BHD",
+	BHD: "BHD",
 	/** The currency is the Burundian franc. */
-	BIF = "BIF",
+	BIF: "BIF",
 	/** The currency is the Bermudian dollar. */
-	BMD = "BMD",
+	BMD: "BMD",
 	/** The currency is the Brunei dollar. */
-	BND = "BND",
+	BND: "BND",
 	/** The currency is the Bolivian Boliviano. */
-	BOB = "BOB",
+	BOB: "BOB",
 	/** The currency is the Brazilian real. */
-	BRL = "BRL",
+	BRL: "BRL",
 	/** The currency is the Bahamian dollar. */
-	BSD = "BSD",
+	BSD: "BSD",
 	/** The currency is the Bhutanese ngultrum. */
-	BTN = "BTN",
+	BTN: "BTN",
 	/** The currency is the Botswana pula. */
-	BWP = "BWP",
+	BWP: "BWP",
 	/** The currency is the Belarusian ruble. */
-	BYR = "BYR",
+	BYR: "BYR",
 	/** The currency is the Belize dollar. */
-	BZD = "BZD",
+	BZD: "BZD",
 	/** The currency is the Congolese franc. */
-	CDF = "CDF",
+	CDF: "CDF",
 	/** The currency is the Chilean peso. */
-	CLP = "CLP",
+	CLP: "CLP",
 	/** The currency is the Chinese yuan renminbi. */
-	CNY = "CNY",
+	CNY: "CNY",
 	/** The currency is the Colombian peso. */
-	COP = "COP",
+	COP: "COP",
 	/** The currency is the Costa Rican colon. */
-	CRC = "CRC",
+	CRC: "CRC",
 	/** The currency is the Cuban peso. */
-	CUP = "CUP",
+	CUP: "CUP",
 	/** The currency is the Cape Verde escudo. */
-	CVE = "CVE",
+	CVE: "CVE",
 	/** The currency is the Czech koruna. */
-	CZK = "CZK",
+	CZK: "CZK",
 	/** The currency is the Djiboutian franc. */
-	DJF = "DJF",
+	DJF: "DJF",
 	/** The currency is the Danish krone. */
-	DKK = "DKK",
+	DKK: "DKK",
 	/** The currency is the Dominican peso. */
-	DOP = "DOP",
+	DOP: "DOP",
 	/** The currency is the Algerian dinar. */
-	DZD = "DZD",
+	DZD: "DZD",
 	/** The currency is the Egyptian pound. */
-	EGP = "EGP",
+	EGP: "EGP",
 	/** The currency is the Eritrean nakfa. */
-	ERN = "ERN",
+	ERN: "ERN",
 	/** The currency is the Ethiopian birr. */
-	ETB = "ETB",
+	ETB: "ETB",
 	/** The currency is the Fiji dollar. */
-	FJD = "FJD",
+	FJD: "FJD",
 	/** The currency is the Falkland Islands pound. */
-	FKP = "FKP",
+	FKP: "FKP",
 	/** The currency is the Georgian lari. */
-	GEL = "GEL",
+	GEL: "GEL",
 	/** The currency is the Ghanaian cedi. */
-	GHS = "GHS",
+	GHS: "GHS",
 	/** The currency is the Gibraltar pound. */
-	GIP = "GIP",
+	GIP: "GIP",
 	/** The currency is the Gambian dalasi. */
-	GMD = "GMD",
+	GMD: "GMD",
 	/** The currency is the Guinean franc. */
-	GNF = "GNF",
+	GNF: "GNF",
 	/** The currency is the Guatemalan quetzal. */
-	GTQ = "GTQ",
+	GTQ: "GTQ",
 	/** The currency is the Guyanese dollar. */
-	GYD = "GYD",
+	GYD: "GYD",
 	/** The currency is the Honduran lempira. */
-	HNL = "HNL",
+	HNL: "HNL",
 	/** The currency is the Croatian kuna. */
-	HRK = "HRK",
+	HRK: "HRK",
 	/** The currency is the Haitian gourde. */
-	HTG = "HTG",
+	HTG: "HTG",
 	/** The currency is the Hungarian forint. */
-	HUF = "HUF",
+	HUF: "HUF",
 	/** The currency is the Indonesian rupiah. */
-	IDR = "IDR",
+	IDR: "IDR",
 	/** The currency is the Israeli new shekel. */
-	ILS = "ILS",
+	ILS: "ILS",
 	/** The currency is the Indian rupee. */
-	INR = "INR",
+	INR: "INR",
 	/** The currency is the Iraqi dinar. */
-	IQD = "IQD",
+	IQD: "IQD",
 	/** The currency is the Iranian rial. */
-	IRR = "IRR",
+	IRR: "IRR",
 	/** The currency is the Icelandic krona. */
-	ISK = "ISK",
+	ISK: "ISK",
 	/** The currency is the Jamaican dollar. */
-	JMD = "JMD",
+	JMD: "JMD",
 	/** The currency is the Jordanian dinar. */
-	JOD = "JOD",
+	JOD: "JOD",
 	/** The currency is the Kenyan shilling. */
-	KES = "KES",
+	KES: "KES",
 	/** The currency is the Kyrgyzstani som. */
-	KGS = "KGS",
+	KGS: "KGS",
 	/** The currency is the Cambodian riel. */
-	KHR = "KHR",
+	KHR: "KHR",
 	/** The currency is the Comoro franc. */
-	KMF = "KMF",
+	KMF: "KMF",
 	/** The currency is the North Korean won. */
-	KPW = "KPW",
+	KPW: "KPW",
 	/** The currency is the South Korean won. */
-	KRW = "KRW",
+	KRW: "KRW",
 	/** The currency is the Kuwaiti dinar. */
-	KWD = "KWD",
+	KWD: "KWD",
 	/** The currency is the Cayman Islands dollar. */
-	KYD = "KYD",
+	KYD: "KYD",
 	/** The currency is the Kazakhstani tenge. */
-	KZT = "KZT",
+	KZT: "KZT",
 	/** The currency is the Lao kip. */
-	LAK = "LAK",
+	LAK: "LAK",
 	/** The currency is the Lebanese pound. */
-	LBP = "LBP",
+	LBP: "LBP",
 	/** The currency is the Sri Lankan rupee. */
-	LKR = "LKR",
+	LKR: "LKR",
 	/** The currency is the Liberian dollar. */
-	LRD = "LRD",
+	LRD: "LRD",
 	/** The currency is the Lesotho loti. */
-	LSL = "LSL",
+	LSL: "LSL",
 	/** The currency is the Lithuanian litas. */
-	LTL = "LTL",
+	LTL: "LTL",
 	/** The currency is the Libyan dinar. */
-	LYD = "LYD",
+	LYD: "LYD",
 	/** The currency is the Moroccan dirham. */
-	MAD = "MAD",
+	MAD: "MAD",
 	/** The currency is the Moldovan leu. */
-	MDL = "MDL",
+	MDL: "MDL",
 	/** The currency is the Malagasy ariary. */
-	MGA = "MGA",
+	MGA: "MGA",
 	/** The currency is the Macedonian denar. */
-	MKD = "MKD",
+	MKD: "MKD",
 	/** The currency is the Myanmar kyat. */
-	MMK = "MMK",
+	MMK: "MMK",
 	/** The currency is the Mongolian tugrik. */
-	MNT = "MNT",
+	MNT: "MNT",
 	/** The currency is the Macanese pataca. */
-	MOP = "MOP",
+	MOP: "MOP",
 	/** The currency is the Mauritanian ouguiya. */
-	MRO = "MRO",
+	MRO: "MRO",
 	/** The currency is the Mauritian rupee. */
-	MUR = "MUR",
+	MUR: "MUR",
 	/** The currency is the Maldivian rufiyaa. */
-	MVR = "MVR",
+	MVR: "MVR",
 	/** The currency is the Malawian kwacha. */
-	MWK = "MWK",
+	MWK: "MWK",
 	/** The currency is the Mexican peso. */
-	MXN = "MXN",
+	MXN: "MXN",
 	/** The currency is the Mozambican metical. */
-	MZN = "MZN",
+	MZN: "MZN",
 	/** The currency is the Namibian dollar. */
-	NAD = "NAD",
+	NAD: "NAD",
 	/** The currency is the Nigerian naira. */
-	NGN = "NGN",
+	NGN: "NGN",
 	/** The currency is the Nicaraguan cordoba oro. */
-	NIO = "NIO",
+	NIO: "NIO",
 	/** The currency is the Norwegian krone. */
-	NOK = "NOK",
+	NOK: "NOK",
 	/** The currency is the Nepalese rupee. */
-	NPR = "NPR",
+	NPR: "NPR",
 	/** The currency is the New Zealand dollar. */
-	NZD = "NZD",
+	NZD: "NZD",
 	/** The currency is the Omani rial. */
-	OMR = "OMR",
+	OMR: "OMR",
 	/** The currency is the Panamanian balboa. */
-	PAB = "PAB",
+	PAB: "PAB",
 	/** The currency is the Peruvian sol. */
-	PEN = "PEN",
+	PEN: "PEN",
 	/** The currency is the Papua New Guinean kina. */
-	PGK = "PGK",
+	PGK: "PGK",
 	/** The currency is the Pakistani rupee. */
-	PKR = "PKR",
+	PKR: "PKR",
 	/** The currency is the Paraguayan guarani. */
-	PYG = "PYG",
+	PYG: "PYG",
 	/** The currency is the Qatari riyal. */
-	QAR = "QAR",
+	QAR: "QAR",
 	/** The currency is the Romanian leu. */
-	RON = "RON",
+	RON: "RON",
 	/** The currency is the Serbian dinar. */
-	RSD = "RSD",
+	RSD: "RSD",
 	/** The currency is the Russian ruble. */
-	RUB = "RUB",
+	RUB: "RUB",
 	/** The currency is the Rwandan franc. */
-	RWF = "RWF",
+	RWF: "RWF",
 	/** The currency is the Saudi riyal. */
-	SAR = "SAR",
+	SAR: "SAR",
 	/** The currency is the Solomon Islands dollar. */
-	SBD = "SBD",
+	SBD: "SBD",
 	/** The currency is the Seychelles rupee. */
-	SCR = "SCR",
+	SCR: "SCR",
 	/** The currency is the Sudanese pound. */
-	SDG = "SDG",
+	SDG: "SDG",
 	/** The currency is the Swedish krona. */
-	SEK = "SEK",
+	SEK: "SEK",
 	/** The currency is the Saint Helena pound. */
-	SHP = "SHP",
+	SHP: "SHP",
 	/** The currency is the Sierra Leonean leone. */
-	SLL = "SLL",
+	SLL: "SLL",
 	/** The currency is the Somali shilling. */
-	SOS = "SOS",
+	SOS: "SOS",
 	/** The currency is the Surinamese dollar. */
-	SRD = "SRD",
+	SRD: "SRD",
 	/** The currency is the Sao Tome and Principe dobra. */
-	STD = "STD",
+	STD: "STD",
 	/** The currency is the Syrian pound. */
-	SYP = "SYP",
+	SYP: "SYP",
 	/** The currency is the Swazi lilangeni. */
-	SZL = "SZL",
+	SZL: "SZL",
 	/** The currency is the Tajikistani somoni. */
-	TJS = "TJS",
+	TJS: "TJS",
 	/** The currency is the Turkmenistani manat. */
-	TMT = "TMT",
+	TMT: "TMT",
 	/** The currency is the Tunisian dinar. */
-	TND = "TND",
+	TND: "TND",
 	/** The currency is the Tongan pa'anga. */
-	TOP = "TOP",
+	TOP: "TOP",
 	/** The currency is the Turkish lira. */
-	TRY = "TRY",
+	TRY: "TRY",
 	/** The currency is the Trinidad and Tobago dollar. */
-	TTD = "TTD",
+	TTD: "TTD",
 	/** The currency is the Tanzanian shilling. */
-	TZS = "TZS",
+	TZS: "TZS",
 	/** The currency is the Ukrainian hryvnia. */
-	UAH = "UAH",
+	UAH: "UAH",
 	/** The currency is the Ugandan shilling. */
-	UGX = "UGX",
+	UGX: "UGX",
 	/** The currency is the Uruguayan peso. */
-	UYU = "UYU",
+	UYU: "UYU",
 	/** The currency is the Uzbekistani som. */
-	UZS = "UZS",
+	UZS: "UZS",
 	/** The currency is the Venezuelan bolivar. */
-	VEF = "VEF",
+	VEF: "VEF",
 	/** The currency is the Vietnamese dong. */
-	VND = "VND",
+	VND: "VND",
 	/** The currency is the Vanuatu vatu. */
-	VUV = "VUV",
+	VUV: "VUV",
 	/** The currency is the Samoan tala. */
-	WST = "WST",
+	WST: "WST",
 	/** The currency is the CFA franc BEAC. */
-	XAF = "XAF",
+	XAF: "XAF",
 	/** The currency is the East Caribbean dollar. */
-	XCD = "XCD",
+	XCD: "XCD",
 	/** The currency is the CFA franc BCEAO. */
-	XOF = "XOF",
+	XOF: "XOF",
 	/** The currency is the CFP franc. */
-	XPF = "XPF",
+	XPF: "XPF",
 	/** The currency is the Yemeni rial. */
-	YER = "YER",
+	YER: "YER",
 	/** The currency is the South African rand. */
-	ZAR = "ZAR",
+	ZAR: "ZAR",
 	/** The currency is the Zambian kwacha. */
-	ZMW = "ZMW",
+	ZMW: "ZMW",
 	/** The currency is the Zimbabwean dollar. */
-	ZWL = "ZWL",
-}
+	ZWL: "ZWL",
+} as const;
+
+export type CurrencyCode = (typeof CurrencyCode)[keyof typeof CurrencyCode];
 
 /**
  * Region Type Enum
@@ -1072,22 +1125,24 @@ export enum CurrencyCode {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/ba:RegionTypeEnum
  */
-export enum RegionType {
+export const RegionType = {
 	/** Country-level region */
-	COUNTRY = "COUNTRY",
+	COUNTRY: "COUNTRY",
 
 	/** Sub-country region (state, province) */
-	COUNTRY_REGION = "COUNTRY_REGION",
+	COUNTRY_REGION: "COUNTRY_REGION",
 
 	/** State or province */
-	STATE_OR_PROVINCE = "STATE_OR_PROVINCE",
+	STATE_OR_PROVINCE: "STATE_OR_PROVINCE",
 
 	/** World region (e.g., Asia, Europe) */
-	WORLD_REGION = "WORLD_REGION",
+	WORLD_REGION: "WORLD_REGION",
 
 	/** Worldwide */
-	WORLDWIDE = "WORLDWIDE",
-}
+	WORLDWIDE: "WORLDWIDE",
+} as const;
+
+export type RegionType = (typeof RegionType)[keyof typeof RegionType];
 
 /**
  * Deposit Type Enum
@@ -1096,13 +1151,15 @@ export enum RegionType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/account/types/api:DepositTypeEnum
  */
-export enum DepositType {
+export const DepositType = {
 	/** Percentage of total price */
-	PERCENTAGE = "PERCENTAGE",
+	PERCENTAGE: "PERCENTAGE",
 
 	/** Fixed amount */
-	FIXED_AMOUNT = "FIXED_AMOUNT",
-}
+	FIXED_AMOUNT: "FIXED_AMOUNT",
+} as const;
+
+export type DepositType = (typeof DepositType)[keyof typeof DepositType];
 
 /**
  * Pricing Visibility Enum
@@ -1111,16 +1168,19 @@ export enum DepositType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/slr:PricingVisibilityEnum
  */
-export enum PricingVisibility {
+export const PricingVisibility = {
 	/** Price not visible */
-	NONE = "NONE",
+	NONE: "NONE",
 
 	/** Price visible before checkout */
-	PRE_CHECKOUT = "PRE_CHECKOUT",
+	PRE_CHECKOUT: "PRE_CHECKOUT",
 
 	/** Price visible during checkout */
-	DURING_CHECKOUT = "DURING_CHECKOUT",
-}
+	DURING_CHECKOUT: "DURING_CHECKOUT",
+} as const;
+
+export type PricingVisibility =
+	(typeof PricingVisibility)[keyof typeof PricingVisibility];
 
 /**
  * Location Type Enum
@@ -1129,13 +1189,15 @@ export enum PricingVisibility {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/api:LocationTypeEnum
  */
-export enum LocationType {
+export const LocationType = {
 	/** Retail store */
-	STORE = "STORE",
+	STORE: "STORE",
 
 	/** Warehouse or storage facility */
-	WAREHOUSE = "WAREHOUSE",
-}
+	WAREHOUSE: "WAREHOUSE",
+} as const;
+
+export type LocationType = (typeof LocationType)[keyof typeof LocationType];
 
 /**
  * Merchant Location Status Enum
@@ -1144,13 +1206,16 @@ export enum LocationType {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/api:MerchantLocationStatusEnum
  */
-export enum MerchantLocationStatus {
+export const MerchantLocationStatus = {
 	/** Location is enabled and active */
-	ENABLED = "ENABLED",
+	ENABLED: "ENABLED",
 
 	/** Location is disabled */
-	DISABLED = "DISABLED",
-}
+	DISABLED: "DISABLED",
+} as const;
+
+export type MerchantLocationStatus =
+	(typeof MerchantLocationStatus)[keyof typeof MerchantLocationStatus];
 
 /**
  * Day of Week Enum
@@ -1159,28 +1224,30 @@ export enum MerchantLocationStatus {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/inventory/types/api:DayOfWeekEnum
  */
-export enum DayOfWeek {
+export const DayOfWeek = {
 	/** This enumeration value indicates that the store is open on Monday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Monday. */
-	MONDAY = "MONDAY",
+	MONDAY: "MONDAY",
 
 	/** This enumeration value indicates that the store is open on Tuesday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Tuesday. */
-	TUESDAY = "TUESDAY",
+	TUESDAY: "TUESDAY",
 
 	/** This enumeration value indicates that the store is open on Wednesday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Wednesday. */
-	WEDNESDAY = "WEDNESDAY",
+	WEDNESDAY: "WEDNESDAY",
 
 	/** This enumeration value indicates that the store is open on Thursday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Thursday. */
-	THURSDAY = "THURSDAY",
+	THURSDAY: "THURSDAY",
 
 	/** This enumeration value indicates that the store is open on Friday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Friday. */
-	FRIDAY = "FRIDAY",
+	FRIDAY: "FRIDAY",
 
 	/** This enumeration value indicates that the store is open on Saturday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Saturday. */
-	SATURDAY = "SATURDAY",
+	SATURDAY: "SATURDAY",
 
 	/** This enumeration value indicates that the store is open on Sunday for the hours specified through the operatingHours.intervals container, or that a fulfillment center has a cut-off time specified through the weeklySchedule.cutOffTime field on Sunday. */
-	SUNDAY = "SUNDAY",
-}
+	SUNDAY: "SUNDAY",
+} as const;
+
+export type DayOfWeek = (typeof DayOfWeek)[keyof typeof DayOfWeek];
 
 /**
  * Reason for Refund Enum
@@ -1189,34 +1256,37 @@ export enum DayOfWeek {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/fulfillment/types/api:ReasonForRefundEnum
  */
-export enum ReasonForRefund {
+export const ReasonForRefund = {
 	/** Buyer canceled the order */
-	BUYER_CANCEL = "BUYER_CANCEL",
+	BUYER_CANCEL: "BUYER_CANCEL",
 
 	/** Item is out of stock */
-	OUT_OF_STOCK = "OUT_OF_STOCK",
+	OUT_OF_STOCK: "OUT_OF_STOCK",
 
 	/** Buyer found a cheaper price elsewhere */
-	FOUND_CHEAPER_PRICE = "FOUND_CHEAPER_PRICE",
+	FOUND_CHEAPER_PRICE: "FOUND_CHEAPER_PRICE",
 
 	/** Price was incorrect in listing */
-	INCORRECT_PRICE = "INCORRECT_PRICE",
+	INCORRECT_PRICE: "INCORRECT_PRICE",
 
 	/** Item was damaged in transit or storage */
-	ITEM_DAMAGED = "ITEM_DAMAGED",
+	ITEM_DAMAGED: "ITEM_DAMAGED",
 
 	/** Item is defective */
-	ITEM_DEFECTIVE = "ITEM_DEFECTIVE",
+	ITEM_DEFECTIVE: "ITEM_DEFECTIVE",
 
 	/** Item was lost in transit */
-	LOST_IN_TRANSIT = "LOST_IN_TRANSIT",
+	LOST_IN_TRANSIT: "LOST_IN_TRANSIT",
 
 	/** Buyer and seller mutually agreed to refund */
-	MUTUALLY_AGREED = "MUTUALLY_AGREED",
+	MUTUALLY_AGREED: "MUTUALLY_AGREED",
 
 	/** Seller canceled the order */
-	SELLER_CANCEL = "SELLER_CANCEL",
-}
+	SELLER_CANCEL: "SELLER_CANCEL",
+} as const;
+
+export type ReasonForRefund =
+	(typeof ReasonForRefund)[keyof typeof ReasonForRefund];
 
 /**
  * Funding Model Enum
@@ -1225,13 +1295,15 @@ export enum ReasonForRefund {
  *
  * Reference: https://developer.ebay.com/api-docs/sell/marketing/types/pls:FundingModelEnum
  */
-export enum FundingModel {
+export const FundingModel = {
 	/** Cost per sale - pay when item sells */
-	COST_PER_SALE = "COST_PER_SALE",
+	COST_PER_SALE: "COST_PER_SALE",
 
 	/** Cost per click - pay when ad is clicked */
-	COST_PER_CLICK = "COST_PER_CLICK",
-}
+	COST_PER_CLICK: "COST_PER_CLICK",
+} as const;
+
+export type FundingModel = (typeof FundingModel)[keyof typeof FundingModel];
 
 /**
  * Message Reference Type Enum
@@ -1240,13 +1312,16 @@ export enum FundingModel {
  *
  * Reference: https://developer.ebay.com/api-docs/commerce/message/types/api:ReferenceTypeEnum
  */
-export enum MessageReferenceType {
+export const MessageReferenceType = {
 	/** Message references a listing */
-	LISTING = "LISTING",
+	LISTING: "LISTING",
 
 	/** Message references an order */
-	ORDER = "ORDER",
-}
+	ORDER: "ORDER",
+} as const;
+
+export type MessageReferenceType =
+	(typeof MessageReferenceType)[keyof typeof MessageReferenceType];
 
 /**
  * Feedback Rating Enum
@@ -1255,16 +1330,19 @@ export enum MessageReferenceType {
  *
  * Reference: https://developer.ebay.com/api-docs/commerce/feedback/types/api:RatingEnum
  */
-export enum FeedbackRating {
+export const FeedbackRating = {
 	/** Positive feedback */
-	POSITIVE = "POSITIVE",
+	POSITIVE: "POSITIVE",
 
 	/** Neutral feedback */
-	NEUTRAL = "NEUTRAL",
+	NEUTRAL: "NEUTRAL",
 
 	/** Negative feedback */
-	NEGATIVE = "NEGATIVE",
-}
+	NEGATIVE: "NEGATIVE",
+} as const;
+
+export type FeedbackRating =
+	(typeof FeedbackRating)[keyof typeof FeedbackRating];
 
 /**
  * Reported Item Type Enum
@@ -1273,13 +1351,16 @@ export enum FeedbackRating {
  *
  * Reference: https://developer.ebay.com/api-docs/commerce/vero/types/api:ReportedItemTypeEnum
  */
-export enum ReportedItemType {
+export const ReportedItemType = {
 	/** Entire listing */
-	LISTING = "LISTING",
+	LISTING: "LISTING",
 
 	/** Image within a listing */
-	IMAGE = "IMAGE",
-}
+	IMAGE: "IMAGE",
+} as const;
+
+export type ReportedItemType =
+	(typeof ReportedItemType)[keyof typeof ReportedItemType];
 
 /**
  * Helper functions for working with enums

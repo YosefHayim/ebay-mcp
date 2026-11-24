@@ -80,7 +80,11 @@ type RespondToFeedbackResponse = Record<string, never>;
 export class FeedbackApi {
 	private readonly basePath = "/commerce/feedback/v1";
 
-	constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Retrieves line items awaiting feedback.

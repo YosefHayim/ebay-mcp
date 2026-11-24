@@ -136,9 +136,11 @@ function writeCredentialEnvFile(
 }
 
 export class DotEnvCredentialStore implements CredentialStore {
-	constructor(
-		private readonly getEnvPath: () => string = () => CREDENTIAL_ENV_PATH,
-	) {}
+	private readonly getEnvPath: () => string;
+
+	constructor(getEnvPath: () => string = () => CREDENTIAL_ENV_PATH) {
+		this.getEnvPath = getEnvPath;
+	}
 
 	async write(updates: Record<string, string>): Promise<void> {
 		const envPath = this.getEnvPath();

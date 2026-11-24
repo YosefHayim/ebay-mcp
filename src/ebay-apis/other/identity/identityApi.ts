@@ -18,7 +18,11 @@ export type UserResponse = components["schemas"]["UserResponse"];
 export class IdentityApi {
 	private readonly basePath = "/commerce/identity/v1";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Retrieves account profile information for the authenticated user.

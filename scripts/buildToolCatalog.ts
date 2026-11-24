@@ -3,7 +3,6 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
 /** One input field of a tool, as shown on the website and in the README. */
@@ -39,44 +38,164 @@ export interface ToolCatalog {
 	families: ToolCatalogFamily[];
 }
 
-interface JsonSchemaNode {
-	type?: string | string[];
-	enum?: unknown[];
-	description?: string;
-	anyOf?: JsonSchemaNode[];
-	oneOf?: JsonSchemaNode[];
-	properties?: Record<string, JsonSchemaNode>;
-	required?: string[];
-	const?: unknown;
+function unwrapFieldSchema(schema: z.ZodTypeAny): z.ZodTypeAny | null {
+	if (schema instanceof z.ZodOptional) {
+		return schema.unwrap();
+	}
+
+	if (schema instanceof z.ZodNullable) {
+		return schema.unwrap();
+	}
+
+	if (schema instanceof z.ZodDefault) {
+		return schema.removeDefault();
+	}
+
+	if (schema instanceof z.ZodEffects) {
+		return schema.innerType();
+	}
+
+	if (schema instanceof z.ZodBranded) {
+		return schema.unwrap();
+	}
+
+	if (schema instanceof z.ZodCatch) {
+		return schema.removeCatch();
+	}
+
+	if (schema instanceof z.ZodReadonly) {
+		return schema.unwrap();
+	}
+
+	if (schema instanceof z.ZodPipeline) {
+		return schema._def.out;
+	}
+
+	return null;
 }
 
-/** Short type word for a JSON Schema node: string, number, boolean, array, object or enum. */
-function shortTypeName(node: JsonSchemaNode): string {
-	if (node.enum || node.const !== undefined) return "enum";
-	if (typeof node.type === "string")
-		return node.type === "integer" ? "number" : node.type;
-	if (Array.isArray(node.type)) {
-		const first = node.type.find((typeName) => typeName !== "null");
-		return first === "integer" ? "number" : (first ?? "object");
+function fieldDescription(schema: z.ZodTypeAny): string {
+	const written = schema.description ?? "";
+	const hasDescription = written !== "";
+
+	if (hasDescription) {
+		return written;
 	}
-	const variants = node.anyOf ?? node.oneOf ?? [];
-	const named = variants
-		.map(shortTypeName)
-		.filter((typeName) => typeName !== "null");
-	return named[0] ?? "object";
+
+	const inner = unwrapFieldSchema(schema);
+
+	if (inner == null) {
+		return "";
+	}
+
+	return fieldDescription(inner);
+}
+
+function shortTypeName(schema: z.ZodTypeAny): string {
+	const inner = unwrapFieldSchema(schema) ?? schema;
+
+	if (inner instanceof z.ZodNull) {
+		return "null";
+	}
+
+	if (inner instanceof z.ZodEnum) {
+		return "enum";
+	}
+
+	if (inner instanceof z.ZodNativeEnum) {
+		return "enum";
+	}
+
+	if (inner instanceof z.ZodLiteral) {
+		return "enum";
+	}
+
+	if (inner instanceof z.ZodNumber) {
+		return "number";
+	}
+
+	if (inner instanceof z.ZodBigInt) {
+		return "number";
+	}
+
+	if (inner instanceof z.ZodString) {
+		return "string";
+	}
+
+	if (inner instanceof z.ZodDate) {
+		return "string";
+	}
+
+	if (inner instanceof z.ZodBoolean) {
+		return "boolean";
+	}
+
+	if (inner instanceof z.ZodArray) {
+		return "array";
+	}
+
+	if (inner instanceof z.ZodTuple) {
+		return "array";
+	}
+
+	if (inner instanceof z.ZodSet) {
+		return "array";
+	}
+
+	if (inner instanceof z.ZodUnion) {
+		return firstVariantType(inner.options);
+	}
+
+	if (inner instanceof z.ZodDiscriminatedUnion) {
+		return firstVariantType(inner.options);
+	}
+
+	const nested = unwrapFieldSchema(inner);
+
+	if (nested != null) {
+		return shortTypeName(nested);
+	}
+
+	return "object";
+}
+
+function firstVariantType(options: readonly z.ZodTypeAny[]): string {
+	for (const option of options) {
+		const typeName = shortTypeName(option);
+		const isValue = typeName !== "null";
+
+		if (isValue) {
+			return typeName;
+		}
+	}
+
+	return "object";
+}
+
+function isFieldRequired(schema: z.ZodTypeAny): boolean {
+	const canOmit = schema.isOptional();
+
+	if (canOmit) {
+		return false;
+	}
+
+	return true;
+}
+
+function toCatalogField([name, schema]: [
+	string,
+	z.ZodTypeAny,
+]): ToolCatalogField {
+	return {
+		name,
+		type: shortTypeName(schema),
+		required: isFieldRequired(schema),
+		description: fieldDescription(schema),
+	};
 }
 
 function fieldsOf(inputSchema: z.ZodRawShape): ToolCatalogField[] {
-	const jsonSchema = zodToJsonSchema(z.object(inputSchema), {
-		$refStrategy: "none",
-	}) as JsonSchemaNode;
-	const requiredNames = new Set(jsonSchema.required ?? []);
-	return Object.entries(jsonSchema.properties ?? {}).map(([name, node]) => ({
-		name,
-		type: shortTypeName(node),
-		required: requiredNames.has(name),
-		description: node.description ?? "",
-	}));
+	return Object.entries(inputSchema).map(toCatalogField);
 }
 
 /** Builds the catalog of every registered tool, grouped by family. */

@@ -47,7 +47,11 @@ export type PagedListingRecommendationCollection =
 export class RecommendationApi {
 	private readonly basePath = "/sell/recommendation/v1";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Finds listing recommendations for active listings in one marketplace.

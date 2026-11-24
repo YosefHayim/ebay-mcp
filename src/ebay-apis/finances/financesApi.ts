@@ -157,7 +157,11 @@ export type BillingActivityResponse =
  * EU/UK sellers.
  */
 export class FinancesApi {
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Sends a GET to the apiz host (or EBAY_MCP_API_BASE_URL) with an optional marketplace

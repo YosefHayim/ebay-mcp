@@ -1,4 +1,3 @@
-import { zodToJsonSchema } from "zod-to-json-schema";
 import {
 	filterOrdersWithCancellationRequests,
 	filterRefundedOrders,
@@ -31,7 +30,6 @@ import {
 } from "@/ebay-apis/fulfillment/ordersSchemas.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
-import type { OutputArgs } from "@/tool-registry/types.js";
 import {
 	mapDisputeSummariesToTable,
 	mapDisputeToCard,
@@ -50,10 +48,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Retrieve orders for the seller.\n\nRequired OAuth Scope: sell.fulfillment.readonly or sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
 		inputSchema: getOrdersInputSchema.shape,
-		outputSchema: zodToJsonSchema(getOrdersOutputSchema, {
-			name: "GetOrdersResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getOrdersOutputSchema,
 		handler: (api, args) => api.fulfillment.getOrders(args),
 		ui: { archetype: "table", map: mapOrdersToTable },
 	}),
@@ -62,10 +57,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Get details of a specific order.\n\nRequired OAuth Scope: sell.fulfillment.readonly or sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
 		inputSchema: getOrderInputSchema.shape,
-		outputSchema: zodToJsonSchema(getOrderOutputSchema, {
-			name: "GetOrderResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getOrderOutputSchema,
 		handler: (api, args) => api.fulfillment.getOrder(args),
 		ui: { archetype: "card", map: mapOrderToCard },
 	}),
@@ -74,10 +66,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Create a shipping fulfillment for an order.\n\nRequired OAuth Scope: sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment",
 		inputSchema: createShippingFulfillmentInputSchema.shape,
-		outputSchema: zodToJsonSchema(createShippingFulfillmentOutputSchema, {
-			name: "CreateShippingFulfillmentResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: createShippingFulfillmentOutputSchema,
 		handler: (api, args) => api.fulfillment.createShippingFulfillment(args),
 	}),
 	defineTool({
@@ -85,10 +74,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Get all shipping fulfillments for an order.\n\nRequired OAuth Scope: sell.fulfillment.readonly or sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
 		inputSchema: getShippingFulfillmentsInputSchema.shape,
-		outputSchema: zodToJsonSchema(getShippingFulfillmentsOutputSchema, {
-			name: "GetShippingFulfillmentsResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getShippingFulfillmentsOutputSchema,
 		handler: (api, args) => api.fulfillment.getShippingFulfillments(args),
 		ui: { archetype: "table", map: mapFulfillmentsToTable },
 	}),
@@ -97,10 +83,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Get a specific shipping fulfillment by ID.\n\nRequired OAuth Scope: sell.fulfillment.readonly or sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
 		inputSchema: getShippingFulfillmentInputSchema.shape,
-		outputSchema: zodToJsonSchema(getShippingFulfillmentOutputSchema, {
-			name: "GetShippingFulfillmentResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getShippingFulfillmentOutputSchema,
 		handler: (api, args) => api.fulfillment.getShippingFulfillment(args),
 	}),
 	defineTool({
@@ -108,10 +91,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Issue a full or partial refund for an eBay order. Use this to refund buyers for orders, including specifying the refund amount and reason.\n\nRequired OAuth Scope: sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment",
 		inputSchema: issueRefundInputSchema.shape,
-		outputSchema: zodToJsonSchema(issueRefundOutputSchema, {
-			name: "IssueRefundResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: issueRefundOutputSchema,
 		handler: (api, args) => api.fulfillment.issueRefund(args),
 	}),
 	defineTool({
@@ -162,10 +142,7 @@ export const fulfillmentEntries: ToolEntry[] = [
 		description:
 			"Get summaries of all payment disputes. Use filters to narrow results by dispute status, buyer username, or order ID.\n\nRequired OAuth Scope: sell.fulfillment\nMinimum Scope: https://api.ebay.com/oauth/api_scope/sell.fulfillment",
 		inputSchema: getPaymentDisputeSummariesInputSchema.shape,
-		outputSchema: zodToJsonSchema(getPaymentDisputeSummariesOutputSchema, {
-			name: "GetPaymentDisputeSummariesResponse",
-			$refStrategy: "none",
-		}) as OutputArgs,
+		outputSchema: getPaymentDisputeSummariesOutputSchema,
 		handler: (api, args) => api.dispute.getPaymentDisputeSummaries(args),
 		ui: { archetype: "table", map: mapDisputeSummariesToTable },
 	}),

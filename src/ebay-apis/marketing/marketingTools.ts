@@ -1,5 +1,3 @@
-import type { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import * as marketingSchemas from "@/ebay-apis/marketing/marketingSchemas.js";
 import { defined } from "@/shared/objects.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
@@ -11,9 +9,6 @@ const emptyResponseSchema: OutputArgs = {
 	properties: {},
 	description: "Empty response on successful operation",
 };
-
-const toOutputSchema = (schema: z.ZodTypeAny, name: string): OutputArgs =>
-	zodToJsonSchema(schema, { name, $refStrategy: "none" }) as OutputArgs;
 
 function isMissing<Field>(
 	field: Field | null | undefined,
@@ -47,10 +42,8 @@ export const marketingEntries: ToolEntry[] = [
 			"Bulk create ads by inventory reference through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.bulkCreateAdsByInventoryReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
+		outputSchema:
 			marketingSchemas.bulkCreateAdsByInventoryReferenceResponseSchema,
-			"BulkCreateAdsByInventoryReferenceResponse",
-		),
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
 			api.marketing.bulkCreateAdsByInventoryReference(args),
@@ -60,10 +53,7 @@ export const marketingEntries: ToolEntry[] = [
 		description:
 			"Bulk create ads by listing id through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkCreateAdsByListingIdInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkAdResponseSchema,
-			"BulkCreateAdsByListingIdResponse",
-		),
+		outputSchema: marketingSchemas.bulkAdResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkCreateAdsByListingId(args),
 	}),
@@ -73,10 +63,8 @@ export const marketingEntries: ToolEntry[] = [
 			"Bulk delete ads by inventory reference through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.bulkDeleteAdsByInventoryReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
+		outputSchema:
 			marketingSchemas.bulkDeleteAdsByInventoryReferenceResponseSchema,
-			"BulkDeleteAdsByInventoryReferenceResponse",
-		),
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
 			api.marketing.bulkDeleteAdsByInventoryReference(args),
@@ -86,10 +74,7 @@ export const marketingEntries: ToolEntry[] = [
 		description:
 			"Bulk delete ads by listing id through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkDeleteAdsByListingIdInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkDeleteAdResponseSchema,
-			"BulkDeleteAdsByListingIdResponse",
-		),
+		outputSchema: marketingSchemas.bulkDeleteAdResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkDeleteAdsByListingId(args),
 	}),
@@ -99,10 +84,8 @@ export const marketingEntries: ToolEntry[] = [
 			"Bulk update ads bid by inventory reference through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.bulkUpdateAdsBidByInventoryReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
+		outputSchema:
 			marketingSchemas.bulkUpdateAdsByInventoryReferenceResponseSchema,
-			"BulkUpdateAdsBidByInventoryReferenceResponse",
-		),
 		annotations: { readOnlyHint: false },
 		handler: (api, args) =>
 			api.marketing.bulkUpdateAdsBidByInventoryReference(args),
@@ -112,10 +95,7 @@ export const marketingEntries: ToolEntry[] = [
 		description:
 			"Bulk update ads bid by listing id through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkUpdateAdsBidByListingIdInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkAdUpdateResponseSchema,
-			"BulkUpdateAdsBidByListingIdResponse",
-		),
+		outputSchema: marketingSchemas.bulkAdUpdateResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkUpdateAdsBidByListingId(args),
 	}),
@@ -123,10 +103,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_bulk_update_ads_status",
 		description: "Bulk update ads status through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkUpdateAdsStatusInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkAdUpdateStatusResponseSchema,
-			"BulkUpdateAdsStatusResponse",
-		),
+		outputSchema: marketingSchemas.bulkAdUpdateStatusResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkUpdateAdsStatus(args),
 	}),
@@ -136,10 +113,7 @@ export const marketingEntries: ToolEntry[] = [
 			"Bulk update ads status by listing id through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.bulkUpdateAdsStatusByListingIdInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkAdUpdateStatusByListingIdResponseSchema,
-			"BulkUpdateAdsStatusByListingIdResponse",
-		),
+		outputSchema: marketingSchemas.bulkAdUpdateStatusByListingIdResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkUpdateAdsStatusByListingId(args),
 	}),
@@ -147,10 +121,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_ads",
 		description: "Get ads through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getAdsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.adPagedCollectionResponseSchema,
-			"GetAdsResponse",
-		),
+		outputSchema: marketingSchemas.adPagedCollectionResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getAds(args),
 	}),
@@ -168,10 +139,7 @@ export const marketingEntries: ToolEntry[] = [
 			"Create ads by inventory reference through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.createAdsByInventoryReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.adReferencesSchema,
-			"CreateAdsByInventoryReferenceResponse",
-		),
+		outputSchema: marketingSchemas.adReferencesSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.createAdsByInventoryReference(args),
 	}),
@@ -179,7 +147,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_ad",
 		description: "Get ad through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getAdInputSchema.shape,
-		outputSchema: toOutputSchema(marketingSchemas.adSchema, "GetAdResponse"),
+		outputSchema: marketingSchemas.adSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getAd(args),
 	}),
@@ -197,10 +165,7 @@ export const marketingEntries: ToolEntry[] = [
 			"Delete ads by inventory reference through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.deleteAdsByInventoryReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.adIdsSchema,
-			"DeleteAdsByInventoryReferenceResponse",
-		),
+		outputSchema: marketingSchemas.adIdsSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.deleteAdsByInventoryReference(args),
 	}),
@@ -209,10 +174,7 @@ export const marketingEntries: ToolEntry[] = [
 		description:
 			"Get ads by inventory reference through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getAdsByInventoryReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.adsSchema,
-			"GetAdsByInventoryReferenceResponse",
-		),
+		outputSchema: marketingSchemas.adsSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getAdsByInventoryReference(args),
 	}),
@@ -228,10 +190,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_ad_groups",
 		description: "Get ad groups through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getAdGroupsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.adGroupPagedCollectionResponseSchema,
-			"GetAdGroupsResponse",
-		),
+		outputSchema: marketingSchemas.adGroupPagedCollectionResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getAdGroups(args),
 	}),
@@ -247,10 +206,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_ad_group",
 		description: "Get ad group through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getAdGroupInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.adGroupSchema,
-			"GetAdGroupResponse",
-		),
+		outputSchema: marketingSchemas.adGroupSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getAdGroup(args),
 	}),
@@ -266,10 +222,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_suggest_bids",
 		description: "Suggest bids through the eBay Marketing API.",
 		inputSchema: marketingSchemas.suggestBidsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.targetedBidsPagedCollectionSchema,
-			"SuggestBidsResponse",
-		),
+		outputSchema: marketingSchemas.targetedBidsPagedCollectionSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.suggestBids(args),
 	}),
@@ -277,10 +230,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_suggest_keywords",
 		description: "Suggest keywords through the eBay Marketing API.",
 		inputSchema: marketingSchemas.suggestKeywordsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.targetedKeywordsPagedCollectionSchema,
-			"SuggestKeywordsResponse",
-		),
+		outputSchema: marketingSchemas.targetedKeywordsPagedCollectionSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.suggestKeywords(args),
 	}),
@@ -296,10 +246,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_campaigns",
 		description: "Get campaigns through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getCampaignsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.campaignPagedCollectionResponseSchema,
-			"GetCampaignsResponse",
-		),
+		outputSchema: marketingSchemas.campaignPagedCollectionResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getCampaigns(args),
 	}),
@@ -315,10 +262,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_campaign",
 		description: "Get campaign through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getCampaignInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.campaignSchema,
-			"GetCampaignResponse",
-		),
+		outputSchema: marketingSchemas.campaignSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getCampaign(args),
 	}),
@@ -343,10 +287,7 @@ export const marketingEntries: ToolEntry[] = [
 		description:
 			"Find campaign by ad reference through the eBay Marketing API.",
 		inputSchema: marketingSchemas.findCampaignByAdReferenceInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.campaignsSchema,
-			"FindCampaignByAdReferenceResponse",
-		),
+		outputSchema: marketingSchemas.campaignsSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.findCampaignByAdReference(args),
 	}),
@@ -354,10 +295,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_campaign_by_name",
 		description: "Get campaign by name through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getCampaignByNameInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.campaignSchema,
-			"GetCampaignByNameResponse",
-		),
+		outputSchema: marketingSchemas.campaignSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getCampaignByName(args),
 	}),
@@ -381,10 +319,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_suggest_budget",
 		description: "Suggest budget through the eBay Marketing API.",
 		inputSchema: marketingSchemas.suggestBudgetInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.suggestBudgetResponseSchema,
-			"SuggestBudgetResponse",
-		),
+		outputSchema: marketingSchemas.suggestBudgetResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.suggestBudget(args),
 	}),
@@ -392,10 +327,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_suggest_items",
 		description: "Suggest items through the eBay Marketing API.",
 		inputSchema: marketingSchemas.suggestItemsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.targetedAdsPagedCollectionSchema,
-			"SuggestItemsResponse",
-		),
+		outputSchema: marketingSchemas.targetedAdsPagedCollectionSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.suggestItems(args),
 	}),
@@ -403,10 +335,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_suggest_max_cpc",
 		description: "Suggest max cpc through the eBay Marketing API.",
 		inputSchema: marketingSchemas.suggestMaxCpcInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.suggestMaxCpcResponseSchema,
-			"SuggestMaxCpcResponse",
-		),
+		outputSchema: marketingSchemas.suggestMaxCpcResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.suggestMaxCpc(args),
 	}),
@@ -447,10 +376,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_bulk_create_keyword",
 		description: "Bulk create keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkCreateKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkCreateKeywordResponseSchema,
-			"BulkCreateKeywordResponse",
-		),
+		outputSchema: marketingSchemas.bulkCreateKeywordResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkCreateKeyword(args),
 	}),
@@ -458,10 +384,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_bulk_update_keyword",
 		description: "Bulk update keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkUpdateKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkUpdateKeywordResponseSchema,
-			"BulkUpdateKeywordResponse",
-		),
+		outputSchema: marketingSchemas.bulkUpdateKeywordResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkUpdateKeyword(args),
 	}),
@@ -469,10 +392,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_keywords",
 		description: "Get keywords through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getKeywordsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.keywordPagedCollectionResponseSchema,
-			"GetKeywordsResponse",
-		),
+		outputSchema: marketingSchemas.keywordPagedCollectionResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getKeywords(args),
 	}),
@@ -488,10 +408,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_keyword",
 		description: "Get keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.keywordSchema,
-			"GetKeywordResponse",
-		),
+		outputSchema: marketingSchemas.keywordSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getKeyword(args),
 	}),
@@ -499,10 +416,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_update_keyword",
 		description: "Update keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.updateKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.updateKeywordResponseSchema,
-			"UpdateKeywordResponse",
-		),
+		outputSchema: marketingSchemas.updateKeywordResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
 		handler: (api, args) => api.marketing.updateKeyword(args),
 	}),
@@ -510,10 +424,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_bulk_create_negative_keyword",
 		description: "Bulk create negative keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkCreateNegativeKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkCreateNegativeKeywordResponseSchema,
-			"BulkCreateNegativeKeywordResponse",
-		),
+		outputSchema: marketingSchemas.bulkCreateNegativeKeywordResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkCreateNegativeKeyword(args),
 	}),
@@ -521,10 +432,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_bulk_update_negative_keyword",
 		description: "Bulk update negative keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.bulkUpdateNegativeKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.bulkUpdateNegativeKeywordResponseSchema,
-			"BulkUpdateNegativeKeywordResponse",
-		),
+		outputSchema: marketingSchemas.bulkUpdateNegativeKeywordResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.bulkUpdateNegativeKeyword(args),
 	}),
@@ -532,10 +440,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_negative_keywords",
 		description: "Get negative keywords through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getNegativeKeywordsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.negativeKeywordPagedCollectionResponseSchema,
-			"GetNegativeKeywordsResponse",
-		),
+		outputSchema: marketingSchemas.negativeKeywordPagedCollectionResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getNegativeKeywords(args),
 	}),
@@ -551,10 +456,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_negative_keyword",
 		description: "Get negative keyword through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getNegativeKeywordInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.negativeKeywordSchema,
-			"GetNegativeKeywordResponse",
-		),
+		outputSchema: marketingSchemas.negativeKeywordSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getNegativeKeyword(args),
 	}),
@@ -578,10 +480,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_report_metadata",
 		description: "Get report metadata through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getReportMetadataInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.reportMetadatasSchema,
-			"GetReportMetadataResponse",
-		),
+		outputSchema: marketingSchemas.reportMetadatasSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getReportMetadata(args),
 	}),
@@ -591,10 +490,7 @@ export const marketingEntries: ToolEntry[] = [
 			"Get report metadata for report type through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.getReportMetadataForReportTypeInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.reportMetadataSchema,
-			"GetReportMetadataForReportTypeResponse",
-		),
+		outputSchema: marketingSchemas.reportMetadataSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getReportMetadataForReportType(args),
 	}),
@@ -602,10 +498,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_report_tasks",
 		description: "Get report tasks through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getReportTasksInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.reportTaskPagedCollectionSchema,
-			"GetReportTasksResponse",
-		),
+		outputSchema: marketingSchemas.reportTaskPagedCollectionSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getReportTasks(args),
 	}),
@@ -621,10 +514,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_report_task",
 		description: "Get report task through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getReportTaskInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.reportTaskSchema,
-			"GetReportTaskResponse",
-		),
+		outputSchema: marketingSchemas.reportTaskSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getReportTask(args),
 	}),
@@ -653,10 +543,7 @@ export const marketingEntries: ToolEntry[] = [
 			"Get item price markdown promotion through the eBay Marketing API.",
 		inputSchema:
 			marketingSchemas.getItemPriceMarkdownPromotionInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.itemPriceMarkdownSchema,
-			"GetItemPriceMarkdownPromotionResponse",
-		),
+		outputSchema: marketingSchemas.itemPriceMarkdownSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getItemPriceMarkdownPromotion(args),
 	}),
@@ -686,10 +573,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_create_item_promotion",
 		description: "Create item promotion through the eBay Marketing API.",
 		inputSchema: marketingSchemas.createItemPromotionInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.baseResponseSchema,
-			"CreateItemPromotionResponse",
-		),
+		outputSchema: marketingSchemas.baseResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.createItemPromotion(args),
 	}),
@@ -697,10 +581,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_item_promotion",
 		description: "Get item promotion through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getItemPromotionInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.itemPromotionResponseSchema,
-			"GetItemPromotionResponse",
-		),
+		outputSchema: marketingSchemas.itemPromotionResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getItemPromotion(args),
 	}),
@@ -708,10 +589,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_update_item_promotion",
 		description: "Update item promotion through the eBay Marketing API.",
 		inputSchema: marketingSchemas.updateItemPromotionInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.baseResponseSchema,
-			"UpdateItemPromotionResponse",
-		),
+		outputSchema: marketingSchemas.baseResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
 		handler: (api, args) => api.marketing.updateItemPromotion(args),
 	}),
@@ -727,10 +605,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_listing_set",
 		description: "Get listing set through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getListingSetInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.itemsPagedCollectionSchema,
-			"GetListingSetResponse",
-		),
+		outputSchema: marketingSchemas.itemsPagedCollectionSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getListingSet(args),
 	}),
@@ -738,10 +613,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_promotions",
 		description: "Get promotions through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getPromotionsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.promotionsPagedCollectionSchema,
-			"GetPromotionsResponse",
-		),
+		outputSchema: marketingSchemas.promotionsPagedCollectionSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getPromotions(args),
 	}),
@@ -765,10 +637,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_promotion_reports",
 		description: "Get promotion reports through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getPromotionReportsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.promotionsReportPagedCollectionSchema,
-			"GetPromotionReportsResponse",
-		),
+		outputSchema: marketingSchemas.promotionsReportPagedCollectionSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getPromotionReports(args),
 	}),
@@ -776,10 +645,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_promotion_summary_report",
 		description: "Get promotion summary report through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getPromotionSummaryReportInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.summaryReportResponseSchema,
-			"GetPromotionSummaryReportResponse",
-		),
+		outputSchema: marketingSchemas.summaryReportResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getPromotionSummaryReport(args),
 	}),
@@ -787,10 +653,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_email_campaigns",
 		description: "Get email campaigns through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getEmailCampaignsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.getEmailCampaignsResponseSchema,
-			"GetEmailCampaignsResponse",
-		),
+		outputSchema: marketingSchemas.getEmailCampaignsResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getEmailCampaigns(args),
 	}),
@@ -798,10 +661,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_create_email_campaign",
 		description: "Create email campaign through the eBay Marketing API.",
 		inputSchema: marketingSchemas.createEmailCampaignInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.createEmailCampaignResponseSchema,
-			"CreateEmailCampaignResponse",
-		),
+		outputSchema: marketingSchemas.createEmailCampaignResponseSchema,
 		annotations: { readOnlyHint: false },
 		handler: (api, args) => api.marketing.createEmailCampaign(args),
 	}),
@@ -809,10 +669,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_email_campaign",
 		description: "Get email campaign through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getEmailCampaignInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.getEmailCampaignResponseSchema,
-			"GetEmailCampaignResponse",
-		),
+		outputSchema: marketingSchemas.getEmailCampaignResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getEmailCampaign(args),
 	}),
@@ -820,10 +677,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_update_email_campaign",
 		description: "Update email campaign through the eBay Marketing API.",
 		inputSchema: marketingSchemas.updateEmailCampaignInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.updateEmailCampaignResponseSchema,
-			"UpdateEmailCampaignResponse",
-		),
+		outputSchema: marketingSchemas.updateEmailCampaignResponseSchema,
 		annotations: { readOnlyHint: false, idempotentHint: true },
 		handler: (api, args) => api.marketing.updateEmailCampaign(args),
 	}),
@@ -831,10 +685,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_delete_email_campaign",
 		description: "Delete email campaign through the eBay Marketing API.",
 		inputSchema: marketingSchemas.deleteEmailCampaignInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.deleteEmailCampaignResponseSchema,
-			"DeleteEmailCampaignResponse",
-		),
+		outputSchema: marketingSchemas.deleteEmailCampaignResponseSchema,
 		annotations: { readOnlyHint: false, destructiveHint: true },
 		handler: (api, args) => api.marketing.deleteEmailCampaign(args),
 	}),
@@ -842,10 +693,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_audiences",
 		description: "Get audiences through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getAudiencesInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.getEmailCampaignAudiencesResponseSchema,
-			"GetAudiencesResponse",
-		),
+		outputSchema: marketingSchemas.getEmailCampaignAudiencesResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getAudiences(args),
 	}),
@@ -853,10 +701,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_email_preview",
 		description: "Get email preview through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getEmailPreviewInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.getEmailPreviewResponseSchema,
-			"GetEmailPreviewResponse",
-		),
+		outputSchema: marketingSchemas.getEmailPreviewResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getEmailPreview(args),
 	}),
@@ -864,10 +709,7 @@ export const marketingEntries: ToolEntry[] = [
 		name: "ebay_get_email_report",
 		description: "Get email report through the eBay Marketing API.",
 		inputSchema: marketingSchemas.getEmailReportInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.getEmailReportResponseSchema,
-			"GetEmailReportResponse",
-		),
+		outputSchema: marketingSchemas.getEmailReportResponseSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) => api.marketing.getEmailReport(args),
 	}),
@@ -876,10 +718,7 @@ export const marketingEntries: ToolEntry[] = [
 		description:
 			"Find listing recommendations through the eBay Recommendation API.",
 		inputSchema: marketingSchemas.findListingRecommendationsInputSchema.shape,
-		outputSchema: toOutputSchema(
-			marketingSchemas.pagedListingRecommendationCollectionSchema,
-			"FindListingRecommendationsResponse",
-		),
+		outputSchema: marketingSchemas.pagedListingRecommendationCollectionSchema,
 		annotations: { readOnlyHint: true },
 		handler: (api, args) =>
 			api.recommendation.findListingRecommendations({

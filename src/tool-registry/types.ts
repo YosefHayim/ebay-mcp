@@ -9,6 +9,9 @@ export interface OutputArgs {
 	required?: string[];
 }
 
+/** Output contract: a Zod object, or a JSON Schema object already written by hand. */
+export type ToolOutputSchema = OutputArgs | z.ZodTypeAny;
+
 /** Optional MCP annotations that describe tool execution behavior to clients. */
 export interface ToolAnnotations {
 	[x: string]: unknown;
@@ -25,7 +28,7 @@ export interface ToolDefinition {
 	description: string;
 	inputSchema: z.ZodRawShape;
 	title?: string;
-	outputSchema?: OutputArgs;
+	outputSchema?: ToolOutputSchema;
 	annotations?: ToolAnnotations;
 	_meta?: Record<string, unknown>;
 }

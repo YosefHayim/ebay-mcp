@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { getToolEntries } from "@/tool-registry/registry.js";
 import type {
-	OutputArgs,
 	ToolAnnotations,
 	ToolDefinition,
+	ToolOutputSchema,
 } from "@/tool-registry/types.js";
 
 /** Public tool contract shape exposed to consumers after registry normalization. */
@@ -16,8 +16,8 @@ export interface ToolContract {
 	name: string;
 	/** Zod raw shape advertised as the tool input schema. */
 	inputSchema: ToolDefinition["inputSchema"];
-	/** Optional JSON schema describing structured tool output. */
-	outputSchema?: OutputArgs | undefined;
+	/** Optional JSON schema or Zod object describing structured tool output. */
+	outputSchema?: ToolOutputSchema | undefined;
 	/** Optional display title shown by MCP hosts that support it. */
 	title?: string | undefined;
 }
@@ -38,6 +38,39 @@ export interface ToolContractValidation {
 
 const isJsonObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null && !Array.isArray(value);
+
+function isObjectOutputSchema(outputSchema: unknown): boolean {
+	const isZodSchema = outputSchema instanceof z.ZodType;
+
+	if (isZodSchema) {
+		return outputSchema instanceof z.ZodObject;
+	}
+
+	const isPlainObject = isJsonObject(outputSchema);
+
+	if (isPlainObject) {
+		return hasObjectType(outputSchema);
+	}
+
+	return false;
+}
+
+function hasObjectType(outputSchema: Record<string, unknown>): boolean {
+	const hasType = "type" in outputSchema;
+
+	if (hasType) {
+		const typeName = outputSchema["type"];
+		const isObjectType = typeName === "object";
+
+		if (isObjectType) {
+			return true;
+		}
+
+		return typeName === undefined;
+	}
+
+	return "$ref" in outputSchema;
+}
 
 /**
  * Builds public tool contracts from the validated tool registry entries.
@@ -100,24 +133,15 @@ export const validateToolContracts = (
 			missingDescriptions.push(contract.name);
 		}
 
-		const outputSchema = contract.outputSchema as
-			| Record<string, unknown>
-			| undefined;
-		if (outputSchema && !isJsonObject(outputSchema)) {
-			malformedOutputSchemas.push(contract.name);
-		} else if (
-			outputSchema &&
-			"type" in outputSchema &&
-			outputSchema["type"] !== "object" &&
-			outputSchema["type"] !== undefined
-		) {
-			malformedOutputSchemas.push(contract.name);
-		} else if (
-			outputSchema &&
-			!("type" in outputSchema) &&
-			!("$ref" in outputSchema)
-		) {
-			malformedOutputSchemas.push(contract.name);
+		const hasOutputSchema = contract.outputSchema != null;
+
+		if (hasOutputSchema) {
+			const isAcceptedOutput = isObjectOutputSchema(contract.outputSchema);
+			const isMalformedOutput = !isAcceptedOutput;
+
+			if (isMalformedOutput) {
+				malformedOutputSchemas.push(contract.name);
+			}
 		}
 	}
 

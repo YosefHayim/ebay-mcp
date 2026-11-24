@@ -70,7 +70,11 @@ export type VeroReasonCodesResponse =
 export class VeroApi {
 	private readonly basePath = "/commerce/vero/v1";
 
-	public constructor(private readonly client: EbayApiClient) {}
+	private readonly client: EbayApiClient;
+
+	public constructor(client: EbayApiClient) {
+		this.client = client;
+	}
 
 	/**
 	 * Creates a VeRO report for one or more allegedly infringing listings.
