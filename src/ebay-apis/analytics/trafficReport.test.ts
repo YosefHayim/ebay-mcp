@@ -1,11 +1,7 @@
 import { invalidInput } from "@tests/helpers/invalidInput.js";
 import { beforeEach, expect, it, vi } from "vitest";
 import type { AnalyticsApiHarness } from "./testHarness.js";
-import {
-	captureThrown,
-	createAnalyticsApiHarness,
-	readEndpointInputError,
-} from "./testHarness.js";
+import { captureThrown, createAnalyticsApiHarness } from "./testHarness.js";
 
 let harness: AnalyticsApiHarness;
 
@@ -51,10 +47,7 @@ it("getTrafficReport fails with a tagged error when dimension is missing", async
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "dimension",
-	});
+	expect((error as Error).message).toContain("dimension");
 });
 
 it("getTrafficReport fails with a tagged error when filter is missing", async () => {
@@ -66,10 +59,7 @@ it("getTrafficReport fails with a tagged error when filter is missing", async ()
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "filter",
-	});
+	expect((error as Error).message).toContain("filter");
 });
 
 it("getTrafficReport fails with a tagged error when metric is missing", async () => {
@@ -81,10 +71,7 @@ it("getTrafficReport fails with a tagged error when metric is missing", async ()
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "metric",
-	});
+	expect((error as Error).message).toContain("metric");
 });
 
 it("getTrafficReport includes optional sort parameter", async () => {
@@ -119,10 +106,7 @@ it("getTrafficReport fails with a tagged error when sort is not a string", async
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "sort",
-	});
+	expect((error as Error).message).toContain("sort");
 });
 
 it("getTrafficReport wraps transport failures in EbayApiError", async () => {
@@ -138,5 +122,5 @@ it("getTrafficReport wraps transport failures in EbayApiError", async () => {
 		}),
 	);
 
-	expect(error._tag).toBe("EbayApiError");
+	expect((error as Error).message).toMatch(/^eBay /);
 });

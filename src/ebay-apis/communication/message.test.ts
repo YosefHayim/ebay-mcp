@@ -86,7 +86,7 @@ describe("getConversation", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("conversationId is required");
 	});
 });
@@ -119,7 +119,7 @@ describe("sendMessage", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("messageData is required");
 	});
 });
@@ -149,7 +149,7 @@ describe("updateConversation", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("updateData is required");
 	});
 });
@@ -192,7 +192,7 @@ describe("bulkUpdateConversation", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("updateData is required");
 	});
 });
@@ -211,7 +211,7 @@ describe("error handling", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EbayApiError");
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 
 	it("handle API errors in getConversation", async () => {
@@ -230,7 +230,7 @@ describe("error handling", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EbayApiError");
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 
 	it("handle API errors in sendMessage", async () => {
@@ -246,7 +246,7 @@ describe("error handling", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EbayApiError");
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 
 	it("handle API errors in updateConversation", async () => {
@@ -262,7 +262,7 @@ describe("error handling", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EbayApiError");
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 
 	it("handle API errors in bulkUpdateConversation", async () => {
@@ -278,7 +278,7 @@ describe("error handling", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EbayApiError");
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 });
 
@@ -297,7 +297,7 @@ describe("getConversations validation", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("conversationStatus must be a string");
 	});
 
@@ -315,7 +315,7 @@ describe("getConversations validation", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("limit must be a positive number");
 	});
 
@@ -333,7 +333,7 @@ describe("getConversations validation", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("offset must be a non-negative number");
 	});
 });

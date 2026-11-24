@@ -27,9 +27,9 @@ describe("locatedResourceId", () => {
 			thrown = error;
 		}
 
-		expect(thrown).toMatchObject({
-			_tag: "EbayApiError",
-			path: "/sell/feed/v1/order_task",
-		});
+		expect(thrown).toBeInstanceOf(Error);
+		expect((thrown as Error).message).toMatch(
+			/^eBay POST \/sell\/feed\/v1\/order_task failed: /,
+		);
 	});
 });

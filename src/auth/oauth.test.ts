@@ -13,10 +13,9 @@ import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	type CredentialStore,
-	CredentialStoreError,
 	DotEnvCredentialStore,
 } from "@/auth/credentialSession.js";
-import { EbayOAuthClient, EbayOAuthError } from "@/auth/oauth.js";
+import { EbayOAuthClient } from "@/auth/oauth.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 
 vi.mock("fs", async () => {
@@ -74,18 +73,12 @@ async function refreshUserToken(client: EbayOAuthClient): Promise<void> {
 async function expectOAuthFailure(
 	call: () => Promise<unknown>,
 	expected: {
-		readonly operation: EbayOAuthError["operation"];
 		readonly message: string | RegExp;
 	},
 ): Promise<void> {
 	try {
 		await call();
 	} catch (error) {
-		expect(error).toMatchObject({
-			_tag: "EbayOAuthError",
-			operation: expected.operation,
-		});
-
 		if (!(error instanceof Error)) {
 			throw new Error("expected failure");
 		}
@@ -186,9 +179,7 @@ describe("EbayOAuthClient", () => {
 			const credentialStore: CredentialStore = {
 				write: () =>
 					Promise.reject(
-						new CredentialStoreError({
-							envPath: "/read-only/.env",
-							message: "Failed to write credential updates to /read-only/.env",
+						new Error("Failed to write credential updates to /read-only/.env", {
 							cause: new Error("EACCES"),
 						}),
 					),
@@ -272,9 +263,7 @@ describe("EbayOAuthClient", () => {
 			const credentialStore: CredentialStore = {
 				write: () =>
 					Promise.reject(
-						new CredentialStoreError({
-							envPath: "/read-only/.env",
-							message: "Failed to write credential updates to /read-only/.env",
+						new Error("Failed to write credential updates to /read-only/.env", {
 							cause: new Error("EACCES"),
 						}),
 					),
@@ -290,9 +279,11 @@ describe("EbayOAuthClient", () => {
 					validRefreshToken,
 				);
 			} catch (error) {
-				const isUnexpectedFailure = !(error instanceof EbayOAuthError);
+				const isPersistenceFailure =
+					error instanceof Error &&
+					error.message.includes("Failed to write credential updates to ");
 
-				if (isUnexpectedFailure) {
+				if (!isPersistenceFailure) {
 					throw error;
 				}
 			}
@@ -320,7 +311,6 @@ describe("EbayOAuthClient", () => {
 			);
 
 			await expectOAuthFailure(() => oauthClient.getAccessToken(), {
-				operation: "getAccessToken",
 				message: "User authorization expired",
 			});
 		});
@@ -437,7 +427,6 @@ describe("EbayOAuthClient", () => {
 			await expectOAuthFailure(
 				() => clientWithoutRedirect.exchangeCodeForToken("code_12345"),
 				{
-					operation: "exchangeCodeForToken",
 					message: "Redirect URI is required",
 				},
 			);
@@ -454,7 +443,6 @@ describe("EbayOAuthClient", () => {
 				});
 
 			await expectOAuthFailure(() => oauthClient.exchangeCodeForToken(code), {
-				operation: "exchangeCodeForToken",
 				message: "Invalid authorization code",
 			});
 		});
@@ -595,7 +583,6 @@ describe("EbayOAuthClient", () => {
 			await expectOAuthFailure(
 				() => oauthClient.exchangeCodeForToken("auth_code"),
 				{
-					operation: "exchangeCodeForToken",
 					message: "did not include a non-empty refresh_token",
 				},
 			);

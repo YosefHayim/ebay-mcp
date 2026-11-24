@@ -65,8 +65,8 @@ describe("rate table", () => {
 			api.updateShippingCost(invalidInput({ rateTableUpdate: { rates: [] } })),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
-		expect(error).toMatchObject({ parameter: "rateTableId" });
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toContain("rateTableId");
 		expect(client.post).not.toHaveBeenCalled();
 	});
 });
@@ -104,8 +104,8 @@ describe("payout settings", () => {
 			api.updatePayoutPercentage(invalidInput({})),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
-		expect(error).toMatchObject({ parameter: "payoutSplit" });
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toContain("payoutSplit");
 	});
 
 	it("wraps a client failure in EbayApiError with the method and path", async () => {
@@ -113,11 +113,10 @@ describe("payout settings", () => {
 
 		const error = await captureThrown(api.getPayoutSettings());
 
-		expect(error._tag).toBe("EbayApiError");
-		expect(error).toMatchObject({
-			method: "GET",
-			path: `${BASE}/payout_settings`,
-		});
+		expect((error as Error).message).toMatch(/^eBay /);
+		expect((error as Error).message).toContain(
+			`eBay GET ${BASE}/payout_settings failed`,
+		);
 	});
 });
 
@@ -223,8 +222,8 @@ describe("combined shipping rule reads and failures", () => {
 			api.createFlatShippingRules(invalidInput({ shippingRules: flat })),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
-		expect(error).toMatchObject({ parameter: "marketplaceId" });
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toContain("marketplaceId");
 		expect(client.post).not.toHaveBeenCalled();
 	});
 
@@ -233,8 +232,8 @@ describe("combined shipping rule reads and failures", () => {
 			api.updateCombinedPayments(invalidInput({ marketplaceId: US })),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
-		expect(error).toMatchObject({ parameter: "combinedPayments" });
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toContain("combinedPayments");
 	});
 
 	it("wraps a rejected POST in EbayApiError", async () => {
@@ -247,11 +246,10 @@ describe("combined shipping rule reads and failures", () => {
 			}),
 		);
 
-		expect(error._tag).toBe("EbayApiError");
-		expect(error).toMatchObject({
-			method: "POST",
-			path: `${BASE}/combined_shipping_rules/create_promotional_shipping_rule`,
-		});
+		expect((error as Error).message).toMatch(/^eBay /);
+		expect((error as Error).message).toContain(
+			`eBay POST ${BASE}/combined_shipping_rules/create_promotional_shipping_rule failed`,
+		);
 	});
 });
 
@@ -313,11 +311,10 @@ describe("user preferences", () => {
 			api.setUserPreferences({ marketplaceId: US, preferences: {} }),
 		);
 
-		expect(error._tag).toBe("EbayApiError");
-		expect(error).toMatchObject({
-			method: "PATCH",
-			path: `${BASE}/user_preferences`,
-		});
+		expect((error as Error).message).toMatch(/^eBay /);
+		expect((error as Error).message).toContain(
+			`eBay PATCH ${BASE}/user_preferences failed`,
+		);
 	});
 
 	it("fails with EndpointInputError when fieldgroups is not a string", async () => {
@@ -327,8 +324,8 @@ describe("user preferences", () => {
 			),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
-		expect(error).toMatchObject({ parameter: "fieldgroups" });
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toContain("fieldgroups");
 		expect(client.get).not.toHaveBeenCalled();
 	});
 });

@@ -12,7 +12,6 @@ import {
 	isFileLoggingEnabled,
 	serverLogger,
 } from "@/shared/logger.js";
-import { getCachedUpdateNotice } from "@/shared/version.js";
 
 const args = process.argv.slice(2);
 
@@ -74,13 +73,6 @@ class EbayMcpServer {
 
 	async run(): Promise<void> {
 		serverLogger.info("Starting eBay API MCP Server");
-
-		// stdout is reserved for the MCP protocol, so a TTY update box (used by the
-		// CLIs) can't run here — surface any newer version as a stderr log line.
-		const updateNotice = getCachedUpdateNotice();
-		if (updateNotice) {
-			serverLogger.info(updateNotice);
-		}
 
 		// Validate environment configuration
 		const validation = validateEnvironmentConfig();

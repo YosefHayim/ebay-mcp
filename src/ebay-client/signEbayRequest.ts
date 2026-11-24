@@ -51,11 +51,6 @@ export interface SignableRequest {
 	readonly bodyBytes?: string | Uint8Array;
 }
 
-/** Raised when the configured signing private key cannot be used. */
-export class EbaySigningKeyError extends Error {
-	override readonly name = "EbaySigningKeyError";
-}
-
 /**
  * Parse the configured private key into a Node `KeyObject`.
  *
@@ -66,7 +61,7 @@ export class EbaySigningKeyError extends Error {
  *
  * @param privateKey - Base64 PKCS#8 DER or PEM private key.
  * @returns The parsed key object.
- * @throws {EbaySigningKeyError} When the key cannot be parsed or is not Ed25519/RSA.
+ * @throws When the key cannot be parsed or is not Ed25519/RSA.
  */
 export const parseSigningPrivateKey = (privateKey: string): KeyObject => {
 	const trimmed = privateKey.trim().replaceAll("\\n", "\n");
@@ -80,14 +75,14 @@ export const parseSigningPrivateKey = (privateKey: string): KeyObject => {
 					type: "pkcs8",
 				});
 	} catch (cause) {
-		throw new EbaySigningKeyError(
+		throw new Error(
 			"EBAY_SIGNING_PRIVATE_KEY could not be parsed. Use the privateKey value returned by ebay_create_signing_key (base64 PKCS#8) or a PEM private key.",
 			{ cause },
 		);
 	}
 
 	if (key.asymmetricKeyType !== "ed25519" && key.asymmetricKeyType !== "rsa") {
-		throw new EbaySigningKeyError(
+		throw new Error(
 			`EBAY_SIGNING_PRIVATE_KEY is a ${key.asymmetricKeyType ?? "unknown"} key; eBay digital signatures accept only ED25519 or RSA keys.`,
 		);
 	}

@@ -3,8 +3,6 @@ import type {
 	EbayRequestConfig,
 	EbayResponse,
 } from "@/ebay-client/ebayApiClient.js";
-import { EbayApiError } from "@/ebay-client/request.js";
-
 /**
  * Largest download returned inline as an embedded MCP resource. Base64 grows the payload by
  * a third, and some eBay exports (Taxonomy fetchItemAspects) exceed 100 MB compressed.
@@ -60,34 +58,6 @@ export interface DownloadedFile {
 	readonly fileName: string | undefined;
 }
 
-/** Tagged failure for a download too large to return inline through MCP. */
-export class DownloadTooLargeError extends Error {
-	readonly _tag = "DownloadTooLargeError";
-	/** eBay REST path that produced the file. */
-	readonly path: string;
-	/** Size eBay declared or that was read before stopping; at least `limit + 1`. */
-	readonly bytes: number;
-	/** Inline limit the file exceeded. */
-	readonly limit: number;
-
-	constructor(failure: {
-		/** eBay REST path that produced the file. */
-		readonly path: string;
-		/** Size eBay declared or that was read before stopping; at least `limit + 1`. */
-		readonly bytes: number;
-		/** Inline limit the file exceeded. */
-		readonly limit: number;
-	}) {
-		super(
-			`eBay file from ${failure.path} is at least ${failure.bytes} bytes, above the ${failure.limit}-byte limit for returning files inline over MCP`,
-		);
-		this.name = "DownloadTooLargeError";
-		this.path = failure.path;
-		this.bytes = failure.bytes;
-		this.limit = failure.limit;
-	}
-}
-
 /** Size of a download: what was read, or the larger declared length when reading stopped early. */
 const downloadSize = (fileResponse: EbayResponse<Buffer>): number =>
 	Math.max(
@@ -112,27 +82,19 @@ async function readDownload(
 	path: string,
 	config: EbayRequestConfig,
 ): Promise<DownloadedFile> {
-	let fileResponse: EbayResponse<Buffer>;
-
-	try {
-		fileResponse = await client.getForResponse<Buffer>(path, undefined, {
-			...config,
-			responseType: "arraybuffer",
-			maxBytes: MAX_INLINE_DOWNLOAD_BYTES,
-		});
-	} catch (cause) {
-		throw new EbayApiError({ method: "GET", path, cause }); // allow-duplicate
-	}
+	const fileResponse = await client.getForResponse<Buffer>(path, undefined, {
+		...config,
+		responseType: "arraybuffer",
+		maxBytes: MAX_INLINE_DOWNLOAD_BYTES,
+	});
 
 	const bytes = downloadSize(fileResponse);
 	const isTooLarge = bytes > MAX_INLINE_DOWNLOAD_BYTES;
 
 	if (isTooLarge) {
-		throw new DownloadTooLargeError({
-			path,
-			bytes,
-			limit: MAX_INLINE_DOWNLOAD_BYTES,
-		});
+		throw new Error(
+			`eBay file from ${path} is at least ${bytes} bytes, above the ${MAX_INLINE_DOWNLOAD_BYTES}-byte limit for returning files inline over MCP`,
+		);
 	}
 
 	return {
@@ -144,19 +106,26 @@ async function readDownload(
 	};
 }
 
-function downloadFailure(
-	path: string,
-	cause: unknown,
-): EbayApiError | DownloadTooLargeError {
-	if (cause instanceof DownloadTooLargeError) {
-		return cause;
+function downloadFailure(path: string, cause: unknown): Error {
+	if (cause instanceof Error) {
+		const isTooLarge = cause.message.startsWith("eBay file from ");
+
+		if (isTooLarge) {
+			return cause;
+		}
+
+		const isAlreadyWrapped = cause.message.startsWith(
+			`eBay GET ${path} failed:`,
+		);
+
+		if (isAlreadyWrapped) {
+			return cause;
+		}
 	}
 
-	if (cause instanceof EbayApiError) {
-		return cause;
-	}
+	const detail = cause instanceof Error ? cause.message : String(cause);
 
-	return new EbayApiError({ method: "GET", path, cause }); // allow-duplicate
+	return new Error(`eBay GET ${path} failed: ${detail}`, { cause });
 }
 
 /**
@@ -166,8 +135,8 @@ function downloadFailure(
  * @param client - eBay REST client that owns auth and transport details.
  * @param path - eBay REST path, or a full URL when `config.absolute` is set.
  * @param config - Optional query params, headers, host, or timeout overrides for the request.
- * @returns The file bytes and metadata. Throws EbayApiError, or DownloadTooLargeError
- * above {@link MAX_INLINE_DOWNLOAD_BYTES}.
+ * @returns The file bytes and metadata. Throws when the download fails or the file
+ * is above {@link MAX_INLINE_DOWNLOAD_BYTES}.
  *
  * @example
  * ```ts

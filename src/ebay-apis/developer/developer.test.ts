@@ -335,11 +335,10 @@ describe("DeveloperApi", () => {
 				return api.createSigningKey({});
 			});
 
-			expect(error._tag).toBe("EbayApiError");
-			expect(error).toMatchObject({
-				method: "POST",
-				path: "/developer/key_management/v1/signing_key",
-			});
+			expect((error as Error).message).toMatch(/^eBay /);
+			expect((error as Error).message).toContain(
+				`eBay POST /developer/key_management/v1/signing_key failed`,
+			);
 		});
 	});
 
@@ -385,11 +384,10 @@ describe("DeveloperApi", () => {
 				return api.getSigningKey({ signingKeyId: "nonexistent_key" });
 			});
 
-			expect(error._tag).toBe("EbayApiError");
-			expect(error).toMatchObject({
-				method: "GET",
-				path: "/developer/key_management/v1/signing_key/nonexistent_key",
-			});
+			expect((error as Error).message).toMatch(/^eBay /);
+			expect((error as Error).message).toContain(
+				`eBay GET /developer/key_management/v1/signing_key/nonexistent_key failed`,
+			);
 		});
 	});
 
@@ -399,8 +397,8 @@ describe("DeveloperApi", () => {
 				return api.getSigningKey({ signingKeyId: "" });
 			});
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("signingKeyId");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("signingKeyId");
 		});
 
 		it("returns typed input error when signingKeyId is null", async () => {
@@ -408,8 +406,8 @@ describe("DeveloperApi", () => {
 				return api.getSigningKey(invalidInput({ signingKeyId: null }));
 			});
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("signingKeyId");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("signingKeyId");
 		});
 
 		it("returns typed input error when input is undefined", async () => {
@@ -417,8 +415,8 @@ describe("DeveloperApi", () => {
 				return api.getSigningKey(invalidInput(undefined));
 			});
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("input");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("input");
 		});
 
 		it("returns typed input error when signingKeyId is not a string", async () => {
@@ -426,8 +424,8 @@ describe("DeveloperApi", () => {
 				return api.getSigningKey(invalidInput({ signingKeyId: 123 }));
 			});
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("signingKeyId");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("signingKeyId");
 		});
 	});
 
@@ -447,7 +445,7 @@ describe("DeveloperApi", () => {
 				throw new Error("expected failure");
 			})();
 
-			expect(error._tag).toBe("EbayApiError");
+			expect((error as Error).message).toMatch(/^eBay /);
 		});
 
 		it("propagate errors from getUserRateLimits", async () => {
@@ -465,7 +463,7 @@ describe("DeveloperApi", () => {
 				throw new Error("expected failure");
 			})();
 
-			expect(error._tag).toBe("EbayApiError");
+			expect((error as Error).message).toMatch(/^eBay /);
 		});
 
 		it("propagate errors from registerClient", async () => {
@@ -483,7 +481,7 @@ describe("DeveloperApi", () => {
 				throw new Error("expected failure");
 			})();
 
-			expect(error._tag).toBe("EbayApiError");
+			expect((error as Error).message).toMatch(/^eBay /);
 		});
 
 		it("propagate errors from getSigningKeys", async () => {
@@ -495,7 +493,7 @@ describe("DeveloperApi", () => {
 				return api.getSigningKeys({});
 			});
 
-			expect(error._tag).toBe("EbayApiError");
+			expect((error as Error).message).toMatch(/^eBay /);
 		});
 
 		it("propagate errors from createSigningKey", async () => {
@@ -507,7 +505,7 @@ describe("DeveloperApi", () => {
 				return api.createSigningKey({});
 			});
 
-			expect(error._tag).toBe("EbayApiError");
+			expect((error as Error).message).toMatch(/^eBay /);
 		});
 	});
 });

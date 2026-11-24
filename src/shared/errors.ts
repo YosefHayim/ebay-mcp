@@ -1,5 +1,3 @@
-import type { EbayClientRequestErrorKind } from "@/ebay-client/ebayClientRequestError.js";
-
 /**
  * Normalize an unknown thrown value into a human-readable message string.
  *
@@ -38,7 +36,6 @@ interface EbayErrorAccumulator {
 	message: string;
 	status?: number;
 	errors?: unknown[];
-	messageLocked?: boolean;
 }
 
 const asRecord = (value: unknown): Record<string, unknown> | undefined =>
@@ -128,22 +125,6 @@ const firstEbayErrorMessage = (errors: unknown[]): string | undefined => {
 	return typeof detail === "string" ? detail : undefined;
 };
 
-const KIND_IS_GUIDANCE: Record<EbayClientRequestErrorKind, boolean> = {
-	missingCredentials: true,
-	localRateLimit: true,
-	tokenAcquisition: true,
-	missingAccessToken: true,
-	tokenRefresh: true,
-	signing: true,
-	remoteRateLimit: true,
-	httpStatus: false,
-	transport: false,
-};
-
-const isGuidanceKind = (kind: string): boolean =>
-	Object.hasOwn(KIND_IS_GUIDANCE, kind) &&
-	KIND_IS_GUIDANCE[kind as EbayClientRequestErrorKind];
-
 const collectEbayErrorNode = (
 	node: Record<string, unknown>,
 	acc: EbayErrorAccumulator,
@@ -152,11 +133,8 @@ const collectEbayErrorNode = (
 		typeof node["message"] === "string" && node["message"].length > 0
 			? node["message"]
 			: undefined;
-	if (message !== undefined && !acc.messageLocked) {
+	if (message !== undefined) {
 		acc.message = message;
-		if (typeof node["kind"] === "string" && isGuidanceKind(node["kind"])) {
-			acc.messageLocked = true;
-		}
 	}
 	if (typeof node["status"] === "number") {
 		acc.status = node["status"];
@@ -166,7 +144,7 @@ const collectEbayErrorNode = (
 	if (errorBody && Array.isArray(errorBody["errors"])) {
 		acc.errors = errorBody["errors"];
 		const detail = firstEbayErrorMessage(errorBody["errors"]);
-		if (detail && !acc.messageLocked) {
+		if (detail) {
 			acc.message = detail;
 		}
 		return;

@@ -5,7 +5,6 @@ import {
 } from "@/ebay-apis/inventory/offerFormatApi.js";
 import { createInventoryOffersMethods } from "@/ebay-apis/inventory/offersApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EndpointInputError } from "@/ebay-client/request.js";
 
 const usd = (amount: string) => ({ currency: "USD", value: amount });
 
@@ -40,16 +39,14 @@ describe("findOfferFormatViolation", () => {
 
 	it("requires a duration and a starting bid when an auction is created", () => {
 		expect(
-			findOfferFormatViolation({ format: "AUCTION" }, "body"),
-		).toMatchObject({
-			parameter: "body.listingDuration",
-		});
+			findOfferFormatViolation({ format: "AUCTION" }, "body").message,
+		).toContain("body.listingDuration");
 		expect(
 			findOfferFormatViolation(
 				{ format: "AUCTION", listingDuration: "DAYS_7" },
 				"body",
-			),
-		).toMatchObject({ parameter: "body.pricingSummary.auctionStartPrice" });
+			).message,
+		).toContain("body.pricingSummary.auctionStartPrice");
 	});
 
 	it("keeps fixed-price drafts and format-less update bodies permissive", () => {
@@ -83,12 +80,12 @@ describe("findOfferFormatViolation", () => {
 			pricingSummary: { auctionStartPrice: usd("10.00"), price: usd("10.00") },
 		};
 
-		expect(findOfferFormatViolation(justBelow, "body")).toMatchObject({
-			parameter: "body.pricingSummary.price",
-		});
-		expect(findOfferFormatViolation(equal, "body")).toMatchObject({
-			parameter: "body.pricingSummary.price",
-		});
+		expect(findOfferFormatViolation(justBelow, "body").message).toContain(
+			"body.pricingSummary.price",
+		);
+		expect(findOfferFormatViolation(equal, "body").message).toContain(
+			"body.pricingSummary.price",
+		);
 	});
 
 	it("rejects GTC on an auction", () => {
@@ -97,10 +94,7 @@ describe("findOfferFormatViolation", () => {
 			"body",
 		);
 
-		expect(violation).toMatchObject({
-			_tag: "EndpointInputError",
-			parameter: "body.listingDuration",
-		});
+		expect(violation.message).toContain("body.listingDuration");
 	});
 
 	it("accepts availableQuantity 1 on an auction and rejects any other quantity", () => {
@@ -114,14 +108,14 @@ describe("findOfferFormatViolation", () => {
 			findOfferFormatViolation(
 				{ ...auctionOffer, availableQuantity: 0 },
 				"body",
-			),
-		).toMatchObject({ parameter: "body.availableQuantity" });
+			).message,
+		).toContain("body.availableQuantity");
 		expect(
 			findOfferFormatViolation(
 				{ ...auctionOffer, availableQuantity: 3 },
 				"body",
-			),
-		).toMatchObject({ parameter: "body.availableQuantity" });
+			).message,
+		).toContain("body.availableQuantity");
 	});
 
 	it("rejects eBay Plus on an auction", () => {
@@ -129,8 +123,8 @@ describe("findOfferFormatViolation", () => {
 			findOfferFormatViolation(
 				{ ...auctionOffer, listingPolicies: { eBayPlusIfEligible: true } },
 				"body",
-			),
-		).toMatchObject({ parameter: "body.listingPolicies.eBayPlusIfEligible" });
+			).message,
+		).toContain("body.listingPolicies.eBayPlusIfEligible");
 	});
 
 	it("rejects a per-buyer limit on an auction", () => {
@@ -138,8 +132,8 @@ describe("findOfferFormatViolation", () => {
 			findOfferFormatViolation(
 				{ ...auctionOffer, quantityLimitPerBuyer: 2 },
 				"body",
-			),
-		).toMatchObject({ parameter: "body.quantityLimitPerBuyer" });
+			).message,
+		).toContain("body.quantityLimitPerBuyer");
 	});
 
 	it("allows Best Offer on an auction unless a Buy It Now price is also set", () => {
@@ -156,9 +150,9 @@ describe("findOfferFormatViolation", () => {
 		};
 
 		expect(findOfferFormatViolation(enabled, "body")).toBeUndefined();
-		expect(findOfferFormatViolation(withBuyItNow, "body")).toMatchObject({
-			parameter: "body.listingPolicies.bestOfferTerms.bestOfferEnabled",
-		});
+		expect(findOfferFormatViolation(withBuyItNow, "body").message).toContain(
+			"body.listingPolicies.bestOfferTerms.bestOfferEnabled",
+		);
 		expect(
 			findOfferFormatViolation(disabledWithBuyItNow, "body"),
 		).toBeUndefined();
@@ -180,12 +174,12 @@ describe("findOfferFormatViolation", () => {
 			},
 		};
 
-		expect(findOfferFormatViolation(equal, "body")).toMatchObject({
-			parameter: "body.pricingSummary.auctionReservePrice",
-		});
-		expect(findOfferFormatViolation(lower, "body")).toMatchObject({
-			parameter: "body.pricingSummary.auctionReservePrice",
-		});
+		expect(findOfferFormatViolation(equal, "body").message).toContain(
+			"body.pricingSummary.auctionReservePrice",
+		);
+		expect(findOfferFormatViolation(lower, "body").message).toContain(
+			"body.pricingSummary.auctionReservePrice",
+		);
 	});
 
 	it("checks the price rules on update bodies that carry no format", () => {
@@ -199,12 +193,12 @@ describe("findOfferFormatViolation", () => {
 			pricingSummary: { auctionStartPrice: usd("10.00"), price: usd("11.00") },
 		};
 
-		expect(findOfferFormatViolation(reserve, "body")).toMatchObject({
-			parameter: "body.pricingSummary.auctionReservePrice",
-		});
-		expect(findOfferFormatViolation(buyItNow, "body")).toMatchObject({
-			parameter: "body.pricingSummary.price",
-		});
+		expect(findOfferFormatViolation(reserve, "body").message).toContain(
+			"body.pricingSummary.auctionReservePrice",
+		);
+		expect(findOfferFormatViolation(buyItNow, "body").message).toContain(
+			"body.pricingSummary.price",
+		);
 		expect(
 			findOfferFormatViolation(
 				{ pricingSummary: { price: usd("11.00") } },
@@ -230,8 +224,8 @@ describe("findOfferFormatViolation", () => {
 			findOfferFormatViolation(
 				{ ...fixedPriceOffer, listingDuration: "DAYS_7" },
 				"body",
-			),
-		).toMatchObject({ parameter: "body.listingDuration" });
+			).message,
+		).toContain("body.listingDuration");
 	});
 
 	it("rejects auction prices on a fixed-price offer", () => {
@@ -240,9 +234,9 @@ describe("findOfferFormatViolation", () => {
 			pricingSummary: { price: usd("19.99"), auctionStartPrice: usd("1.00") },
 		};
 
-		expect(findOfferFormatViolation(offer, "body")).toMatchObject({
-			parameter: "body.pricingSummary",
-		});
+		expect(findOfferFormatViolation(offer, "body").message).toContain(
+			"body.pricingSummary",
+		);
 	});
 });
 
@@ -263,10 +257,9 @@ describe("validateOfferFormatEffect", () => {
 			thrown = error;
 		}
 
-		expect(thrown).toBeInstanceOf(EndpointInputError);
+		expect(thrown).toBeInstanceOf(Error);
 
-		if (thrown instanceof EndpointInputError) {
-			expect(thrown._tag).toBe("EndpointInputError");
+		if (thrown instanceof Error) {
 			expect(thrown.message).toContain("GTC");
 		}
 	});
@@ -306,10 +299,7 @@ describe("offer methods apply the format rules before calling eBay", () => {
 			error = caught;
 		}
 
-		expect(error).toMatchObject({
-			_tag: "EndpointInputError",
-			parameter: "body.availableQuantity",
-		});
+		expect(error.message).toContain("body.availableQuantity");
 		expect(client.post).not.toHaveBeenCalled();
 	});
 
@@ -331,9 +321,7 @@ describe("offer methods apply the format rules before calling eBay", () => {
 			error = caught;
 		}
 
-		expect(error).toMatchObject({
-			parameter: "body.pricingSummary.auctionReservePrice",
-		});
+		expect(error.message).toContain("body.pricingSummary.auctionReservePrice");
 		expect(client.put).not.toHaveBeenCalled();
 	});
 
@@ -353,9 +341,7 @@ describe("offer methods apply the format rules before calling eBay", () => {
 			error = caught;
 		}
 
-		expect(error).toMatchObject({
-			parameter: "body.requests[1].listingDuration",
-		});
+		expect(error.message).toContain("body.requests[1].listingDuration");
 		expect(client.post).not.toHaveBeenCalled();
 	});
 });

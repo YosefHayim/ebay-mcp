@@ -2,7 +2,6 @@ import { invalidInput } from "@tests/helpers/invalidInput.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InventoryApi } from "@/ebay-apis/inventory/inventoryApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EbayApiError, EndpointInputError } from "@/ebay-client/request.js";
 
 const expectEndpointInputError = async (
 	program: Promise<unknown>,
@@ -16,11 +15,11 @@ const expectEndpointInputError = async (
 		thrown = error;
 	}
 
-	expect(thrown).toBeInstanceOf(EndpointInputError);
+	expect(thrown).toBeInstanceOf(Error);
 
-	if (thrown instanceof EndpointInputError) {
-		expect(thrown._tag).toBe("EndpointInputError");
-		expect(thrown.parameter).toBe(parameter);
+	if (thrown instanceof Error) {
+		expect(thrown).toBeInstanceOf(Error);
+		expect(thrown.message).toContain(parameter);
 	}
 };
 
@@ -496,12 +495,13 @@ describe("InventoryApi", () => {
 				thrown = error;
 			}
 
-			expect(thrown).toBeInstanceOf(EbayApiError);
+			expect(thrown).toBeInstanceOf(Error);
 
-			if (thrown instanceof EbayApiError) {
-				expect(thrown._tag).toBe("EbayApiError");
-				expect(thrown.method).toBe("GET");
-				expect(thrown.path).toBe("/sell/inventory/v1/inventory_item/SKU-1");
+			if (thrown instanceof Error) {
+				expect((thrown as Error).message).toMatch(/^eBay /);
+				expect(thrown.message).toContain(
+					`eBay GET /sell/inventory/v1/inventory_item/SKU-1 failed`,
+				);
 			}
 		});
 	});

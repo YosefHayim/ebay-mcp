@@ -64,8 +64,8 @@ describe("DisputeApi", () => {
 				disputeApi.getPaymentDispute({ paymentDisputeId: "" }),
 			);
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("paymentDisputeId");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("paymentDisputeId");
 		});
 	});
 

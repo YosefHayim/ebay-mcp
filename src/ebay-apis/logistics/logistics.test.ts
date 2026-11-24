@@ -189,9 +189,7 @@ describe("LogisticsApi failures", () => {
 
 		const errors = await Promise.all(programs.map(caughtError));
 
-		expect(errors.map((error) => error._tag)).toEqual(
-			programs.map(() => "EndpointInputError"),
-		);
+		expect(errors.every((error) => error instanceof Error)).toBe(true);
 		expect(client.get).not.toHaveBeenCalled();
 		expect(client.post).not.toHaveBeenCalled();
 		expect(client.getForResponse).not.toHaveBeenCalled();
@@ -206,11 +204,9 @@ describe("LogisticsApi failures", () => {
 			logistics.createFromShippingQuote({ shipmentRequest }),
 		);
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			method: "POST",
-			path: `${BASE}/shipment/create_from_shipping_quote`,
-		});
+		expect((error as Error).message).toContain(
+			`eBay POST ${`${BASE}/shipment/create_from_shipping_quote`} failed`,
+		);
 	});
 
 	it("refuses a label too large to return inline", async () => {
@@ -224,6 +220,6 @@ describe("LogisticsApi failures", () => {
 			logistics.downloadLabelFile({ shipmentId: "S-1" }),
 		);
 
-		expect(error._tag).toBe("DownloadTooLargeError");
+		expect((error as Error).message).toContain("byte limit");
 	});
 });

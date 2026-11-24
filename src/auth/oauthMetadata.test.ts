@@ -1,18 +1,11 @@
-import express, { type Express } from "express";
 import request from "supertest";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
 	createMetadataRouter,
 	getProtectedResourceMetadataUrl,
 } from "@/auth/oauthMetadata.js";
 
 describe("OAuth Metadata", () => {
-	let app: Express;
-
-	beforeEach(() => {
-		app = express();
-	});
-
 	describe("createMetadataRouter", () => {
 		it("create metadata router with string auth server metadata", async () => {
 			const router = createMetadataRouter({
@@ -23,9 +16,7 @@ describe("OAuth Metadata", () => {
 				resourceName: "Test MCP Server",
 			});
 
-			app.use(router);
-
-			const response = await request(app).get(
+			const response = await request(router).get(
 				"/.well-known/oauth-protected-resource",
 			);
 
@@ -53,9 +44,7 @@ describe("OAuth Metadata", () => {
 				scopesSupported: ["mcp:tools"],
 			});
 
-			app.use(router);
-
-			const response = await request(app).get(
+			const response = await request(router).get(
 				"/.well-known/oauth-protected-resource",
 			);
 
@@ -74,9 +63,9 @@ describe("OAuth Metadata", () => {
 				resourceDocumentation: "https://example.com/docs",
 			});
 
-			app.use(router);
-
-			const response = await request(app).get("/.well-known/mcp-server-info");
+			const response = await request(router).get(
+				"/.well-known/mcp-server-info",
+			);
 
 			expect(response.status).toBe(200);
 			expect(response.body).toMatchObject({
@@ -102,9 +91,9 @@ describe("OAuth Metadata", () => {
 				],
 			});
 
-			app.use(router);
-
-			const response = await request(app).get("/.well-known/mcp-server-info");
+			const response = await request(router).get(
+				"/.well-known/mcp-server-info",
+			);
 
 			expect(response.status).toBe(200);
 			expect(response.body.ebay).toBeDefined();
@@ -123,9 +112,9 @@ describe("OAuth Metadata", () => {
 				ebayScopes: [],
 			});
 
-			app.use(router);
-
-			const response = await request(app).get("/.well-known/mcp-server-info");
+			const response = await request(router).get(
+				"/.well-known/mcp-server-info",
+			);
 
 			expect(response.status).toBe(200);
 			expect(response.body.ebay.base_url).toBe("https://api.sandbox.ebay.com");
@@ -138,9 +127,7 @@ describe("OAuth Metadata", () => {
 				scopesSupported: ["mcp:tools"],
 			});
 
-			app.use(router);
-
-			const response = await request(app).get(
+			const response = await request(router).get(
 				"/.well-known/oauth-protected-resource",
 			);
 

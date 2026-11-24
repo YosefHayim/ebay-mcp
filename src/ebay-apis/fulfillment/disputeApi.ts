@@ -5,7 +5,6 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -183,11 +182,9 @@ function requireUploadEvidenceFileBody(
 		return evidenceFile;
 	}
 
-	throw new EndpointInputError({
-		parameter: "body",
-		message:
-			"body is required and must be binary data or a multipart-compatible object",
-	});
+	throw new Error(
+		"body is required and must be binary data or a multipart-compatible object",
+	);
 }
 
 const FULFILLMENT_BASE_PATH = "/sell/fulfillment/v1";

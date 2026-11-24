@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { EbayClientRequestError } from "@/ebay-client/ebayClientRequestError.js";
-import { EbayApiError } from "@/ebay-client/request.js";
 import { getEbayErrorDetails } from "@/shared/errors.js";
 
 describe("getEbayErrorDetails", () => {
-	it("returns REST status and details from an EbayApiError", () => {
+	it("returns REST status and details from a nested error body", () => {
 		const eBayErrors = [
 			{
 				errorId: 2004,
@@ -12,11 +10,10 @@ describe("getEbayErrorDetails", () => {
 				parameters: [{ name: "sku", value: "BAD" }],
 			},
 		];
-		const apiError = new EbayApiError({
-			method: "PUT",
-			path: "/sell/inventory/v1/inventory_item/BAD",
-			cause: { status: 400, data: { errors: eBayErrors } },
-		});
+		const apiError = new Error(
+			"eBay PUT /sell/inventory/v1/inventory_item/BAD failed: Invalid request payload",
+			{ cause: { status: 400, data: { errors: eBayErrors } } },
+		);
 
 		expect(getEbayErrorDetails(apiError)).toEqual({
 			message: "Invalid request payload",
@@ -33,11 +30,10 @@ describe("getEbayErrorDetails", () => {
 				parameters: [{ name: "sku", value: "BAD" }],
 			},
 		];
-		const apiError = new EbayApiError({
-			method: "PUT",
-			path: "/sell/inventory/v1/inventory_item/BAD",
-			cause: { status: 400, data: { errors: eBayErrors } },
-		});
+		const apiError = new Error(
+			"eBay PUT /sell/inventory/v1/inventory_item/BAD failed: Invalid request payload",
+			{ cause: { status: 400, data: { errors: eBayErrors } } },
+		);
 		const caught = {
 			[Symbol.for("effect/Runtime/FiberFailure/Cause")]: {
 				_tag: "Fail",
@@ -52,21 +48,15 @@ describe("getEbayErrorDetails", () => {
 		});
 	});
 
-	it("preserves remediation guidance while retaining raw error details", () => {
-		const eBayErrors = [{ errorId: 1, longMessage: "raw rate-limit response" }];
-		const error = new EbayClientRequestError({
-			kind: "remoteRateLimit",
-			method: "GET",
-			url: "https://api.ebay.com/x",
-			message: "eBay API rate limit exceeded. Retry after 12 seconds.",
-			status: 429,
-			cause: { status: 429, data: { errors: eBayErrors } },
-		});
+	it("keeps the rate-limit sentence from the thrown error", () => {
+		const error = new Error(
+			"eBay API rate limit exceeded. Retry after 12 seconds.",
+			{ cause: { status: 429 } },
+		);
 
 		expect(getEbayErrorDetails(error)).toEqual({
 			message: "eBay API rate limit exceeded. Retry after 12 seconds.",
 			status: 429,
-			errors: eBayErrors,
 		});
 	});
 

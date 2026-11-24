@@ -228,9 +228,7 @@ describe("Feed schedule failures", () => {
 			programs.map((program) => caughtError(program)),
 		);
 
-		expect(errors.map((error) => error._tag)).toEqual(
-			new Array(programs.length).fill("EndpointInputError"),
-		);
+		expect(errors.every((error) => error instanceof Error)).toBe(true);
 		for (const mock of Object.values(client)) {
 			expect(mock).not.toHaveBeenCalled();
 		}
@@ -273,12 +271,10 @@ describe("Feed schedule failures", () => {
 		);
 
 		cases.forEach(([, method, path], index) => {
-			expect(errors[index]).toMatchObject({
-				_tag: "EbayApiError",
-				method,
-				path: `${BASE}${path}`,
-				cause,
-			});
+			const failure = errors[index] as Error;
+
+			expect(failure.message).toContain(`eBay ${method} ${BASE}${path} failed`);
+			expect(failure.cause).toBe(cause);
 		});
 	});
 });

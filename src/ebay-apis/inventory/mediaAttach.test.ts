@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MediaApi } from "@/ebay-apis/inventory/mediaApi.js";
-import {
-	createMediaAttachMethods,
-	MediaAttachError,
-} from "@/ebay-apis/inventory/mediaAttachApi.js";
-import { EndpointInputError } from "@/ebay-client/request.js";
+import { createMediaAttachMethods } from "@/ebay-apis/inventory/mediaAttachApi.js";
+
 import type { LocalMediaFile } from "@/shared/localMedia.js";
 
 type AttachItems = Parameters<typeof createMediaAttachMethods>[0];
@@ -244,22 +241,15 @@ describe("attachMediaToInventoryItem", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(MediaAttachError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof MediaAttachError) {
-			expect(error._tag).toBe("MediaAttachError");
+		if (error instanceof Error) {
+			expect(error.message).toContain("Results:");
 			expect(error.message).toContain("1 of 2 uploads failed");
 			expect(error.message).toContain("allowPartial");
-			expect(error.result.updated).toBe(false);
-			expect(error.result.images).toEqual([
-				{
-					source: "/m/a.jpg",
-					kind: "image",
-					status: "failed",
-					error: "EPS down",
-				},
-				expect.objectContaining({ source: "/m/b.jpg", status: "uploaded" }),
-			]);
+			expect(error.message).toContain("/m/a.jpg");
+			expect(error.message).toContain("EPS down");
+			expect(error.message).toContain("/m/b.jpg");
 		}
 		expect(items.createOrReplaceInventoryItem).not.toHaveBeenCalled();
 		expect(items.getInventoryItem).toHaveBeenCalledTimes(1);
@@ -310,9 +300,9 @@ describe("attachMediaToInventoryItem", () => {
 			blocked = caught;
 		}
 
-		expect(blocked).toBeInstanceOf(MediaAttachError);
+		expect(blocked).toBeInstanceOf(Error);
 
-		if (blocked instanceof MediaAttachError) {
+		if (blocked instanceof Error) {
 			expect(blocked.message).toContain("COPYRIGHT");
 		}
 
@@ -337,10 +327,10 @@ describe("attachMediaToInventoryItem", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(EndpointInputError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof EndpointInputError) {
-			expect(error._tag).toBe("EndpointInputError");
+		if (error instanceof Error) {
+			expect(error).toBeInstanceOf(Error);
 		}
 		expect(items.getInventoryItem).not.toHaveBeenCalled();
 	});

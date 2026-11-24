@@ -2,7 +2,7 @@ import {
 	BUY_IT_NOW_MARGIN_LABEL,
 	meetsBuyItNowMargin,
 } from "@/ebay-client/auctionPricing.js";
-import { EndpointInputError } from "@/ebay-client/request.js";
+
 import { FormatType } from "@/shared/ebayEnums.js";
 import { isRecord } from "@/shared/typeGuards.js";
 
@@ -30,8 +30,8 @@ const TRADING_CALL_NAMES: Record<
 /** Trading `Item` payload as supplied by callers: raw XML field names, unknown values. */
 export type TradingItemFields = Record<string, unknown>;
 
-const inputError = (parameter: string, message: string): EndpointInputError =>
-	new EndpointInputError({ parameter, message: `${parameter}: ${message}` });
+const inputError = (parameter: string, message: string): Error =>
+	new Error(`${parameter}: ${message}`);
 
 /**
  * Reads a Trading amount, which callers may pass as a bare number, a numeric
@@ -60,7 +60,7 @@ const isBestOfferEnabled = (tradingItem: TradingItemFields): boolean => {
 const auctionViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (
 		tradingItem["ListingType"] !== undefined &&
 		tradingItem["ListingType"] !== TRADING_AUCTION_LISTING_TYPE
@@ -102,7 +102,7 @@ const auctionViolation = (
 const auctionCreateViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (tradingItem["ListingDuration"] === undefined) {
 		return inputError(
 			`${parameter}.ListingDuration`,
@@ -122,7 +122,7 @@ const auctionCreateViolation = (
 const fixedPriceViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (tradingItem["ListingType"] === TRADING_AUCTION_LISTING_TYPE) {
 		return inputError(
 			`${parameter}.ListingType`,
@@ -157,7 +157,7 @@ const fixedPriceViolation = (
 const auctionPriceViolation = (
 	tradingItem: TradingItemFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	const start = parseTradingAmount(tradingItem["StartPrice"]);
 	if (start === undefined) {
 		return;
@@ -220,7 +220,7 @@ export const findTradingListingFormatViolation = ({
 	format,
 	parameter,
 	isCreate,
-}: TradingListingFormatCheck): EndpointInputError | undefined => {
+}: TradingListingFormatCheck): Error | undefined => {
 	if (format === FormatType.FIXED_PRICE) {
 		return fixedPriceViolation(tradingItem, parameter);
 	}

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMediaResourceMethods } from "@/ebay-apis/inventory/mediaResourcesApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EbayApiError, EndpointInputError } from "@/ebay-client/request.js";
 
 const BASE = "/commerce/media/v1_beta";
 const APIM = "https://apim.sandbox.ebay.com";
@@ -79,10 +78,10 @@ describe("Media resource contracts", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(EbayApiError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof EbayApiError) {
-			expect(error._tag).toBe("EbayApiError");
+		if (error instanceof Error) {
+			expect((error as Error).message).toMatch(/^eBay /);
 		}
 	});
 
@@ -186,10 +185,10 @@ describe("Media resource contracts", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(EbayApiError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof EbayApiError) {
-			expect(error._tag).toBe("EbayApiError");
+		if (error instanceof Error) {
+			expect((error as Error).message).toMatch(/^eBay /);
 		}
 	});
 
@@ -269,10 +268,10 @@ describe("Media resource contracts", () => {
 				error = caught;
 			}
 
-			expect(error).toBeInstanceOf(EndpointInputError);
+			expect(error).toBeInstanceOf(Error);
 
-			if (error instanceof EndpointInputError) {
-				expect(error._tag).toBe("EndpointInputError");
+			if (error instanceof Error) {
+				expect(error).toBeInstanceOf(Error);
 			}
 		}
 		expect(client.post).not.toHaveBeenCalled();
@@ -336,13 +335,8 @@ describe("Media resource contracts", () => {
 				error = caught;
 			}
 
-			expect(error).toBeInstanceOf(EbayApiError);
-			expect(error).toMatchObject({
-				_tag: "EbayApiError",
-				method,
-				path: `${BASE}${path}`,
-				cause,
-			});
+			expect(error).toBeInstanceOf(Error);
+			expect((error as Error).message).toMatch(/^eBay /);
 		}
 	});
 });

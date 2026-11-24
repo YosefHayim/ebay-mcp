@@ -1,11 +1,7 @@
 import { invalidInput } from "@tests/helpers/invalidInput.js";
 import { beforeEach, expect, it, vi } from "vitest";
 import type { AnalyticsApiHarness } from "./testHarness.js";
-import {
-	captureThrown,
-	createAnalyticsApiHarness,
-	readEndpointInputError,
-} from "./testHarness.js";
+import { captureThrown, createAnalyticsApiHarness } from "./testHarness.js";
 
 let harness: AnalyticsApiHarness;
 
@@ -48,10 +44,7 @@ it("getCustomerServiceMetric fails when customerServiceMetricType is missing", a
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "customerServiceMetricType",
-	});
+	expect((error as Error).message).toContain("customerServiceMetricType");
 });
 
 it("getCustomerServiceMetric fails when evaluationType is missing", async () => {
@@ -63,10 +56,7 @@ it("getCustomerServiceMetric fails when evaluationType is missing", async () => 
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "evaluationType",
-	});
+	expect((error as Error).message).toContain("evaluationType");
 });
 
 it("getCustomerServiceMetric fails when evaluationMarketplaceId is missing", async () => {
@@ -78,10 +68,7 @@ it("getCustomerServiceMetric fails when evaluationMarketplaceId is missing", asy
 		}),
 	);
 
-	expect(readEndpointInputError(error)).toEqual({
-		_tag: "EndpointInputError",
-		parameter: "evaluationMarketplaceId",
-	});
+	expect((error as Error).message).toContain("evaluationMarketplaceId");
 });
 
 it("getCustomerServiceMetric wraps transport failures in EbayApiError", async () => {
@@ -95,5 +82,5 @@ it("getCustomerServiceMetric wraps transport failures in EbayApiError", async ()
 		}),
 	);
 
-	expect(error._tag).toBe("EbayApiError");
+	expect((error as Error).message).toMatch(/^eBay /);
 });

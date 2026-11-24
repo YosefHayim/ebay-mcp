@@ -114,7 +114,9 @@ describe("MCP runtime", () => {
 
 	it("preserves structured eBay details for a failed registered tool call", async () => {
 		const { createEbayMcpRuntime } = await import("@/server/runtime.js");
-		const { EbayApiError } = await import("@/ebay-client/request.js");
+		const { createEbayRequestFailure } = await import(
+			"@/ebay-client/request.js"
+		);
 		const eBayErrors = [
 			{
 				errorId: 25_709,
@@ -124,11 +126,11 @@ describe("MCP runtime", () => {
 			},
 		];
 		const createInventoryLocation = vi.fn(async () => {
-			throw new EbayApiError({
-				method: "POST",
-				path: "/sell/inventory/v1/location/WH1",
-				cause: { status: 400, data: { errors: eBayErrors } },
-			});
+			throw createEbayRequestFailure(
+				"POST",
+				"/sell/inventory/v1/location/WH1",
+				{ status: 400, data: { errors: eBayErrors } },
+			);
 		});
 		const api = {
 			initialize: vi.fn(async () => undefined),

@@ -80,8 +80,8 @@ describe("StoresApi reads", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
-		expect(error).toMatchObject({ parameter: "taskId" });
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toContain("taskId");
 		expect(client.get).not.toHaveBeenCalled();
 	});
 
@@ -100,11 +100,7 @@ describe("StoresApi reads", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			method: "GET",
-			path: STORE,
-		});
+		expect((error as Error).message).toContain(`eBay GET ${STORE} failed`);
 	});
 });
 
@@ -235,10 +231,7 @@ describe("StoresApi category change failures", () => {
 				}),
 		],
 	])("rejects a missing %s before sending the change", async (parameter, change) => {
-		await expect(change()).rejects.toMatchObject({
-			_tag: "EndpointInputError",
-			parameter,
-		});
+		await expect(change()).rejects.toThrow(parameter);
 		expect(client.postForResponse).not.toHaveBeenCalled();
 		expect(client.putForResponse).not.toHaveBeenCalled();
 		expect(client.deleteForResponse).not.toHaveBeenCalled();
@@ -262,11 +255,7 @@ describe("StoresApi category change failures", () => {
 				categoryId: "123",
 				categoryName: "Lenses",
 			}),
-		).rejects.toMatchObject({
-			_tag: "EbayApiError",
-			method: "PUT",
-			path: `${STORE}/categories/123`,
-		});
+		).rejects.toThrow(`eBay PUT ${STORE}/categories/123 failed`);
 	});
 
 	it("wraps a rejected category change in a typed EbayApiError", async () => {
@@ -276,10 +265,6 @@ describe("StoresApi category change failures", () => {
 
 		await expect(
 			stores.deleteStoreCategory({ categoryId: "123" }),
-		).rejects.toMatchObject({
-			_tag: "EbayApiError",
-			method: "DELETE",
-			path: `${STORE}/categories/123`,
-		});
+		).rejects.toThrow(`eBay DELETE ${STORE}/categories/123 failed`);
 	});
 });

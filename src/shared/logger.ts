@@ -1,396 +1,302 @@
-import { existsSync, mkdirSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
-import winston from "winston";
+import { appendFileSync, mkdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { getLoggingConfig } from "@/shared/environment.js";
 import { redactSecretFields, redactSecrets } from "@/shared/logRedaction.js";
 
-/**
- * Log directory for eBay MCP Server
- * Stored in user's home directory under .ebay-mcp/logs
- */
-const LOG_DIR = join(homedir(), ".ebay-mcp", "logs");
-const loggingConfig = getLoggingConfig();
+const homeDirectory = homedir();
+const LOG_DIR = join(homeDirectory, ".ebay-mcp", "logs");
+const ERROR_LOG_PATH = join(LOG_DIR, "error.log");
+const COMBINED_LOG_PATH = join(LOG_DIR, "combined.log");
+const DEBUG_LOG_PATH = join(LOG_DIR, "debug.log");
 
-// Ensure log directory exists
-if (!existsSync(LOG_DIR)) {
-	mkdirSync(LOG_DIR, { recursive: true });
-}
+const NPM_LEVEL_RANK = {
+	error: 0,
+	warn: 1,
+	info: 2,
+	http: 3,
+	verbose: 4,
+	debug: 5,
+	silly: 6,
+} as const;
 
-/**
- * Log level from environment variable or default to 'info'
- * Levels: error, warn, info, http, verbose, debug, silly
- */
-const LOG_LEVEL = loggingConfig.logLevel;
+type LogLevelName = keyof typeof NPM_LEVEL_RANK;
 
-/**
- * Whether to enable file logging (disabled in production MCP mode by default)
- */
-let fileLoggingEnabled = loggingConfig.enableFileLogging;
-
-/**
- * Custom log format with timestamp and colored output
- */
-const consoleFormat = winston.format.combine(
-	winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-	winston.format.errors({ stack: true }),
-	winston.format.printf(({ level, message, timestamp, stack, ...meta }) => {
-		const metaStr = Object.keys(meta).length
-			? `\n${JSON.stringify(meta, null, 2)}`
-			: "";
-		const stackStr = typeof stack === "string" ? `\n${stack}` : "";
-		return `[${timestamp}] [${level.toUpperCase()}] ${message}${metaStr}${stackStr}`;
-	}),
-);
-
-/**
- * File format (no colors, JSON for easier parsing)
- */
-const fileFormat = winston.format.combine(
-	winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-	winston.format.errors({ stack: true }),
-	winston.format.json(),
-);
-
-/**
- * Create Winston logger transports
- */
-const transports: winston.transport[] = [
-	// Console transport - always enabled for MCP stderr output
-	new winston.transports.Console({
-		format: consoleFormat,
-		stderrLevels: [
-			"error",
-			"warn",
-			"info",
-			"http",
-			"verbose",
-			"debug",
-			"silly",
-		],
-	}),
-];
-
-// Add file transports if enabled
-if (fileLoggingEnabled) {
-	transports.push(
-		// Error log - only errors
-		new winston.transports.File({
-			filename: join(LOG_DIR, "error.log"),
-			level: "error",
-			format: fileFormat,
-			maxsize: 5 * 1024 * 1024, // 5MB
-			maxFiles: 5,
-			tailable: true,
-		}),
-		// Combined log - all levels
-		new winston.transports.File({
-			filename: join(LOG_DIR, "combined.log"),
-			format: fileFormat,
-			maxsize: 10 * 1024 * 1024, // 10MB
-			maxFiles: 5,
-			tailable: true,
-		}),
-		// Debug log - verbose and debug messages
-		new winston.transports.File({
-			filename: join(LOG_DIR, "debug.log"),
-			level: "debug",
-			format: fileFormat,
-			maxsize: 10 * 1024 * 1024, // 10MB
-			maxFiles: 3,
-			tailable: true,
-		}),
-	);
-}
-
-/**
- * Main Winston logger instance
- */
-const logger = winston.createLogger({
-	level: LOG_LEVEL,
-	transports,
-	exitOnError: false,
-});
-
-/**
- * Logger interface for different components
- */
 export interface ComponentLogger {
-	/** Logs an error-level message to stderr/file transports. */
 	error: (message: string, meta?: Record<string, unknown>) => void;
-	/** Logs a warning-level message to stderr/file transports. */
 	warn: (message: string, meta?: Record<string, unknown>) => void;
-	/** Logs an info-level message to stderr/file transports. */
 	info: (message: string, meta?: Record<string, unknown>) => void;
-	/** Logs an HTTP-level message to stderr/file transports. */
 	http: (message: string, meta?: Record<string, unknown>) => void;
-	/** Logs a debug-level message to stderr/file transports. */
 	debug: (message: string, meta?: Record<string, unknown>) => void;
-	/** Logs a verbose-level message to stderr/file transports. */
 	verbose: (message: string, meta?: Record<string, unknown>) => void;
 }
 
-/** Log file paths exposed for diagnostics. */
 export interface LogPaths {
-	/** Directory that contains all log files. */
 	logDir: string;
-	/** Error-only log file path. */
 	errorLog: string;
-	/** Combined log file path. */
 	combinedLog: string;
-	/** Debug log file path. */
 	debugLog: string;
 }
 
-/**
- * Create a child logger for a specific component
- *
- * @param component - Component label prefixed to every emitted message.
- * @returns Component-scoped logger methods.
- *
- * @example
- * ```ts
- * const logger = createLogger('API');
- * logger.info('Ready');
- * ```
- */
-export const createLogger = (component: string): ComponentLogger => {
-	const toRedactedEntry = (message: string, meta?: Record<string, unknown>) => {
-		const redactedMessage = redactSecrets(message);
-		return {
-			message: `[${component}] ${redactedMessage}`,
-			meta: redactSecretFields(meta),
-		};
-	};
+interface PendingLog {
+	component: string;
+	level: LogLevelName;
+	message: string;
+	meta?: Record<string, unknown>;
+}
 
-	return {
-		error: (message: string, meta?: Record<string, unknown>) => {
-			const entry = toRedactedEntry(message, meta);
-			logger.error(entry.message, entry.meta);
-		},
-		warn: (message: string, meta?: Record<string, unknown>) => {
-			const entry = toRedactedEntry(message, meta);
-			logger.warn(entry.message, entry.meta);
-		},
-		info: (message: string, meta?: Record<string, unknown>) => {
-			const entry = toRedactedEntry(message, meta);
-			logger.info(entry.message, entry.meta);
-		},
-		http: (message: string, meta?: Record<string, unknown>) => {
-			const entry = toRedactedEntry(message, meta);
-			logger.http(entry.message, entry.meta);
-		},
-		debug: (message: string, meta?: Record<string, unknown>) => {
-			const entry = toRedactedEntry(message, meta);
-			logger.debug(entry.message, entry.meta);
-		},
-		verbose: (message: string, meta?: Record<string, unknown>) => {
-			const entry = toRedactedEntry(message, meta);
-			logger.verbose(entry.message, entry.meta);
-		},
-	};
-};
+let hasEnsuredLogDirectory = false;
 
-/**
- * Pre-configured loggers for different components
- */
-/** Logger for server lifecycle events. */
+function isKnownLevel(level: string): level is LogLevelName {
+	return Object.hasOwn(NPM_LEVEL_RANK, level);
+}
+
+function readLevelRank(level: string): number | undefined {
+	if (isKnownLevel(level)) {
+		return NPM_LEVEL_RANK[level];
+	}
+
+	return undefined;
+}
+
+function isLevelEnabled(level: LogLevelName): boolean {
+	const configuredRank = readLevelRank(getLoggingConfig().logLevel);
+
+	if (configuredRank === undefined) {
+		return false;
+	}
+
+	return NPM_LEVEL_RANK[level] <= configuredRank;
+}
+
+function formatLogLine(
+	level: LogLevelName,
+	labeledMessage: string,
+	redactedMeta: unknown,
+): string {
+	if (redactedMeta === undefined) {
+		return `[${level}] ${labeledMessage}`;
+	}
+
+	const metaText = JSON.stringify(redactedMeta);
+	return `[${level}] ${labeledMessage} ${metaText}`;
+}
+
+function logFilePaths(level: LogLevelName): string[] {
+	if (level === "error") {
+		return [COMBINED_LOG_PATH, ERROR_LOG_PATH, DEBUG_LOG_PATH];
+	}
+
+	if (NPM_LEVEL_RANK[level] <= NPM_LEVEL_RANK.debug) {
+		return [COMBINED_LOG_PATH, DEBUG_LOG_PATH];
+	}
+
+	return [COMBINED_LOG_PATH];
+}
+
+function ensureLogDirectory(): void {
+	if (hasEnsuredLogDirectory) {
+		return;
+	}
+
+	mkdirSync(LOG_DIR, { recursive: true });
+	hasEnsuredLogDirectory = true;
+}
+
+function appendLogLine(level: LogLevelName, line: string): void {
+	const isFileLoggingOff = !getLoggingConfig().enableFileLogging;
+
+	if (isFileLoggingOff) {
+		return;
+	}
+
+	const storedLine = `${line}\n`;
+
+	try {
+		ensureLogDirectory();
+
+		for (const logPath of logFilePaths(level)) {
+			appendFileSync(logPath, storedLine);
+		}
+	} catch (error) {
+		console.error({ error });
+	}
+}
+
+function writeLevel(pendingLog: PendingLog): void {
+	const isEnabled = isLevelEnabled(pendingLog.level);
+
+	if (!isEnabled) {
+		return;
+	}
+
+	const redactedMessage = redactSecrets(pendingLog.message);
+	const labeledMessage = `[${pendingLog.component}] ${redactedMessage}`;
+	const redactedMeta = redactSecretFields(pendingLog.meta);
+	const line = formatLogLine(pendingLog.level, labeledMessage, redactedMeta);
+
+	console.error(line);
+	appendLogLine(pendingLog.level, line);
+}
+
+export function createLogger(component: string): ComponentLogger {
+	function write(
+		level: LogLevelName,
+		message: string,
+		meta?: Record<string, unknown>,
+	): void {
+		if (meta === undefined) {
+			writeLevel({ component, level, message });
+			return;
+		}
+
+		writeLevel({ component, level, message, meta });
+	}
+
+	function error(message: string, meta?: Record<string, unknown>): void {
+		write("error", message, meta);
+	}
+
+	function warn(message: string, meta?: Record<string, unknown>): void {
+		write("warn", message, meta);
+	}
+
+	function info(message: string, meta?: Record<string, unknown>): void {
+		write("info", message, meta);
+	}
+
+	function http(message: string, meta?: Record<string, unknown>): void {
+		write("http", message, meta);
+	}
+
+	function debug(message: string, meta?: Record<string, unknown>): void {
+		write("debug", message, meta);
+	}
+
+	function verbose(message: string, meta?: Record<string, unknown>): void {
+		write("verbose", message, meta);
+	}
+
+	return { error, warn, info, http, debug, verbose };
+}
+
 export const serverLogger = createLogger("Server");
-/** Logger for outbound eBay API calls. */
 export const apiLogger = createLogger("API");
-/** Logger for OAuth and token operations. */
 export const authLogger = createLogger("Auth");
-/** Logger for MCP tool execution. */
 export const toolLogger = createLogger("Tool");
-/** Logger for setup wizard output. */
 export const setupLogger = createLogger("Setup");
 
-/**
- * Log HTTP request details
- *
- * @param method - HTTP method being sent.
- * @param url - Request URL.
- * @param params - Optional query parameters.
- * @param requestBody - Optional request body.
- * @returns Nothing; writes to configured logger transports.
- *
- * @example
- * ```ts
- * logRequest('GET', url, params);
- * ```
- */
-export const logRequest = (
+function listedParams(
+	params: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+	if (params === undefined) {
+		return undefined;
+	}
+
+	if (Object.keys(params).length === 0) {
+		return undefined;
+	}
+
+	return params;
+}
+
+function loggedField(field: unknown): unknown {
+	if (!field) {
+		return undefined;
+	}
+
+	return truncateData(field);
+}
+
+function rateLimitLabel(
+	rateLimitRemaining: string | undefined,
+	rateLimitTotal: string | undefined,
+): string | undefined {
+	if (!rateLimitRemaining) {
+		return undefined;
+	}
+
+	if (!rateLimitTotal) {
+		return undefined;
+	}
+
+	return `${rateLimitRemaining}/${rateLimitTotal}`;
+}
+
+function truncateData(logged: unknown): unknown {
+	if (logged instanceof Uint8Array) {
+		return `[binary ${logged.byteLength} bytes]`;
+	}
+
+	const redacted = redactSecretFields(logged);
+	const serialized = JSON.stringify(redacted);
+	const maxLoggedLength = 1000;
+
+	if (serialized.length <= maxLoggedLength) {
+		return redacted;
+	}
+
+	return `${serialized.substring(0, maxLoggedLength)}... [truncated]`;
+}
+
+export function logRequest(
 	method: string,
 	url: string,
 	params?: Record<string, unknown>,
 	requestBody?: unknown,
-): void => {
+): void {
 	apiLogger.http(`Request: ${method.toUpperCase()} ${url}`, {
-		params: params && Object.keys(params).length > 0 ? params : undefined,
-		body: requestBody ? truncateData(requestBody) : undefined,
+		params: listedParams(params),
+		body: loggedField(requestBody),
 	});
-};
+}
 
-/**
- * Log HTTP response details
- *
- * @param status - HTTP response status code.
- * @param statusText - HTTP response status text.
- * @param responseBody - Optional response payload.
- * @param rateLimitRemaining - Optional remaining request quota.
- * @param rateLimitTotal - Optional total request quota.
- * @returns Nothing; writes to configured logger transports.
- *
- * @example
- * ```ts
- * logResponse(200, 'OK', responseBody);
- * ```
- */
-export const logResponse = (
+export function logResponse(
 	status: number,
 	statusText: string,
 	responseBody?: unknown,
 	rateLimitRemaining?: string,
 	rateLimitTotal?: string,
-): void => {
+): void {
 	const meta: Record<string, unknown> = {};
+	const limitLabel = rateLimitLabel(rateLimitRemaining, rateLimitTotal);
+	const loggedBody = loggedField(responseBody);
 
-	if (rateLimitRemaining && rateLimitTotal) {
-		meta["rateLimit"] = `${rateLimitRemaining}/${rateLimitTotal}`;
+	if (limitLabel !== undefined) {
+		meta["rateLimit"] = limitLabel;
 	}
 
-	if (responseBody) {
-		meta["data"] = truncateData(responseBody);
+	if (loggedBody !== undefined) {
+		meta["data"] = loggedBody;
 	}
 
 	apiLogger.http(`Response: ${status} ${statusText}`, meta);
-};
+}
 
-/**
- * Log HTTP error response
- *
- * @param status - HTTP status code, when a response exists.
- * @param statusText - HTTP status text, when a response exists.
- * @param url - Request URL that failed.
- * @param errorData - Optional parsed error payload.
- * @returns Nothing; writes to configured logger transports.
- *
- * @example
- * ```ts
- * logErrorResponse(error.status, error.statusText, url, error.data);
- * ```
- */
-export const logErrorResponse = (
+export function logErrorResponse(
 	status: number | undefined,
 	statusText: string | undefined,
 	url: string,
 	errorData?: unknown,
-): void => {
+): void {
 	const statusLabel = status === undefined ? "No status" : String(status);
 	const statusTextLabel = statusText ?? "No response";
+
 	apiLogger.error(`Error Response: ${statusLabel} ${statusTextLabel}`, {
 		url,
-		error: errorData ? truncateData(errorData) : undefined,
+		error: loggedField(errorData),
 	});
-};
+}
 
-/**
- * Truncate large data objects for logging
- */
-const truncateData = (content: unknown, maxLength = 1000): unknown => {
-	// File bodies are logged by size only: serializing a 25 MiB Buffer would build a ~100 MB
-	// string and copy the file's opening bytes into the logs.
-	if (content instanceof Uint8Array) {
-		return `[binary ${content.byteLength} bytes]`;
-	}
-	const redacted = redactSecretFields(content);
-	const serialized = JSON.stringify(redacted);
-	if (serialized.length <= maxLength) {
-		return redacted;
-	}
-	return `${serialized.substring(0, maxLength)}... [truncated]`;
-};
+export function getLogPaths(): LogPaths {
+	return {
+		logDir: LOG_DIR,
+		errorLog: ERROR_LOG_PATH,
+		combinedLog: COMBINED_LOG_PATH,
+		debugLog: DEBUG_LOG_PATH,
+	};
+}
 
-/**
- * Get log file paths for user reference
- *
- * @returns Paths to the log directory and known log files.
- *
- * @example
- * ```ts
- * const paths = getLogPaths();
- * ```
- */
-export const getLogPaths = (): LogPaths => ({
-	logDir: LOG_DIR,
-	errorLog: join(LOG_DIR, "error.log"),
-	combinedLog: join(LOG_DIR, "combined.log"),
-	debugLog: join(LOG_DIR, "debug.log"),
-});
-
-/**
- * Reports whether file logging is currently enabled.
- *
- * @returns True when Winston file transports are enabled.
- *
- * @example
- * ```ts
- * if (isFileLoggingEnabled()) {
- *   serverLogger.info('File logging enabled');
- * }
- * ```
- */
-export const isFileLoggingEnabled = (): boolean => fileLoggingEnabled;
-
-/**
- * Enable or disable file logging at runtime
- *
- * @param enabled - Whether file logging should be enabled.
- * @returns Nothing; mutates Winston transports when enabling.
- *
- * @example
- * ```ts
- * setFileLogging(true);
- * ```
- */
-export const setFileLogging = (enabled: boolean): void => {
-	if (enabled && !fileLoggingEnabled) {
-		logger.add(
-			new winston.transports.File({
-				filename: join(LOG_DIR, "error.log"),
-				level: "error",
-				format: fileFormat,
-				maxsize: 5 * 1024 * 1024,
-				maxFiles: 5,
-				tailable: true,
-			}),
-		);
-		logger.add(
-			new winston.transports.File({
-				filename: join(LOG_DIR, "combined.log"),
-				format: fileFormat,
-				maxsize: 10 * 1024 * 1024,
-				maxFiles: 5,
-				tailable: true,
-			}),
-		);
-		fileLoggingEnabled = true;
-		logger.info("File logging enabled");
-	}
-};
-
-/**
- * Set log level at runtime
- *
- * @param level - Winston log level name.
- * @returns Nothing; mutates the shared Winston logger level.
- *
- * @example
- * ```ts
- * setLogLevel('debug');
- * ```
- */
-export const setLogLevel = (level: string): void => {
-	logger.level = level;
-	logger.info(`Log level set to: ${level}`);
-};
+export function isFileLoggingEnabled(): boolean {
+	return getLoggingConfig().enableFileLogging;
+}

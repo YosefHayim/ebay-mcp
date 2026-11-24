@@ -206,8 +206,9 @@ describe("MarketingApi", () => {
 			marketingApi.getCampaign({ campaignId: "1" }),
 		);
 
-		expect(error._tag).toBe("EbayApiError");
-		expect(error.method).toBe("GET");
-		expect(error.path).toBe("/sell/marketing/v1/ad_campaign/1");
+		expect((error as Error).message).toMatch(/^eBay /);
+		expect(error.message).toContain(
+			`eBay GET /sell/marketing/v1/ad_campaign/1 failed`,
+		);
 	});
 });

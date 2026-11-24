@@ -39,7 +39,7 @@ describe("getDestination", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("destinationId is required");
 	});
 });
@@ -75,7 +75,7 @@ describe("createDestination", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });
@@ -107,7 +107,7 @@ describe("updateDestination", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("destinationId is required");
 	});
 
@@ -122,7 +122,7 @@ describe("updateDestination", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });
@@ -149,7 +149,7 @@ describe("deleteDestination", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("destinationId is required");
 	});
 });

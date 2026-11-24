@@ -18,8 +18,8 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
+	createEbayRequestFailure,
 	decodeEndpointInputEffect,
-	EbayApiError,
 	type QueryParams,
 	requestGetEffect,
 } from "@/ebay-client/request.js";
@@ -183,7 +183,7 @@ export class FinancesApi {
 			const url = `${getIdentityBaseUrl(environment, apiBaseUrl)}${path}`;
 			return await client.get<T>(url, params, config);
 		} catch (cause) {
-			throw new EbayApiError({ method: "GET", path, cause }); // allow-duplicate
+			throw createEbayRequestFailure("GET", path, cause); // allow-duplicate
 		}
 	};
 

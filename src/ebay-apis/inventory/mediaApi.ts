@@ -4,8 +4,7 @@ import type {
 	EbayResponse,
 } from "@/ebay-client/ebayApiClient.js";
 import {
-	EbayApiError,
-	EndpointInputError,
+	createEbayRequestFailure,
 	requireObjectEffect,
 	requireStringEffect,
 } from "@/ebay-client/request.js";
@@ -153,32 +152,6 @@ export interface UploadImagesResult {
 }
 
 /** Failure of one upload in a sequence, carrying what already succeeded. */
-export class MediaUploadError extends Error {
-	readonly _tag = "MediaUploadError";
-	/** Reference of the file whose upload failed. */
-	readonly source: string;
-	/** Zero-based position of the failed file. */
-	readonly index: number;
-	/** Images uploaded before the failure, in order. */
-	readonly uploaded: readonly UploadedImage[];
-	/** Underlying failure. */
-	override readonly cause: unknown;
-
-	constructor(failure: {
-		source: string;
-		index: number;
-		uploaded: readonly UploadedImage[];
-		cause: unknown;
-		message: string;
-	}) {
-		super(failure.message);
-		this.name = "MediaUploadError";
-		this.source = failure.source;
-		this.index = failure.index;
-		this.uploaded = failure.uploaded;
-		this.cause = failure.cause;
-	}
-}
 
 const idFromLocation = (location: string | undefined): string | undefined =>
 	location?.split("/").filter(Boolean).at(-1);
@@ -192,8 +165,8 @@ const resourcePath = (
 
 const apiFailure =
 	(method: "GET" | "POST", path: string) =>
-	(cause: unknown): EbayApiError =>
-		new EbayApiError({ method, path, cause });
+	(cause: unknown): Error =>
+		createEbayRequestFailure(method, path, cause);
 
 const videoStatusFinal = (video: Video): boolean =>
 	video.status !== undefined && TERMINAL_VIDEO_STATUSES.has(video.status);
@@ -224,19 +197,17 @@ function requireDurationMs(
 	const isNotFinite = !Number.isFinite(durationMs);
 
 	if (isNotFinite) {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
-		});
+		throw new Error(
+			`${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
+		);
 	}
 
 	const isBelowMinimum = durationMs < minimum;
 
 	if (isBelowMinimum) {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
-		});
+		throw new Error(
+			`${name} must be a finite number of milliseconds of at least ${minimum} when provided`,
+		);
 	}
 
 	return durationMs;
@@ -343,11 +314,11 @@ export class MediaApi {
 		const imageUrl = imageResponse.data?.imageUrl;
 
 		if (!imageUrl) {
-			throw new EbayApiError({
-				method: "POST",
+			throw createEbayRequestFailure(
+				"POST",
 				path,
-				cause: new Error("eBay returned no imageUrl for the uploaded picture"),
-			});
+				new Error("eBay returned no imageUrl for the uploaded picture"),
+			);
 		}
 
 		return {
@@ -391,13 +362,10 @@ export class MediaApi {
 					? `; already uploaded: ${uploaded.map(imageUrlOf).join(", ")}`
 					: "";
 
-				throw new MediaUploadError({
-					source: file.source,
-					index,
-					uploaded: [...uploaded],
-					cause,
-					message: `upload of ${file.source} (file ${index + 1} of ${files.length}) failed: ${getErrorMessage(cause)}${alreadyUploaded}`,
-				});
+				throw new Error(
+					`upload of ${file.source} (file ${index + 1} of ${files.length}) failed: ${getErrorMessage(cause)}${alreadyUploaded}`,
+					{ cause: cause },
+				);
 			}
 		}
 
@@ -478,13 +446,11 @@ export class MediaApi {
 		const videoId = idFromLocation(videoResponse.headers["location"]);
 
 		if (!videoId) {
-			throw new EbayApiError({
-				method: "POST",
+			throw createEbayRequestFailure(
+				"POST",
 				path,
-				cause: new Error(
-					"eBay returned no Location header with the new video ID",
-				),
-			});
+				new Error("eBay returned no Location header with the new video ID"),
+			);
 		}
 
 		return { videoId };

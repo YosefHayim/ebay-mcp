@@ -13,8 +13,7 @@ import {
 } from "@/ebay-client/location.js";
 import {
 	buildEndpointParams,
-	EbayApiError,
-	EndpointInputError,
+	createEbayRequestFailure,
 	type QueryParams,
 } from "@/ebay-client/request.js";
 
@@ -91,17 +90,11 @@ export const exclusiveFeedFilters = <TQuery extends FeedListQuery>(
 	query: TQuery,
 ): TQuery => {
 	if (query.feedType !== undefined && query.scheduleId !== undefined) {
-		throw new EndpointInputError({
-			parameter: "scheduleId",
-			message: "Pass feedType or scheduleId, not both",
-		});
+		throw new Error("Pass feedType or scheduleId, not both");
 	}
 
 	if (query.dateRange !== undefined && query.lookBackDays !== undefined) {
-		throw new EndpointInputError({
-			parameter: "lookBackDays",
-			message: "Pass dateRange or lookBackDays, not both",
-		});
+		throw new Error("Pass dateRange or lookBackDays, not both");
 	}
 
 	return query;
@@ -134,7 +127,7 @@ export const postFeedResource = async (
 			config,
 		);
 	} catch (cause) {
-		throw new EbayApiError({ method: "POST", path, cause });
+		throw createEbayRequestFailure("POST", path, cause);
 	}
 
 	return locatedResourceId(createdResponse.headers["location"], path);

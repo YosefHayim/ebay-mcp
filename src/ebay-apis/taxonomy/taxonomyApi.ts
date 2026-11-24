@@ -481,7 +481,6 @@ export class TaxonomyApi {
 		const { categoryTreeId } = decodeEndpointInputEffect(
 			categoryTreeIdInputSchema,
 			input,
-			"categoryTreeId",
 		);
 
 		return `${this.basePath}/category_tree/${encodeURIComponent(categoryTreeId)}/${resource}`;

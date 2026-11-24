@@ -10,7 +10,6 @@ import type {
 import {
 	buildEndpointParams,
 	decodeEndpointInputEffect,
-	EndpointInputError,
 	requestGetEffect,
 } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/commerceCharityV1Oas3.js";
@@ -108,19 +107,15 @@ export class CharityApi {
 			search.q !== undefined && search.registrationIds !== undefined;
 
 		if (hasNeitherQuery) {
-			throw new EndpointInputError({
-				parameter: "q",
-				message:
-					"Supply either q or registrationIds to search charities, but not both",
-			});
+			throw new Error(
+				"Supply either q or registrationIds to search charities, but not both",
+			);
 		}
 
 		if (hasBothQueries) {
-			throw new EndpointInputError({
-				parameter: "q",
-				message:
-					"Supply either q or registrationIds to search charities, but not both",
-			});
+			throw new Error(
+				"Supply either q or registrationIds to search charities, but not both",
+			);
 		}
 
 		const params = buildEndpointParams({

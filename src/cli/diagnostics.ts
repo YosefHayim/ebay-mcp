@@ -27,7 +27,7 @@ import { parseEnvFile } from "@/shared/envParser.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import { detectLLMClients } from "@/shared/llmClientDetector.js";
 import { paint } from "@/shared/paint.js";
-import { getUpdateInfo, getVersion } from "@/shared/version.js";
+import { getVersion } from "@/shared/version.js";
 import { readEnvironment } from "./setupShared.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -132,33 +132,9 @@ function displaySystemInfo(): void {
 	console.log("");
 }
 
-/**
- * Check npm for a newer published version and surface it. `diagnose` is an
- * intentional, interactive command run by the user, so a live registry fetch is
- * appropriate here (unlike the server hot path, which uses the cached check).
- * A failed fetch (offline) is reported, not thrown — diagnostics should never
- * abort on a best-effort network call.
- */
-async function displayUpdateStatus(): Promise<void> {
+function displayUpdateStatus(): void {
 	console.log(paint.bold.cyan("🔄 Version\n"));
 	console.log(`  ${paint.gray("Installed:")} ${getVersion()}`);
-
-	try {
-		const updateInfo = await getUpdateInfo();
-
-		if (updateInfo) {
-			console.log(
-				`  ${paint.gray("Latest:")}    ${paint.green(updateInfo.latest)} ${paint.yellow(`(run \`npm i -g ${updateInfo.name}\` to update)`)}`,
-			);
-		} else {
-			console.log(`  ${paint.gray("Latest:")}    ${paint.green("up to date")}`);
-		}
-	} catch {
-		console.log(
-			`  ${paint.gray("Latest:")}    ${paint.dim("update check unavailable (offline?)")}`,
-		);
-	}
-
 	console.log("");
 }
 
@@ -328,7 +304,7 @@ async function generateDiagnosticReport(
 export const runDiagnostics = async (exportReport = false): Promise<void> => {
 	displayHeader();
 	displaySystemInfo();
-	await displayUpdateStatus();
+	displayUpdateStatus();
 
 	// Security checks
 	const securityResults = await runSecurityChecks(PROJECT_ROOT);

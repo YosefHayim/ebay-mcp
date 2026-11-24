@@ -92,7 +92,6 @@ describe("feed files", () => {
 		await expect(
 			loadLocalMedia(await writeFeed(name, bytes), "feedFile", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining(reason),
 		});
 	});
@@ -108,7 +107,6 @@ describe("feed file limits and access", () => {
 		await expect(
 			loadLocalMedia(await writeFeed(name, XML), "feedFile", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("unsupported feedFile extension"),
 		});
 	});
@@ -126,7 +124,6 @@ describe("feed file limits and access", () => {
 		await expect(
 			loadLocalMedia(filePath, "feedFile", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining(`${MAX_FEED_FILE_BYTES} bytes`),
 		});
 	});
@@ -143,7 +140,7 @@ describe("feed file limits and access", () => {
 		for (const source of sources) {
 			await expect(
 				loadLocalMedia(source, "feedFile", access),
-			).rejects.toMatchObject({ _tag: "LocalMediaError" });
+			).rejects.toThrow();
 		}
 		await expect(
 			loadLocalMedia(await writeFeed("ok.xml", XML), "feedFile", {
@@ -151,7 +148,6 @@ describe("feed file limits and access", () => {
 				errors: [],
 			}),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("EBAY_MCP_MEDIA_DIRS"),
 		});
 	});
@@ -165,14 +161,11 @@ describe("feed file limits and access", () => {
 			"document",
 			"postOrderDocument",
 		] as const) {
-			await expect(
-				loadLocalMedia(filePath, kind, access),
-			).rejects.toMatchObject({ _tag: "LocalMediaError" });
+			await expect(loadLocalMedia(filePath, kind, access)).rejects.toThrow();
 		}
 		await expect(
 			loadLocalMedia(fixture.jpeg, "feedFile", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("unsupported feedFile extension"),
 		});
 	});

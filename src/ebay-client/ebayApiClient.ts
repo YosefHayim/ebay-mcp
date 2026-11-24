@@ -1,10 +1,6 @@
 import type { KeyObject } from "node:crypto";
 import { setTimeout } from "node:timers/promises";
 import { EbayOAuthClient } from "@/auth/oauth.js";
-import {
-	clientRequestError,
-	type EbayClientRequestError,
-} from "@/ebay-client/ebayClientRequestError.js";
 import { RateLimitTracker } from "@/ebay-client/rateLimitTracker.js";
 import {
 	parseSigningPrivateKey,
@@ -14,11 +10,10 @@ import type { EbayConfig } from "@/shared/ebay.js";
 import { getBaseUrl, getIdentityBaseUrl } from "@/shared/environment.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import {
-	type HttpError,
 	type HttpResponse,
-	httpRequest,
-	isHttpError,
+	httpRequestEffect,
 	type ResponseType,
+	readHttpFailureMessage,
 } from "@/shared/http.js";
 import {
 	apiLogger,
@@ -26,7 +21,6 @@ import {
 	logRequest,
 	logResponse,
 } from "@/shared/logger.js";
-import { isRecord } from "@/shared/typeGuards.js";
 
 /**
  * Which eBay OAuth token a request authenticates with.
@@ -163,6 +157,26 @@ function isPresent<Present>(present: Present | undefined): present is Present {
 const SIGNING_SETUP_HINT =
 	" eBay requires Digital Signatures on this call for EU/UK sellers. Create a key with ebay_create_signing_key, then set EBAY_SIGNING_KEY_JWE (the jwe value) and EBAY_SIGNING_PRIVATE_KEY (the privateKey value) and restart the server.";
 
+function signingSetupMessage(
+	detail: string | undefined,
+	signed: boolean | undefined,
+	hasSigningCredentials: boolean,
+): string | undefined {
+	if (signed !== true) {
+		return undefined;
+	}
+
+	if (!isSignatureFailure(detail)) {
+		return undefined;
+	}
+
+	if (hasSigningCredentials) {
+		return undefined;
+	}
+
+	return `${detail?.replace(TRAILING_PERIOD_PATTERN, ".")}${SIGNING_SETUP_HINT}`;
+}
+
 /** Normalized request options used by the client transport. */
 interface EbayRequestOptions {
 	/** Query-string parameters appended to the request URL. */
@@ -217,20 +231,6 @@ const tokenFailureRemediation = (
 	tokenType === "application"
 		? "This endpoint requires an application access token minted from client credentials, which a user token cannot supply. Check EBAY_CLIENT_ID and EBAY_CLIENT_SECRET."
 		: "Please use the ebay_set_user_tokens_with_expiry tool to provide valid tokens.";
-
-function isMissingStatus(
-	status: number | null | undefined,
-): status is null | undefined {
-	if (status === undefined) {
-		return true;
-	}
-
-	if (status === null) {
-		return true;
-	}
-
-	return false;
-}
 
 function isServerStatus(status: number | undefined): boolean {
 	if (typeof status !== "number") {
@@ -326,23 +326,15 @@ export class EbayApiClient {
 		const isBlob = options.data instanceof Blob;
 
 		if (isMultipart) {
-			throw clientRequestError({
-				kind: "signing",
-				method,
-				url,
-				message:
-					"Multipart and Blob request bodies cannot be digitally signed.",
-			});
+			throw new Error(
+				"Multipart and Blob request bodies cannot be digitally signed.",
+			);
 		}
 
 		if (isBlob) {
-			throw clientRequestError({
-				kind: "signing",
-				method,
-				url,
-				message:
-					"Multipart and Blob request bodies cannot be digitally signed.",
-			});
+			throw new Error(
+				"Multipart and Blob request bodies cannot be digitally signed.",
+			);
 		}
 
 		const { wireBody, digestBytes } = serializeSignedBody(options.data);
@@ -365,11 +357,7 @@ export class EbayApiClient {
 			);
 			return { wireBody, signatureHeaders };
 		} catch (cause) {
-			throw clientRequestError({
-				kind: "signing",
-				method,
-				url,
-				message: `Failed to sign request: ${getErrorMessage(cause)}`,
+			throw new Error(`Failed to sign request: ${getErrorMessage(cause)}`, {
 				cause,
 			});
 		}
@@ -397,36 +385,11 @@ export class EbayApiClient {
 	/**
 	 * Return the credential validation error that would block an authenticated request.
 	 */
-	private accessTokenValidationError(
-		method: string,
-		url: string,
-	): EbayClientRequestError | undefined {
+	private accessTokenValidationError(): Error | undefined {
 		if (!(this.config.clientId && this.config.clientSecret)) {
-			return clientRequestError({
-				kind: "missingCredentials",
-				method,
-				url,
-				message:
-					"Missing required eBay credentials. Please set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in your .env file.",
-			});
-		}
-
-		return undefined;
-	}
-
-	/**
-	 * Pull the most descriptive eBay error string from a response body when present.
-	 * eBay REST errors arrive as `{ errors: [{ message, longMessage }] }`.
-	 */
-	private ebayErrorDetail(errorBody: unknown): string | undefined {
-		if (isRecord(errorBody) && Array.isArray(errorBody["errors"])) {
-			const [firstError] = errorBody["errors"];
-			if (isRecord(firstError)) {
-				const detail = firstError["longMessage"] ?? firstError["message"];
-				if (typeof detail === "string") {
-					return detail;
-				}
-			}
+			return new Error(
+				"Missing required eBay credentials. Please set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in your .env file.",
+			);
 		}
 
 		return undefined;
@@ -491,7 +454,7 @@ export class EbayApiClient {
 		const suppliesOwnAuth = !this.config.disableAuthHeader;
 
 		if (suppliesOwnAuth) {
-			const validationError = this.accessTokenValidationError(method, url);
+			const validationError = this.accessTokenValidationError();
 
 			if (validationError) {
 				throw validationError;
@@ -502,12 +465,9 @@ export class EbayApiClient {
 
 		if (isPastLocalRateLimit) {
 			const stats = this.rateLimitTracker.getStats();
-			throw clientRequestError({
-				kind: "localRateLimit",
-				method,
-				url,
-				message: `Rate limit exceeded: ${stats.current}/${stats.max} requests in ${stats.windowMs}ms window. Please wait before making more requests.`,
-			});
+			throw new Error(
+				`Rate limit exceeded: ${stats.current}/${stats.max} requests in ${stats.windowMs}ms window. Please wait before making more requests.`,
+			);
 		}
 
 		const headers: Record<string, string> = {
@@ -542,25 +502,18 @@ export class EbayApiClient {
 			try {
 				token = await this.acquireAccessToken(options.tokenType);
 			} catch (cause) {
-				throw clientRequestError({
-					kind: "tokenAcquisition",
-					method,
-					url,
-					message: `Failed to get access token: ${getErrorMessage(cause)}`,
-					cause,
-				});
+				throw new Error(
+					`Failed to get access token: ${getErrorMessage(cause)}`,
+					{ cause },
+				);
 			}
 
 			const isTokenMissing = !token;
 
 			if (isTokenMissing) {
-				throw clientRequestError({
-					kind: "missingAccessToken",
-					method,
-					url,
-					message:
-						"Access token is missing. Provide EBAY_USER_REFRESH_TOKEN or valid app credentials, then retry.",
-				});
+				throw new Error(
+					"Access token is missing. Provide EBAY_USER_REFRESH_TOKEN or valid app credentials, then retry.",
+				);
 			}
 
 			headers["Authorization"] = `Bearer ${token}`;
@@ -586,8 +539,10 @@ export class EbayApiClient {
 		const responseType = options.responseType;
 		const maxBytes = options.maxBytes;
 
+		let httpResponse: HttpResponse<T>;
+
 		try {
-			const httpResponse = await httpRequest<T>({
+			httpResponse = await httpRequestEffect<T>({
 				method,
 				url,
 				headers,
@@ -597,6 +552,14 @@ export class EbayApiClient {
 				...(isPresent(responseType) ? { responseType } : {}),
 				...(isPresent(maxBytes) ? { maxBytes } : {}),
 			});
+		} catch (error) {
+			throw new Error(getErrorMessage(error), { cause: error });
+		}
+
+		const status = httpResponse.status;
+		const isSuccess = status >= 200 && status <= 299;
+
+		if (isSuccess) {
 			logResponse(
 				httpResponse.status,
 				httpResponse.statusText,
@@ -606,72 +569,53 @@ export class EbayApiClient {
 			);
 
 			return httpResponse;
-		} catch (error) {
-			return await this.handleRequestFailure<T>(error, {
-				method,
-				url,
-				options,
-				state,
-			});
 		}
+
+		return await this.handleCompletedFailure<T>(httpResponse, {
+			method,
+			url,
+			options,
+			state,
+		});
 	}
 
 	/**
-	 * Convert an HTTP failure into a bounded retry or final request error.
+	 * Turn a completed non-2xx response into a bounded retry or a plain Error.
 	 */
-	private async handleRequestFailure<T>(
-		error: unknown,
+	private async handleCompletedFailure<T>(
+		httpResponse: HttpResponse<T>,
 		context: RequestFailureContext,
 	): Promise<HttpResponse<T>> {
 		const { method, url, options, state } = context;
-		const isTransportFailure = !isHttpError(error);
+		const status = httpResponse.status;
 
-		if (isTransportFailure) {
-			throw clientRequestError({
-				kind: "transport",
-				method,
-				url,
-				message: getErrorMessage(error),
-				cause: error,
-			});
-		}
-
-		if (isMissingStatus(error.status)) {
-			apiLogger.error("No response received from server", { url });
-		} else {
-			logErrorResponse(error.status, error.statusText, url, error.data);
-		}
+		logErrorResponse(status, httpResponse.statusText, url, httpResponse.data);
 
 		// 401 — refresh the token once, then retry the request. Skipped in proxy
 		// auth mode: the server holds no token to refresh, so a 401 (the proxy's
 		// own auth failing) is surfaced directly rather than retried.
-		const isUnauthorized = error.status === 401;
+		const isUnauthorized = status === 401;
 		const canRefreshAuth = this.config.disableAuthHeader !== true;
 
 		if (isUnauthorized) {
 			if (canRefreshAuth) {
-				return await this.retryUnauthorized<T>(error, context);
+				return await this.retryUnauthorized<T>(httpResponse, context);
 			}
 		}
 
 		// 429 — surface a clear rate-limit message with the server's retry hint.
-		if (error.status === 429) {
-			const retryAfter = error.headers["retry-after"];
+		const isRateLimited = status === 429;
+
+		if (isRateLimited) {
+			const retryAfter = httpResponse.headers["retry-after"];
 			const waitTime = retryWaitMilliseconds(retryAfter);
-			throw clientRequestError({
-				kind: "remoteRateLimit",
-				method,
-				url,
-				status: error.status,
-				message:
-					`eBay API rate limit exceeded. Retry after ${waitTime / 1000} seconds. ` +
+			throw new Error(
+				`eBay API rate limit exceeded. Retry after ${waitTime / 1000} seconds. ` +
 					"Consider reducing request frequency or upgrading to user tokens for higher limits.",
-				cause: error,
-			});
+			);
 		}
 
 		// 5xx — retry up to three times with exponential backoff.
-		const status = error.status;
 		const isServerError = isServerStatus(status);
 		const canRetryServerError = state.serverRetries < 3;
 
@@ -693,24 +637,14 @@ export class EbayApiClient {
 			}
 		}
 
-		if (!isMissingStatus(error.status)) {
-			throw this.httpStatusError(error, context);
-		}
-
-		throw clientRequestError({
-			kind: "transport",
-			method,
-			url,
-			message: error.message,
-			cause: error,
-		});
+		throw new Error(this.httpStatusMessage(httpResponse, context));
 	}
 
 	private async retryUnauthorized<T>(
-		error: HttpError,
+		httpResponse: HttpResponse<T>,
 		context: RequestFailureContext,
 	): Promise<HttpResponse<T>> {
-		const { method, url, options, state } = context;
+		const { options, state, method, url } = context;
 		const canRetryAuth = !state.authRetried;
 
 		if (canRetryAuth) {
@@ -723,19 +657,15 @@ export class EbayApiClient {
 			} catch (refreshError) {
 				const reason = getErrorMessage(refreshError);
 				apiLogger.error("Failed to refresh token", { error: reason });
-				const detail =
-					this.ebayErrorDetail(error.data) ?? "Invalid access token";
-				const status = error.status;
-				throw clientRequestError({
-					kind: "tokenRefresh",
-					method,
-					url,
-					message:
-						`${detail}. Token refresh failed: ${reason}. ` +
+				const detail = readHttpFailureMessage(
+					httpResponse.data,
+					"Invalid access token",
+				);
+				throw new Error(
+					`${detail}. Token refresh failed: ${reason}. ` +
 						tokenFailureRemediation(options.tokenType),
-					cause: refreshError,
-					...(isPresent(status) ? { status } : {}),
-				});
+					{ cause: refreshError },
+				);
 			}
 
 			apiLogger.info("Token refreshed successfully. Retrying request...");
@@ -746,50 +676,38 @@ export class EbayApiClient {
 			});
 		}
 
-		const detail = this.ebayErrorDetail(error.data) ?? "Invalid access token";
-		const status = error.status;
-		throw clientRequestError({
-			kind: "tokenRefresh",
-			method,
-			url,
-			message:
-				`${detail}. Automatic token refresh failed. ` +
+		const detail = readHttpFailureMessage(
+			httpResponse.data,
+			"Invalid access token",
+		);
+		throw new Error(
+			`${detail}. Automatic token refresh failed. ` +
 				tokenFailureRemediation(options.tokenType),
-			cause: error,
-			...(isPresent(status) ? { status } : {}),
-		});
+		);
 	}
 
-	private httpStatusError(
-		error: HttpError,
+	private httpStatusMessage<T>(
+		httpResponse: HttpResponse<T>,
 		context: RequestFailureContext,
-	): EbayClientRequestError {
-		const { method, url, options } = context;
-		const detail = this.ebayErrorDetail(error.data);
-		const status = error.status;
-		// Without credentials, a signature rejection is a setup problem: show setup guidance.
-		if (
-			options.signed &&
-			isSignatureFailure(detail) &&
-			this.config.signing === undefined
-		) {
-			return clientRequestError({
-				kind: "signing",
-				method,
-				url,
-				message: `${detail?.replace(TRAILING_PERIOD_PATTERN, ".")}${SIGNING_SETUP_HINT}`,
-				cause: error,
-				...(isPresent(status) ? { status } : {}),
-			});
+	): string {
+		const { url, options } = context;
+		const status = httpResponse.status;
+		const extracted = readHttpFailureMessage(httpResponse.data, "");
+		const detail = extracted === "" ? undefined : extracted;
+		const setupMessage = signingSetupMessage(
+			detail,
+			options.signed,
+			this.config.signing !== undefined,
+		);
+
+		if (setupMessage !== undefined) {
+			return setupMessage;
 		}
-		return clientRequestError({
-			kind: "httpStatus",
-			method,
-			url,
-			message: `eBay API Error: ${detail || error.message}${this.ebayErrorBody(error.data)}`,
-			cause: error,
-			...(isPresent(status) ? { status } : {}),
-		});
+
+		const fallback = `Request to ${url} failed with status ${status}`;
+		const shownDetail = detail ?? fallback;
+
+		return `eBay API Error: ${shownDetail}${this.ebayErrorBody(httpResponse.data)}`;
 	}
 
 	/**

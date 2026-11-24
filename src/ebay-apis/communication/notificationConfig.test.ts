@@ -39,7 +39,7 @@ describe("getPublicKey", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("publicKeyId is required");
 	});
 });
@@ -80,7 +80,7 @@ describe("updateConfig", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });

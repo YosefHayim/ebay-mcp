@@ -1,5 +1,3 @@
-import { EbayApiError } from "@/ebay-client/request.js";
-
 /** Resource created by an eBay endpoint that reports its identifier only in `Location`. */
 export interface LocatedResource {
 	/** Location header exactly as eBay returned it. */
@@ -52,7 +50,7 @@ function readLocatedResource(
  *
  * @param location - `Location` header from the create response, if any.
  * @param collectionPath - eBay REST collection path the resource must live under, e.g. `/sell/feed/v1/order_task`.
- * @returns The header and its decoded ID. Throws EbayApiError for a missing or invalid header.
+ * @returns The header and its decoded ID. Throws when the header is missing or invalid.
  *
  * @example
  * ```ts
@@ -66,6 +64,10 @@ export function locatedResourceId(
 	try {
 		return readLocatedResource(location, collectionPath);
 	} catch (cause) {
-		throw new EbayApiError({ method: "POST", path: collectionPath, cause });
+		const detail = cause instanceof Error ? cause.message : String(cause);
+
+		throw new Error(`eBay POST ${collectionPath} failed: ${detail}`, {
+			cause,
+		});
 	}
 }

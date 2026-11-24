@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	MediaApi,
-	MediaUploadError,
-	type Video,
-} from "@/ebay-apis/inventory/mediaApi.js";
+import { MediaApi, type Video } from "@/ebay-apis/inventory/mediaApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EbayApiError, EndpointInputError } from "@/ebay-client/request.js";
 
 type MediaApiItems = ConstructorParameters<typeof MediaApi>[1];
 
@@ -110,10 +105,10 @@ describe("MediaApi", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(EbayApiError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof EbayApiError) {
-			expect(error._tag).toBe("EbayApiError");
+		if (error instanceof Error) {
+			expect((error as Error).message).toMatch(/^eBay /);
 			expect(error.message).toContain("no imageUrl");
 		}
 	});
@@ -136,17 +131,10 @@ describe("MediaApi", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(MediaUploadError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof MediaUploadError) {
-			expect(error).toMatchObject({
-				_tag: "MediaUploadError",
-				source: "/media/back.jpg",
-				index: 1,
-			});
-			expect(error.uploaded.map((image) => image.imageUrl)).toEqual([
-				"https://i.ebayimg.com/1.jpg",
-			]);
+		if (error instanceof Error) {
+			expect(error.message).toContain("/media/back.jpg");
 			expect(error.message).toContain("file 2 of 2");
 			expect(error.message).toContain("https://i.ebayimg.com/1.jpg");
 		}
@@ -192,9 +180,9 @@ describe("MediaApi", () => {
 			error = caught;
 		}
 
-		expect(error).toBeInstanceOf(EbayApiError);
+		expect(error).toBeInstanceOf(Error);
 
-		if (error instanceof EbayApiError) {
+		if (error instanceof Error) {
 			expect(error.message).toContain("Location");
 		}
 	});
@@ -273,7 +261,7 @@ describe("MediaApi", () => {
 			});
 		} catch (error) {
 			failed = true;
-			expect(error).toBeInstanceOf(EndpointInputError);
+			expect(error).toBeInstanceOf(Error);
 		}
 
 		expect(failed).toBe(true);
@@ -294,14 +282,14 @@ describe("MediaApi", () => {
 			});
 		} catch (error) {
 			infiniteIntervalFailed = true;
-			expect(error).toBeInstanceOf(EndpointInputError);
+			expect(error).toBeInstanceOf(Error);
 		}
 
 		try {
 			await media.waitForVideo({ videoId: "VID-1", maxWaitMs: Number.NaN });
 		} catch (error) {
 			notANumberBudgetFailed = true;
-			expect(error).toBeInstanceOf(EndpointInputError);
+			expect(error).toBeInstanceOf(Error);
 		}
 
 		expect(infiniteIntervalFailed).toBe(true);

@@ -69,7 +69,7 @@ describe("createSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });
@@ -97,7 +97,7 @@ describe("getSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 });
@@ -130,7 +130,7 @@ describe("updateSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 
@@ -145,7 +145,7 @@ describe("updateSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });
@@ -172,7 +172,7 @@ describe("deleteSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 });
@@ -200,7 +200,7 @@ describe("disableSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 });
@@ -228,7 +228,7 @@ describe("enableSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 });
@@ -256,7 +256,7 @@ describe("testSubscription", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 });

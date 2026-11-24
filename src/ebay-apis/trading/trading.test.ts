@@ -114,7 +114,7 @@ it("gets one listing by item ID", async () => {
 it("fails getListing when itemId is missing", async () => {
 	const error = await caughtError(api.getListing({ itemId: "" }));
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("itemId is required");
 });
 
@@ -149,7 +149,7 @@ it("fails reviseListing when itemId is missing", async () => {
 		api.reviseListing({ itemId: "", fields: {} }),
 	);
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("itemId is required");
 });
 
@@ -178,7 +178,7 @@ it("defaults endListing reason to NotAvailable", async () => {
 it("fails endListing when itemId is missing", async () => {
 	const error = await caughtError(api.endListing({ itemId: "" }));
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("itemId is required");
 });
 
@@ -209,7 +209,7 @@ it("passes relist modifications", async () => {
 it("fails relistItem when itemId is missing", async () => {
 	const error = await caughtError(api.relistItem({ itemId: "" }));
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("itemId is required");
 });
 
@@ -241,7 +241,7 @@ it("rejects an auction that mixes fixed-price rules before calling eBay", async 
 		}),
 	);
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("item.ListingDuration");
 	expect(mockClient.execute).not.toHaveBeenCalled();
 });
@@ -253,7 +253,7 @@ it("rejects fixed-price items that carry auction prices", async () => {
 		}),
 	);
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("item.ReservePrice");
 	expect(mockClient.execute).not.toHaveBeenCalled();
 });
@@ -281,7 +281,7 @@ it("rejects an auction revision with a reserve below the opening bid", async () 
 		}),
 	);
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("fields.ReservePrice");
 	expect(mockClient.execute).not.toHaveBeenCalled();
 });
@@ -306,7 +306,7 @@ it("rejects SellToHighBidder on a fixed-price end", async () => {
 		api.endListing({ itemId: "12345", reason: "SellToHighBidder" }),
 	);
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain("AUCTION");
 	expect(mockClient.execute).not.toHaveBeenCalled();
 });
@@ -337,7 +337,7 @@ it("rejects an auction relist that combines Best Offer with Buy It Now", async (
 		}),
 	);
 
-	expect(error._tag).toBe("EndpointInputError");
+	expect(error).toBeInstanceOf(Error);
 	expect(error.message).toContain(
 		"modifications.BestOfferDetails.BestOfferEnabled",
 	);

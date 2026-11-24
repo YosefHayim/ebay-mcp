@@ -95,11 +95,9 @@ describe("requestDownloadEffect", () => {
 				client,
 				"/commerce/taxonomy/v1/category_tree/0/fetch_item_aspects",
 			),
-		).rejects.toMatchObject({
-			_tag: "DownloadTooLargeError",
-			bytes: MAX_INLINE_DOWNLOAD_BYTES + 1,
-			limit: MAX_INLINE_DOWNLOAD_BYTES,
-		});
+		).rejects.toThrow(
+			`eBay file from /commerce/taxonomy/v1/category_tree/0/fetch_item_aspects is at least ${MAX_INLINE_DOWNLOAD_BYTES + 1} bytes, above the ${MAX_INLINE_DOWNLOAD_BYTES}-byte limit for returning files inline over MCP`,
+		);
 	});
 
 	it("rejects a file by its declared length when reading stopped early", async () => {
@@ -112,10 +110,9 @@ describe("requestDownloadEffect", () => {
 			}),
 		} as unknown as EbayApiClient;
 
-		await expect(requestDownloadEffect(client, "/big")).rejects.toMatchObject({
-			_tag: "DownloadTooLargeError",
-			bytes: declared,
-		});
+		await expect(requestDownloadEffect(client, "/big")).rejects.toThrow(
+			`eBay file from /big is at least ${declared} bytes, above the ${MAX_INLINE_DOWNLOAD_BYTES}-byte limit for returning files inline over MCP`,
+		);
 	});
 
 	it("fails with a tagged EbayApiError", async () => {
@@ -123,13 +120,9 @@ describe("requestDownloadEffect", () => {
 			getForResponse: vi.fn().mockRejectedValue(new Error("not found")),
 		} as unknown as EbayApiClient;
 
-		await expect(
-			requestDownloadEffect(client, "/missing"),
-		).rejects.toMatchObject({
-			_tag: "EbayApiError",
-			method: "GET",
-			path: "/missing",
-		});
+		await expect(requestDownloadEffect(client, "/missing")).rejects.toThrow(
+			"eBay GET /missing failed: not found",
+		);
 	});
 });
 

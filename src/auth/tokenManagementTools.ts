@@ -13,50 +13,18 @@ import { getErrorMessage } from "@/shared/errors.js";
 import { defineTool } from "@/tool-registry/defineTool.js";
 import type { ToolEntry } from "@/tool-registry/registry.js";
 
-type TokenManagementToolOperation =
-	| "getOAuthUrl"
-	| "setUserTokens"
-	| "validateTokenExpiry"
-	| "convertDateToTimestamp"
-	| "refreshAccessToken"
-	| "exchangeAuthorizationCode";
-
-class TokenManagementToolError extends Error {
-	readonly _tag = "TokenManagementToolError";
-	readonly operation: TokenManagementToolOperation;
-
-	constructor(failure: {
-		operation: TokenManagementToolOperation;
-		message: string;
-		cause?: unknown;
-	}) {
-		super(failure.message);
-		this.name = "TokenManagementToolError";
-		this.operation = failure.operation;
-
-		if (failure.cause !== undefined) {
-			this.cause = failure.cause;
-		}
+function tokenToolError(message: string, error?: unknown): Error {
+	if (error === undefined) {
+		return new Error(message);
 	}
-}
 
-const tokenToolError = (
-	operation: TokenManagementToolOperation,
-	message: string,
-	error?: unknown,
-): TokenManagementToolError =>
-	new TokenManagementToolError({
-		operation,
-		message:
-			error === undefined
-				? message
-				: `${message}: ${getErrorMessage(error, String(error))}`,
-		...(error === undefined ? {} : { cause: error }),
+	return new Error(`${message}: ${getErrorMessage(error, String(error))}`, {
+		cause: error,
 	});
+}
 
 function readOptionalTokenExpiry(
 	expiry: string | number | undefined,
-	operation: TokenManagementToolOperation,
 	message: string,
 ): number | undefined {
 	if (expiry === undefined) {
@@ -66,19 +34,18 @@ function readOptionalTokenExpiry(
 	try {
 		return convertToTimestamp(expiry);
 	} catch (error) {
-		throw tokenToolError(operation, message, error);
+		throw tokenToolError(message, error);
 	}
 }
 
 async function runOAuthCall<OAuthSuccess>(
-	operation: TokenManagementToolOperation,
 	message: string,
 	oauthCall: Promise<OAuthSuccess>,
 ): Promise<OAuthSuccess> {
 	try {
 		return await oauthCall;
 	} catch (error) {
-		throw tokenToolError(operation, message, error);
+		throw tokenToolError(message, error);
 	}
 }
 
@@ -137,26 +104,19 @@ function decodeAuthorizationCode(code: string): string {
 	try {
 		return decodeURIComponent(code);
 	} catch (error) {
-		throw tokenToolError(
-			"exchangeAuthorizationCode",
-			"Failed to exchange authorization code",
-			error,
-		);
+		throw tokenToolError("Failed to exchange authorization code", error);
 	}
 }
 
 const missingClientIdError = tokenToolError(
-	"getOAuthUrl",
 	"EBAY_CLIENT_ID environment variable is required to generate OAuth URL",
 );
 
 const missingRedirectUriError = tokenToolError(
-	"getOAuthUrl",
 	"Redirect URI is required. Either provide it as a parameter or set EBAY_REDIRECT_URI in your .env file.",
 );
 
 const missingUserTokensError = tokenToolError(
-	"refreshAccessToken",
 	"No user tokens available. Please set user tokens first using ebay_set_user_tokens_with_expiry or add EBAY_USER_REFRESH_TOKEN to your .env file.",
 );
 
@@ -327,7 +287,6 @@ export const tokenManagementEntries: ToolEntry[] = [
 		inputSchema: setUserTokensInputSchema.shape,
 		handler: async (api, args) => {
 			await runOAuthCall(
-				"setUserTokens",
 				"Failed to set user tokens",
 				api.setUserTokens(args.accessToken, args.refreshToken),
 			);
@@ -348,17 +307,14 @@ export const tokenManagementEntries: ToolEntry[] = [
 		handler: async (api, args) => {
 			const accessExpiry = readOptionalTokenExpiry(
 				args.accessTokenExpiry,
-				"setUserTokens",
 				"Failed to set user tokens",
 			);
 			const refreshExpiry = readOptionalTokenExpiry(
 				args.refreshTokenExpiry,
-				"setUserTokens",
 				"Failed to set user tokens",
 			);
 
 			await runOAuthCall(
-				"setUserTokens",
 				"Failed to set user tokens",
 				api.setUserTokens(
 					args.accessToken,
@@ -463,11 +419,7 @@ export const tokenManagementEntries: ToolEntry[] = [
 					refreshTokenExpiryDate: new Date(refreshExpiry).toISOString(),
 				};
 			} catch (error) {
-				throw tokenToolError(
-					"validateTokenExpiry",
-					"Failed to validate token expiry",
-					error,
-				);
+				throw tokenToolError("Failed to validate token expiry", error);
 			}
 		},
 	}),
@@ -490,11 +442,7 @@ export const tokenManagementEntries: ToolEntry[] = [
 					message: `Successfully converted to timestamp: ${timestamp}ms (${new Date(timestamp).toISOString()})`,
 				};
 			} catch (error) {
-				throw tokenToolError(
-					"convertDateToTimestamp",
-					"Failed to convert date",
-					error,
-				);
+				throw tokenToolError("Failed to convert date", error);
 			}
 		},
 	}),
@@ -536,7 +484,6 @@ export const tokenManagementEntries: ToolEntry[] = [
 			}
 
 			await runOAuthCall(
-				"refreshAccessToken",
 				"Failed to refresh access token",
 				authClient.refreshUserToken(),
 			);
@@ -578,7 +525,6 @@ export const tokenManagementEntries: ToolEntry[] = [
 			const decodedCode = decodeAuthorizationCode(args.code);
 			const authClient = api.getAuthClient().getOAuthClient();
 			const tokenData = await runOAuthCall(
-				"exchangeAuthorizationCode",
 				"Failed to exchange authorization code",
 				authClient.exchangeCodeForToken(decodedCode),
 			);

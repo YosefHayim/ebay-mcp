@@ -1,8 +1,6 @@
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	EbayApiError,
-	EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	optionalStringEffect,
@@ -368,14 +366,8 @@ const getOffersEffect = async (
 	return requestGetEffect<GetOffersResponse>(client, path, params);
 };
 
-function isOffersRequestError(
-	cause: unknown,
-): cause is EbayApiError | EndpointInputError {
-	if (cause instanceof EbayApiError) {
-		return true;
-	}
-
-	return cause instanceof EndpointInputError;
+function isOffersRequestError(cause: unknown): cause is Error {
+	return cause instanceof Error;
 }
 
 async function collectWithConcurrency<Item, Mapped>(
@@ -437,14 +429,18 @@ async function readOffersForSku(request: {
 			throw cause;
 		}
 
-		const outcome = { left: cause };
+		let failureType = "EndpointInputError";
+
+		if (cause.message.startsWith("eBay ")) {
+			failureType = "EbayApiError";
+		}
 
 		return {
 			sku: request.sku,
 			status: "failure",
 			error: {
-				type: outcome.left._tag,
-				message: outcome.left.message,
+				type: failureType,
+				message: cause.message,
 			},
 		};
 	}
@@ -558,20 +554,16 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 		);
 
 		if (!Array.isArray(validatedInput.skus)) {
-			throw new EndpointInputError({
-				parameter: "skus",
-				message: "skus must be an array",
-			});
+			throw new Error("skus must be an array");
 		}
 
 		if (
 			validatedInput.skus.length === 0 ||
 			validatedInput.skus.length > MAX_BATCH_GET_OFFERS_SKUS
 		) {
-			throw new EndpointInputError({
-				parameter: "skus",
-				message: `skus must contain between 1 and ${MAX_BATCH_GET_OFFERS_SKUS} entries`,
-			});
+			throw new Error(
+				`skus must contain between 1 and ${MAX_BATCH_GET_OFFERS_SKUS} entries`,
+			);
 		}
 
 		for (const sku of validatedInput.skus) {
@@ -580,11 +572,9 @@ export const createInventoryOffersMethods = (client: EbayApiClient) => ({
 				sku.trim().length === 0 ||
 				sku.length > 50
 			) {
-				throw new EndpointInputError({
-					parameter: "skus",
-					message:
-						"each SKU must be a non-empty string of at most 50 characters",
-				});
+				throw new Error(
+					"each SKU must be a non-empty string of at most 50 characters",
+				);
 			}
 		}
 

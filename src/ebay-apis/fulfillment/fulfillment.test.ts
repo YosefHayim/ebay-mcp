@@ -155,8 +155,8 @@ describe("FulfillmentApi", () => {
 				fulfillmentApi.getOrder({ orderId: "" }),
 			);
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("orderId");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("orderId");
 		});
 	});
 
@@ -197,8 +197,8 @@ describe("FulfillmentApi", () => {
 				}),
 			);
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("body");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("body");
 		});
 	});
 

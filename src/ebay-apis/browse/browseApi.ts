@@ -26,7 +26,6 @@ import type {
 	EbayRequestConfig,
 } from "@/ebay-client/ebayApiClient.js";
 import {
-	EndpointInputError,
 	optionalNonNegativeNumberEffect,
 	optionalPositiveNumberEffect,
 	requestGetEffect,
@@ -190,10 +189,7 @@ export class BrowseApi {
 		const isItemMissing = details === undefined;
 
 		if (isItemMissing) {
-			throw new EndpointInputError({
-				parameter: "itemId",
-				message: `No item found for itemId "${itemId}"`,
-			});
+			throw new Error(`No item found for itemId "${itemId}"`);
 		}
 
 		return details;

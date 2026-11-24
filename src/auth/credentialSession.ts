@@ -21,20 +21,6 @@ export type EbayUserTokenResponse = Pick<
 > &
 	Partial<Omit<EbayUserToken, "access_token" | "expires_in">>;
 
-export class CredentialStoreError extends Error {
-	readonly envPath: string;
-
-	constructor(failure: {
-		envPath: string;
-		message: string;
-		cause: unknown;
-	}) {
-		super(failure.message, { cause: failure.cause });
-		this.name = "CredentialStoreError";
-		this.envPath = failure.envPath;
-	}
-}
-
 export interface CredentialStore {
 	write(updates: Record<string, string>): Promise<void>;
 }
@@ -71,9 +57,7 @@ async function runCredentialWrite(
 	try {
 		writeFile();
 	} catch (cause) {
-		throw new CredentialStoreError({
-			envPath,
-			message: `Failed to write credential updates to ${envPath}`,
+		throw new Error(`Failed to write credential updates to ${envPath}`, {
 			cause,
 		});
 	}

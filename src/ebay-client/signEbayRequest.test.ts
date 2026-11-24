@@ -9,7 +9,6 @@ import { describe, expect, it } from "vitest";
 import {
 	buildSignatureBase,
 	computeContentDigest,
-	EbaySigningKeyError,
 	parseSigningPrivateKey,
 	signEbayRequest,
 } from "@/ebay-client/signEbayRequest.js";
@@ -105,9 +104,6 @@ describe("parseSigningPrivateKey", () => {
 	});
 
 	it("rejects malformed keys with a configuration hint", () => {
-		expect(() => parseSigningPrivateKey("not-a-key")).toThrow(
-			EbaySigningKeyError,
-		);
 		expect(() => parseSigningPrivateKey("not-a-key")).toThrow(
 			PRIVATE_KEY_HINT_PATTERN,
 		);

@@ -6,7 +6,7 @@ import {
 	validateTradingEndingReasonEffect,
 	validateTradingListingFormatEffect,
 } from "@/ebay-apis/trading/listingFormatHelpers.js";
-import type { EndpointInputError } from "@/ebay-client/request.js";
+
 import { FormatType } from "@/shared/ebayEnums.js";
 
 const auctionItem = {
@@ -73,19 +73,19 @@ describe("auction Item rules", () => {
 			ListingType: "FixedPriceItem",
 		});
 
-		expect(violation?.parameter).toBe("item.ListingType");
+		expect(violation?.message).toContain("item.ListingType");
 		expect(violation?.message).toContain("Chinese");
 	});
 
 	it("rejects GTC", () => {
 		const violation = auctionCreate({ ...auctionItem, ListingDuration: "GTC" });
 
-		expect(violation?.parameter).toBe("item.ListingDuration");
+		expect(violation?.message).toContain("item.ListingDuration");
 		expect(violation?.message).toContain("Days_7");
 	});
 
 	it("rejects a quantity other than one", () => {
-		expect(auctionCreate({ ...auctionItem, Quantity: 3 })?.parameter).toBe(
+		expect(auctionCreate({ ...auctionItem, Quantity: 3 })?.message).toContain(
 			"item.Quantity",
 		);
 		expect(auctionCreate({ ...auctionItem, Quantity: "1" })).toBeUndefined();
@@ -98,15 +98,15 @@ describe("auction Item rules", () => {
 		expect(auctionRevise(bestOffer)).toBeUndefined();
 		expect(
 			auctionCreate({ ...auctionItem, ...bestOffer, BuyItNowPrice: 49.99 })
-				?.parameter,
-		).toBe("item.BestOfferDetails.BestOfferEnabled");
+				?.message,
+		).toContain("item.BestOfferDetails.BestOfferEnabled");
 		expect(
 			auctionCreate({
 				...auctionItem,
 				BestOfferDetails: { BestOfferEnabled: "true" },
 				BuyItNowPrice: 49.99,
-			})?.parameter,
-		).toBe("item.BestOfferDetails.BestOfferEnabled");
+			})?.message,
+		).toContain("item.BestOfferDetails.BestOfferEnabled");
 		expect(
 			auctionCreate({
 				...auctionItem,
@@ -118,18 +118,18 @@ describe("auction Item rules", () => {
 
 	it("requires a duration and opening bid on create only", () => {
 		expect(
-			auctionCreate({ Title: "No duration", StartPrice: 5 })?.parameter,
-		).toBe("item.ListingDuration");
+			auctionCreate({ Title: "No duration", StartPrice: 5 })?.message,
+		).toContain("item.ListingDuration");
 		expect(
-			auctionCreate({ Title: "No bid", ListingDuration: "Days_3" })?.parameter,
-		).toBe("item.StartPrice");
+			auctionCreate({ Title: "No bid", ListingDuration: "Days_3" })?.message,
+		).toContain("item.StartPrice");
 		expect(auctionRevise({ Title: "Renamed" })).toBeUndefined();
 	});
 
 	it("rejects a reserve at or below the opening bid", () => {
 		const violation = auctionCreate({ ...auctionItem, ReservePrice: 9.99 });
 
-		expect(violation?.parameter).toBe("item.ReservePrice");
+		expect(violation?.message).toContain("item.ReservePrice");
 		expect(violation?.message).toContain("higher than StartPrice");
 	});
 
@@ -142,14 +142,14 @@ describe("auction Item rules", () => {
 		).toBeUndefined();
 
 		const justBelow = auctionRevise({ StartPrice: 10, BuyItNowPrice: 12.99 });
-		expect(justBelow?.parameter).toBe("fields.BuyItNowPrice");
+		expect(justBelow?.message).toContain("fields.BuyItNowPrice");
 		expect(justBelow?.message).toContain("30%");
 		expect(
-			auctionRevise({ StartPrice: 10, BuyItNowPrice: 10 })?.parameter,
-		).toBe("fields.BuyItNowPrice");
-		expect(auctionRevise({ StartPrice: 10, BuyItNowPrice: 8 })?.parameter).toBe(
-			"fields.BuyItNowPrice",
-		);
+			auctionRevise({ StartPrice: 10, BuyItNowPrice: 10 })?.message,
+		).toContain("fields.BuyItNowPrice");
+		expect(
+			auctionRevise({ StartPrice: 10, BuyItNowPrice: 8 })?.message,
+		).toContain("fields.BuyItNowPrice");
 	});
 
 	it("skips price comparisons when the opening bid is not in the payload", () => {
@@ -172,7 +172,7 @@ describe("fixed-price Item rules", () => {
 	it("rejects the auction ListingType", () => {
 		const violation = fixedPrice({ Title: "Widget", ListingType: "Chinese" });
 
-		expect(violation?.parameter).toBe("item.ListingType");
+		expect(violation?.message).toContain("item.ListingType");
 		expect(violation?.message).toContain("format AUCTION");
 	});
 
@@ -183,24 +183,24 @@ describe("fixed-price Item rules", () => {
 			ListingDuration: "Days_7",
 		});
 
-		expect(violation?.parameter).toBe("item.ListingDuration");
+		expect(violation?.message).toContain("item.ListingDuration");
 		expect(violation?.message).toContain("GTC");
 		expect(fixedPrice({ Title: "Widget", StartPrice: 14.99 })).toBeUndefined();
 	});
 
 	it("rejects auction-only prices", () => {
-		expect(fixedPrice({ StartPrice: 10, ReservePrice: 20 })?.parameter).toBe(
+		expect(fixedPrice({ StartPrice: 10, ReservePrice: 20 })?.message).toContain(
 			"item.ReservePrice",
 		);
-		expect(fixedPrice({ StartPrice: 10, BuyItNowPrice: 20 })?.parameter).toBe(
-			"item.BuyItNowPrice",
-		);
+		expect(
+			fixedPrice({ StartPrice: 10, BuyItNowPrice: 20 })?.message,
+		).toContain("item.BuyItNowPrice");
 	});
 });
 
 describe("format checks and call names", () => {
 	it("fails with a tagged input error", () => {
-		let error: EndpointInputError | undefined;
+		let error: Error | undefined;
 
 		try {
 			validateTradingListingFormatEffect({
@@ -210,10 +210,10 @@ describe("format checks and call names", () => {
 				isCreate: true,
 			});
 		} catch (caught) {
-			error = caught as EndpointInputError;
+			error = caught as Error;
 		}
 
-		expect(error?._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error?.message).toContain("item.ListingDuration");
 	});
 
@@ -229,7 +229,7 @@ describe("format checks and call names", () => {
 			"reason",
 		);
 
-		let error: EndpointInputError | undefined;
+		let error: Error | undefined;
 
 		try {
 			validateTradingEndingReasonEffect(
@@ -238,11 +238,11 @@ describe("format checks and call names", () => {
 				"reason",
 			);
 		} catch (caught) {
-			error = caught as EndpointInputError;
+			error = caught as Error;
 		}
 
-		expect(error?._tag).toBe("EndpointInputError");
-		expect(error?.parameter).toBe("reason");
+		expect(error).toBeInstanceOf(Error);
+		expect(error?.message).toContain("reason");
 	});
 
 	it("maps each operation to the format-specific Trading call", () => {

@@ -202,10 +202,7 @@ describe("Feed report task creation", () => {
 
 		const error = await caughtError(feed.createOrderTask({ task: orderTask }));
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			path: `${BASE}/order_task`,
-		});
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 });
 
@@ -235,9 +232,7 @@ describe("Feed report task failures", () => {
 			programs.map((program) => caughtError(program)),
 		);
 
-		expect(errors.map((error) => error._tag)).toEqual(
-			new Array(programs.length).fill("EndpointInputError"),
-		);
+		expect(errors.every((error) => error instanceof Error)).toBe(true);
 		expect(client.get).not.toHaveBeenCalled();
 		expect(client.postForResponse).not.toHaveBeenCalled();
 	});
@@ -253,10 +248,8 @@ describe("Feed report task failures", () => {
 			].map((program) => caughtError(program)),
 		);
 
-		expect(errors).toMatchObject([
-			{ _tag: "EndpointInputError", parameter: "scheduleId" },
-			{ _tag: "EndpointInputError", parameter: "lookBackDays" },
-		]);
+		expect(errors[0]?.message).toContain("scheduleId");
+		expect(errors[1]?.message).toContain("lookBackDays");
 		expect(client.get).not.toHaveBeenCalled();
 	});
 
@@ -297,12 +290,10 @@ describe("Feed report task failures", () => {
 		);
 
 		cases.forEach(([, method, path], index) => {
-			expect(errors[index]).toMatchObject({
-				_tag: "EbayApiError",
-				method,
-				path: `${BASE}${path}`,
-				cause,
-			});
+			const failure = errors[index] as Error;
+
+			expect(failure.message).toContain(`eBay ${method} ${BASE}${path} failed`);
+			expect(failure.cause).toBe(cause);
 		});
 	});
 });

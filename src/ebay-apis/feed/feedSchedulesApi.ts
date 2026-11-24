@@ -10,7 +10,6 @@ import type { DownloadedFile } from "@/ebay-client/download.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
 import {
 	decodeEndpointInputEffect,
-	EndpointInputError,
 	requestDeleteEffect,
 	requestGetEffect,
 	requestPutEffect,
@@ -134,10 +133,7 @@ export const createFeedScheduleMethods = (client: EbayApiClient) => {
 		const hasNoScheduleFields = Object.keys(schedule).length === 0;
 
 		if (hasNoScheduleFields) {
-			throw new EndpointInputError({
-				parameter: "schedule",
-				message: "Provide at least one schedule field to update",
-			});
+			throw new Error("Provide at least one schedule field to update");
 		}
 
 		return requestPutEffect<void>(

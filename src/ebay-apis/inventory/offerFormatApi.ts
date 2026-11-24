@@ -2,7 +2,7 @@ import {
 	BUY_IT_NOW_MARGIN_LABEL,
 	meetsBuyItNowMargin,
 } from "@/ebay-client/auctionPricing.js";
-import { EndpointInputError } from "@/ebay-client/request.js";
+
 import type { components } from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
 import { FormatType, ListingDuration } from "@/shared/ebayEnums.js";
 
@@ -27,8 +27,8 @@ export type OfferFormatFields = Pick<OfferWithKeys, "format"> &
 		| "quantityLimitPerBuyer"
 	>;
 
-const inputError = (parameter: string, message: string): EndpointInputError =>
-	new EndpointInputError({ parameter, message: `${parameter}: ${message}` });
+const inputError = (parameter: string, message: string): Error =>
+	new Error(`${parameter}: ${message}`);
 
 const parseAmount = (amount: Amount | undefined): number | undefined => {
 	if (amount?.value === undefined) {
@@ -41,7 +41,7 @@ const parseAmount = (amount: Amount | undefined): number | undefined => {
 const auctionViolation = (
 	offer: OfferFormatFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (offer.listingDuration === ListingDuration.GTC) {
 		return inputError(
 			`${parameter}.listingDuration`,
@@ -85,7 +85,7 @@ const auctionViolation = (
 const fixedPriceViolation = (
 	offer: OfferFormatFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (
 		offer.listingDuration !== undefined &&
 		offer.listingDuration !== ListingDuration.GTC
@@ -113,7 +113,7 @@ const fixedPriceViolation = (
 const auctionCreateViolation = (
 	offer: OfferFormatFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (offer.listingDuration === undefined) {
 		return inputError(
 			`${parameter}.listingDuration`,
@@ -134,7 +134,7 @@ const auctionCreateViolation = (
 const auctionPriceViolation = (
 	offer: OfferFormatFields,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	const start = parseAmount(offer.pricingSummary?.auctionStartPrice);
 	if (start === undefined) {
 		return;
@@ -179,8 +179,8 @@ const auctionPriceViolation = (
 export const findOfferFormatViolation = (
 	offer: OfferFormatFields,
 	parameter: string,
-): EndpointInputError | undefined => {
-	let formatViolation: EndpointInputError | undefined;
+): Error | undefined => {
+	let formatViolation: Error | undefined;
 	if (offer.format === FormatType.AUCTION) {
 		formatViolation =
 			auctionViolation(offer, parameter) ??

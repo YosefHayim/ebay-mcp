@@ -7,11 +7,11 @@
  * use case here with zero dependencies, but it has sharp edges this module
  * centralizes so call sites never repeat them:
  *
- *  1. `fetch` does NOT reject on 4xx/5xx — we throw {@link HttpError} on `!response.ok`.
+ *  1. `fetch` does NOT reject on 4xx/5xx — {@link httpRequestEffect} returns those responses, and {@link httpRequest} throws a plain Error.
  *  2. `fetch` does NOT parse JSON — and `response.json()` throws on an empty (204) body.
  *  3. Timeouts need an `AbortController`.
  *  4. Query params need explicit `URLSearchParams` serialization.
- *  5. Error narrowing replaces `axios.isAxiosError` with {@link isHttpError}.
+ *  5. Callers branch on the response status instead of an error class.
  *
  * Keeping these in one place is the single source of truth that lets the rest of
  * the codebase treat HTTP like the old axios calls without the dependency.
@@ -69,104 +69,67 @@ export interface HttpResponse<T> {
 }
 
 /**
- * Tagged failure for any non-2xx response, network failure, or timeout. Carries the
- * parsed error body and response headers so callers can react to eBay error
- * shapes, `retry-after`, and rate-limit headers.
+ * Reads the eBay REST (`errors[].longMessage`) or OAuth (`error_description`)
+ * detail from a completed error body.
  *
- * `status` is `undefined` for network/timeout failures (no response received).
+ * @param body - Parsed error body from a completed HTTP response.
+ * @param fallback - Message used when the body has no string detail.
+ * @returns The extracted detail, or `fallback`.
  */
-export class HttpError extends Error {
-	readonly _tag = "HttpError" as const;
-	readonly url: string;
-	readonly status?: number;
-	readonly statusText?: string;
-	readonly data?: unknown;
-	readonly headers: Record<string, string>;
-	readonly isTimeout: boolean;
-
-	constructor(
-		message: string,
-		init: {
-			url: string;
-			status?: number;
-			statusText?: string;
-			data?: unknown;
-			headers?: Record<string, string>;
-			isTimeout?: boolean;
-		},
-	) {
-		super(message);
-		this.name = "HttpError";
-		this.url = init.url;
-		this.headers = init.headers ?? {};
-		this.isTimeout = init.isTimeout ?? false;
-
-		if (init.status !== undefined) {
-			this.status = init.status;
-		}
-
-		if (init.statusText !== undefined) {
-			this.statusText = init.statusText;
-		}
-
-		if (init.data !== undefined) {
-			this.data = init.data;
-		}
+export function readHttpFailureMessage(
+	body: unknown,
+	fallback: string,
+): string {
+	if (!isRecord(body)) {
+		return fallback;
 	}
+
+	const description = body["error_description"];
+
+	if (typeof description === "string") {
+		return description;
+	}
+
+	const errors = body["errors"];
+
+	if (!Array.isArray(errors)) {
+		return fallback;
+	}
+
+	const firstError = errors[0];
+
+	if (!isRecord(firstError)) {
+		return fallback;
+	}
+
+	const longMessage = firstError["longMessage"];
+
+	if (typeof longMessage === "string") {
+		return longMessage;
+	}
+
+	const shortMessage = firstError["message"];
+
+	if (typeof shortMessage === "string") {
+		return shortMessage;
+	}
+
+	return fallback;
 }
 
 /**
- * Type guard replacing `axios.isAxiosError`.
- *
- * @param error - Unknown thrown value to inspect.
- * @returns True when the value is this module's {@link HttpError}.
- *
- * @example
- * ```ts
- * if (isHttpError(error)) return error.status;
- * ```
- */
-export const isHttpError = (error: unknown): error is HttpError =>
-	error instanceof HttpError;
-
-/**
- * Extract a human-readable message from an error, understanding both the eBay
- * REST error shape (`errors[].longMessage`) and the OAuth error shape
- * (`error_description`). Falls back to the error message, then `fallback`.
+ * Returns the thrown error message. HTTP details are already on that message.
  *
  * @param error - Unknown thrown value to describe.
- * @param fallback - Message to use when no structured message is available.
+ * @param fallback - Message to use when `error` is not an Error.
  * @returns Human-readable error detail.
- *
- * @example
- * ```ts
- * const message = describeHttpError(error, 'Request failed');
- * ```
  */
-export const describeHttpError = (
+export function describeHttpError(
 	error: unknown,
 	fallback = "Unknown error",
-): string => {
-	if (isHttpError(error)) {
-		const { data: errorBody } = error;
-		if (isRecord(errorBody)) {
-			if (typeof errorBody["error_description"] === "string") {
-				return errorBody["error_description"];
-			}
-			const firstError = Array.isArray(errorBody["errors"])
-				? errorBody["errors"][0]
-				: undefined;
-			if (isRecord(firstError)) {
-				const detail = firstError["longMessage"] ?? firstError["message"];
-				if (typeof detail === "string") {
-					return detail;
-				}
-			}
-		}
-		return error.message || fallback;
-	}
+): string {
 	return getErrorMessage(error, fallback);
-};
+}
 
 /** Coerce a query-param value to a string without producing `[object Object]`. */
 const stringifyParam = (param: unknown): string => {
@@ -363,34 +326,18 @@ export async function httpRequestEffect<T = unknown>(
 
 	const deadline = startDeadline(timeoutMs);
 
-	function failure(
-		error: unknown,
-		stage: string,
-		response?: Response,
-	): HttpError {
-		const responseInit = response
-			? {
-					status: response.status,
-					statusText: response.statusText,
-					headers: collectHeaders(response),
-				}
-			: {};
+	function failure(error: unknown, stage: string): Error {
 		const timedOut = deadline.expired();
 
 		if (timedOut) {
-			return new HttpError(
+			return new Error(
 				`Request to ${url} timed out after ${timeoutMs}ms reading the ${stage}`,
-				{
-					url,
-					...responseInit,
-					isTimeout: true,
-				},
+				{ cause: error },
 			);
 		}
 
-		return new HttpError(getErrorMessage(error, `Request to ${url} failed`), {
-			url,
-			...responseInit,
+		return new Error(getErrorMessage(error, `Request to ${url} failed`), {
+			cause: error,
 		});
 	}
 
@@ -417,20 +364,17 @@ export async function httpRequestEffect<T = unknown>(
 			try {
 				errorText = await response.text();
 			} catch (error) {
-				throw failure(error, "error body", response);
+				throw failure(error, "error body");
 			}
 
 			const errorBody = parseErrorData(errorText);
-			throw new HttpError(
-				`Request to ${url} failed with status ${response.status}`,
-				{
-					url,
-					status: response.status,
-					statusText: response.statusText,
-					data: errorBody,
-					headers: responseHeaders,
-				},
-			);
+
+			return {
+				data: errorBody as T,
+				status: response.status,
+				statusText: response.statusText,
+				headers: responseHeaders,
+			};
 		}
 
 		let decodedBody: T;
@@ -442,7 +386,7 @@ export async function httpRequestEffect<T = unknown>(
 				options.maxBytes,
 			);
 		} catch (error) {
-			throw failure(error, "response body", response);
+			throw failure(error, "response body");
 		}
 
 		return {
@@ -459,5 +403,20 @@ export async function httpRequestEffect<T = unknown>(
 export async function httpRequest<T = unknown>(
 	options: HttpRequestOptions,
 ): Promise<HttpResponse<T>> {
-	return httpRequestEffect<T>(options);
+	const response = await httpRequestEffect<T>(options);
+	const status = response.status;
+	const isSuccess = status >= 200 && status <= 299;
+
+	if (isSuccess) {
+		return response;
+	}
+
+	const url = buildUrl(options.url, options.baseUrl, options.params);
+
+	throw new Error(
+		readHttpFailureMessage(
+			response.data,
+			`Request to ${url} failed with status ${status}`,
+		),
+	);
 }

@@ -68,7 +68,7 @@ describe("CharityApi getCharityOrg", () => {
 			),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(client.get).not.toHaveBeenCalled();
 	});
 });
@@ -122,7 +122,7 @@ describe("CharityApi getCharityOrgs", () => {
 			api.getCharityOrgs({ marketplaceId: "EBAY_US", ...criteria }),
 		);
 
-		expect(error).toMatchObject({ _tag: "EndpointInputError", parameter: "q" });
+		expect((error as Error).message).toContain("q");
 		expect(client.get).not.toHaveBeenCalled();
 	});
 
@@ -135,7 +135,7 @@ describe("CharityApi getCharityOrgs", () => {
 			}),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(client.get).not.toHaveBeenCalled();
 	});
 
@@ -146,10 +146,8 @@ describe("CharityApi getCharityOrgs", () => {
 			api.getCharityOrgs({ marketplaceId: "EBAY_US", q: "rescue" }),
 		);
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			method: "GET",
-			path: `${BASE}/charity_org`,
-		});
+		expect((error as Error).message).toContain(
+			`eBay GET ${`${BASE}/charity_org`} failed`,
+		);
 	});
 });

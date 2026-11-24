@@ -1,5 +1,6 @@
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EbayApiError } from "@/ebay-client/request.js";
+import { createEbayRequestFailure } from "@/ebay-client/request.js";
+
 import type { components } from "@/ebay-openapi-types/commerceIdentityV1Oas3.js";
 import { getIdentityBaseUrl } from "@/shared/environment.js";
 
@@ -46,11 +47,7 @@ export class IdentityApi {
 				`${identityBaseUrl}${this.basePath}/user`,
 			);
 		} catch (error) {
-			throw new EbayApiError({
-				method: "GET",
-				path: `${this.basePath}/user`,
-				cause: error,
-			});
+			throw createEbayRequestFailure("GET", `${this.basePath}/user`, error);
 		}
 	};
 }

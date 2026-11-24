@@ -5,8 +5,6 @@
  * grammar, which is fiddly enough to be worth isolating and testing on its own.
  */
 
-import { EndpointInputError } from "@/ebay-client/request.js";
-
 /** Detects a price clause in a caller-supplied raw filter expression. */
 const RAW_PRICE_CLAUSE = /(^|,)\s*price(Currency)?:/;
 
@@ -96,10 +94,8 @@ export const requireNoPriceFilterConflict = (
 	const hasPriceClause = RAW_PRICE_CLAUSE.test(rawFilter);
 
 	if (hasPriceClause) {
-		throw new EndpointInputError({
-			parameter: "filter",
-			message:
-				"filter already contains a price clause; use either priceMin/priceMax or a raw price filter, not both",
-		});
+		throw new Error(
+			"filter already contains a price clause; use either priceMin/priceMax or a raw price filter, not both",
+		);
 	}
 };

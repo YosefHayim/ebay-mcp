@@ -7,7 +7,6 @@ import {
 	MAX_BATCH_GET_OFFERS_SKUS,
 } from "@/ebay-apis/inventory/offersApi.js";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EndpointInputError } from "@/ebay-client/request.js";
 
 const expectSkuInputError = async (
 	program: Promise<unknown>,
@@ -20,11 +19,8 @@ const expectSkuInputError = async (
 		thrown = error;
 	}
 
-	expect(thrown).toBeInstanceOf(EndpointInputError);
-	expect(thrown).toMatchObject({
-		_tag: "EndpointInputError",
-		parameter: "sku",
-	});
+	expect(thrown).toBeInstanceOf(Error);
+	expect((thrown as Error).message).toContain("sku");
 };
 
 const clientWithGet = (get: ReturnType<typeof vi.fn>): EbayApiClient =>
@@ -146,12 +142,11 @@ describe("getOffersBySkus", () => {
 				throw new Error("expected getOffersBySkus to fail");
 			}),
 		);
-		for (const error of errors) {
-			expect(error).toMatchObject({
-				_tag: "EndpointInputError",
-				parameter: "skus",
-			});
-		}
+		expect((errors[0] as Error).message).toContain("skus must contain");
+		expect((errors[1] as Error).message).toContain("skus must contain");
+		expect((errors[2] as Error).message).toContain("each SKU");
+		expect((errors[3] as Error).message).toContain("each SKU");
+		expect((errors[4] as Error).message).toContain("each SKU");
 		expect(get).not.toHaveBeenCalled();
 	});
 

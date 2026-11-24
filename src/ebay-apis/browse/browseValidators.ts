@@ -9,10 +9,7 @@ import {
 	BROWSE_SORT_VALUES,
 	type BrowseSortValue,
 } from "@/ebay-apis/browse/browseTypes.js";
-import {
-	EndpointInputError,
-	optionalStringEffect,
-} from "@/ebay-client/request.js";
+import { optionalStringEffect } from "@/ebay-client/request.js";
 
 /** Hard upper bound for the Browse search `limit` parameter. */
 const MAX_LIMIT = 200;
@@ -44,10 +41,9 @@ const requireIntegerInRange = (
 	const isOutsideRange = !Number.isInteger(value) || value < min || value > max;
 
 	if (isOutsideRange) {
-		throw new EndpointInputError({
-			parameter,
-			message: `${parameter} must be an integer between ${min} and ${max}`,
-		});
+		throw new Error(
+			`${parameter} must be an integer between ${min} and ${max}`,
+		);
 	}
 
 	return value;
@@ -70,15 +66,12 @@ const requireIntegerInRange = (
 const nonFinitePriceError = (
 	priceBound: number | undefined,
 	parameter: string,
-): EndpointInputError | undefined => {
+): Error | undefined => {
 	if (priceBound === undefined || Number.isFinite(priceBound)) {
 		return;
 	}
 
-	return new EndpointInputError({
-		parameter,
-		message: `${parameter} must be a finite number; got ${priceBound}`,
-	});
+	return new Error(`${parameter} must be a finite number; got ${priceBound}`);
 };
 
 /** Default page size when limit is omitted. */
@@ -104,10 +97,7 @@ export const optionalStringArrayEffect = (
 		value.every((entry) => typeof entry === "string" && entry.length > 0);
 
 	if (!isStringArray) {
-		throw new EndpointInputError({
-			parameter,
-			message: `${parameter} must be an array of non-empty strings`,
-		});
+		throw new Error(`${parameter} must be an array of non-empty strings`);
 	}
 
 	return value;
@@ -145,10 +135,7 @@ export const optionalNonBlankStringEffect = (
 	const isBlank = trimmed.length === 0;
 
 	if (isBlank) {
-		throw new EndpointInputError({
-			parameter,
-			message: `${parameter} must be a non-empty string when provided`,
-		});
+		throw new Error(`${parameter} must be a non-empty string when provided`);
 	}
 
 	return trimmed;
@@ -168,10 +155,9 @@ export const requireOffsetInRange = (offset: number, limit: number): number => {
 	const isMisalignedPage = validated % limit !== 0;
 
 	if (isMisalignedPage) {
-		throw new EndpointInputError({
-			parameter: "offset",
-			message: `offset must be zero or a multiple of limit (${limit}); got ${validated}`,
-		});
+		throw new Error(
+			`offset must be zero or a multiple of limit (${limit}); got ${validated}`,
+		);
 	}
 
 	return validated;
@@ -205,10 +191,9 @@ export const requireCoherentPriceRange = (
 		priceMin !== undefined && priceMax !== undefined && priceMin > priceMax;
 
 	if (isInverted) {
-		throw new EndpointInputError({
-			parameter: "priceMin",
-			message: `priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
-		});
+		throw new Error(
+			`priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
+		);
 	}
 };
 
@@ -237,10 +222,7 @@ export const requireSupportedSort = (
 	const isSupported = (BROWSE_SORT_VALUES as readonly string[]).includes(sort);
 
 	if (!isSupported) {
-		throw new EndpointInputError({
-			parameter: "sort",
-			message: `sort must be one of: ${BROWSE_SORT_VALUES.join(", ")}`,
-		});
+		throw new Error(`sort must be one of: ${BROWSE_SORT_VALUES.join(", ")}`);
 	}
 
 	return sort as BrowseSortValue;

@@ -24,10 +24,9 @@
 /* eslint-disable n/no-process-exit */
 
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { writeFileSync } from "fs";
 import { dirname, join } from "path";
-import prompts from "prompts";
-import { fileURLToPath } from "url";
 import { EbayOAuthClient } from "@/auth/oauth.js";
 import {
 	displayFirstTimeDeveloperGuide,
@@ -46,12 +45,20 @@ import {
 	runSecurityChecks,
 } from "@/cli/securityChecker.js";
 import { displayRecommendations, validateSetup } from "@/cli/setupValidator.js";
+import {
+	type AskChoice,
+	askConfirm,
+	askMultiselect,
+	askSelect,
+	askText,
+} from "@/cli/setupWizard.js";
 import { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import type { EbayConfig } from "@/shared/ebay.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import {
 	configureLLMClient,
 	detectLLMClients,
+	type LLMClient,
 } from "@/shared/llmClientDetector.js";
 import { paint } from "@/shared/paint.js";
 import { loadExistingConfig, readEnvironment } from "./setupShared.js";
@@ -189,6 +196,97 @@ function validateRequired(input: string): boolean | string {
 	return input.trim().length > 0 || "This field is required";
 }
 
+// Drops one pair of wrapping quotes around a pasted token.
+function stripWrappedQuotes(token: string): string {
+	return token.trim().replace(/^["']|["']$/g, "");
+}
+
+function validateRefreshToken(token: string): true | string {
+	const isBlank = token.trim() === "";
+
+	if (isBlank) {
+		return "Refresh token is required";
+	}
+
+	const cleanToken = stripWrappedQuotes(token);
+	const hasTokenPrefix = cleanToken.startsWith("v^1.1#");
+
+	if (!hasTokenPrefix) {
+		return 'Token should start with "v^1.1#"';
+	}
+
+	return true;
+}
+
+function describeDetectedClient(client: LLMClient): AskChoice {
+	const isAlreadyConfigured = client.configExists === true;
+	const labelSuffix = isAlreadyConfigured
+		? paint.yellow(" [Already configured]")
+		: paint.green(" [Recommended]");
+
+	return {
+		label: client.displayName + labelSuffix,
+		value: client.name,
+		selected: isAlreadyConfigured === false,
+	};
+}
+
+interface EbayCredentialAnswers {
+	clientId: string | undefined;
+	clientSecret: string | undefined;
+	redirectUri: string | undefined;
+}
+
+async function askEbayCredentials(
+	existingConfig: Record<string, string>,
+): Promise<EbayCredentialAnswers> {
+	const clientIdAnswer = await askText({
+		message: "eBay Client ID (App ID):",
+		initial: existingConfig["EBAY_CLIENT_ID"] ?? "",
+		validate: validateRequired,
+	});
+	const clientId = clientIdAnswer.value;
+	const isClientIdMissing = clientId === undefined;
+
+	if (isClientIdMissing) {
+		return {
+			clientId: undefined,
+			clientSecret: undefined,
+			redirectUri: undefined,
+		};
+	}
+
+	const clientSecretAnswer = await askText({
+		message: "eBay Client Secret (Cert ID):",
+		initial: existingConfig["EBAY_CLIENT_SECRET"] ?? "",
+		validate: validateRequired,
+	});
+	const clientSecret = clientSecretAnswer.value;
+	const isClientSecretMissing = clientSecret === undefined;
+
+	if (isClientSecretMissing) {
+		return {
+			clientId,
+			clientSecret: undefined,
+			redirectUri: undefined,
+		};
+	}
+
+	const redirectAnswer = await askText({
+		message: "eBay Redirect URI (RuName):",
+		initial:
+			existingConfig["EBAY_REDIRECT_URI"] ??
+			"http://localhost:3000/oauth/callback",
+		validate: validateRequired,
+	});
+
+	return {
+		clientId,
+		clientSecret,
+		redirectUri: redirectAnswer.value,
+	};
+}
+
 function generateEnvFile(
 	config: Record<string, string>,
 	environment: string,
@@ -285,27 +383,18 @@ async function acquireRefreshToken(
 		getRecommendedScopes(config.environment),
 	);
 
-	const pastedToken = await prompts({
-		type: "text",
-		name: "refreshToken",
+	const pastedToken = await askText({
 		message: "Paste your refresh token here:",
-		validate: (input: string) => {
-			if (!input || input.trim() === "") {
-				return "Refresh token is required";
-			}
-			const cleanToken = input.trim().replace(/^["']|["']$/g, "");
-			if (!cleanToken.startsWith("v^1.1#")) {
-				return 'Token should start with "v^1.1#"';
-			}
-			return true;
-		},
+		validate: validateRefreshToken,
 	});
+	const refreshToken = pastedToken.value;
+	const isTokenMissing = refreshToken === undefined;
 
-	if (!pastedToken.refreshToken) {
+	if (isTokenMissing) {
 		return null;
 	}
 
-	return pastedToken.refreshToken.trim().replace(/^["']|["']$/g, "");
+	return stripWrappedQuotes(refreshToken);
 }
 
 async function validateAndGenerateTokens(
@@ -409,14 +498,12 @@ async function validateAndGenerateTokens(
 			console.log(paint.gray("    • Incorrect client credentials\n"));
 		}
 
-		const retry = await prompts({
-			type: "confirm",
-			name: "retry",
+		const retry = await askConfirm({
 			message: "Would you like to retry with different credentials?",
 			initial: true,
 		});
 
-		return retry.retry === true;
+		return retry.value === true;
 	}
 }
 
@@ -538,35 +625,19 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 			paint.gray(" yet"),
 	);
 	console.log(
-		paint.gray("  📝 Use ") +
-			paint.cyan("Space") +
-			paint.gray(" to select, ") +
+		paint.gray("  📝 Enter numbers separated by commas, or press ") +
 			paint.cyan("Enter") +
-			paint.gray(" to confirm\n"),
+			paint.gray(" to keep the recommended ones\n"),
 	);
 
-	const clientSelection = await prompts({
-		type: "multiselect",
-		name: "selectedClients",
+	const clientSelection = await askMultiselect({
 		message: "Select clients to configure:",
-		choices: detectedClients.map((client) => {
-			const statusBadge = client.configExists
-				? paint.yellow(" [Already configured]")
-				: paint.green(" [Recommended]");
-			return {
-				title: client.displayName + statusBadge,
-				value: client.name,
-				selected: !client.configExists, // Auto-select unconfigured clients
-			};
-		}),
-		hint: "← → or Space to toggle • Enter to confirm",
-		instructions: false,
+		choices: detectedClients.map(describeDetectedClient),
 	});
+	const selectedClients = clientSelection.value ?? [];
+	const isNoneSelected = selectedClients.length === 0;
 
-	if (
-		!clientSelection.selectedClients ||
-		clientSelection.selectedClients.length === 0
-	) {
+	if (isNoneSelected) {
 		console.log(paint.gray("\n⏭️  Skipping LLM client configuration.\n"));
 		return;
 	}
@@ -588,7 +659,7 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 		),
 	);
 
-	for (const clientName of clientSelection.selectedClients) {
+	for (const clientName of selectedClients) {
 		const client = detectedClients.find(
 			(detected) => detected.name === clientName,
 		);
@@ -636,14 +707,13 @@ async function detectAndConfigureLLMClients(): Promise<void> {
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function setupDocker(): Promise<void> {
-	const wantDocker = await prompts({
-		type: "confirm",
-		name: "value",
+	const wantDocker = await askConfirm({
 		message: "Would you like to generate Docker configuration?",
 		initial: false,
 	});
+	const skipsDocker = wantDocker.value !== true;
 
-	if (!wantDocker.value) {
+	if (skipsDocker) {
 		return;
 	}
 
@@ -752,14 +822,13 @@ async function runInteractiveSetup(args: CLIArgs) {
 		displaySecurityResults(securityResults);
 
 		if (hasCriticalFailures(securityResults)) {
-			const continueAnyway = await prompts({
-				type: "confirm",
-				name: "value",
+			const continueAnyway = await askConfirm({
 				message: "Critical issues found. Continue anyway?",
 				initial: false,
 			});
+			const stopsSetup = continueAnyway.value !== true;
 
-			if (!continueAnyway.value) {
+			if (stopsSetup) {
 				console.log(
 					paint.yellow(
 						"\n⚠️  Setup cancelled. Please fix critical issues first.\n",
@@ -777,18 +846,15 @@ async function runInteractiveSetup(args: CLIArgs) {
 	if (hasExisting) {
 		console.log(paint.cyan("\n📋 Found existing configuration.\n"));
 	} else {
-		const needsGuide = await prompts({
-			type: "confirm",
-			name: "value",
+		const needsGuide = await askConfirm({
 			message: "Is this your first time setting up eBay Developer credentials?",
 			initial: false,
 		});
+		const wantsGuide = needsGuide.value === true;
 
-		if (needsGuide.value) {
+		if (wantsGuide) {
 			displayFirstTimeDeveloperGuide();
-			await prompts({
-				type: "text",
-				name: "continue",
+			await askText({
 				message: "Press Enter when ready to continue...",
 			});
 			console.clear();
@@ -801,23 +867,24 @@ async function runInteractiveSetup(args: CLIArgs) {
 		args.environment || existingConfig["EBAY_ENVIRONMENT"] || "sandbox";
 
 	if (!args.environment) {
-		const envResponse = await prompts({
-			type: "select",
-			name: "environment",
+		const environmentInitial = environment === "production" ? 1 : 0;
+		const envResponse = await askSelect({
 			message: "Select eBay environment:",
 			choices: [
-				{ title: "🧪 Sandbox (Development & Testing)", value: "sandbox" },
-				{ title: "🚀 Production (Live Trading)", value: "production" },
+				{ label: "🧪 Sandbox (Development & Testing)", value: "sandbox" },
+				{ label: "🚀 Production (Live Trading)", value: "production" },
 			],
-			initial: environment === "production" ? 1 : 0,
+			initial: environmentInitial,
 		});
+		const pickedEnvironment = envResponse.value;
+		const isEnvironmentMissing = pickedEnvironment === undefined;
 
-		if (!envResponse.environment) {
+		if (isEnvironmentMissing) {
 			console.log(paint.yellow("\n⚠️  Setup cancelled.\n"));
 			process.exit(0);
 		}
 
-		environment = envResponse.environment;
+		environment = pickedEnvironment;
 	}
 
 	console.log(
@@ -825,50 +892,31 @@ async function runInteractiveSetup(args: CLIArgs) {
 	);
 
 	// Collect credentials
-	const credentials = await prompts([
-		{
-			type: "text",
-			name: "EBAY_CLIENT_ID",
-			message: "eBay Client ID (App ID):",
-			initial: existingConfig["EBAY_CLIENT_ID"] || "",
-			validate: validateRequired,
-		},
-		{
-			type: "text",
-			name: "EBAY_CLIENT_SECRET",
-			message: "eBay Client Secret (Cert ID):",
-			initial: existingConfig["EBAY_CLIENT_SECRET"] || "",
-			validate: validateRequired,
-		},
-		{
-			type: "text",
-			name: "EBAY_REDIRECT_URI",
-			message: "eBay Redirect URI (RuName):",
-			initial:
-				existingConfig["EBAY_REDIRECT_URI"] ||
-				"http://localhost:3000/oauth/callback",
-			validate: validateRequired,
-		},
-	]);
+	const credentialAnswers = await askEbayCredentials(existingConfig);
+	const clientId = credentialAnswers.clientId;
+	const isClientIdMissing = clientId === undefined;
 
-	if (!credentials.EBAY_CLIENT_ID) {
+	if (isClientIdMissing) {
 		console.log(paint.yellow("\n⚠️  Setup cancelled.\n"));
 		process.exit(0);
 	}
 
+	const credentials = {
+		EBAY_CLIENT_ID: clientId,
+		EBAY_CLIENT_SECRET: credentialAnswers.clientSecret ?? "",
+		EBAY_REDIRECT_URI: credentialAnswers.redirectUri ?? "",
+	};
+
 	// Need help with RuName?
-	const needsRuNameHelp = await prompts({
-		type: "confirm",
-		name: "value",
+	const needsRuNameHelp = await askConfirm({
 		message: "Need help understanding RuName (Redirect URI)?",
 		initial: false,
 	});
+	const wantsRuNameHelp = needsRuNameHelp.value === true;
 
-	if (needsRuNameHelp.value) {
+	if (wantsRuNameHelp) {
 		console.log(getRuNameHelp());
-		await prompts({
-			type: "text",
-			name: "continue",
+		await askText({
 			message: "Press Enter to continue...",
 		});
 	}
@@ -880,29 +928,26 @@ async function runInteractiveSetup(args: CLIArgs) {
 	);
 
 	// Show scope information
-	const viewScopes = await prompts({
-		type: "confirm",
-		name: "value",
+	const viewScopes = await askConfirm({
 		message: "Would you like to see available OAuth scopes?",
 		initial: false,
 	});
+	const wantsScopes = viewScopes.value === true;
 
-	if (viewScopes.value) {
+	if (wantsScopes) {
 		displayScopeCategories();
 	}
 
-	const tokenMethod = await prompts({
-		type: "select",
-		name: "method",
+	const tokenMethod = await askSelect({
 		message: "How would you like to obtain your refresh token?",
 		choices: [
 			{
-				title: "🔄 Interactive OAuth Flow (Recommended)",
+				label: "🔄 Interactive OAuth Flow (Recommended)",
 				value: "interactive",
 			},
-			{ title: "📝 Manual OAuth Flow (I'll get it myself)", value: "manual" },
-			{ title: "✏️  I already have a refresh token", value: "existing" },
-			{ title: "⏭️  Skip (configure later)", value: "skip" },
+			{ label: "📝 Manual OAuth Flow (I'll get it myself)", value: "manual" },
+			{ label: "✏️  I already have a refresh token", value: "existing" },
+			{ label: "⏭️  Skip (configure later)", value: "skip" },
 		],
 		initial: 0,
 	});
@@ -916,37 +961,44 @@ async function runInteractiveSetup(args: CLIArgs) {
 		environment: readEnvironment(environment),
 	};
 
-	if (tokenMethod.method === "interactive" || tokenMethod.method === "manual") {
-		const token = await acquireRefreshToken(
-			ebayConfig,
-			tokenMethod.method === "interactive",
-		);
+	const method = tokenMethod.value;
+	const usesInteractiveFlow = method === "interactive";
+	const usesManualFlow = method === "manual";
+	const usesExistingToken = method === "existing";
 
-		if (token) {
-			refreshToken = token;
-		} else {
+	async function storeAcquiredToken(
+		useInteractiveFlow: boolean,
+	): Promise<void> {
+		const token = await acquireRefreshToken(ebayConfig, useInteractiveFlow);
+		const isTokenMissing = token === null;
+
+		if (isTokenMissing) {
 			console.log(paint.yellow("\n⚠️  Could not acquire refresh token.\n"));
+			return;
 		}
-	} else if (tokenMethod.method === "existing") {
-		const existingToken = await prompts({
-			type: "text",
-			name: "token",
+
+		refreshToken = token;
+	}
+
+	if (usesInteractiveFlow) {
+		await storeAcquiredToken(true);
+	}
+
+	if (usesManualFlow) {
+		await storeAcquiredToken(false);
+	}
+
+	if (usesExistingToken) {
+		const existingToken = await askText({
 			message: "Paste your refresh token:",
 			initial: refreshToken,
-			validate: (input: string) => {
-				if (!input || input.trim() === "") {
-					return "Refresh token is required";
-				}
-				const cleanToken = input.trim().replace(/^["']|["']$/g, "");
-				if (!cleanToken.startsWith("v^1.1#")) {
-					return 'Token should start with "v^1.1#"';
-				}
-				return true;
-			},
+			validate: validateRefreshToken,
 		});
+		const pasted = existingToken.value;
+		const hasPasted = pasted !== undefined;
 
-		if (existingToken.token) {
-			refreshToken = existingToken.token.trim().replace(/^["']|["']$/g, "");
+		if (hasPasted) {
+			refreshToken = stripWrappedQuotes(pasted);
 		}
 	}
 
@@ -1005,14 +1057,13 @@ async function runInteractiveSetup(args: CLIArgs) {
 		`  ${paint.gray("App Access Token:")} ${config["EBAY_APP_ACCESS_TOKEN"] ? paint.green("✓ Generated") : paint.yellow("✗ Not generated")}\n`,
 	);
 
-	const confirmation = await prompts({
-		type: "confirm",
-		name: "confirm",
+	const confirmation = await askConfirm({
 		message: "Save this configuration?",
 		initial: true,
 	});
+	const skipsSave = confirmation.value !== true;
 
-	if (!confirmation.confirm) {
+	if (skipsSave) {
 		console.log(paint.yellow("\n⚠️  Configuration not saved.\n"));
 		process.exit(0);
 	}

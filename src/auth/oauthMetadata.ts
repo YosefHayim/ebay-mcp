@@ -3,12 +3,17 @@
  * Implements RFC 9728 Protected Resource Metadata
  */
 
-import type { Router } from "express";
-import { Router as createRouter } from "express";
+import type {
+	IncomingMessage,
+	RequestListener,
+	ServerResponse,
+} from "node:http";
 import type {
 	OAuthServerMetadata,
 	ProtectedResourceMetadata,
 } from "./oauthTypes.js";
+
+const JSON_CONTENT_TYPE = "application/json; charset=utf-8";
 
 /**
  * Inputs for the MCP OAuth protected-resource metadata endpoints.
@@ -52,70 +57,171 @@ export interface MetadataConfig {
 	ebayScopes?: string[];
 }
 
+interface McpServerInfo {
+	name: string;
+	version: string;
+	resource_url: string;
+	authorization_required: boolean;
+	scopes_supported: string[];
+	documentation?: string;
+	ebay?: {
+		environment: "production" | "sandbox";
+		base_url: string;
+		scopes: string[];
+		note: string;
+	};
+}
+
+function writeJson(
+	response: ServerResponse,
+	statusCode: number,
+	document: unknown,
+): void {
+	response.statusCode = statusCode;
+	response.setHeader("Content-Type", JSON_CONTENT_TYPE);
+	response.end(JSON.stringify(document));
+}
+
+function readRequestPath(requestUrl: string | undefined): string {
+	const pathToRead = requestUrl ?? "/";
+
+	try {
+		const parsedUrl = new URL(pathToRead, "http://127.0.0.1");
+		return parsedUrl.pathname;
+	} catch {
+		return "/";
+	}
+}
+
+function listAuthorizationServers(metadataConfig: MetadataConfig): string[] {
+	const authServerMetadata = metadataConfig.authServerMetadata;
+
+	if (typeof authServerMetadata === "string") {
+		return [authServerMetadata];
+	}
+
+	return [authServerMetadata.issuer];
+}
+
+function createProtectedResourceMetadata(
+	metadataConfig: MetadataConfig,
+): ProtectedResourceMetadata {
+	const metadata: ProtectedResourceMetadata = {
+		resource: metadataConfig.resourceServerUrl,
+		authorization_servers: listAuthorizationServers(metadataConfig),
+		scopes_supported: metadataConfig.scopesSupported,
+	};
+	const documentation = metadataConfig.resourceDocumentation ?? "";
+	const hasDocumentation = documentation !== "";
+
+	if (hasDocumentation) {
+		metadata.resource_documentation = documentation;
+	}
+
+	return metadata;
+}
+
+function readEbayBaseUrl(ebayEnvironment: "production" | "sandbox"): string {
+	if (ebayEnvironment === "production") {
+		return "https://api.ebay.com";
+	}
+
+	return "https://api.sandbox.ebay.com";
+}
+
+function createMcpServerInfo(metadataConfig: MetadataConfig): McpServerInfo {
+	const serverInfo: McpServerInfo = {
+		name: metadataConfig.resourceName || "MCP Resource Server",
+		version: "1.0.0",
+		resource_url: metadataConfig.resourceServerUrl,
+		authorization_required: true,
+		scopes_supported: metadataConfig.scopesSupported,
+	};
+	const documentation = metadataConfig.resourceDocumentation ?? "";
+	const hasDocumentation = documentation !== "";
+
+	if (hasDocumentation) {
+		serverInfo.documentation = documentation;
+	}
+
+	const ebayEnvironment = metadataConfig.ebayEnvironment;
+
+	if (ebayEnvironment === undefined) {
+		return serverInfo;
+	}
+
+	const baseUrl = readEbayBaseUrl(ebayEnvironment);
+
+	serverInfo.ebay = {
+		environment: ebayEnvironment,
+		base_url: baseUrl,
+		scopes: metadataConfig.ebayScopes ?? [],
+		note: "MCP OAuth scopes (scopes_supported) are separate from eBay API OAuth scopes (ebay.scopes)",
+	};
+
+	return serverInfo;
+}
+
 /**
- * Create Express router with OAuth metadata endpoints
+ * Answer a metadata GET when the path is one of the well-known routes.
  *
- * @param config - Protected resource metadata and optional eBay context.
- * @returns Express router exposing OAuth protected-resource metadata endpoints.
- *
- * @example
- * ```ts
- * const router = createMetadataRouter({ resourceServerUrl, authServerMetadata, scopesSupported });
- * ```
+ * @returns True when the response was written.
  */
-export const createMetadataRouter = (config: MetadataConfig): Router => {
-	const router = createRouter();
+export function serveMetadataRoute(
+	request: IncomingMessage,
+	response: ServerResponse,
+	metadataConfig: MetadataConfig,
+): boolean {
+	const isGet = request.method === "GET";
 
-	// RFC 9728: Protected Resource Metadata endpoint
-	// Path: /.well-known/oauth-protected-resource
-	router.get("/.well-known/oauth-protected-resource", (_request, response) => {
-		const authServers =
-			typeof config.authServerMetadata === "string"
-				? [config.authServerMetadata]
-				: [config.authServerMetadata.issuer];
+	if (!isGet) {
+		return false;
+	}
 
-		const metadata: ProtectedResourceMetadata = {
-			resource: config.resourceServerUrl,
-			authorization_servers: authServers,
-			scopes_supported: config.scopesSupported,
-		};
+	const pathname = readRequestPath(request.url);
+	const isProtectedResource =
+		pathname === "/.well-known/oauth-protected-resource";
 
-		if (config.resourceDocumentation) {
-			metadata.resource_documentation = config.resourceDocumentation;
+	if (isProtectedResource) {
+		writeJson(response, 200, createProtectedResourceMetadata(metadataConfig));
+		return true;
+	}
+
+	const isServerInfo = pathname === "/.well-known/mcp-server-info";
+
+	if (isServerInfo) {
+		writeJson(response, 200, createMcpServerInfo(metadataConfig));
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Request listener for the OAuth protected-resource metadata routes.
+ *
+ * @param metadataConfig - Protected resource metadata and optional eBay context.
+ * @returns Listener exposing the well-known metadata paths.
+ */
+export function createMetadataRouter(
+	metadataConfig: MetadataConfig,
+): RequestListener {
+	function serveMetadata(
+		request: IncomingMessage,
+		response: ServerResponse,
+	): void {
+		const served = serveMetadataRoute(request, response, metadataConfig);
+
+		if (served) {
+			return;
 		}
 
-		response.json(metadata);
-	});
+		response.statusCode = 404;
+		response.end();
+	}
 
-	// Optional: Server info endpoint for debugging
-	router.get("/.well-known/mcp-server-info", (_request, response) => {
-		const serverInfo: Record<string, unknown> = {
-			name: config.resourceName || "MCP Resource Server",
-			version: "1.0.0",
-			resource_url: config.resourceServerUrl,
-			authorization_required: true,
-			scopes_supported: config.scopesSupported,
-			documentation: config.resourceDocumentation,
-		};
-
-		// Add eBay-specific information if provided
-		if (config.ebayEnvironment) {
-			serverInfo["ebay"] = {
-				environment: config.ebayEnvironment,
-				base_url:
-					config.ebayEnvironment === "production"
-						? "https://api.ebay.com"
-						: "https://api.sandbox.ebay.com",
-				scopes: config.ebayScopes || [],
-				note: "MCP OAuth scopes (scopes_supported) are separate from eBay API OAuth scopes (ebay.scopes)",
-			};
-		}
-
-		response.json(serverInfo);
-	});
-
-	return router;
-};
+	return serveMetadata;
+}
 
 /**
  * Helper to get Protected Resource Metadata URL from server URL

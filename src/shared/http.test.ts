@@ -2,7 +2,7 @@ import { once } from "node:events";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { httpRequest, isHttpError } from "@/shared/http.js";
+import { httpRequest, httpRequestEffect } from "@/shared/http.js";
 
 /**
  * A real loopback server is used instead of a fetch mock because the behaviour
@@ -28,6 +28,16 @@ beforeAll(async () => {
 
 		if (request.url === "/stalled-headers") {
 			openSockets.push(response);
+			return;
+		}
+
+		if (request.url === "/missing") {
+			response.writeHead(400, { "content-type": "application/json" });
+			response.end(
+				JSON.stringify({
+					errors: [{ longMessage: "No such item", message: "Missing" }],
+				}),
+			);
 			return;
 		}
 
@@ -83,10 +93,10 @@ describe("httpRequest timeouts", () => {
 			timeoutMs: 1000,
 		}).catch((cause: unknown) => cause);
 
-		expect(isHttpError(error)).toBe(true);
-		expect(isHttpError(error) && error.isTimeout).toBe(true);
-		// The status is kept: the headers did arrive, only the body stalled.
-		expect(isHttpError(error) && error.status).toBe(200);
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toBe(
+			`Request to ${baseUrl}/stalled-body timed out after 1000ms reading the response body`,
+		);
 	});
 
 	it("fails a request whose response headers never arrive", async () => {
@@ -95,9 +105,30 @@ describe("httpRequest timeouts", () => {
 			timeoutMs: 150,
 		}).catch((cause: unknown) => cause);
 
-		expect(isHttpError(error)).toBe(true);
-		expect(isHttpError(error) && error.isTimeout).toBe(true);
-		expect(isHttpError(error) && error.status).toBeUndefined();
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toBe(
+			`Request to ${baseUrl}/stalled-headers timed out after 150ms reading the response headers`,
+		);
+	});
+});
+
+describe("httpRequest error statuses", () => {
+	it("throws the eBay error detail when the status is not 2xx", async () => {
+		await expect(httpRequest({ url: `${baseUrl}/missing` })).rejects.toThrow(
+			"No such item",
+		);
+	});
+
+	it("returns a non-2xx response from httpRequestEffect", async () => {
+		const response = await httpRequestEffect({
+			url: `${baseUrl}/missing`,
+		});
+
+		expect(response.status).toBe(400);
+		expect(response.statusText).toBe("Bad Request");
+		expect(response.data).toEqual({
+			errors: [{ longMessage: "No such item", message: "Missing" }],
+		});
 	});
 });
 

@@ -1,19 +1,5 @@
-export class DateConversionError extends Error {
-	readonly _tag = "DateConversionError" as const;
-	readonly input: string | Date | number;
-
-	constructor(fields: { input: string | Date | number; message: string }) {
-		super(fields.message);
-		this.name = "DateConversionError";
-		this.input = fields.input;
-	}
-}
-
-function invalidDateInput(
-	input: string | Date | number,
-	message: string,
-): never {
-	throw new DateConversionError({ input, message });
+function invalidDateInput(message: string): never {
+	throw new Error(message);
 }
 
 /**
@@ -59,7 +45,7 @@ export const convertToTimestamp = (
 	if (dateInput instanceof Date) {
 		const timestamp = dateInput.getTime();
 		if (Number.isNaN(timestamp)) {
-			return invalidDateInput(dateInput, "Invalid Date object");
+			return invalidDateInput("Invalid Date object");
 		}
 		return timestamp;
 	}
@@ -75,13 +61,13 @@ export const convertToTimestamp = (
 			const isAmountMissing = amountText == null;
 
 			if (isAmountMissing) {
-				return invalidDateInput(dateInput, "Invalid relative time");
+				return invalidDateInput("Invalid relative time");
 			}
 
 			const isUnitMissing = unitText == null;
 
 			if (isUnitMissing) {
-				return invalidDateInput(dateInput, "Invalid relative time");
+				return invalidDateInput("Invalid relative time");
 			}
 
 			const amount = Number.parseInt(amountText, 10);
@@ -99,7 +85,6 @@ export const convertToTimestamp = (
 		const parsed = Date.parse(dateInput);
 		if (Number.isNaN(parsed)) {
 			return invalidDateInput(
-				dateInput,
 				`Invalid date format: ${dateInput}. Supported formats: ISO 8601, Unix timestamp, or relative time (e.g., "in 2 hours")`,
 			);
 		}
@@ -107,10 +92,7 @@ export const convertToTimestamp = (
 		return parsed;
 	}
 
-	return invalidDateInput(
-		dateInput,
-		`Unsupported date input type: ${typeof dateInput}`,
-	);
+	return invalidDateInput(`Unsupported date input type: ${typeof dateInput}`);
 };
 
 /**

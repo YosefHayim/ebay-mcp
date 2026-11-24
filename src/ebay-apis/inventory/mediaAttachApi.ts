@@ -1,4 +1,3 @@
-import { EndpointInputError } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/sellInventoryV1Oas3.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import type { LocalMediaFile } from "@/shared/localMedia.js";
@@ -72,21 +71,6 @@ export interface AttachMediaResult {
 }
 
 /** Attach run that uploaded media but left the inventory item untouched. */
-export class MediaAttachError extends Error {
-	readonly _tag = "MediaAttachError";
-	/** Per-file outcomes; `updated` is always false. */
-	readonly result: AttachMediaResult;
-
-	constructor(failure: {
-		/** Human-readable summary including the per-file outcomes. */
-		message: string;
-		result: AttachMediaResult;
-	}) {
-		super(failure.message);
-		this.name = "MediaAttachError";
-		this.result = failure.result;
-	}
-}
 
 /** Methods added onto {@link MediaApi} by {@link createMediaAttachMethods}. */
 export interface MediaAttachMethods {
@@ -204,11 +188,10 @@ const failedOutcome = (
 const attachFailure = (
 	summary: string,
 	attachResult: AttachMediaResult,
-): MediaAttachError =>
-	new MediaAttachError({
-		message: `${summary}. Results: ${JSON.stringify({ images: attachResult.images, videos: attachResult.videos })}`,
-		result: attachResult,
-	});
+): Error =>
+	new Error(
+		`${summary}. Results: ${JSON.stringify({ images: attachResult.images, videos: attachResult.videos })}`,
+	);
 
 /** Uploads every file, turning each failure into a `failed` outcome instead of aborting. */
 async function uploadAll(
@@ -286,10 +269,7 @@ export const createMediaAttachMethods = (
 		const isEmpty = total === 0;
 
 		if (isEmpty) {
-			throw new EndpointInputError({
-				parameter: "imagePaths",
-				message: "provide at least one image or video to attach",
-			});
+			throw new Error("provide at least one image or video to attach");
 		}
 
 		// Existence check before any upload; the write below re-reads the item.

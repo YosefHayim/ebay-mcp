@@ -227,11 +227,10 @@ describe("FinancesApi failures", () => {
 			finances.getPayout({ payoutId: "P1" }),
 		);
 
-		expect(error._tag).toBe("EbayApiError");
-		expect(error).toMatchObject({
-			method: "GET",
-			path: "/sell/finances/v1/payout/P1",
-		});
+		expect((error as Error).message).toMatch(/^eBay /);
+		expect((error as Error).message).toContain(
+			`eBay GET /sell/finances/v1/payout/P1 failed`,
+		);
 	});
 
 	it("fails with EbayApiError when billing activity is rejected", async () => {
@@ -241,10 +240,7 @@ describe("FinancesApi failures", () => {
 			finances.getBillingActivities({ filter: "orderId:{12-34}" }),
 		);
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			path: "/sell/finances/v1/billing_activity",
-		});
+		expect((error as Error).message).toMatch(/^eBay /);
 	});
 
 	it.each<[string, FinancesCall]>([
@@ -273,7 +269,7 @@ describe("FinancesApi failures", () => {
 	])("rejects a %s with EndpointInputError before calling eBay", async (_, run) => {
 		const error = await readFailure(() => run());
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(client.get).not.toHaveBeenCalled();
 	});
 });

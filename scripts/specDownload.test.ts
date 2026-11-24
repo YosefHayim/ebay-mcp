@@ -11,11 +11,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import {
-	checkSpecDownload,
-	refreshCachedSpec,
-	UnusableSpecError,
-} from "./specDownload.js";
+import { checkSpecDownload, refreshCachedSpec } from "./specDownload.js";
 
 const CACHED_SPEC = '{"openapi":"3.0.0","info":{"title":"cached"}}';
 const FRESH_SPEC = '{"openapi":"3.0.0","info":{"title":"fresh"}}';
@@ -25,7 +21,7 @@ function failureMessage(specBody: string): string | undefined {
 		checkSpecDownload(Buffer.from(specBody));
 		return undefined;
 	} catch (error) {
-		if (error instanceof UnusableSpecError) {
+		if (error instanceof Error) {
 			return error.message;
 		}
 
@@ -102,8 +98,8 @@ describe("refreshCachedSpec", () => {
 		const url = await serveSpecBody("");
 		const specPath = cachedSpecPath();
 
-		await expect(refreshCachedSpec(url, specPath)).rejects.toBeInstanceOf(
-			UnusableSpecError,
+		await expect(refreshCachedSpec(url, specPath)).rejects.toThrow(
+			"empty response",
 		);
 		expect(readFileSync(specPath, "utf-8")).toBe(CACHED_SPEC);
 	});
@@ -124,9 +120,7 @@ describe("refreshCachedSpec", () => {
 		rmSync(specPath);
 		mkdirSync(specPath);
 
-		await expect(refreshCachedSpec(url, specPath)).rejects.toMatchObject({
-			_tag: "SpecCacheWriteError",
-		});
+		await expect(refreshCachedSpec(url, specPath)).rejects.toThrow(Error);
 		expect(existsSync(`${specPath}.download`)).toBe(false);
 	});
 });

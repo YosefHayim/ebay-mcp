@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
 import process from "node:process";
-import prompts from "prompts";
+import {
+	type AskChoice,
+	askConfirm,
+	askMultiselect,
+	askSelect,
+} from "@/cli/setupWizard.js";
 import {
 	ALL_PROVIDERS,
 	applyWrite,
@@ -214,72 +219,86 @@ export const runSkillsWizard = async (
 		);
 	} else {
 		const detectedProject = resolveDefaultProviders("project", cwd, home);
-		let cancelled = false;
-		const onCancel = (): boolean => {
-			cancelled = true;
-			return false;
-		};
-		const answers = (await prompts(
-			[
-				{
-					type: "multiselect",
-					name: "providers",
-					message: "Install skills for which AI tools?",
-					instructions: false,
-					choices: ALL_PROVIDERS.map((provider) => ({
-						title: providerLabel(provider),
-						value: provider,
-						selected: flags.providers
-							? flags.providers.includes(provider)
-							: detectedProject.includes(provider),
-					})),
-				},
-				{
-					type: "multiselect",
-					name: "layers",
-					message: "Which skills?",
-					instructions: false,
-					choices: [
-						{
-							title: "Using — drive the eBay tools",
-							value: "using",
-							selected: true,
-						},
-						{
-							title: "Contributing — work on the ebay-mcp repo",
-							value: "contributing",
-							selected: flags.layers?.includes("contributing") ?? false,
-						},
-					],
-				},
-				{
-					type: "select",
-					name: "scope",
-					message: "Where should they be installed?",
-					choices: [
-						{ title: "This project (recommended)", value: "project" },
-						{
-							title: "Global — my home dir (Cursor stays project-local)",
-							value: "global",
-						},
-					],
-					initial: flags.global ? 1 : 0,
-				},
-			],
-			{ onCancel },
-		)) as {
-			providers?: SkillProvider[];
-			layers?: SkillLayer[];
-			scope?: SkillScope;
-		};
 
-		if (cancelled) {
+		function describeProvider(
+			provider: SkillProvider,
+		): AskChoice<SkillProvider> {
+			const flagged = flags.providers;
+			const isFlagged = flagged !== undefined;
+
+			if (isFlagged) {
+				return {
+					label: providerLabel(provider),
+					value: provider,
+					selected: flagged.includes(provider),
+				};
+			}
+
+			return {
+				label: providerLabel(provider),
+				value: provider,
+				selected: detectedProject.includes(provider),
+			};
+		}
+
+		const providerChoices = ALL_PROVIDERS.map(describeProvider);
+		const providerAnswer = await askMultiselect({
+			message: "Install skills for which AI tools?",
+			choices: providerChoices,
+		});
+		const isProviderCancelled = providerAnswer.cancelled;
+
+		if (isProviderCancelled) {
 			printWarning("Cancelled — nothing written.");
 			return;
 		}
-		providers = answers.providers ?? [];
-		layers = answers.layers ?? [];
-		scope = answers.scope ?? "project";
+
+		const layerChoices: AskChoice<SkillLayer>[] = [
+			{
+				label: "Using — drive the eBay tools",
+				value: "using",
+				selected: true,
+			},
+			{
+				label: "Contributing — work on the ebay-mcp repo",
+				value: "contributing",
+				selected: flags.layers?.includes("contributing") ?? false,
+			},
+		];
+		const layerAnswer = await askMultiselect({
+			message: "Which skills?",
+			choices: layerChoices,
+		});
+		const isLayerCancelled = layerAnswer.cancelled;
+
+		if (isLayerCancelled) {
+			printWarning("Cancelled — nothing written.");
+			return;
+		}
+
+		const scopeChoices: AskChoice<SkillScope>[] = [
+			{ label: "This project (recommended)", value: "project" },
+			{
+				label: "Global — my home dir (Cursor stays project-local)",
+				value: "global",
+			},
+		];
+		const scopeInitial = flags.global ? 1 : 0;
+		const scopeAnswer = await askSelect({
+			message: "Where should they be installed?",
+			choices: scopeChoices,
+			initial: scopeInitial,
+		});
+		const isScopeCancelled = scopeAnswer.cancelled;
+
+		if (isScopeCancelled) {
+			printWarning("Cancelled — nothing written.");
+			return;
+		}
+
+		providers = providerAnswer.value ?? [];
+		layers = layerAnswer.value ?? [];
+		scope = scopeAnswer.value ?? "project";
 
 		if (providers.length === 0 || layers.length === 0) {
 			printWarning("Nothing selected — nothing written.");
@@ -322,22 +341,13 @@ export const runSkillsWizard = async (
 			printInfo("Everything is already up to date.");
 			return;
 		}
-		let cancelled = false;
-		const { go } = (await prompts(
-			{
-				type: "confirm",
-				name: "go",
-				message: `Write ${writable} file(s)?`,
-				initial: true,
-			},
-			{
-				onCancel: () => {
-					cancelled = true;
-					return false;
-				},
-			},
-		)) as { go?: boolean };
-		if (cancelled || !go) {
+		const goAnswer = await askConfirm({
+			message: `Write ${writable} file(s)?`,
+			initial: true,
+		});
+		const isDeclined = goAnswer.value !== true;
+
+		if (isDeclined) {
 			printWarning("Cancelled — nothing written.");
 			return;
 		}

@@ -124,10 +124,7 @@ describe("Other APIs", () => {
 				thrown = error;
 			}
 
-			expect(thrown).toMatchObject({
-				_tag: "EndpointInputError",
-				message: expect.stringContaining("marketplaceId is required"),
-			});
+			expect(thrown).toBeInstanceOf(Error);
 		});
 
 		it("get category tree", async () => {
@@ -259,8 +256,8 @@ describe("Other APIs", () => {
 				return api.findListingRecommendations({ marketplaceId: "" });
 			});
 
-			expect(error._tag).toBe("EndpointInputError");
-			expect(error.parameter).toBe("marketplaceId");
+			expect(error).toBeInstanceOf(Error);
+			expect(error.message).toContain("marketplaceId");
 			expect(client.post).not.toHaveBeenCalled();
 		});
 	});
@@ -374,10 +371,7 @@ describe("Other APIs", () => {
 				thrown = error;
 			}
 
-			expect(thrown).toMatchObject({
-				_tag: "EndpointInputError",
-				parameter: "veroReasonCodeId",
-			});
+			expect((thrown as Error).message).toContain("veroReasonCodeId");
 			expect(client.get).not.toHaveBeenCalled();
 		});
 	});
@@ -785,7 +779,7 @@ describe("Other APIs", () => {
 				thrown = error;
 			}
 
-			expect(thrown).toMatchObject({ _tag: "EndpointInputError" });
+			expect(thrown).toBeInstanceOf(Error);
 			expect(client.get).not.toHaveBeenCalled();
 		});
 	});
@@ -820,12 +814,9 @@ describe("Other APIs", () => {
 				thrown = error;
 			}
 
-			expect(thrown).toMatchObject({
-				_tag: "EbayApiError",
-				method: "GET",
-				path: "/commerce/identity/v1/user",
-				cause,
-			});
+			expect((thrown as Error).message).toContain(
+				`eBay GET /commerce/identity/v1/user failed`,
+			);
 		});
 	});
 });

@@ -34,35 +34,6 @@ export const createAnalyticsApiHarness = (): AnalyticsApiHarness => {
 	};
 };
 
-/** Minimal validation error snapshot used by Analytics API tests. */
-export interface EndpointInputErrorSnapshot {
-	/** Tagged error identifier returned by migrated endpoint validation. */
-	readonly _tag: string;
-	/** Endpoint input parameter that failed validation. */
-	readonly parameter?: string;
-}
-
-/**
- * Reads the validation details needed by Analytics endpoint tests.
- *
- * @param error - Thrown endpoint validation or API error.
- * @returns Minimal tagged-error details for test assertions.
- *
- * @example
- * ```ts
- * expect(readEndpointInputError(error)).toEqual({
- *   _tag: 'EndpointInputError',
- *   parameter: 'dimension',
- * });
- * ```
- */
-export const readEndpointInputError = (
-	error: EndpointInputErrorSnapshot,
-): EndpointInputErrorSnapshot => ({
-	_tag: error._tag,
-	parameter: error.parameter,
-});
-
 /**
  * Awaits a call that is expected to throw and returns that error.
  *
@@ -74,13 +45,11 @@ export const readEndpointInputError = (
  * const error = await captureThrown(api.getTrafficReport(input));
  * ```
  */
-export async function captureThrown(
-	call: Promise<unknown>,
-): Promise<EndpointInputErrorSnapshot> {
+export async function captureThrown(call: Promise<unknown>): Promise<unknown> {
 	try {
 		await call;
 	} catch (caught) {
-		return caught as EndpointInputErrorSnapshot;
+		return caught;
 	}
 
 	throw new Error("expected the call to throw");

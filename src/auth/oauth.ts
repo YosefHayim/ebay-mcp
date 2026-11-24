@@ -1,6 +1,5 @@
 import {
 	type CredentialStore,
-	CredentialStoreError,
 	createAppAccessTokenExpiry,
 	createStoredUserTokens,
 	createStoredUserTokensFromResponse,
@@ -20,36 +19,11 @@ import { getErrorMessage } from "@/shared/errors.js";
 import {
 	describeHttpError,
 	type HttpRequestOptions,
+	type HttpResponse,
 	httpRequestEffect,
+	readHttpFailureMessage,
 } from "@/shared/http.js";
 import { authLogger } from "@/shared/logger.js";
-
-type OAuthOperation =
-	| "initialize"
-	| "getAccessToken"
-	| "getOrRefreshAppAccessToken"
-	| "exchangeCodeForToken"
-	| "refreshUserToken"
-	| "setUserTokens";
-
-export class EbayOAuthError extends Error {
-	readonly _tag = "EbayOAuthError";
-	readonly operation: OAuthOperation;
-
-	constructor(failure: {
-		readonly operation: OAuthOperation;
-		readonly message: string;
-		readonly cause?: unknown;
-	}) {
-		super(failure.message);
-		this.name = "EbayOAuthError";
-		this.operation = failure.operation;
-
-		if (failure.cause !== undefined) {
-			this.cause = failure.cause;
-		}
-	}
-}
 
 export interface OAuthTokenScopeInfo {
 	readonly tokenScopes: string[];
@@ -63,47 +37,32 @@ export interface OAuthTokenInfo {
 	readonly scopeInfo?: OAuthTokenScopeInfo;
 }
 
-const mapCredentialStoreError = (
-	operation: OAuthOperation,
-	message: string,
-	cause: CredentialStoreError,
-): EbayOAuthError =>
-	new EbayOAuthError({
-		operation,
-		message: `${message}: ${cause.message}`,
-		cause,
-	});
-
-const isCredentialPersistenceError = (error: EbayOAuthError): boolean =>
-	error.cause instanceof CredentialStoreError;
-
-function readCredentialStoreError(cause: unknown): CredentialStoreError {
-	if (cause instanceof CredentialStoreError) {
-		return cause;
+function hasCredentialWriteFailure(error: unknown): boolean {
+	if (!(error instanceof Error)) {
+		return false;
 	}
 
-	const message = cause instanceof Error ? cause.message : String(cause);
+	const isWriteFailure = error.message.includes(
+		"Failed to write credential updates to ",
+	);
 
-	return new CredentialStoreError({
-		envPath: "",
-		message,
-		cause,
-	});
+	if (isWriteFailure) {
+		return true;
+	}
+
+	return hasCredentialWriteFailure(error.cause);
 }
 
 async function persistCredentialUpdates(
-	operation: OAuthOperation,
 	message: string,
 	writeUpdates: Promise<void>,
 ): Promise<void> {
 	try {
 		await writeUpdates;
 	} catch (cause) {
-		throw mapCredentialStoreError(
-			operation,
-			message,
-			readCredentialStoreError(cause),
-		);
+		const detail = cause instanceof Error ? cause.message : String(cause);
+
+		throw new Error(`${message}: ${detail}`, { cause });
 	}
 }
 
@@ -118,20 +77,32 @@ export class EbayOAuthClient {
 	) {}
 
 	private requestOAuthToken = async <TokenBody>(
-		operation: OAuthOperation,
 		failureMessage: string,
 		options: HttpRequestOptions,
 	): Promise<TokenBody> => {
+		let tokenResponse: HttpResponse<TokenBody>;
+
 		try {
-			const tokenResponse = await httpRequestEffect<TokenBody>(options);
-			return tokenResponse.data;
+			tokenResponse = await httpRequestEffect<TokenBody>(options);
 		} catch (cause) {
-			throw new EbayOAuthError({
-				operation,
-				message: `${failureMessage}: ${describeHttpError(cause)}`,
+			throw new Error(`${failureMessage}: ${describeHttpError(cause)}`, {
 				cause,
 			});
 		}
+
+		const status = tokenResponse.status;
+		const isSuccess = status >= 200 && status <= 299;
+
+		if (isSuccess) {
+			return tokenResponse.data;
+		}
+
+		const detail = readHttpFailureMessage(
+			tokenResponse.data,
+			`Request to ${options.url} failed with status ${status}`,
+		);
+
+		throw new Error(`${failureMessage}: ${detail}`);
 	};
 
 	private createTokenRequest = (
@@ -179,13 +150,7 @@ export class EbayOAuthClient {
 			authLogger.info("Access token refreshed successfully");
 			await this.getOrRefreshAppAccessToken();
 		} catch (error) {
-			const isOAuthFailure = error instanceof EbayOAuthError;
-
-			if (!isOAuthFailure) {
-				throw error;
-			}
-
-			const isPersistenceFailure = isCredentialPersistenceError(error);
+			const isPersistenceFailure = hasCredentialWriteFailure(error);
 
 			if (isPersistenceFailure) {
 				authLogger.error("Access token refreshed but could not be persisted", {
@@ -243,22 +208,14 @@ export class EbayOAuthClient {
 				"User refresh token expired. User needs to re-authorize.",
 			);
 			this.userTokens = null;
-			throw new EbayOAuthError({
-				operation: "getAccessToken",
-				message:
-					"User authorization expired. Please update EBAY_USER_REFRESH_TOKEN in .env with a new refresh token.",
-			});
+			throw new Error(
+				"User authorization expired. Please update EBAY_USER_REFRESH_TOKEN in .env with a new refresh token.",
+			);
 		}
 
 		try {
 			await this.refreshUserToken();
 		} catch (error) {
-			const isOAuthFailure = error instanceof EbayOAuthError;
-
-			if (!isOAuthFailure) {
-				throw error;
-			}
-
 			const keptAccessToken = this.readUnpersistedAccessToken(error);
 
 			if (keptAccessToken !== null) {
@@ -288,10 +245,8 @@ export class EbayOAuthClient {
 		return await this.readAppAccessToken();
 	};
 
-	private readUnpersistedAccessToken = (
-		error: EbayOAuthError,
-	): string | null => {
-		const isPersistenceFailure = isCredentialPersistenceError(error);
+	private readUnpersistedAccessToken = (error: unknown): string | null => {
+		const isPersistenceFailure = hasCredentialWriteFailure(error);
 
 		if (!isPersistenceFailure) {
 			return null;
@@ -343,7 +298,6 @@ export class EbayOAuthClient {
 		});
 
 		await persistCredentialUpdates(
-			"setUserTokens",
 			"Failed to persist user tokens",
 			this.credentialStore.write({
 				EBAY_USER_ACCESS_TOKEN: accessToken,
@@ -366,7 +320,6 @@ export class EbayOAuthClient {
 			scope: "https://api.ebay.com/oauth/api_scope",
 		});
 		const tokenData = await this.requestOAuthToken<EbayAppAccessTokenResponse>(
-			"getOrRefreshAppAccessToken",
 			"Failed to get app access token",
 			tokenRequest,
 		);
@@ -378,7 +331,6 @@ export class EbayOAuthClient {
 		);
 
 		await persistCredentialUpdates(
-			"getOrRefreshAppAccessToken",
 			"Failed to persist app access token",
 			this.credentialStore.write({
 				EBAY_APP_ACCESS_TOKEN: mintedAppToken,
@@ -396,17 +348,15 @@ export class EbayOAuthClient {
 		const redirectUri = this.config.redirectUri;
 
 		if (redirectUri == null) {
-			throw new EbayOAuthError({
-				operation: "exchangeCodeForToken",
-				message: "Redirect URI is required for authorization code exchange",
-			});
+			throw new Error(
+				"Redirect URI is required for authorization code exchange",
+			);
 		}
 
 		if (redirectUri === "") {
-			throw new EbayOAuthError({
-				operation: "exchangeCodeForToken",
-				message: "Redirect URI is required for authorization code exchange",
-			});
+			throw new Error(
+				"Redirect URI is required for authorization code exchange",
+			);
 		}
 
 		const tokenRequest = this.createTokenRequest({
@@ -415,7 +365,6 @@ export class EbayOAuthClient {
 			redirect_uri: redirectUri,
 		});
 		const tokenData = await this.requestOAuthToken<EbayUserToken>(
-			"exchangeCodeForToken",
 			"Failed to exchange code for token",
 			tokenRequest,
 		);
@@ -423,21 +372,17 @@ export class EbayOAuthClient {
 		const refreshTokenIsMissing = typeof refreshToken !== "string";
 
 		if (refreshTokenIsMissing) {
-			throw new EbayOAuthError({
-				operation: "exchangeCodeForToken",
-				message:
-					"eBay token response did not include a non-empty refresh_token; cannot complete authorization code exchange",
-			});
+			throw new Error(
+				"eBay token response did not include a non-empty refresh_token; cannot complete authorization code exchange",
+			);
 		}
 
 		const refreshTokenIsEmpty = refreshToken.length === 0;
 
 		if (refreshTokenIsEmpty) {
-			throw new EbayOAuthError({
-				operation: "exchangeCodeForToken",
-				message:
-					"eBay token response did not include a non-empty refresh_token; cannot complete authorization code exchange",
-			});
+			throw new Error(
+				"eBay token response did not include a non-empty refresh_token; cannot complete authorization code exchange",
+			);
 		}
 
 		this.userTokens = createStoredUserTokensFromResponse({
@@ -446,7 +391,6 @@ export class EbayOAuthClient {
 		});
 
 		await persistCredentialUpdates(
-			"exchangeCodeForToken",
 			"Failed to persist exchanged user tokens",
 			this.credentialStore.write({
 				EBAY_USER_ACCESS_TOKEN: tokenData.access_token,
@@ -466,10 +410,7 @@ export class EbayOAuthClient {
 		const loadedUserTokens = this.userTokens;
 
 		if (loadedUserTokens === null) {
-			throw new EbayOAuthError({
-				operation: "refreshUserToken",
-				message: "No user tokens available to refresh",
-			});
+			throw new Error("No user tokens available to refresh");
 		}
 
 		const tokenRequest = this.createTokenRequest({
@@ -477,7 +418,6 @@ export class EbayOAuthClient {
 			refresh_token: loadedUserTokens.userRefreshToken,
 		});
 		const tokenData = await this.requestOAuthToken<EbayUserTokenResponse>(
-			"refreshUserToken",
 			"Failed to refresh token",
 			tokenRequest,
 		);
@@ -499,7 +439,6 @@ export class EbayOAuthClient {
 		}
 
 		await persistCredentialUpdates(
-			"refreshUserToken",
 			"Failed to persist refreshed user token",
 			this.credentialStore.write(envUpdates),
 		);

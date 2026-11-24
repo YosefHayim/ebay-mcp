@@ -17,22 +17,6 @@ import type {
 	ViewModel,
 } from "@/tool-registry/ui/viewModels.js";
 
-/** Tagged failure thrown when tool arguments do not match the tool's input schema. */
-export class ToolInputError extends Error {
-	readonly _tag = "ToolInputError";
-	/** Tool whose arguments failed validation. */
-	readonly toolName: string;
-
-	constructor(failure: {
-		readonly toolName: string;
-		readonly message: string;
-	}) {
-		super(failure.message);
-		this.name = "ToolInputError";
-		this.toolName = failure.toolName;
-	}
-}
-
 /**
  * Declarative opt-in for the interactive MCP Apps layer, co-located on the tool
  * so the projection lives next to the handler it projects.
@@ -196,8 +180,8 @@ function toDefinition<Shape extends z.ZodRawShape, Result>(
  * compile-time argument types.
  *
  * The returned {@link ToolEntry} carries a `ToolHandler` that validates raw
- * arguments against the shape before delegating, throwing {@link ToolInputError}
- * on a mismatch. The SDK already validates registered tools, but callers that
+ * arguments against the shape before delegating, throwing when the arguments
+ * do not match. The SDK already validates registered tools, but callers that
  * bypass it (the dynamic-mode tool runner, `executeTool`) rely on this check.
  * Input schemas contain no async refinements, so the second parse is idempotent.
  *
@@ -224,10 +208,9 @@ export const defineTool = <Shape extends z.ZodRawShape, Result>(
 	const handler: ToolHandler = (api, args) => {
 		const parsedArgs = schema.safeParse(args);
 		if (!parsedArgs.success) {
-			throw new ToolInputError({
-				toolName: spec.name,
-				message: `Invalid arguments for ${spec.name}: ${formatZodIssues(parsedArgs.error)}`,
-			});
+			throw new Error(
+				`Invalid arguments for ${spec.name}: ${formatZodIssues(parsedArgs.error)}`,
+			);
 		}
 		return spec.handler(api, parsedArgs.data);
 	};

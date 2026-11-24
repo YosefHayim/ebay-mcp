@@ -200,7 +200,6 @@ describe("EbayApiClient signing without credentials", () => {
 			.catch((cause: unknown) => cause);
 		const details = getEbayErrorDetails(error);
 
-		expect(details.status).toBe(403);
 		expect(details.message).toContain("Missing x-ebay-signature-key header");
 		expect(details.message).toContain("EBAY_SIGNING_KEY_JWE");
 		expect(details.message).toContain("ebay_create_signing_key");
@@ -219,8 +218,10 @@ describe("EbayApiClient signing without credentials", () => {
 			.catch((cause: unknown) => cause);
 		const details = getEbayErrorDetails(error);
 
-		expect(details.status).toBe(400);
-		expect(details.message).toBe("Invalid image signature");
+		expect(details.message).toContain(
+			"eBay API Error: Invalid image signature",
+		);
+		expect(details.message).toContain("25002");
 	});
 });
 

@@ -6,27 +6,6 @@ import type {
 	ViewModel,
 } from "@/tool-registry/ui/viewModels.js";
 
-/** Tagged failure thrown when the tool registry cannot resolve a runnable tool. */
-export class ToolRegistryError extends Error {
-	readonly _tag = "ToolRegistryError";
-	/** Tool name involved in the failure, when a single lookup failed. */
-	readonly toolName?: string;
-
-	constructor(failure: {
-		readonly message: string;
-		readonly toolName?: string;
-	}) {
-		super(failure.message);
-		this.name = "ToolRegistryError";
-
-		const toolName = failure.toolName;
-		const hasToolName = toolName != null;
-		if (hasToolName) {
-			this.toolName = toolName;
-		}
-	}
-}
-
 /**
  * Interactive-UI binding resolved onto a {@link ToolEntry} when a tool opts into
  * the MCP Apps layer via `defineTool({ ui })`.
@@ -128,9 +107,7 @@ const validateRunnableRegistry = (): void => {
 
 	const hasFailures = failures.length > 0;
 	if (hasFailures) {
-		throw new ToolRegistryError({
-			message: `Invalid tool registry: ${failures.join("; ")}`,
-		});
+		throw new Error(`Invalid tool registry: ${failures.join("; ")}`);
 	}
 };
 
@@ -203,10 +180,7 @@ export const executeTool = async (
 
 	const isUnknownTool = handler == null;
 	if (isUnknownTool) {
-		throw new ToolRegistryError({
-			message: `Unknown tool: ${toolName}`,
-			toolName,
-		});
+		throw new Error(`Unknown tool: ${toolName}`);
 	}
 
 	return await handler(api, args);

@@ -78,7 +78,7 @@ describe("MetadataApi shipping:marketplace methods", () => {
 			api.getShippingCarriers(invalidInput({ marketplaceId: "EBAY_XX" })),
 		);
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(client.get).not.toHaveBeenCalled();
 	});
 
@@ -89,10 +89,8 @@ describe("MetadataApi shipping:marketplace methods", () => {
 			api.getHandlingTimes({ marketplaceId: MarketplaceId.EBAY_GB }),
 		);
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			method: "GET",
-			path: `${SHIPPING}/EBAY_GB/get_handling_times`,
-		});
+		expect((error as Error).message).toContain(
+			`eBay GET ${`${SHIPPING}/EBAY_GB/get_handling_times`} failed`,
+		);
 	});
 });

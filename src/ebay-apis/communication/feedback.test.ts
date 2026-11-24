@@ -81,7 +81,7 @@ describe("getFeedback", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("userId is required");
 	});
 });
@@ -135,7 +135,7 @@ describe("leaveFeedback", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("feedbackData is required");
 	});
 });
@@ -170,7 +170,7 @@ describe("respondToFeedback", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("feedbackReply is required");
 	});
 });

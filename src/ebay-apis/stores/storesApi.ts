@@ -13,7 +13,7 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import { locatedResourceId } from "@/ebay-client/location.js";
 import {
-	EbayApiError,
+	createEbayRequestFailure,
 	optionalStringEffect,
 	requestGetEffect,
 	requireObjectEffect,
@@ -60,7 +60,7 @@ async function startCategoryTask(
 	try {
 		taskResponse = await send();
 	} catch (cause) {
-		throw new EbayApiError({ method, path, cause });
+		throw createEbayRequestFailure(method, path, cause);
 	}
 
 	try {
@@ -71,13 +71,10 @@ async function startCategoryTask(
 
 		return { taskId: task.id, location: task.location };
 	} catch (error) {
-		const isEbayApiError = error instanceof EbayApiError;
+		const locationCause =
+			error instanceof Error ? (error.cause ?? error) : error;
 
-		if (isEbayApiError) {
-			throw new EbayApiError({ method, path, cause: error.cause });
-		}
-
-		throw error;
+		throw createEbayRequestFailure(method, path, locationCause);
 	}
 }
 

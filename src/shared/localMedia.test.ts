@@ -74,7 +74,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia(fixture.jpeg, "image", { allowedDirs: [], errors: [] }),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("EBAY_MCP_MEDIA_DIRS"),
 		});
 	});
@@ -86,7 +85,6 @@ describe("loadLocalMedia", () => {
 				errors: [],
 			}),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("EBAY_MCP_MEDIA_ROOT"),
 		});
 	});
@@ -95,7 +93,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia("front.jpg", "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("absolute"),
 		});
 	});
@@ -104,7 +101,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia(fixture.outsideJpeg, "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("outside the allowed media directories"),
 		});
 	});
@@ -113,7 +109,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia("media://../outside/secret.jpg", "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("outside the allowed media directories"),
 		});
 	});
@@ -122,7 +117,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia(fixture.escapingLink, "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("outside the allowed media directories"),
 		});
 	});
@@ -131,7 +125,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia(path.join(fixture.root, "missing.jpg"), "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("file not found"),
 		});
 	});
@@ -140,13 +133,11 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia(fixture.text, "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("unsupported image extension"),
 		});
 		await expect(
 			loadLocalMedia(fixture.jpeg, "video", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("unsupported video extension"),
 		});
 	});
@@ -164,7 +155,6 @@ describe("loadLocalMedia", () => {
 		await expect(
 			loadLocalMedia(fixture.mismatched, "image", access),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining(
 				"does not look like image/jpeg (detected image/png)",
 			),
@@ -179,7 +169,6 @@ describe("loadLocalMedia", () => {
 		);
 
 		await expect(loadLocalMedia(big, "image", access)).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("exceeds"),
 		});
 	});
@@ -213,7 +202,6 @@ describe("loadLocalMediaList", () => {
 				access,
 			),
 		).rejects.toMatchObject({
-			_tag: "LocalMediaError",
 			message: expect.stringContaining("unsupported image extension"),
 		});
 	});

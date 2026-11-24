@@ -5,7 +5,7 @@
 
 import { XMLParser } from "fast-xml-parser";
 import { getErrorMessage } from "@/shared/errors.js";
-import { httpRequestEffect, isHttpError } from "./http.js";
+import { httpRequestEffect } from "./http.js";
 
 const RSS_URL = "https://developer.ebay.com/rss/api-status";
 
@@ -113,6 +113,13 @@ export async function getApiStatusFeed(
 			responseType: "text",
 			headers: { Accept: "application/rss+xml, application/xml, text/xml" },
 		});
+		const httpStatus = feedResponse.status;
+		const isFailedStatus = httpStatus < 200 || httpStatus > 299;
+
+		if (isFailedStatus) {
+			return { items: [], error: `Feed unavailable (HTTP ${httpStatus})` };
+		}
+
 		const parser = new XMLParser({
 			ignoreAttributes: true,
 			trimValues: true,
@@ -153,12 +160,6 @@ export async function getApiStatusFeed(
 
 		return { items: items.slice(0, itemLimit) };
 	} catch (feedError) {
-		const httpStatus = isHttpError(feedError) ? feedError.status : undefined;
-
-		if (typeof httpStatus === "number") {
-			return { items: [], error: `Feed unavailable (HTTP ${httpStatus})` };
-		}
-
 		return {
 			items: [],
 			error: getErrorMessage(feedError, "Failed to fetch API status feed"),

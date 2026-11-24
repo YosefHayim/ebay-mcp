@@ -12,8 +12,8 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import { locatedResourceId } from "@/ebay-client/location.js";
 import {
+	createEbayRequestFailure,
 	decodeEndpointInputEffect,
-	EbayApiError,
 } from "@/ebay-client/request.js";
 import type { components } from "@/ebay-openapi-types/commerceMediaV1BetaOas3.js";
 import { getIdentityBaseUrl, getMediaBaseUrl } from "@/shared/environment.js";
@@ -60,7 +60,7 @@ export const createMediaResourceMethods = (client: EbayApiClient) => {
 	};
 	const failure =
 		(method: "GET" | "POST" | "DELETE", path: string) => (cause: unknown) =>
-			new EbayApiError({ method, path: `${BASE_PATH}${path}`, cause });
+			createEbayRequestFailure(method, `${BASE_PATH}${path}`, cause);
 
 	/**
 	 * Creates an EPS image from an HTTPS URL, retaining its resource identifier.

@@ -2,20 +2,19 @@
 
 import process from "node:process";
 import { setTimeout as sleep } from "node:timers/promises";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "crypto";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import type { Server } from "http";
 import { homedir, platform } from "os";
 import { dirname, join } from "path";
-import prompts from "prompts";
-import { fileURLToPath } from "url";
 import { startCallbackServer } from "@/auth/oauthHelper.js";
 import {
 	displaySecurityResults,
 	runSecurityChecks,
 } from "@/cli/securityChecker.js";
 import { displayRecommendations, validateSetup } from "@/cli/setupValidator.js";
-import { defineWizard, runWizard } from "@/cli/setupWizard.js";
+import { askConfirm, defineWizard, runWizard } from "@/cli/setupWizard.js";
 import type { EbayTokenCore } from "@/shared/ebay.js";
 import { isEntryModule } from "@/shared/entryModule.js";
 import { quoteEnvValue } from "@/shared/envFile.js";
@@ -28,13 +27,10 @@ import {
 } from "@/shared/llmClientDetector.js";
 import { loadEnvFileIfPresent } from "@/shared/load-env-file.js";
 import { paint } from "@/shared/paint.js";
-import { checkForUpdates } from "@/shared/version.js";
 import { loadExistingConfig } from "./setupShared.js";
 import { runSkillsWizard } from "./skills.js";
 
 loadEnvFileIfPresent();
-
-checkForUpdates();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -89,19 +85,6 @@ const ui = {
 
 const DEVELOPER_NAME = "Yosef Hayim Sabag";
 const DEVELOPER_LINKEDIN = "https://www.linkedin.com/in/yosef-hayim-sabag/";
-
-/** Tagged failure raised while the setup wizard captures the OAuth redirect. */
-class SetupCaptureError extends Error {
-	readonly _tag = "SetupCaptureError" as const;
-
-	constructor(fields: {
-		readonly message: string;
-		readonly cause?: unknown;
-	}) {
-		super(fields.message, { cause: fields.cause });
-		this.name = "SetupCaptureError";
-	}
-}
 
 /** Render the wizard's branding header: logo, title, and developer credit. */
 function printWizardBanner(): void {
@@ -1081,8 +1064,7 @@ export const runSetup = async (): Promise<void> => {
 									expectedState: state,
 								});
 							} catch (cause) {
-								throw new SetupCaptureError({
-									message: "Failed to start OAuth callback server",
+								throw new Error("Failed to start OAuth callback server", {
 									cause,
 								});
 							}
@@ -1091,8 +1073,7 @@ export const runSetup = async (): Promise<void> => {
 							try {
 								await context.openBrowser(authUrl);
 							} catch (cause) {
-								throw new SetupCaptureError({
-									message: "Failed to open OAuth authorization URL",
+								throw new Error("Failed to open OAuth authorization URL", {
 									cause,
 								});
 							}
@@ -1107,19 +1088,18 @@ export const runSetup = async (): Promise<void> => {
 							try {
 								oauthRedirect = await started.codePromise;
 							} catch (cause) {
-								throw new SetupCaptureError({
-									message: "Failed while waiting for eBay OAuth redirect",
-									cause,
-								});
+								throw new Error(
+									"Failed while waiting for eBay OAuth redirect",
+									{ cause },
+								);
 							}
 
 							if (!oauthRedirect.code) {
-								throw new SetupCaptureError({
-									message:
-										oauthRedirect.errorDescription ??
+								throw new Error(
+									oauthRedirect.errorDescription ??
 										oauthRedirect.error ??
 										"No authorization code received",
-								});
+								);
 							}
 
 							capturedCode = oauthRedirect.code;
@@ -1388,18 +1368,19 @@ export const runSetup = async (): Promise<void> => {
 	// Optional: offer to install agent skills (Codex / Claude Code / Cursor) so the
 	// user's assistant knows how to drive the tools. Skipped in non-interactive runs.
 	if (process.stdin.isTTY) {
-		const { wantSkills } = (await prompts({
-			type: "confirm",
-			name: "wantSkills",
+		const wantSkills = await askConfirm({
 			message:
 				"Install eBay AI skills (Codex / Claude Code / Cursor) so your assistant drives the tools faster?",
 			initial: true,
-		})) as { wantSkills?: boolean };
-		if (wantSkills) {
+		});
+		const wantsSkills = wantSkills.value === true;
+
+		if (wantsSkills) {
 			await runSkillsWizard({ fromSetup: true });
-		} else {
-			showInfo("You can install them later with: npm run skills");
+			return;
 		}
+
+		showInfo("You can install them later with: npm run skills");
 	}
 };
 

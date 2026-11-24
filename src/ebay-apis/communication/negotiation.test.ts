@@ -49,7 +49,7 @@ describe("sendOfferToInterestedBuyers", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });

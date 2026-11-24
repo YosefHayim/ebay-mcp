@@ -65,22 +65,15 @@ describe("TaxonomyApi fetchItemAspects", () => {
 			headers: { "content-type": "application/octet-stream" },
 		});
 
-		await expect(
-			api.fetchItemAspects({ categoryTreeId: "0" }),
-		).rejects.toMatchObject({
-			_tag: "DownloadTooLargeError",
-			path: `${TREE}/0/fetch_item_aspects`,
-			limit: MAX_INLINE_DOWNLOAD_BYTES,
-		});
+		await expect(api.fetchItemAspects({ categoryTreeId: "0" })).rejects.toThrow(
+			`${TREE}/0/fetch_item_aspects`,
+		);
 	});
 
 	it("rejects a missing category tree ID before any request", async () => {
 		await expect(
 			api.fetchItemAspects(invalidInput({ categoryTreeId: "" })),
-		).rejects.toMatchObject({
-			_tag: "EndpointInputError",
-			parameter: "categoryTreeId",
-		});
+		).rejects.toThrow("categoryTreeId");
 		expect(client.getForResponse).not.toHaveBeenCalled();
 	});
 });
@@ -125,10 +118,8 @@ describe("TaxonomyApi getExpiredCategories", () => {
 			path: string;
 		};
 
-		expect(error).toMatchObject({
-			_tag: "EbayApiError",
-			method: "GET",
-			path: `${TREE}/999/get_expired_categories`,
-		});
+		expect((error as Error).message).toContain(
+			`eBay GET ${`${TREE}/999/get_expired_categories`} failed`,
+		);
 	});
 });

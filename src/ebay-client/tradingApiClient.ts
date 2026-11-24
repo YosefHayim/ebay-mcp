@@ -3,8 +3,6 @@ import XmlBuilder, {
 } from "fast-xml-builder";
 import { XMLParser } from "fast-xml-parser";
 import type { EbayApiClient } from "@/ebay-client/ebayApiClient.js";
-import { EbayApiError } from "@/ebay-client/request.js";
-import { TradingApiFailure } from "@/ebay-client/tradingApiFailure.js";
 import { getBaseUrl, getTradingSiteId } from "@/shared/environment.js";
 import { getErrorMessage } from "@/shared/errors.js";
 import { httpRequest } from "@/shared/http.js";
@@ -72,21 +70,20 @@ const buildTradingXmlBody = (
 	return `<?xml version="1.0" encoding="utf-8"?>\n${builder.build(xmlObject)}`;
 };
 
-const createTradingApiError = (
+function createTradingApiError(
 	{ callName, path }: TradingFailureContext,
 	message: string,
 	cause?: unknown,
-): EbayApiError =>
-	new EbayApiError({
-		method: "POST",
-		path,
-		cause: new TradingApiFailure({
-			callName,
-			path,
-			message: `Trading API ${callName} ${message}`,
-			...(cause === undefined ? {} : { cause }),
-		}),
-	});
+): Error {
+	const detail = `Trading API ${callName} ${message}`;
+	const wrapped = `eBay POST ${path} failed: ${detail}`;
+
+	if (cause === undefined) {
+		return new Error(wrapped);
+	}
+
+	return new Error(wrapped, { cause });
+}
 
 async function authorizeTradingHeaders({
 	restClient,
@@ -143,16 +140,10 @@ function parseTradingXml({
 	try {
 		parsedValue = parser.parse(responseText);
 	} catch (error) {
-		throw new EbayApiError({
-			method: "POST",
-			path,
-			cause: new TradingApiFailure({
-				callName,
-				path,
-				message: `Failed to parse Trading API ${callName} response: ${getErrorMessage(error)}`,
-				cause: error,
-			}),
-		});
+		throw new Error(
+			`eBay POST ${path} failed: Failed to parse Trading API ${callName} response: ${getErrorMessage(error)}`,
+			{ cause: error },
+		);
 	}
 
 	if (isRecord(parsedValue)) {
@@ -200,12 +191,18 @@ const extractTradingErrorMessage = (errors: unknown): string => {
 	return "Trading API returned a failure without an error message";
 };
 
-function tradingCallFailure(path: string, cause: unknown): EbayApiError {
-	if (cause instanceof EbayApiError) {
-		return cause;
+function tradingCallFailure(path: string, cause: unknown): Error {
+	if (cause instanceof Error) {
+		const isAlreadyEbay = cause.message.startsWith("eBay ");
+
+		if (isAlreadyEbay) {
+			return cause;
+		}
 	}
 
-	return new EbayApiError({ method: "POST", path, cause });
+	return new Error(`eBay POST ${path} failed: ${getErrorMessage(cause)}`, {
+		cause,
+	});
 }
 
 function isTradingFailureAck(ack: unknown): boolean {
@@ -233,16 +230,10 @@ function validateTradingAck(
 	const isFailed = isTradingFailureAck(tradingPayload["Ack"]);
 
 	if (isFailed) {
-		throw new EbayApiError({
-			method: "POST",
-			path,
-			cause: new TradingApiFailure({
-				callName,
-				path,
-				message: extractTradingErrorMessage(tradingPayload["Errors"]),
-				cause: tradingPayload["Errors"],
-			}),
-		});
+		throw new Error(
+			`eBay POST ${path} failed: ${extractTradingErrorMessage(tradingPayload["Errors"])}`,
+			{ cause: tradingPayload["Errors"] },
+		);
 	}
 
 	return tradingPayload;

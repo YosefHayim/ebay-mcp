@@ -13,7 +13,7 @@ import type {
 } from "@/ebay-client/ebayApiClient.js";
 import {
 	buildEndpointParams,
-	EbayApiError,
+	createEbayRequestFailure,
 	requestGetEffect,
 	requestPostEffect,
 	requireObjectEffect,
@@ -84,7 +84,7 @@ export class DeveloperApi {
 		try {
 			return await this.client.get<T>(url, undefined, this.keyRequestConfig);
 		} catch (cause) {
-			throw new EbayApiError({ method: "GET", path, cause });
+			throw createEbayRequestFailure("GET", path, cause);
 		}
 	};
 
@@ -239,7 +239,7 @@ export class DeveloperApi {
 				this.keyRequestConfig,
 			);
 		} catch (cause) {
-			throw new EbayApiError({ method: "POST", path, cause });
+			throw createEbayRequestFailure("POST", path, cause);
 		}
 	};
 

@@ -37,19 +37,6 @@ export interface LocalMediaFile {
 	readonly bytes: Buffer;
 }
 
-/** Tagged failure for a media reference the server refuses to read. */
-export class LocalMediaError extends Error {
-	readonly _tag = "LocalMediaError" as const;
-	/** Reference exactly as the caller supplied it. */
-	readonly source: string;
-
-	constructor(failure: { readonly source: string; readonly message: string }) {
-		super(failure.message);
-		this.name = "LocalMediaError";
-		this.source = failure.source;
-	}
-}
-
 /** Largest image eBay Picture Services accepts. */
 export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 
@@ -158,8 +145,7 @@ export const sniffMediaType = (bytes: Buffer): string | undefined => {
 const kindOf = (mimeType: string): LocalMediaKind =>
 	mimeType.startsWith("video/") ? "video" : "image";
 
-const fail = (source: string, message: string): LocalMediaError =>
-	new LocalMediaError({ source, message });
+const fail = (message: string): Error => new Error(message);
 
 const isWithin = (target: string, dir: string): boolean =>
 	target === dir ||
@@ -172,7 +158,6 @@ const resolveReference = (
 	if (source.startsWith(MEDIA_URI_PREFIX)) {
 		if (!access.mediaRoot) {
 			throw fail(
-				source,
 				`media:// references need ${MEDIA_ROOT_ENV} to point at the media directory`,
 			);
 		}
@@ -180,10 +165,10 @@ const resolveReference = (
 		try {
 			relative = decodeURIComponent(source.slice(MEDIA_URI_PREFIX.length));
 		} catch {
-			throw fail(source, "media:// reference contains invalid URI encoding");
+			throw fail("media:// reference contains invalid URI encoding");
 		}
 		if (relative.length === 0) {
-			throw fail(source, "media:// reference has no path");
+			throw fail("media:// reference has no path");
 		}
 		return path.resolve(access.mediaRoot, relative);
 	}
@@ -191,7 +176,6 @@ const resolveReference = (
 		return path.resolve(source);
 	}
 	throw fail(
-		source,
 		"media references must be absolute paths or media://<relative-path> URIs",
 	);
 };
@@ -204,17 +188,12 @@ const realPathOf = async (target: string): Promise<string | undefined> => {
 	}
 };
 
-const expectedMimeType = (
-	source: string,
-	filePath: string,
-	kind: LocalMediaKind,
-): string => {
+const expectedMimeType = (filePath: string, kind: LocalMediaKind): string => {
 	const extension = path.extname(filePath).slice(1).toLowerCase();
 	const table: Readonly<Record<string, string>> = MEDIA_POLICIES[kind].types;
 	const mimeType = table[extension];
 	if (!mimeType) {
 		throw fail(
-			source,
 			`unsupported ${kind} extension ".${extension}"; allowed: ${Object.keys(table).join(", ")}`,
 		);
 	}
@@ -267,14 +246,13 @@ export const loadLocalMedia = async (
 ): Promise<LocalMediaFile> => {
 	if (access.allowedDirs.length === 0) {
 		throw fail(
-			source,
 			`local media access is disabled; set ${MEDIA_DIRS_ENV} (path-delimited directories) or ${MEDIA_ROOT_ENV} to the directories this server may read`,
 		);
 	}
 	const candidate = resolveReference(source, access);
 	const realFilePath = await realPathOf(candidate);
 	if (!realFilePath) {
-		throw fail(source, `file not found: ${candidate}`);
+		throw fail(`file not found: ${candidate}`);
 	}
 	const allowedRealDirs: string[] = [];
 	for (const dir of access.allowedDirs) {
@@ -283,7 +261,6 @@ export const loadLocalMedia = async (
 	}
 	if (!allowedRealDirs.some((dir) => isWithin(realFilePath, dir))) {
 		throw fail(
-			source,
 			`resolves to ${realFilePath}, outside the allowed media directories`,
 		);
 	}
@@ -291,37 +268,36 @@ export const loadLocalMedia = async (
 	try {
 		stats = await stat(realFilePath);
 	} catch {
-		throw fail(source, `cannot read ${realFilePath}`);
+		throw fail(`cannot read ${realFilePath}`);
 	}
 	if (!stats.isFile()) {
-		throw fail(source, `${realFilePath} is not a regular file`);
+		throw fail(`${realFilePath} is not a regular file`);
 	}
-	const mimeType = expectedMimeType(source, realFilePath, kind);
+	const mimeType = expectedMimeType(realFilePath, kind);
 	const limit = MEDIA_POLICIES[kind].limit;
 	if (stats.size > limit) {
 		throw fail(
-			source,
 			`${stats.size} bytes exceeds eBay's ${kind} limit of ${limit} bytes`,
 		);
 	}
 	if (stats.size === 0) {
-		throw fail(source, "file is empty");
+		throw fail("file is empty");
 	}
 	let bytes: Buffer;
 	try {
 		bytes = await readFile(realFilePath);
 	} catch {
-		throw fail(source, `cannot read ${realFilePath}`);
+		throw fail(`cannot read ${realFilePath}`);
 	}
 	if (bytes.length === 0 || bytes.length > limit) {
-		throw fail(source, `file must contain 1 to ${limit} bytes`);
+		throw fail(`file must contain 1 to ${limit} bytes`);
 	}
 	const contentProblem =
 		kind === "feedFile"
 			? feedFileProblem(bytes, mimeType)
 			: mediaSignatureProblem(bytes, mimeType);
 	if (contentProblem) {
-		throw fail(source, contentProblem);
+		throw fail(contentProblem);
 	}
 	return {
 		source,

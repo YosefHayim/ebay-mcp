@@ -14,45 +14,9 @@ export interface EndpointParamSpec {
 	readonly value: string | number | undefined;
 }
 
-export class EbayApiError extends Error {
-	readonly _tag = "EbayApiError";
-	readonly method: HttpMethod;
-	readonly path: string;
-
-	constructor(failure: {
-		method: HttpMethod;
-		path: string;
-		cause: unknown;
-	}) {
-		const detail =
-			failure.cause instanceof Error
-				? failure.cause.message
-				: String(failure.cause);
-
-		super(`eBay ${failure.method} ${failure.path} failed: ${detail}`, {
-			cause: failure.cause,
-		});
-		this.name = "EbayApiError";
-		this.method = failure.method;
-		this.path = failure.path;
-	}
-}
-
-export class EndpointInputError extends Error {
-	readonly _tag = "EndpointInputError";
-	readonly parameter: string;
-
-	constructor(failure: { parameter: string; message: string }) {
-		super(failure.message);
-		this.name = "EndpointInputError";
-		this.parameter = failure.parameter;
-	}
-}
-
 export function decodeEndpointInputEffect<Schema extends z.ZodTypeAny>(
 	schema: Schema,
 	input: unknown,
-	parameter = "input",
 ): z.infer<Schema> {
 	const parsedInput = schema.safeParse(input);
 
@@ -60,10 +24,7 @@ export function decodeEndpointInputEffect<Schema extends z.ZodTypeAny>(
 		return parsedInput.data;
 	}
 
-	throw new EndpointInputError({
-		parameter,
-		message: formatZodIssues(parsedInput.error),
-	});
+	throw new Error(formatZodIssues(parsedInput.error));
 }
 
 export function marketplaceHeader(marketplaceId: string): EbayRequestConfig {
@@ -102,17 +63,11 @@ export function buildEndpointParams(
 
 export function requireStringEffect(value: unknown, name: string): string {
 	if (typeof value !== "string") {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} is required and must be a string`,
-		});
+		throw new Error(`${name} is required and must be a string`);
 	}
 
 	if (value.length === 0) {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} is required and must be a string`,
-		});
+		throw new Error(`${name} is required and must be a string`);
 	}
 
 	return value;
@@ -127,10 +82,7 @@ export function optionalStringEffect(
 	}
 
 	if (typeof value !== "string") {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a string when provided`,
-		});
+		throw new Error(`${name} must be a string when provided`);
 	}
 
 	return value;
@@ -145,17 +97,11 @@ export function optionalPositiveNumberEffect(
 	}
 
 	if (typeof value !== "number") {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a positive number when provided`,
-		});
+		throw new Error(`${name} must be a positive number when provided`);
 	}
 
 	if (value < 1) {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a positive number when provided`,
-		});
+		throw new Error(`${name} must be a positive number when provided`);
 	}
 
 	return value;
@@ -170,17 +116,11 @@ export function optionalNonNegativeNumberEffect(
 	}
 
 	if (typeof value !== "number") {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a non-negative number when provided`,
-		});
+		throw new Error(`${name} must be a non-negative number when provided`);
 	}
 
 	if (value < 0) {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} must be a non-negative number when provided`,
-		});
+		throw new Error(`${name} must be a non-negative number when provided`);
 	}
 
 	return value;
@@ -191,20 +131,24 @@ export function requireObjectEffect<ObjectShape extends object>(
 	name: string,
 ): ObjectShape {
 	if (typeof value !== "object") {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} is required and must be an object`,
-		});
+		throw new Error(`${name} is required and must be an object`);
 	}
 
 	if (value === null) {
-		throw new EndpointInputError({
-			parameter: name,
-			message: `${name} is required and must be an object`,
-		});
+		throw new Error(`${name} is required and must be an object`);
 	}
 
 	return value as ObjectShape;
+}
+
+export function createEbayRequestFailure(
+	method: HttpMethod,
+	path: string,
+	cause: unknown,
+): Error {
+	const detail = cause instanceof Error ? cause.message : String(cause);
+
+	return new Error(`eBay ${method} ${path} failed: ${detail}`, { cause });
 }
 
 async function requestWithEbayError<Response>(
@@ -215,7 +159,7 @@ async function requestWithEbayError<Response>(
 	try {
 		return await send();
 	} catch (cause) {
-		throw new EbayApiError({ method, path, cause });
+		throw createEbayRequestFailure(method, path, cause);
 	}
 }
 

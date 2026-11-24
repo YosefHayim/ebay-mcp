@@ -90,12 +90,9 @@ it("fails with EbayApiError on eBay error response", async () => {
 
 	const failedCall = client.execute("GetItem", { ItemID: "99999" });
 
-	await expect(failedCall).rejects.toMatchObject({
-		_tag: "EbayApiError",
-		cause: expect.objectContaining({
-			message: expect.stringContaining("Invalid item ID"),
-		}),
-	});
+	await expect(failedCall).rejects.toThrow(
+		/eBay POST https:\/\/api\.ebay\.com\/ws\/api\.dll failed: Invalid item ID/,
+	);
 });
 
 it("uses the sandbox URL for sandbox environment", () => {

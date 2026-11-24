@@ -44,7 +44,7 @@ describe("createSubscriptionFilter", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 
@@ -59,7 +59,7 @@ describe("createSubscriptionFilter", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("input is required");
 	});
 });
@@ -93,7 +93,7 @@ describe("getSubscriptionFilter", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 
@@ -111,7 +111,7 @@ describe("getSubscriptionFilter", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("filterId is required");
 	});
 });
@@ -144,7 +144,7 @@ describe("deleteSubscriptionFilter", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("subscriptionId is required");
 	});
 
@@ -162,7 +162,7 @@ describe("deleteSubscriptionFilter", () => {
 			throw new Error("expected failure");
 		})();
 
-		expect(error._tag).toBe("EndpointInputError");
+		expect(error).toBeInstanceOf(Error);
 		expect(error.message).toContain("filterId is required");
 	});
 });
