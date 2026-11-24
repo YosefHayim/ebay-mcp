@@ -9,12 +9,9 @@ import {
 import { tmpdir } from "os";
 import { dirname, join } from "path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { SkillLayer, SkillTarget } from "@/cli/skills/index.js";
-import {
-	applyWrite,
-	planWrite,
-	renderSkillTargets,
-} from "@/cli/skills/index.js";
+import { applyWrite, planWrite } from "@/cli/skills/install.js";
+import { renderSkillTargets } from "@/cli/skills/skill-doc.js";
+import type { SkillLayer, SkillTarget } from "@/cli/skills/types.js";
 
 let dir: string;
 

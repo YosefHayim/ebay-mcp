@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import type { EbayConfig } from "@/shared/ebay.js";
-import { executeTool, getToolDefinitions } from "@/tool-registry/index.js";
+import { executeTool, getToolDefinitions } from "@/tool-registry/registry.js";
 
 type TextContentToolResult = {
 	content: Array<{ text: string }>;

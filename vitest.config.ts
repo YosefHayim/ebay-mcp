@@ -52,7 +52,6 @@ export default defineConfig({
 				"src/ebay-apis/other/vero/veroHelpers.ts",
 				"src/shared/ebay.ts",
 				"src/shared/ebayEnums.ts",
-				"src/shared/index.ts",
 				"src/ebay-openapi-types/**",
 				"src/ebay-apis/**/*Schemas.ts",
 				"src/index.ts",

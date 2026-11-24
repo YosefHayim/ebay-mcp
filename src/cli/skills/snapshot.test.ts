@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildRegistrySnapshot } from "@/cli/skills/index.js";
-import { getToolDefinitions } from "@/tool-registry/index.js";
+import { buildRegistrySnapshot } from "@/cli/skills/registrySnapshot.js";
+import { getToolDefinitions } from "@/tool-registry/registry.js";
 
 describe("skills registry snapshot", () => {
 	it("matches the live advertised tool count", () => {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getToolDefinitions } from "@/tool-registry/index.js";
+import { getToolDefinitions } from "@/tool-registry/registry.js";
 
 const mcpMock = vi.hoisted(() => ({
 	close: vi.fn(),

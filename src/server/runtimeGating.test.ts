@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getToolDefinitions } from "@/tool-registry/index.js";
+import { getToolDefinitions } from "@/tool-registry/registry.js";
 import { toolCategories } from "@/tool-registry/toolCategories.js";
 
 const mcpMock = vi.hoisted(() => {

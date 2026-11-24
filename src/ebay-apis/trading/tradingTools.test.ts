@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
-import { executeTool } from "@/tool-registry/index.js";
+import { executeTool } from "@/tool-registry/registry.js";
 
 function createTradingApiMock(): EbaySellerApi {
 	return {

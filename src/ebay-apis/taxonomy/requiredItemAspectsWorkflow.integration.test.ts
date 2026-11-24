@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildSkillDoc, renderCodexSection } from "@/cli/skills/index.js";
-import { getToolDefinitions } from "@/tool-registry/index.js";
+import { renderCodexSection } from "@/cli/skills/render.js";
+import { buildSkillDoc } from "@/cli/skills/skill-doc.js";
+import { getToolDefinitions } from "@/tool-registry/registry.js";
 
 describe("required item aspects workflow", () => {
 	it("connects the registered taxonomy metadata to the pre-listing workflow", () => {

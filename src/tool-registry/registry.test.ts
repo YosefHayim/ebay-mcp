@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-	executeTool,
 	getToolContracts,
+	validateToolContracts,
+} from "@/tool-registry/contracts.js";
+import {
+	executeTool,
 	getToolDefinitions,
 	getToolEntries,
-	validateToolContracts,
 	validateToolRegistry,
-} from "@/tool-registry/index.js";
+} from "@/tool-registry/registry.js";
 
 describe("tool registry", () => {
 	it("keeps registered definitions unique and executable", () => {

@@ -13,37 +13,6 @@ import type {
 	WritePlan,
 } from "@/cli/skills/types.js";
 
-export { buildContributingDoc, buildUsingDoc } from "@/cli/skills/content.js";
-export {
-	type ApplyResult,
-	applyWrite,
-	planWrite,
-} from "@/cli/skills/install.js";
-export { buildRegistrySnapshot } from "@/cli/skills/registrySnapshot.js";
-export {
-	renderClaudeSkill,
-	renderCodexSection,
-	renderCursorRule,
-	renderSkill,
-} from "@/cli/skills/render.js";
-export {
-	ALL_PROVIDERS,
-	detectProvider,
-	providerLabel,
-	resolveTargets,
-	supportsScope,
-} from "@/cli/skills/targets.js";
-export * from "@/cli/skills/types.js";
-
-export function buildSkillDoc(
-	layer: SkillLayer,
-	snapshot: RegistrySnapshot = buildRegistrySnapshot(),
-): SkillDoc {
-	return layer == "using"
-		? buildUsingDoc(snapshot)
-		: buildContributingDoc(snapshot);
-}
-
 export interface BuildPlansOptions {
 	providers: readonly SkillProvider[];
 	layers: readonly SkillLayer[];
@@ -56,6 +25,19 @@ export interface BuildPlansOptions {
 export interface RenderedTarget {
 	target: SkillTarget;
 	payload: string;
+}
+
+export function buildSkillDoc(
+	layer: SkillLayer,
+	snapshot: RegistrySnapshot = buildRegistrySnapshot(),
+): SkillDoc {
+	const isUsingLayer = layer == "using";
+
+	if (isUsingLayer) {
+		return buildUsingDoc(snapshot);
+	}
+
+	return buildContributingDoc(snapshot);
 }
 
 export function renderSkillTargets(
@@ -73,18 +55,25 @@ export function renderSkillTargets(
 		options.cwd,
 		options.home,
 	);
-	return targets.map((target) => ({
-		target,
-		payload: renderSkill(
-			target.provider,
-			docByLayer[target.layer],
-			target.layer,
-		),
-	}));
+
+	function renderOneTarget(target: SkillTarget): RenderedTarget {
+		const document = docByLayer[target.layer];
+
+		return {
+			target,
+			payload: renderSkill(target.provider, document, target.layer),
+		};
+	}
+
+	return targets.map(renderOneTarget);
 }
 
 export function buildSkillPlans(options: BuildPlansOptions): WritePlan[] {
-	return renderSkillTargets(options).map((rendered) =>
-		planWrite(rendered.target, rendered.payload),
-	);
+	const renderedTargets = renderSkillTargets(options);
+
+	function planRendered(rendered: RenderedTarget): WritePlan {
+		return planWrite(rendered.target, rendered.payload);
+	}
+
+	return renderedTargets.map(planRendered);
 }

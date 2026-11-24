@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getRequiredScopesForTool } from "@/auth/scopeUtils.js";
-import { getToolDefinitions } from "@/tool-registry/index.js";
+import { getToolDefinitions } from "@/tool-registry/registry.js";
 
 const policyToolNames = [
 	"ebay_create_fulfillment_policy",

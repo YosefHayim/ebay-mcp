@@ -1,7 +1,7 @@
 import { join } from "path";
 import { describe, expect, it } from "vitest";
-import type { SkillProvider, SkillTarget } from "@/cli/skills/index.js";
-import { resolveTargets, supportsScope } from "@/cli/skills/index.js";
+import { resolveTargets, supportsScope } from "@/cli/skills/targets.js";
+import type { SkillProvider, SkillTarget } from "@/cli/skills/types.js";
 
 const cwd = join("/tmp", "proj");
 const home = join("/tmp", "home");

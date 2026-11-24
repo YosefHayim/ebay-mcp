@@ -8,7 +8,7 @@ import nock from "nock";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
 import type { EbayConfig } from "@/shared/ebay.js";
-import { executeTool } from "@/tool-registry/index.js";
+import { executeTool } from "@/tool-registry/registry.js";
 
 // Mock EbayOAuthClient
 const mockOAuthClient = {

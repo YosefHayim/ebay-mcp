@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-	buildSkillDoc,
 	renderClaudeSkill,
 	renderCodexSection,
 	renderCursorRule,
 	renderSkill,
-} from "@/cli/skills/index.js";
+} from "@/cli/skills/render.js";
+import { buildSkillDoc } from "@/cli/skills/skill-doc.js";
 
 const usingDoc = buildSkillDoc("using");
 

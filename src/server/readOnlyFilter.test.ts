@@ -4,7 +4,7 @@ import {
 	isReadOnlyTool,
 	type ReadOnlyToolDefinition,
 } from "@/server/readOnlyFilter.js";
-import { getToolDefinitions } from "@/tool-registry/index.js";
+import { getToolDefinitions } from "@/tool-registry/registry.js";
 
 describe("isReadOnlyModeEnabled", () => {
 	it.each([

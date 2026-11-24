@@ -7,19 +7,20 @@ import {
 	askMultiselect,
 	askSelect,
 } from "@/cli/setupWizard.js";
+import { applyWrite, planWrite } from "@/cli/skills/install.js";
+import { buildRegistrySnapshot } from "@/cli/skills/registrySnapshot.js";
+import { renderSkillTargets } from "@/cli/skills/skill-doc.js";
 import {
 	ALL_PROVIDERS,
-	applyWrite,
-	buildRegistrySnapshot,
 	detectProvider,
-	planWrite,
 	providerLabel,
-	renderSkillTargets,
-	type SkillLayer,
-	type SkillProvider,
-	type SkillScope,
-	type WritePlan,
-} from "@/cli/skills/index.js";
+} from "@/cli/skills/targets.js";
+import type {
+	SkillLayer,
+	SkillProvider,
+	SkillScope,
+	WritePlan,
+} from "@/cli/skills/types.js";
 import {
 	ebayPalette,
 	printHeading,

@@ -1,7 +1,7 @@
 import process from "node:process";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EbaySellerApi } from "@/ebay-apis/ebaySellerApi.js";
-import { executeTool } from "@/tool-registry/index.js";
+import { executeTool } from "@/tool-registry/registry.js";
 
 describe("Comprehensive Tools Coverage", () => {
 	let mockApi: EbaySellerApi;
