@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { object } from 'zod';
 import type { EbayClient } from './ebay-client.js';
+import { registerInventory } from './inventory.js';
 import { registerRateLimits } from './rate-limits.js';
 import { textContent } from './tool-text.js';
 
@@ -21,6 +22,7 @@ export function createServer(version: string, client: EbayClient): McpServer {
   );
 
   registerRateLimits(server, client);
+  registerInventory(server, client);
 
   return server;
 }
