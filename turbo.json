@@ -3,6 +3,7 @@
   "tasks": {
     "lint": {},
     "typecheck": {},
+    "typecheck:mcp-apps": {},
     "test": {},
     "build": { "outputs": ["build/**"] }
   }

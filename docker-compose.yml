@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  ebay-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ebay-mcp-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - ebay-mcp-network
+
+networks:
+  ebay-mcp-network:
+    driver: bridge
