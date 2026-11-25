@@ -2,17 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.YosefHayim/ebay-mcp",
   "title": "eBay Seller Tools",
-  "description": "Community MCP server for the eBay Sell, Commerce and Developer APIs (379 tools).",
+  "description": "Local MCP server for eBay rate limits and inventory, using your own keys.",
   "repository": {
     "url": "https://github.com/YosefHayim/ebay-mcp",
     "source": "github"
   },
-  "version": "2.0.9",
+  "version": "3.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "ebay-mcp",
-      "version": "2.0.9",
+      "version": "3.0.0",
       "transport": {
         "type": "stdio"
       },
@@ -40,16 +40,24 @@
           "format": "string"
         },
         {
-          "name": "EBAY_REDIRECT_URI",
-          "description": "Redirect URI name (RuName) from the eBay Developer Portal",
+          "name": "EBAY_USER_REFRESH_TOKEN",
+          "description": "User refresh token for inventory and user rate limits",
           "isRequired": false,
+          "isSecret": true,
           "format": "string"
         },
         {
-          "name": "EBAY_USER_REFRESH_TOKEN",
-          "description": "User refresh token for higher rate limits",
+          "name": "EBAY_MARKETPLACE_ID",
+          "description": "X-EBAY-C-MARKETPLACE-ID, for example EBAY_US",
           "isRequired": false,
-          "isSecret": true,
+          "default": "EBAY_US",
+          "format": "string"
+        },
+        {
+          "name": "EBAY_CONTENT_LANGUAGE",
+          "description": "Content-Language header, for example en-US",
+          "isRequired": false,
+          "default": "en-US",
           "format": "string"
         }
       ]
