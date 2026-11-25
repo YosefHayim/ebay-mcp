@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**"]
+    "includes": ["**", "!src/ebay-openapi-types"]
   },
   "formatter": {
     "enabled": true,
@@ -16,11 +16,6 @@
       "quoteStyle": "single",
       "trailingCommas": "all",
       "semicolons": "always"
-    }
-  },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
     }
   },
   "assist": {
@@ -50,7 +45,7 @@
         "useNamingConvention": "off",
         "useFilenamingConvention": {
           "level": "warn",
-          "options": { "filenameCases": ["camelCase"] }
+          "options": { "filenameCases": ["kebab-case"] }
         },
         "useImportType": "warn",
         "noMagicNumbers": "off",
@@ -79,6 +74,8 @@
         "useTopLevelRegex": "warn"
       },
       "suspicious": {
+        "noDoubleEquals": "off",
+        "noEqualsToNull": "off",
         "noConsole": "warn",
         "noUnknownAttribute": "off",
         "noUnnecessaryConditions": "warn",
@@ -102,94 +99,25 @@
       }
     },
     "domains": {
-      "react": "all",
       "test": "all",
       "project": "all"
     }
   },
   "overrides": [
     {
-      "includes": ["site/**"],
+      "includes": ["src/index.ts", "src/ebay-client.ts", "scripts/**"],
       "linter": {
         "rules": {
-          "style": {
-            "useFilenamingConvention": "off",
-            "noExcessiveLinesPerFile": "off"
-          },
-          "complexity": {
-            "noExcessiveLinesPerFunction": "off"
-          },
-          "suspicious": {
-            "noConsole": "off"
-          },
-          "security": {
-            "noDangerouslySetInnerHtml": "off"
-          }
+          "style": { "noProcessEnv": "off" },
+          "suspicious": { "noConsole": "off" }
         }
       }
     },
     {
-      "includes": [
-        "src/ebay-apis/**/*Schemas.ts",
-        "src/ebay-apis/**/*Tools.ts",
-        "src/auth/tokenManagementTools.ts",
-        "src/server/connectorTools.ts",
-        "src/tool-registry/toolCategories.ts",
-        "src/ebay-openapi-types/**",
-        "src/shared/ebay.ts",
-        "src/shared/ebayEnums.ts",
-        "src/shared/index.ts",
-        "scripts/**",
-        "src/cli/*.ts"
-      ],
+      "includes": ["vitest.config.ts"],
       "linter": {
         "rules": {
-          "style": {
-            "noExcessiveLinesPerFile": "off"
-          },
-          "complexity": {
-            "noExcessiveLinesPerFunction": "off"
-          },
-          "suspicious": {
-            "noConsole": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": [
-        "src/shared/credentialFile.ts",
-        "src/shared/environment.ts",
-        "src/shared/mediaAccess.ts",
-        "src/shared/oauthScopes.ts",
-        "src/shared/toolFamilies.ts",
-        "src/index.ts",
-        "src/serverHttp.ts",
-        "scripts/**",
-        "src/cli/*.ts",
-        "src/shared/logger.ts",
-        "tests/**"
-      ],
-      "linter": {
-        "rules": {
-          "style": {
-            "noProcessEnv": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": [
-        "src/ebay-openapi-types/**",
-        "src/shared/ebay.ts",
-        "src/shared/ebayEnums.ts",
-        "src/shared/index.ts"
-      ],
-      "linter": {
-        "rules": {
-          "style": {
-            "useFilenamingConvention": "off"
-          }
+          "style": { "noDefaultExport": "off" }
         }
       }
     }

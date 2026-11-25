@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
-      since: ${{ steps.filter.outputs.everything != 'true' && github.event.pull_request.base.sha || '' }}
       code: ${{ github.event_name != 'pull_request' || steps.filter.outputs.code == 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -34,8 +33,7 @@ jobs:
               - pnpm-lock.yaml
               - package.json
               - 'tsconfig*.json'
-              - 'src/mcp-apps/tsconfig.json'
-              - 'vitest*.cts'
+              - vitest.config.ts
               - '.github/**'
             code:
               - *everything
@@ -54,22 +52,8 @@ jobs:
           fetch-depth: 0
       - name: Setup workspace
         uses: ./.github/actions/setup
-      - name: Run integration tests
-        if: needs.changes.outputs.since == ''
-        run: pnpm test:integration
-      - name: Run unit tests with the coverage gate
-        if: needs.changes.outputs.since == ''
-        run: pnpm test:coverage
-      - name: Run integration tests for changed files
-        if: needs.changes.outputs.since != ''
-        env:
-          SINCE: ${{ needs.changes.outputs.since }}
-        run: pnpm exec vitest run --config vitest.integration.config.cts --changed "$SINCE"
-      - name: Run unit tests for changed files
-        if: needs.changes.outputs.since != ''
-        env:
-          SINCE: ${{ needs.changes.outputs.since }}
-        run: pnpm exec vitest run --changed "$SINCE"
+      - name: Run tests
+        run: pnpm test
       - name: Build
         run: pnpm build
   gate:

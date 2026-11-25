@@ -7,11 +7,8 @@
     "rootDir": "./src",
     "esModuleInterop": true,
     "declaration": true,
-    "declarationMap": false,
-    "sourceMap": false,
-    "paths": { "@/*": ["./src/*"] },
-    "baseUrl": "."
+    "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "tests", "src/mcp-apps", "vitest.config.cts"]
+  "exclude": ["src/**/*.test.ts"]
 }
