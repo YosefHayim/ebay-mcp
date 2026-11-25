@@ -14,7 +14,7 @@
     "start": "node build/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "sync": "tsx scripts/sync-specs.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",

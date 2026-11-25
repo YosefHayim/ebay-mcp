@@ -1,16 +1,23 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import { object } from 'zod';
 import type { EbayClient } from './ebay-client.js';
+import type { RateLimitsResponse } from './ebay-openapi-types/developer-analytics.js';
 import { jsonText } from './tool-text.js';
 
 export function registerRateLimits(server: McpServer, client: EbayClient): void {
   async function getRateLimits() {
-    const limits = await client.getJson('/developer/analytics/v1_beta/rate_limit/', 'application');
+    const limits = await client.getJson<RateLimitsResponse>(
+      '/developer/analytics/v1_beta/rate_limit/',
+      'application',
+    );
     return jsonText(limits);
   }
 
   async function getUserRateLimits() {
-    const limits = await client.getJson('/developer/analytics/v1_beta/user_rate_limit/', 'user');
+    const limits = await client.getJson<RateLimitsResponse>(
+      '/developer/analytics/v1_beta/user_rate_limit/',
+      'user',
+    );
     return jsonText(limits);
   }
 

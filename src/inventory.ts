@@ -1,6 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import { number, object, string } from 'zod';
 import type { EbayClient } from './ebay-client.js';
+import type {
+  InventoryItems,
+  InventoryItemWithSkuLocaleGroupid,
+} from './ebay-openapi-types/sell-inventory.js';
 import { jsonText } from './tool-text.js';
 
 export class Inventory {
@@ -10,7 +14,10 @@ export class Inventory {
     this.client = client;
   }
 
-  readonly listItems = async (limit: number | null, offset: number | null): Promise<unknown> => {
+  readonly listItems = async (
+    limit: number | null,
+    offset: number | null,
+  ): Promise<InventoryItems> => {
     const defaultPageLimit = 25;
     const defaultPageOffset = 0;
     const pageLimit = limit ?? defaultPageLimit;
@@ -22,11 +29,11 @@ export class Inventory {
     search.set('offset', offsetText);
     const query = search.toString();
     const path = `/sell/inventory/v1/inventory_item?${query}`;
-    const page = await this.client.getJson(path, 'user');
+    const page = await this.client.getJson<InventoryItems>(path, 'user');
     return page;
   };
 
-  readonly getItem = async (sku: string): Promise<unknown> => {
+  readonly getItem = async (sku: string): Promise<InventoryItemWithSkuLocaleGroupid> => {
     const isMissing = sku == '';
 
     if (isMissing) {
@@ -35,7 +42,10 @@ export class Inventory {
 
     const encodedSku = encodeURIComponent(sku);
     const path = `/sell/inventory/v1/inventory_item/${encodedSku}`;
-    const inventoryDocument = await this.client.getJson(path, 'user');
+    const inventoryDocument = await this.client.getJson<InventoryItemWithSkuLocaleGroupid>(
+      path,
+      'user',
+    );
     return inventoryDocument;
   };
 }

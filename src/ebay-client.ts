@@ -24,7 +24,10 @@ export class EbayClient {
     return isSandboxSite;
   };
 
-  readonly getJson = async (path: string, tokenKind: TokenKind): Promise<unknown> => {
+  readonly getJson = async <Document = unknown>(
+    path: string,
+    tokenKind: TokenKind,
+  ): Promise<Document> => {
     const token = await this.readToken(tokenKind);
     const url = this.endpoint(path);
     const headers = this.callHeaders(token);
@@ -45,7 +48,7 @@ export class EbayClient {
 
     try {
       const document: unknown = await ebayReply.json();
-      return document;
+      return document as Document;
     } catch (error) {
       throw new Error(`eBay returned unreadable JSON for ${path}`, { cause: error });
     }
