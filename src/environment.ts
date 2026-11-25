@@ -1,81 +1,73 @@
 import process from 'node:process';
 
-type EbaySite = 'sandbox' | 'production';
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      EBAY_CLIENT_ID?: string;
+      EBAY_CLIENT_SECRET?: string;
+      EBAY_ENVIRONMENT?: string;
+      EBAY_USER_REFRESH_TOKEN?: string;
+      EBAY_MARKETPLACE_ID?: string;
+      EBAY_CONTENT_LANGUAGE?: string;
+    }
+  }
+}
 
-interface EbayCredentials {
+export interface EbayCredentials {
   clientId: string;
   clientSecret: string;
-  site: EbaySite;
+  site: 'sandbox' | 'production';
   refreshToken: string | null;
   marketplaceId: string;
   contentLanguage: string;
 }
 
-function readClientId(): string {
+export function readCredentials(): EbayCredentials {
   const clientId = process.env.EBAY_CLIENT_ID ?? '';
+  const isClientIdMissing = clientId == '';
 
-  const isMissing = clientId == '';
-  if (isMissing) {
+  if (isClientIdMissing) {
     throw new Error('EBAY_CLIENT_ID is missing');
   }
 
-  return clientId;
-}
-
-function readClientSecret(): string {
   const clientSecret = process.env.EBAY_CLIENT_SECRET ?? '';
+  const isClientSecretMissing = clientSecret == '';
 
-  const isMissing = clientSecret == '';
-  if (isMissing) {
+  if (isClientSecretMissing) {
     throw new Error('EBAY_CLIENT_SECRET is missing');
   }
 
-  return clientSecret;
-}
-
-function readRefreshToken(): string | null {
-  const refreshToken = process.env.EBAY_USER_REFRESH_TOKEN ?? '';
-
-  const isMissing = refreshToken == '';
-  if (isMissing) {
-    return null;
-  }
-
-  return refreshToken;
-}
-
-function readSite(): EbaySite {
+  const refreshTokenText = process.env.EBAY_USER_REFRESH_TOKEN ?? '';
+  const isRefreshMissing = refreshTokenText == '';
+  const refreshToken = isRefreshMissing ? null : refreshTokenText;
+  const marketplaceId = process.env.EBAY_MARKETPLACE_ID ?? 'EBAY_US';
+  const contentLanguage = process.env.EBAY_CONTENT_LANGUAGE ?? 'en-US';
   const siteName = process.env.EBAY_ENVIRONMENT ?? 'sandbox';
-
   const isSandbox = siteName == 'sandbox';
+
   if (isSandbox) {
-    return 'sandbox';
+    return {
+      clientId,
+      clientSecret,
+      site: 'sandbox',
+      refreshToken,
+      marketplaceId,
+      contentLanguage,
+    };
   }
 
   const isProduction = siteName == 'production';
-  if (isProduction) {
-    return 'production';
+
+  if (isProduction == false) {
+    throw new Error('EBAY_ENVIRONMENT must be sandbox or production');
   }
-
-  throw new Error('EBAY_ENVIRONMENT must be sandbox or production');
-}
-
-export function readCredentials(): EbayCredentials {
-  const clientId = readClientId();
-  const clientSecret = readClientSecret();
-  const site = readSite();
-  const refreshToken = readRefreshToken();
-  const marketplaceId = process.env.EBAY_MARKETPLACE_ID ?? 'EBAY_US';
-  const contentLanguage = process.env.EBAY_CONTENT_LANGUAGE ?? 'en-US';
 
   return {
     clientId,
     clientSecret,
-    site,
+    site: 'production',
     refreshToken,
     marketplaceId,
     contentLanguage,
   };
 }
-
-export type { EbayCredentials, EbaySite };

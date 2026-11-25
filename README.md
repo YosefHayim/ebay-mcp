@@ -37,19 +37,23 @@ See [`.env.example`](.env.example) for every variable.
 
 ## Tools
 
+`ebay_ping` checks that the server is connected.
+
+Every other tool is one operation from the official eBay OpenAPI documents. The tool name is `ebay_` plus the operation id in snake case. Path and query fields are the arguments. A call with a JSON document takes a `document` argument.
+
 | Tool | eBay call | Token |
 | --- | --- | --- |
 | `ebay_ping` | none | none |
 | `ebay_get_rate_limits` | `GET /developer/analytics/v1_beta/rate_limit/` | application |
 | `ebay_get_user_rate_limits` | `GET /developer/analytics/v1_beta/user_rate_limit/` | user |
-| `ebay_list_inventory_items` | `GET /sell/inventory/v1/inventory_item` | user |
+| `ebay_get_inventory_items` | `GET /sell/inventory/v1/inventory_item` | user |
 | `ebay_get_inventory_item` | `GET /sell/inventory/v1/inventory_item/{sku}` | user |
 
 Ask the assistant to check your eBay API rate limits. That calls `ebay_get_rate_limits` and proves the server, the keys, and the client.
 
 ## OpenAPI types
 
-`pnpm sync` downloads the official OpenAPI documents for the calls above and writes TypeScript types into `src/ebay-openapi-types/`. Each new API starts by adding its document URL to `scripts/sync-specs.ts` and running that command.
+`pnpm sync` downloads the official OpenAPI documents and writes TypeScript types into `src/types/`. The same command writes `src/ebay-routes.ts`, the list of calls the server registers. Add a document URL in `scripts/spec-sources.ts` and run `pnpm sync` when eBay publishes another API.
 
 ## Develop
 

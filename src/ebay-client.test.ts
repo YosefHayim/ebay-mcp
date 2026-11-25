@@ -12,8 +12,8 @@ const credentials: EbayCredentials = {
   contentLanguage: 'en-US',
 };
 
-const rateLimitPath = '/developer/analytics/v1_beta/rate_limit/';
-const userRateLimitPath = '/developer/analytics/v1_beta/user_rate_limit/';
+const RATE_LIMIT_PATH = '/developer/analytics/v1_beta/rate_limit/';
+const USER_RATE_LIMIT_PATH = '/developer/analytics/v1_beta/user_rate_limit/';
 
 function tokenReply(accessToken = 'app-token', expiresIn = 7200): Response {
   const document = { access_token: accessToken, expires_in: expiresIn };
@@ -100,6 +100,38 @@ describe('isSandbox', () => {
   });
 });
 
+describe('sendJson', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('posts JSON to the apiz sandbox host', async () => {
+    const calls = installFetch([tokenReply(), jsonReply({ signingKeyId: 'key-1' })]);
+    const client = new EbayClient(credentials);
+
+    const created = await client.sendJson({
+      method: 'POST',
+      path: '/developer/key_management/v1/signing_key',
+      tokenKind: 'application',
+      host: 'apiz',
+      document: { signingKeyCipher: 'ED25519' },
+      contentType: 'application/json',
+      headerFields: null,
+    });
+
+    expect(created).toEqual({ signingKeyId: 'key-1' });
+    const [tokenCall, keyCall] = calls;
+    expect(tokenCall?.url).toBe('https://api.sandbox.ebay.com/identity/v1/oauth2/token');
+    expect(keyCall?.url).toBe(
+      'https://apiz.sandbox.ebay.com/developer/key_management/v1/signing_key',
+    );
+    expect(keyCall?.method).toBe('POST');
+    expect(keyCall?.headers.get('Content-Type')).toBe('application/json');
+    const sent = await keyCall?.text();
+    expect(sent).toBe('{"signingKeyCipher":"ED25519"}');
+  });
+});
+
 describe('getJson', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -109,7 +141,7 @@ describe('getJson', () => {
     const calls = installFetch([tokenReply(), jsonReply({ rateLimits: [] })]);
     const client = new EbayClient(credentials);
 
-    const limits = await client.getJson(rateLimitPath, 'application');
+    const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
 
     expect(limits).toEqual({ rateLimits: [] });
     const [tokenCall, rateCall] = calls;
@@ -122,7 +154,7 @@ describe('getJson', () => {
     const scope = encodeURIComponent('https://api.ebay.com/oauth/api_scope');
     expect(tokenForm).toBe(`grant_type=client_credentials&scope=${scope}`);
     expect(tokenCall?.headers.get('Content-Type')).toBe('application/x-www-form-urlencoded');
-    expect(rateCall?.url).toBe(`https://api.sandbox.ebay.com${rateLimitPath}`);
+    expect(rateCall?.url).toBe(`https://api.sandbox.ebay.com${RATE_LIMIT_PATH}`);
     expect(rateCall?.method).toBe('GET');
     expect(rateCall?.headers.get('Authorization')).toBe('Bearer app-token');
     expect(rateCall?.headers.get('Accept')).toBe('application/json');
@@ -143,11 +175,11 @@ describe('getJson', () => {
     };
     const client = new EbayClient(production);
 
-    await client.getJson(rateLimitPath, 'application');
+    await client.getJson(RATE_LIMIT_PATH, 'application');
 
     const [tokenCall, rateCall] = calls;
     expect(tokenCall?.url).toBe('https://api.ebay.com/identity/v1/oauth2/token');
-    expect(rateCall?.url).toBe(`https://api.ebay.com${rateLimitPath}`);
+    expect(rateCall?.url).toBe(`https://api.ebay.com${RATE_LIMIT_PATH}`);
     expect(rateCall?.headers.get('X-EBAY-C-MARKETPLACE-ID')).toBe('EBAY_GB');
     expect(rateCall?.headers.get('Content-Language')).toBe('en-GB');
   });
@@ -168,11 +200,11 @@ describe('getJson', () => {
     ]);
     const client = new EbayClient(credentials, currentTimeMilliseconds);
 
-    const first = await client.getJson(rateLimitPath, 'application');
-    const second = await client.getJson(rateLimitPath, 'application');
+    const first = await client.getJson(RATE_LIMIT_PATH, 'application');
+    const second = await client.getJson(RATE_LIMIT_PATH, 'application');
     const threeHoursMilliseconds = 3 * 60 * 60 * 1000;
     clock += threeHoursMilliseconds;
-    const third = await client.getJson(rateLimitPath, 'application');
+    const third = await client.getJson(RATE_LIMIT_PATH, 'application');
 
     expect(first).toEqual({ rateLimits: ['first'] });
     expect(second).toEqual({ rateLimits: ['second'] });
@@ -187,7 +219,7 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
@@ -199,7 +231,7 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
@@ -211,7 +243,7 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
@@ -223,7 +255,7 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
@@ -235,12 +267,12 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
     await expect(readLimits()).rejects.toThrow(
-      `eBay returned 429 for ${rateLimitPath}: {"message":"slow down"}`,
+      `eBay returned 429 for ${RATE_LIMIT_PATH}: {"message":"slow down"}`,
     );
   });
 
@@ -249,11 +281,11 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
-    await expect(readLimits()).rejects.toThrow(`eBay request failed for ${rateLimitPath}`);
+    await expect(readLimits()).rejects.toThrow(`eBay request failed for ${RATE_LIMIT_PATH}`);
   });
 
   test('throws when the call is not JSON', async () => {
@@ -262,12 +294,12 @@ describe('getJson', () => {
     const client = new EbayClient(credentials);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(rateLimitPath, 'application');
+      const limits = await client.getJson(RATE_LIMIT_PATH, 'application');
       return limits;
     }
 
     await expect(readLimits()).rejects.toThrow(
-      `eBay returned unreadable JSON for ${rateLimitPath}`,
+      `eBay returned unreadable JSON for ${RATE_LIMIT_PATH}`,
     );
   });
 
@@ -275,7 +307,7 @@ describe('getJson', () => {
     const calls = installFetch([tokenReply('user-token'), jsonReply({ rateLimits: [] })]);
     const client = new EbayClient(credentials);
 
-    const limits = await client.getJson(userRateLimitPath, 'user');
+    const limits = await client.getJson(USER_RATE_LIMIT_PATH, 'user');
 
     expect(limits).toEqual({ rateLimits: [] });
     const [tokenCall, rateCall] = calls;
@@ -285,7 +317,7 @@ describe('getJson', () => {
 
     const hasScope = tokenForm?.includes('scope=') == true;
     expect(hasScope).toBe(false);
-    expect(rateCall?.url).toBe(`https://api.sandbox.ebay.com${userRateLimitPath}`);
+    expect(rateCall?.url).toBe(`https://api.sandbox.ebay.com${USER_RATE_LIMIT_PATH}`);
     expect(rateCall?.headers.get('Authorization')).toBe('Bearer user-token');
   });
 
@@ -302,7 +334,7 @@ describe('getJson', () => {
     const client = new EbayClient(withoutRefresh);
 
     async function readLimits(): Promise<unknown> {
-      const limits = await client.getJson(userRateLimitPath, 'user');
+      const limits = await client.getJson(USER_RATE_LIMIT_PATH, 'user');
       return limits;
     }
 
@@ -319,9 +351,9 @@ describe('getJson', () => {
     ]);
     const client = new EbayClient(credentials);
 
-    const first = await client.getJson(userRateLimitPath, 'user');
-    const second = await client.getJson(rateLimitPath, 'application');
-    const third = await client.getJson(userRateLimitPath, 'user');
+    const first = await client.getJson(USER_RATE_LIMIT_PATH, 'user');
+    const second = await client.getJson(RATE_LIMIT_PATH, 'application');
+    const third = await client.getJson(USER_RATE_LIMIT_PATH, 'user');
 
     expect(first).toEqual({ rateLimits: ['user'] });
     expect(second).toEqual({ rateLimits: ['app'] });

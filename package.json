@@ -1,45 +1,44 @@
 {
   "name": "ebay-mcp",
-  "mcpName": "io.github.YosefHayim/ebay-mcp",
   "version": "3.0.0",
-  "description": "A local MCP server that calls the eBay Sell and Developer APIs with your own keys.",
-  "type": "module",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
-  "bin": {
-    "ebay-mcp": "build/index.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "start": "node build/index.js",
-    "dev": "tsx src/index.ts",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
-    "sync": "tsx scripts/sync-specs.ts",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "check": "turbo run lint typecheck test build --output-logs=errors-only",
-    "prepare": "husky"
-  },
+  "description": "A local MCP server that calls the eBay REST APIs with your own keys.",
   "keywords": [
     "mcp",
     "ebay",
     "model-context-protocol"
   ],
-  "author": "Yosef Hayim Sabag",
+  "homepage": "https://github.com/YosefHayim/ebay-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/YosefHayim/ebay-mcp/issues"
+  },
   "license": "MIT",
+  "author": "Yosef Hayim Sabag",
   "files": [
     "build/**/*.js",
     "build/**/*.d.ts",
     "README.md"
   ],
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "type": "module",
+  "bin": {
+    "ebay-mcp": "build/index.js"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/YosefHayim/ebay-mcp.git"
+    "url": "git+https://github.com/YosefHayim/ebay-mcp.git"
   },
-  "homepage": "https://github.com/YosefHayim/ebay-mcp#readme",
-  "bugs": {
-    "url": "https://github.com/YosefHayim/ebay-mcp/issues"
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node build/index.js",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "sync": "tsx scripts/sync-specs.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",
@@ -51,25 +50,21 @@
     "husky": "^9.1.7",
     "openapi-typescript": "^7.13.0",
     "tsx": "^4.22.4",
-    "turbo": "2.11.8",
     "typescript": "^5.9.3",
     "vitest": "^4.1.12"
   },
-  "packageManager": "pnpm@10.14.0",
   "engines": {
     "node": ">=24"
   },
+  "packageManager": "pnpm@10.14.0",
+  "mcpName": "io.github.YosefHayim/ebay-mcp",
   "pnpm": {
     "overrides": {
       "esbuild": ">=0.28.1",
-      "yaml": ">=2.8.3",
       "js-yaml": "^4.3.2",
       "brace-expansion@^2.0.0": "^2.1.7",
-      "fast-uri": "^3.1.8",
-      "ip-address": "^10.7.1",
       "nanoid@^3.0.0": "^3.3.18",
       "postcss": "^8.5.23",
-      "qs": "^6.16.0",
       "source-map-js": "^1.2.2"
     }
   }

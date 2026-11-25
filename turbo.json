@@ -1,9 +1,0 @@
-{
-  "$schema": "https://turborepo.dev/schema.json",
-  "tasks": {
-    "lint": {},
-    "typecheck": {},
-    "test": {},
-    "build": { "outputs": ["build/**"] }
-  }
-}

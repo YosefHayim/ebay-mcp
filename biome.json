@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!src/ebay-openapi-types"]
+    "includes": ["**", "!src/types", "!src/ebay-routes.ts"]
   },
   "formatter": {
     "enabled": true,

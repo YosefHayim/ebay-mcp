@@ -3,24 +3,9 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-interface SpecSource {
-  name: string;
-  url: string;
-  output: string;
-}
-
-const openApiSpecs: SpecSource[] = [
-  {
-    name: 'developer-analytics',
-    url: 'https://developer.ebay.com/api-docs/master/developer/analytics/openapi/3/developer_analytics_v1_beta_oas3.json',
-    output: 'src/ebay-openapi-types/developer-analytics.ts',
-  },
-  {
-    name: 'sell-inventory',
-    url: 'https://developer.ebay.com/api-docs/master/sell/inventory/openapi/3/sell_inventory_v1_oas3.json',
-    output: 'src/ebay-openapi-types/sell-inventory.ts',
-  },
-];
+import type { LoadedSpec, OpenApiDocument } from './openapi-document.js';
+import { specSources, type SpecSource } from './spec-sources.js';
+import { writeRouteCatalog } from './write-routes.js';
 
 function runFile(file: string, args: string[]): Promise<void> {
   function start(resolve: () => void, reject: (reason: Error) => void): void {
@@ -41,7 +26,7 @@ function runFile(file: string, args: string[]): Promise<void> {
   return new Promise(start);
 }
 
-async function downloadSpec(spec: SpecSource, cacheDir: URL): Promise<URL> {
+async function downloadSpec(spec: SpecSource, cacheDir: URL): Promise<OpenApiDocument> {
   var specReply: Response;
 
   try {
@@ -72,12 +57,18 @@ async function downloadSpec(spec: SpecSource, cacheDir: URL): Promise<URL> {
     throw new Error(`Could not save ${spec.name}`, { cause: error });
   }
 
-  return cacheUrl;
+  try {
+    const document: unknown = JSON.parse(specText);
+    return document as OpenApiDocument;
+  } catch (error) {
+    throw new Error(`Could not parse ${spec.name}`, { cause: error });
+  }
 }
 
-async function generateTypes(spec: SpecSource, cacheUrl: URL, rootUrl: URL): Promise<void> {
+async function generateTypes(spec: SpecSource, cacheDir: URL, rootUrl: URL): Promise<void> {
   const cliUrl = new URL('node_modules/openapi-typescript/bin/cli.js', rootUrl);
-  const outputUrl = new URL(spec.output, rootUrl);
+  const cacheUrl = new URL(`${spec.name}.json`, cacheDir);
+  const outputUrl = new URL(`src/types/${spec.name}.ts`, rootUrl);
   const cliPath = fileURLToPath(cliUrl);
   const cachePath = fileURLToPath(cacheUrl);
   const outputPath = fileURLToPath(outputUrl);
@@ -96,19 +87,26 @@ async function generateTypes(spec: SpecSource, cacheUrl: URL, rootUrl: URL): Pro
   }
 }
 
+async function syncSpec(spec: SpecSource, cacheDir: URL, rootUrl: URL): Promise<LoadedSpec> {
+  const document = await downloadSpec(spec, cacheDir);
+  await generateTypes(spec, cacheDir, rootUrl);
+  return { source: spec, document };
+}
+
 async function main(): Promise<void> {
   const rootUrl = new URL('../', import.meta.url);
   const cacheDir = new URL('.cache/ebay-specs/', rootUrl);
-  const outputDir = new URL('src/ebay-openapi-types/', rootUrl);
+  const outputDir = new URL('src/types/', rootUrl);
+  const catalogUrl = new URL('src/ebay-routes.ts', rootUrl);
   await mkdir(cacheDir, { recursive: true });
   await mkdir(outputDir, { recursive: true });
 
-  async function syncSpec(spec: SpecSource): Promise<void> {
-    const cacheUrl = await downloadSpec(spec, cacheDir);
-    await generateTypes(spec, cacheUrl, rootUrl);
+  function loadSpec(spec: SpecSource): Promise<LoadedSpec> {
+    return syncSpec(spec, cacheDir, rootUrl);
   }
 
-  await Promise.all(openApiSpecs.map(syncSpec));
+  const loaded = await Promise.all(specSources.map(loadSpec));
+  await writeRouteCatalog(loaded, catalogUrl);
 }
 
 try {

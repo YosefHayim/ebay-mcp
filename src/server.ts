@@ -1,15 +1,15 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { object } from 'zod';
 import type { EbayClient } from './ebay-client.js';
-import { registerInventory } from './inventory.js';
-import { registerRateLimits } from './rate-limits.js';
-import { textContent } from './tool-text.js';
+import { registerEbayRoutes } from './ebay-route.js';
 
-export function createServer(version: string, client: EbayClient): McpServer {
-  const server = new McpServer({ name: 'ebay', version });
+export function createServer(client: EbayClient): McpServer {
+  const server = new McpServer({ name: 'ebay', version: '3.0.0' });
 
   function ping() {
-    return textContent('ebay-mcp');
+    return {
+      content: [{ type: 'text' as const, text: 'ebay-mcp' }],
+    };
   }
 
   server.registerTool(
@@ -21,8 +21,7 @@ export function createServer(version: string, client: EbayClient): McpServer {
     ping,
   );
 
-  registerRateLimits(server, client);
-  registerInventory(server, client);
+  registerEbayRoutes(server, client);
 
   return server;
 }

@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+import { callHeaders, documentText, readDocument, readReplyText } from './ebay-reply.js';
 import type { EbayCredentials } from './environment.js';
 
 interface CachedToken {
@@ -6,7 +7,19 @@ interface CachedToken {
   expiresAtMilliseconds: number;
 }
 
-type TokenKind = 'application' | 'user';
+export type TokenKind = 'application' | 'user';
+export type EbayHost = 'api' | 'apiz' | 'apim' | 'tppz';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+export interface EbayCall {
+  method: HttpMethod;
+  path: string;
+  tokenKind: TokenKind;
+  host: EbayHost;
+  document: unknown | null;
+  contentType: string | null;
+  headerFields: Record<string, string> | null;
+}
 
 export class EbayClient {
   private applicationToken: CachedToken | null = null;
@@ -28,40 +41,51 @@ export class EbayClient {
     path: string,
     tokenKind: TokenKind,
   ): Promise<Document> => {
-    const token = await this.readToken(tokenKind);
-    const url = this.endpoint(path);
-    const headers = this.callHeaders(token);
+    const document = await this.sendJson({
+      method: 'GET',
+      path,
+      tokenKind,
+      host: 'api',
+      document: null,
+      contentType: null,
+      headerFields: null,
+    });
+    return document as Document;
+  };
+
+  readonly sendJson = async (call: EbayCall): Promise<unknown> => {
+    const token = await this.readToken(call.tokenKind);
+    const url = this.endpoint(call.path, call.host);
+    const headers = callHeaders(this.credentials, token, call.headerFields);
+    const requestText = documentText(call);
+    const init: RequestInit = { method: call.method, headers };
+    const isMissingText = requestText == null;
+
+    if (isMissingText == false) {
+      const contentType = call.contentType ?? 'application/json';
+      headers.set('Content-Type', contentType);
+      init.body = requestText;
+    }
+
     var ebayReply: Response;
 
     try {
-      ebayReply = await fetch(url, { method: 'GET', headers });
+      ebayReply = await fetch(url, init);
     } catch (error) {
-      throw new Error(`eBay request failed for ${path}`, { cause: error });
+      throw new Error(`eBay request failed for ${call.path}`, { cause: error });
     }
 
-    const isOk = ebayReply.ok;
-
-    if (isOk == false) {
-      const failureText = await this.readReplyText(ebayReply);
-      throw new Error(`eBay returned ${ebayReply.status} for ${path}: ${failureText}`);
-    }
-
-    try {
-      const document: unknown = await ebayReply.json();
-      return document as Document;
-    } catch (error) {
-      throw new Error(`eBay returned unreadable JSON for ${path}`, { cause: error });
-    }
+    return readDocument(ebayReply, call.path);
   };
 
-  private readonly endpoint = (path: string): string => {
+  private readonly endpoint = (path: string, host: EbayHost): string => {
     const isSandboxSite = this.isSandbox();
 
     if (isSandboxSite) {
-      return `https://api.sandbox.ebay.com${path}`;
+      return `https://${host}.sandbox.ebay.com${path}`;
     }
 
-    return `https://api.ebay.com${path}`;
+    return `https://${host}.ebay.com${path}`;
   };
 
   private readonly readToken = async (tokenKind: TokenKind): Promise<string> => {
@@ -121,7 +145,7 @@ export class EbayClient {
   };
 
   private readonly requestToken = async (tokenKind: TokenKind): Promise<CachedToken> => {
-    const tokenUrl = this.endpoint('/identity/v1/oauth2/token');
+    const tokenUrl = this.endpoint('/identity/v1/oauth2/token', 'api');
     const form = this.tokenForm(tokenKind);
     const headers = this.tokenHeaders();
     var tokenReply: Response;
@@ -139,7 +163,7 @@ export class EbayClient {
     const isOk = tokenReply.ok;
 
     if (isOk == false) {
-      const failureText = await this.readReplyText(tokenReply);
+      const failureText = await readReplyText(tokenReply);
       throw new Error(`eBay returned ${tokenReply.status} for the token request: ${failureText}`);
     }
 
@@ -252,22 +276,5 @@ export class EbayClient {
     }
 
     return document as Record<string, unknown>;
-  };
-
-  private readonly callHeaders = (token: string): Headers => {
-    const headers = new Headers();
-    headers.set('Accept', 'application/json');
-    headers.set('Authorization', `Bearer ${token}`);
-    headers.set('Content-Language', this.credentials.contentLanguage);
-    headers.set('X-EBAY-C-MARKETPLACE-ID', this.credentials.marketplaceId);
-    return headers;
-  };
-
-  private readonly readReplyText = async (ebayReply: Response): Promise<string> => {
-    try {
-      return await ebayReply.text();
-    } catch (error) {
-      throw new Error(`eBay returned ${ebayReply.status} and no error text`, { cause: error });
-    }
   };
 }
