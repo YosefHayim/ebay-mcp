@@ -1,0 +1,155 @@
+name: eBay API Sync
+'on':
+  workflow_dispatch: null
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sync-check:
+    name: Check for un-exposed endpoints
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup workspace
+        uses: ./.github/actions/setup
+      - name: Run API sync check
+        id: sync
+        run: |
+          pnpm sync 2>&1 | tee syncOutput.txt
+
+          # Extract stats from the report
+          if [ -f devSyncReport.json ]; then
+            ENDPOINTS_IN_SPECS=$(jq '.endpointsInSpecs' devSyncReport.json)
+            TOOLS_IMPLEMENTED=$(jq '.toolsImplemented' devSyncReport.json)
+            MISSING_COUNT=$(jq '.missingEndpoints | length' devSyncReport.json)
+
+            {
+              echo "endpoints_in_specs=$ENDPOINTS_IN_SPECS"
+              echo "tools_implemented=$TOOLS_IMPLEMENTED"
+              echo "missing_count=$MISSING_COUNT"
+            } >> "$GITHUB_OUTPUT"
+
+            # Calculate coverage percentage
+            if [ "$ENDPOINTS_IN_SPECS" -gt 0 ]; then
+              COVERAGE=$(echo "scale=1; $TOOLS_IMPLEMENTED * 100 / $ENDPOINTS_IN_SPECS" | bc)
+              echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
+            fi
+
+            # Get list of missing endpoints (first 20)
+            MISSING_LIST=$(jq -r '.missingEndpoints[:20] | .[] | "- \(.method) \(.path) (\(.operationId))"' devSyncReport.json)
+
+            # Save to file for multi-line output
+            echo "$MISSING_LIST" > missing-endpoints.txt
+          fi
+      - name: Upload sync report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: syncReport
+          path: |
+            devSyncReport.json
+            syncOutput.txt
+          retention-days: 30
+      - name: Check for new endpoints and create issue
+        if: steps.sync.outputs.missing_count > 0
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const fs = require('fs');
+
+            const endpointsInSpecs = '${{ steps.sync.outputs.endpoints_in_specs }}';
+            const toolsImplemented = '${{ steps.sync.outputs.tools_implemented }}';
+            const missingCount = '${{ steps.sync.outputs.missing_count }}';
+            const coverage = '${{ steps.sync.outputs.coverage }}';
+
+            // Read missing endpoints list
+            let missingList = '';
+            try {
+              missingList = fs.readFileSync('missing-endpoints.txt', 'utf8');
+            } catch (e) {
+              missingList = 'Unable to read missing endpoints list';
+            }
+
+            // Check if there's already an open issue for this
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'api-sync'
+            });
+
+            const today = new Date().toISOString().split('T')[0];
+            const issueTitle = `[API Sync] ${missingCount} endpoints need implementation - ${today}`;
+
+            // Create issue body
+            const issueBody = `## Weekly eBay API Sync Report
+
+            **Date:** ${today}
+            **Coverage:** ${coverage}% (${toolsImplemented} of ${endpointsInSpecs} endpoints)
+            **Missing Endpoints:** ${missingCount}
+
+            ### Endpoints Needing Implementation
+
+            ${missingList}
+
+            ${parseInt(missingCount) > 20 ? `\n_...and ${parseInt(missingCount) - 20} more. See the full report in the workflow artifacts._\n` : ''}
+
+            ### Action Required
+
+            1. Review the missing endpoints above
+            2. Determine which are actually needed (some may be false positives due to naming)
+            3. Implement high-priority endpoints
+            4. Update tool definitions and handlers
+
+            ### How to Investigate
+
+            \`\`\`bash
+            # Run sync locally to get full details
+            pnpm sync
+
+            # Check the report
+            cat devSyncReport.json
+            \`\`\`
+
+            ---
+            _This issue was automatically created by the eBay API Sync workflow._
+            `;
+
+            // Only create if no similar issue exists this week
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+
+            const recentIssue = existingIssues.find(issue =>
+              new Date(issue.created_at) > weekAgo
+            );
+
+            if (!recentIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['api-sync', 'enhancement']
+              });
+              console.log('Created new API sync issue');
+            } else {
+              console.log('Recent API sync issue already exists, skipping creation');
+            }
+      - name: Summary
+        run: |
+          {
+            echo "## eBay API Sync Summary"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Endpoints in Specs | ${{ steps.sync.outputs.endpoints_in_specs }} |"
+            echo "| Tools Implemented | ${{ steps.sync.outputs.tools_implemented }} |"
+            echo "| Coverage | ${{ steps.sync.outputs.coverage }}% |"
+            echo "| Missing Endpoints | ${{ steps.sync.outputs.missing_count }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+    timeout-minutes: 15
