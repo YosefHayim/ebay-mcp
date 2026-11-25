@@ -118,7 +118,8 @@
       "includes": ["src/**/*.test.ts"],
       "linter": {
         "rules": {
-          "complexity": { "noExcessiveLinesPerFunction": "off" }
+          "complexity": { "noExcessiveLinesPerFunction": "off" },
+          "style": { "noExcessiveLinesPerFile": "off" }
         }
       }
     },

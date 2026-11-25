@@ -5,6 +5,7 @@ function stubKeys(): void {
   vi.stubEnv('EBAY_CLIENT_ID', 'client-id');
   vi.stubEnv('EBAY_CLIENT_SECRET', 'client-secret');
   vi.stubEnv('EBAY_ENVIRONMENT', 'sandbox');
+  vi.stubEnv('EBAY_USER_REFRESH_TOKEN', 'refresh-token');
   vi.stubEnv('EBAY_MARKETPLACE_ID', 'EBAY_US');
   vi.stubEnv('EBAY_CONTENT_LANGUAGE', 'en-US');
 }
@@ -23,6 +24,7 @@ describe('readCredentials', () => {
       clientId: 'client-id',
       clientSecret: 'client-secret',
       site: 'sandbox',
+      refreshToken: 'refresh-token',
       marketplaceId: 'EBAY_US',
       contentLanguage: 'en-US',
     });
@@ -32,14 +34,25 @@ describe('readCredentials', () => {
     vi.stubEnv('EBAY_CLIENT_ID', 'client-id');
     vi.stubEnv('EBAY_CLIENT_SECRET', 'client-secret');
     vi.stubEnv('EBAY_ENVIRONMENT', undefined);
+    vi.stubEnv('EBAY_USER_REFRESH_TOKEN', undefined);
     vi.stubEnv('EBAY_MARKETPLACE_ID', undefined);
     vi.stubEnv('EBAY_CONTENT_LANGUAGE', undefined);
 
     const credentials = readCredentials();
 
     expect(credentials.site).toBe('sandbox');
+    expect(credentials.refreshToken).toBeNull();
     expect(credentials.marketplaceId).toBe('EBAY_US');
     expect(credentials.contentLanguage).toBe('en-US');
+  });
+
+  test('treats a blank refresh token as missing', () => {
+    stubKeys();
+    vi.stubEnv('EBAY_USER_REFRESH_TOKEN', '');
+
+    const credentials = readCredentials();
+
+    expect(credentials.refreshToken).toBeNull();
   });
 
   test('reads the production site', () => {

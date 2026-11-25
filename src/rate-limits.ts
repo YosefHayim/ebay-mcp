@@ -5,7 +5,12 @@ import { jsonText } from './tool-text.js';
 
 export function registerRateLimits(server: McpServer, client: EbayClient): void {
   async function getRateLimits() {
-    const limits = await client.getJson('/developer/analytics/v1_beta/rate_limit/');
+    const limits = await client.getJson('/developer/analytics/v1_beta/rate_limit/', 'application');
+    return jsonText(limits);
+  }
+
+  async function getUserRateLimits() {
+    const limits = await client.getJson('/developer/analytics/v1_beta/user_rate_limit/', 'user');
     return jsonText(limits);
   }
 
@@ -16,5 +21,14 @@ export function registerRateLimits(server: McpServer, client: EbayClient): void 
       inputSchema: object({}),
     },
     getRateLimits,
+  );
+
+  server.registerTool(
+    'ebay_get_user_rate_limits',
+    {
+      description: 'List the rate limits for the signed-in user.',
+      inputSchema: object({}),
+    },
+    getUserRateLimits,
   );
 }

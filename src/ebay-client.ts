@@ -6,8 +6,11 @@ interface CachedToken {
   expiresAtMilliseconds: number;
 }
 
+type TokenKind = 'application' | 'user';
+
 export class EbayClient {
   private applicationToken: CachedToken | null = null;
+  private userToken: CachedToken | null = null;
   private readonly credentials: EbayCredentials;
   private readonly currentTimeMilliseconds: () => number;
 
@@ -21,8 +24,8 @@ export class EbayClient {
     return isSandboxSite;
   };
 
-  readonly getJson = async (path: string): Promise<unknown> => {
-    const token = await this.readApplicationToken();
+  readonly getJson = async (path: string, tokenKind: TokenKind): Promise<unknown> => {
+    const token = await this.readToken(tokenKind);
     const url = this.endpoint(path);
     const headers = this.callHeaders(token);
     var ebayReply: Response;
@@ -58,16 +61,37 @@ export class EbayClient {
     return `https://api.ebay.com${path}`;
   };
 
-  private readonly readApplicationToken = async (): Promise<string> => {
-    const cachedAccessToken = this.freshAccessToken();
+  private readonly readToken = async (tokenKind: TokenKind): Promise<string> => {
+    const cachedAccessToken = this.freshAccessToken(tokenKind);
 
     if (this.isAccessToken(cachedAccessToken)) {
       return cachedAccessToken;
     }
 
-    const fetchedToken = await this.requestApplicationToken();
-    this.applicationToken = fetchedToken;
+    const fetchedToken = await this.requestToken(tokenKind);
+    this.saveToken(tokenKind, fetchedToken);
     return fetchedToken.accessToken;
+  };
+
+  private readonly cachedTokenFor = (tokenKind: TokenKind): CachedToken | null => {
+    const isApplication = tokenKind == 'application';
+
+    if (isApplication) {
+      return this.applicationToken;
+    }
+
+    return this.userToken;
+  };
+
+  private readonly saveToken = (tokenKind: TokenKind, cachedToken: CachedToken): void => {
+    const isApplication = tokenKind == 'application';
+
+    if (isApplication) {
+      this.applicationToken = cachedToken;
+      return;
+    }
+
+    this.userToken = cachedToken;
   };
 
   private readonly isAccessToken = (token: string | null): token is string => {
@@ -75,8 +99,8 @@ export class EbayClient {
     return isMissing == false;
   };
 
-  private readonly freshAccessToken = (): string | null => {
-    const cachedToken = this.applicationToken;
+  private readonly freshAccessToken = (tokenKind: TokenKind): string | null => {
+    const cachedToken = this.cachedTokenFor(tokenKind);
 
     const isMissing = cachedToken == null;
     if (isMissing) {
@@ -93,9 +117,9 @@ export class EbayClient {
     return cachedToken.accessToken;
   };
 
-  private readonly requestApplicationToken = async (): Promise<CachedToken> => {
+  private readonly requestToken = async (tokenKind: TokenKind): Promise<CachedToken> => {
     const tokenUrl = this.endpoint('/identity/v1/oauth2/token');
-    const form = this.applicationTokenForm();
+    const form = this.tokenForm(tokenKind);
     const headers = this.tokenHeaders();
     var tokenReply: Response;
 
@@ -127,9 +151,23 @@ export class EbayClient {
     return this.cachedToken(tokenDocument);
   };
 
-  private readonly applicationTokenForm = (): string => {
-    const scope = encodeURIComponent('https://api.ebay.com/oauth/api_scope');
-    return `grant_type=client_credentials&scope=${scope}`;
+  private readonly tokenForm = (tokenKind: TokenKind): string => {
+    const isApplication = tokenKind == 'application';
+
+    if (isApplication) {
+      const scope = encodeURIComponent('https://api.ebay.com/oauth/api_scope');
+      return `grant_type=client_credentials&scope=${scope}`;
+    }
+
+    const { refreshToken } = this.credentials;
+
+    const isMissing = refreshToken == null;
+    if (isMissing) {
+      throw new Error('EBAY_USER_REFRESH_TOKEN is missing');
+    }
+
+    const encodedRefreshToken = encodeURIComponent(refreshToken);
+    return `grant_type=refresh_token&refresh_token=${encodedRefreshToken}`;
   };
 
   private readonly tokenHeaders = (): Headers => {

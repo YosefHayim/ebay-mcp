@@ -6,6 +6,7 @@ interface EbayCredentials {
   clientId: string;
   clientSecret: string;
   site: EbaySite;
+  refreshToken: string | null;
   marketplaceId: string;
   contentLanguage: string;
 }
@@ -32,6 +33,17 @@ function readClientSecret(): string {
   return clientSecret;
 }
 
+function readRefreshToken(): string | null {
+  const refreshToken = process.env.EBAY_USER_REFRESH_TOKEN ?? '';
+
+  const isMissing = refreshToken == '';
+  if (isMissing) {
+    return null;
+  }
+
+  return refreshToken;
+}
+
 function readSite(): EbaySite {
   const siteName = process.env.EBAY_ENVIRONMENT ?? 'sandbox';
 
@@ -52,6 +64,7 @@ export function readCredentials(): EbayCredentials {
   const clientId = readClientId();
   const clientSecret = readClientSecret();
   const site = readSite();
+  const refreshToken = readRefreshToken();
   const marketplaceId = process.env.EBAY_MARKETPLACE_ID ?? 'EBAY_US';
   const contentLanguage = process.env.EBAY_CONTENT_LANGUAGE ?? 'en-US';
 
@@ -59,6 +72,7 @@ export function readCredentials(): EbayCredentials {
     clientId,
     clientSecret,
     site,
+    refreshToken,
     marketplaceId,
     contentLanguage,
   };
