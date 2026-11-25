@@ -2,6 +2,8 @@
 import { readFileSync } from 'node:fs';
 import process from 'node:process';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
+import { EbayClient } from './ebay-client.js';
+import { readCredentials } from './environment.js';
 import { createServer } from './server.js';
 
 function readPackageVersion(): string {
@@ -31,9 +33,11 @@ function readPackageVersion(): string {
 
 function main(): void {
   const version = readPackageVersion();
+  const credentials = readCredentials();
+  const client = new EbayClient(credentials);
 
   function createEbayServer() {
-    return createServer(version);
+    return createServer(version, client);
   }
 
   serveStdio(createEbayServer);

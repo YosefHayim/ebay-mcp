@@ -76,6 +76,7 @@
       "suspicious": {
         "noDoubleEquals": "off",
         "noEqualsToNull": "off",
+        "noVar": "off",
         "noConsole": "warn",
         "noUnknownAttribute": "off",
         "noUnnecessaryConditions": "warn",
@@ -105,11 +106,19 @@
   },
   "overrides": [
     {
-      "includes": ["src/index.ts", "src/ebay-client.ts", "scripts/**"],
+      "includes": ["src/index.ts", "src/ebay-client.ts", "src/environment.ts", "scripts/**"],
       "linter": {
         "rules": {
           "style": { "noProcessEnv": "off" },
           "suspicious": { "noConsole": "off" }
+        }
+      }
+    },
+    {
+      "includes": ["src/**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noExcessiveLinesPerFunction": "off" }
         }
       }
     },
