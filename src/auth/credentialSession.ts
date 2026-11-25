@@ -190,15 +190,54 @@ export function createAppAccessTokenExpiry(
 	return createExpiryTimestamp(lifetimeWithBufferSeconds, now);
 }
 
+export class AccessTokenLifetime {
+	private readonly expiry: number | null;
+	private readonly now: number;
+
+	constructor(expiry: number | null | undefined, now = Date.now()) {
+		const hasNoExpiry = expiry == null;
+
+		if (hasNoExpiry) {
+			this.expiry = null;
+			this.now = now;
+			return;
+		}
+
+		this.expiry = expiry;
+		this.now = now;
+	}
+
+	hasExpired = (): boolean => {
+		const expiry = this.expiry;
+		const hasNoExpiry = expiry == null;
+
+		if (hasNoExpiry) {
+			return true;
+		}
+
+		const expiryIsZero = expiry == 0;
+
+		if (expiryIsZero) {
+			return true;
+		}
+
+		const expiryIsNotANumber = Number.isNaN(expiry);
+
+		if (expiryIsNotANumber) {
+			return true;
+		}
+
+		const expiryHasPassed = this.now >= expiry;
+
+		return expiryHasPassed;
+	};
+}
+
 export function isTokenExpired(
 	expiry: number | null | undefined,
 	now = Date.now(),
 ): boolean {
-	if (!expiry) {
-		return true;
-	}
-
-	return now >= expiry;
+	return new AccessTokenLifetime(expiry, now).hasExpired();
 }
 
 interface StoredUserTokenFields {
@@ -350,15 +389,31 @@ function showRedirectUri(redirectUri: string | null | undefined): string {
 }
 
 function describeTokenExpiry(expiry: number | null | undefined) {
-	if (!expiry) {
+	const expiryIsMissing = expiry == null;
+
+	if (expiryIsMissing) {
 		return "Not available";
 	}
 
-	const expired = Date.now() >= expiry;
+	const expiryIsZero = expiry == 0;
+
+	if (expiryIsZero) {
+		return "Not available";
+	}
+
+	const expiryIsNotANumber = Number.isNaN(expiry);
+
+	if (expiryIsNotANumber) {
+		return "Not available";
+	}
+
+	const accessTokenLifetime = new AccessTokenLifetime(expiry);
+	const expired = accessTokenLifetime.hasExpired();
+	const expiryDate = new Date(expiry);
 
 	return {
 		timestamp: expiry,
-		date: new Date(expiry).toISOString(),
+		date: expiryDate.toISOString(),
 		expired,
 	};
 }

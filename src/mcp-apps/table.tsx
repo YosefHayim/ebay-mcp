@@ -96,9 +96,18 @@ function Table({
 }
 
 function formatCell(cell: string | number | null): ReactNode {
-	if (cell === null || cell === "") {
+	const cellIsMissing = cell == null;
+
+	if (cellIsMissing) {
 		return "—";
 	}
+
+	const cellIsBlank = cell === "";
+
+	if (cellIsBlank) {
+		return "—";
+	}
+
 	return cell;
 }
 

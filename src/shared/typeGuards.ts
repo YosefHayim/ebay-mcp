@@ -1,3 +1,21 @@
 export function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value == "object" && value !== null && !Array.isArray(value);
+	const isNotObject = typeof value != "object";
+
+	if (isNotObject) {
+		return false;
+	}
+
+	const isNull = value == null;
+
+	if (isNull) {
+		return false;
+	}
+
+	const isArray = Array.isArray(value);
+
+	if (isArray) {
+		return false;
+	}
+
+	return true;
 }

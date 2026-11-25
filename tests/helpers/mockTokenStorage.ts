@@ -1,3 +1,4 @@
+import { isTokenExpired } from "@/auth/credentialSession.js";
 import type { StoredTokenData } from "@/shared/ebay.js";
 
 export class MockTokenStorage {
@@ -23,11 +24,11 @@ export class MockTokenStorage {
 	};
 
 	static isUserAccessTokenExpired = (tokens: StoredTokenData): boolean => {
-		return Date.now() >= tokens.userAccessTokenExpiry;
+		return isTokenExpired(tokens.userAccessTokenExpiry);
 	};
 
 	static isUserRefreshTokenExpired = (tokens: StoredTokenData): boolean => {
-		return Date.now() >= tokens.userRefreshTokenExpiry;
+		return isTokenExpired(tokens.userRefreshTokenExpiry);
 	};
 
 	// Helper methods for testing

@@ -3,9 +3,35 @@ import type { StatTile, StatViewModel } from "@/tool-registry/ui/viewModels.js";
 import { AppShell, EmptyState, mount, useViewModel } from "./host.js";
 
 function tileClass(tone: StatTile["tone"]): string {
-	return tone && tone != "neutral"
-		? `stat-tile stat-tile--${tone}`
-		: "stat-tile";
+	const hasNoTone = tone == null;
+
+	if (hasNoTone) {
+		return "stat-tile";
+	}
+
+	const isNeutral = tone == "neutral";
+
+	if (isNeutral) {
+		return "stat-tile";
+	}
+
+	return `stat-tile stat-tile--${tone}`;
+}
+
+function statBody(view: StatViewModel | null): ReactNode {
+	const hasNoView = view == null;
+
+	if (hasNoView) {
+		return <EmptyState label="No metrics" />;
+	}
+
+	const hasNoTiles = view.tiles.length == 0;
+
+	if (hasNoTiles) {
+		return <EmptyState label="No metrics" />;
+	}
+
+	return <Stat view={view} />;
 }
 
 function Stat({ view }: { view: StatViewModel }): ReactNode {
@@ -31,14 +57,10 @@ function Stat({ view }: { view: StatViewModel }): ReactNode {
 
 function StatApp(): ReactNode {
 	const { view, isConnected, error } = useViewModel("stat");
-	const hasTiles = view ? view.tiles.length > 0 : false;
+
 	return (
 		<AppShell isConnected={isConnected} error={error}>
-			{view && hasTiles ? (
-				<Stat view={view} />
-			) : (
-				<EmptyState label="No metrics" />
-			)}
+			{statBody(view)}
 		</AppShell>
 	);
 }

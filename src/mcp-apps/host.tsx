@@ -10,21 +10,44 @@ import type {
 	ViewModelByArchetype,
 } from "@/tool-registry/ui/viewModels.js";
 
+function isArchetypeRecord(
+	structured: object,
+): structured is Record<string, unknown> {
+	return "archetype" in structured;
+}
+
 function extractView<A extends ViewArchetype>(
 	toolResult: CallToolResult,
 	archetype: A,
 ): ViewModelByArchetype[A] | null {
 	const structured = toolResult.structuredContent;
-	if (
-		structured &&
-		typeof structured == "object" &&
-		"archetype" in structured &&
-		structured["archetype"] === archetype
-	) {
+	const hasNoStructuredContent = structured == null;
+
+	if (hasNoStructuredContent) {
+		return null;
+	}
+
+	const isNotRecord = typeof structured != "object";
+
+	if (isNotRecord) {
+		return null;
+	}
+
+	const structuredRecord = isArchetypeRecord(structured) ? structured : null;
+	const hasNoArchetype = structuredRecord == null;
+
+	if (hasNoArchetype) {
+		return null;
+	}
+
+	const archetypeMatches = structuredRecord["archetype"] === archetype;
+
+	if (archetypeMatches) {
 		// Wire data is an open record; the discriminant check above confirms the
 		// archetype, so the `unknown` hop is the safe bridge to the concrete model.
-		return structured as unknown as ViewModelByArchetype[A];
+		return structuredRecord as unknown as ViewModelByArchetype[A];
 	}
+
 	return null;
 }
 

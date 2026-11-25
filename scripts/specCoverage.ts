@@ -54,9 +54,20 @@ const BY_SUFFIX = /by\w+$/;
 const FOR_SUFFIX = /for\w+$/;
 
 function singularOrPlural(name: string): string {
-	return name.endsWith("s") && !name.endsWith("ss")
-		? name.slice(0, -1)
-		: `${name}s`;
+	const endsWithS = name.endsWith("s");
+	const isNotPluralEnding = !endsWithS;
+
+	if (isNotPluralEnding) {
+		return `${name}s`;
+	}
+
+	const endsWithDoubleS = name.endsWith("ss");
+
+	if (endsWithDoubleS) {
+		return `${name}s`;
+	}
+
+	return name.slice(0, -1);
 }
 
 function fuzzyNameVariations(operationId: string): ReadonlySet<string> {

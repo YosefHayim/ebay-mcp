@@ -140,6 +140,34 @@ export function validateScopes(
 	return { warnings, validScopes: requestedValidScopes };
 }
 
+function isUnrecognizedEnvironment(environment: string | undefined): boolean {
+	const isMissing = environment == null;
+
+	if (isMissing) {
+		return false;
+	}
+
+	const isEmpty = environment == "";
+
+	if (isEmpty) {
+		return false;
+	}
+
+	const isProduction = environment == "production";
+
+	if (isProduction) {
+		return false;
+	}
+
+	const isSandbox = environment == "sandbox";
+
+	if (isSandbox) {
+		return false;
+	}
+
+	return true;
+}
+
 export function validateEnvironmentConfig(): EnvironmentValidationResult {
 	const proxyAuth = getProxyAuthConfig();
 	const warnings: string[] = [...proxyAuth.warnings];
@@ -160,7 +188,9 @@ export function validateEnvironmentConfig(): EnvironmentValidationResult {
 
 	// Validate EBAY_ENVIRONMENT
 	const environment = process.env["EBAY_ENVIRONMENT"];
-	if (environment && environment != "production" && environment != "sandbox") {
+	const isUnrecognized = isUnrecognizedEnvironment(environment);
+
+	if (isUnrecognized) {
 		errors.push(
 			`EBAY_ENVIRONMENT must be either "production" or "sandbox", got: "${environment}"`,
 		);
@@ -210,6 +240,32 @@ export function validateEnvironmentConfig(): EnvironmentValidationResult {
 	};
 }
 
+function isMissingEbayCredential(
+	disableAuthHeader: boolean,
+	clientId: string,
+	clientSecret: string,
+): boolean {
+	const isAuthHeaderDisabled = disableAuthHeader;
+
+	if (isAuthHeaderDisabled) {
+		return false;
+	}
+
+	const isClientIdMissing = clientId == "";
+
+	if (isClientIdMissing) {
+		return true;
+	}
+
+	const isClientSecretMissing = clientSecret == "";
+
+	if (isClientSecretMissing) {
+		return true;
+	}
+
+	return false;
+}
+
 export function getEbayConfig(): EbayConfig {
 	const clientId = process.env["EBAY_CLIENT_ID"] ?? "";
 	const clientSecret = process.env["EBAY_CLIENT_SECRET"] ?? "";
@@ -227,7 +283,13 @@ export function getEbayConfig(): EbayConfig {
 	// Only require client credentials when this server authenticates to eBay itself.
 	// In proxy auth mode the upstream proxy supplies auth, so absent credentials are
 	// expected and must not nag (tokens can otherwise be generated from a refresh token).
-	if (!disableAuthHeader && (clientId == "" || clientSecret == "")) {
+	const isCredentialMissing = isMissingEbayCredential(
+		disableAuthHeader,
+		clientId,
+		clientSecret,
+	);
+
+	if (isCredentialMissing) {
 		writeConfigDiagnostic(
 			"Missing required eBay credentials. Please set:\n1) EBAY_CLIENT_ID\n2) EBAY_CLIENT_SECRET\nin your .env file at project root",
 		);
@@ -360,6 +422,37 @@ export interface ProxyAuthConfig {
 	infos: string[];
 }
 
+function readUnsafePlainHttpHost(
+	parsedBaseUrl: URL | undefined,
+	disableAuthHeader: boolean,
+): string | undefined {
+	const isMissingUrl = parsedBaseUrl == null;
+
+	if (isMissingUrl) {
+		return undefined;
+	}
+
+	const isAuthHeaderDisabled = disableAuthHeader;
+
+	if (isAuthHeaderDisabled) {
+		return undefined;
+	}
+
+	const isNotPlainHttp = parsedBaseUrl.protocol != "http:";
+
+	if (isNotPlainHttp) {
+		return undefined;
+	}
+
+	const isLoopback = LOOPBACK_HOSTS.has(parsedBaseUrl.hostname);
+
+	if (isLoopback) {
+		return undefined;
+	}
+
+	return parsedBaseUrl.host;
+}
+
 export function getProxyAuthConfig(): ProxyAuthConfig {
 	const disableAuthHeader =
 		process.env["EBAY_MCP_DISABLE_AUTH_HEADER"] == "true";
@@ -395,14 +488,15 @@ export function getProxyAuthConfig(): ProxyAuthConfig {
 		}
 	}
 
-	if (
-		parsedBaseUrl &&
-		!disableAuthHeader &&
-		parsedBaseUrl.protocol == "http:" &&
-		!LOOPBACK_HOSTS.has(parsedBaseUrl.hostname)
-	) {
+	const plaintextHost = readUnsafePlainHttpHost(
+		parsedBaseUrl,
+		disableAuthHeader,
+	);
+	const warnAboutPlaintext = plaintextHost != null;
+
+	if (warnAboutPlaintext) {
 		warnings.push(
-			`EBAY_MCP_API_BASE_URL points at a plaintext http:// host (${parsedBaseUrl.host}) while authentication ` +
+			`EBAY_MCP_API_BASE_URL points at a plaintext http:// host (${plaintextHost}) while authentication ` +
 				"is enabled. eBay access tokens will be transmitted unencrypted. Use https://, a loopback address, " +
 				"or set EBAY_MCP_DISABLE_AUTH_HEADER=true.",
 		);
@@ -411,19 +505,116 @@ export function getProxyAuthConfig(): ProxyAuthConfig {
 	return { apiBaseUrl, disableAuthHeader, warnings, errors, infos };
 }
 
-function getSigningConfig(): EbayConfig["signing"] {
-	const keyJwe = process.env["EBAY_SIGNING_KEY_JWE"]?.trim();
-	const privateKey = process.env["EBAY_SIGNING_PRIVATE_KEY"]?.trim();
-	if (keyJwe && privateKey) {
-		return { keyJwe, privateKey };
+function readNonEmptySigningText(
+	signingText: string | undefined,
+): string | undefined {
+	const isMissing = signingText == null;
+
+	if (isMissing) {
+		return undefined;
 	}
-	if (keyJwe || privateKey) {
+
+	const isEmpty = signingText == "";
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	return signingText;
+}
+
+function readCompleteSigningPair(
+	keyJwe: string | undefined,
+	privateKey: string | undefined,
+): { readonly keyJwe: string; readonly privateKey: string } | undefined {
+	const isKeyMissing = keyJwe == null;
+
+	if (isKeyMissing) {
+		return undefined;
+	}
+
+	const isPrivateKeyMissing = privateKey == null;
+
+	if (isPrivateKeyMissing) {
+		return undefined;
+	}
+
+	return { keyJwe, privateKey };
+}
+
+function hasOneSigningText(
+	keyJwe: string | undefined,
+	privateKey: string | undefined,
+): boolean {
+	const hasKeyJwe = keyJwe != null;
+
+	if (hasKeyJwe) {
+		return true;
+	}
+
+	const hasPrivateKey = privateKey != null;
+
+	if (hasPrivateKey) {
+		return true;
+	}
+
+	return false;
+}
+
+function getSigningConfig(): EbayConfig["signing"] {
+	const trimmedKeyJwe = process.env["EBAY_SIGNING_KEY_JWE"]?.trim();
+	const keyJwe = readNonEmptySigningText(trimmedKeyJwe);
+	const trimmedPrivateKey = process.env["EBAY_SIGNING_PRIVATE_KEY"]?.trim();
+	const privateKey = readNonEmptySigningText(trimmedPrivateKey);
+	const pair = readCompleteSigningPair(keyJwe, privateKey);
+	const hasPair = pair != null;
+
+	if (hasPair) {
+		return pair;
+	}
+
+	const hasPartialPair = hasOneSigningText(keyJwe, privateKey);
+
+	if (hasPartialPair) {
 		writeConfigDiagnostic(
 			"Digital signatures need both EBAY_SIGNING_KEY_JWE and EBAY_SIGNING_PRIVATE_KEY; only one is set, so requests will not be signed.",
 		);
 	}
 
 	return undefined;
+}
+
+function readProvidedScopes(
+	scopes: string[] | undefined,
+): string[] | undefined {
+	const isMissing = scopes == null;
+
+	if (isMissing) {
+		return undefined;
+	}
+
+	const isEmpty = scopes.length == 0;
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	return scopes;
+}
+
+function joinAuthorizationScopes(
+	environment: EbayEnvironment,
+	scopes: string[] | undefined,
+): string {
+	const provided = readProvidedScopes(scopes);
+	const hasProvidedScopes = provided != null;
+
+	if (hasProvidedScopes) {
+		return provided.join("%20");
+	}
+
+	const defaults = getRequestedScopes(environment);
+	return defaults.join("%20");
 }
 
 export function getOAuthAuthorizationUrl(
@@ -438,12 +629,7 @@ export function getOAuthAuthorizationUrl(
 			? "https://auth.ebay.com"
 			: "https://auth.sandbox.ebay.com";
 
-	let scopeList: string;
-	if (scopes && scopes.length > 0) {
-		scopeList = scopes.join("%20");
-	} else {
-		scopeList = getRequestedScopes(environment).join("%20");
-	}
+	const scopeList = joinAuthorizationScopes(environment, scopes);
 
 	const params = new URLSearchParams({
 		client_id: clientId,

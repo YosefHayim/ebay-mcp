@@ -15,6 +15,18 @@ import {
 
 const args = process.argv.slice(2);
 
+function hasFlag(args: string[], longFlag: string, shortFlag: string): boolean {
+	const hasLongFlag = args.includes(longFlag);
+
+	if (hasLongFlag) return true;
+
+	const hasShortFlag = args.includes(shortFlag);
+
+	if (hasShortFlag) return true;
+
+	return false;
+}
+
 async function runCliCommand(
 	label: string,
 	command: () => Promise<void>,
@@ -40,7 +52,7 @@ if (args.includes("skills")) {
 }
 
 if (args.includes("diagnose")) {
-	const exportReport = args.includes("--export") || args.includes("-e");
+	const exportReport = hasFlag(args, "--export", "-e");
 	await runCliCommand("Diagnostics", () => runDiagnostics(exportReport));
 }
 

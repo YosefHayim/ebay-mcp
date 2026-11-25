@@ -42,12 +42,31 @@ export interface EbayResponse<T> {
 }
 
 function isBinaryBody(requestBody: unknown): boolean {
-	return (
-		requestBody instanceof FormData ||
-		requestBody instanceof Blob ||
-		requestBody instanceof Uint8Array ||
-		requestBody instanceof ArrayBuffer
-	);
+	const isFormData = requestBody instanceof FormData;
+
+	if (isFormData) {
+		return true;
+	}
+
+	const isBlob = requestBody instanceof Blob;
+
+	if (isBlob) {
+		return true;
+	}
+
+	const isBytes = requestBody instanceof Uint8Array;
+
+	if (isBytes) {
+		return true;
+	}
+
+	const isBuffer = requestBody instanceof ArrayBuffer;
+
+	if (isBuffer) {
+		return true;
+	}
+
+	return false;
 }
 
 const CONTENT_TYPE_HEADER = "content-type";
@@ -56,10 +75,17 @@ function hasHeader(
 	headers: Record<string, string> | undefined,
 	name: string,
 ): boolean {
-	return (
-		headers !== undefined &&
-		Object.keys(headers).some((key) => key.toLowerCase() == name)
-	);
+	const headersAreMissing = headers === undefined;
+
+	if (headersAreMissing) {
+		return false;
+	}
+
+	function matchesHeaderName(key: string): boolean {
+		return key.toLowerCase() == name;
+	}
+
+	return Object.keys(headers).some(matchesHeaderName);
 }
 
 function deleteHeader(headers: Record<string, string>, name: string): void {
@@ -81,21 +107,41 @@ interface SignedRequest {
 }
 
 function serializeSignedBody(requestBody: unknown): SerializedBody {
-	if (requestBody === undefined || requestBody === null) {
+	const bodyIsUndefined = requestBody === undefined;
+
+	if (bodyIsUndefined) {
 		return { wireBody: requestBody };
 	}
-	if (typeof requestBody == "string" || requestBody instanceof Uint8Array) {
+
+	const bodyIsNull = requestBody === null;
+
+	if (bodyIsNull) {
+		return { wireBody: requestBody };
+	}
+
+	const bodyIsString = typeof requestBody == "string";
+
+	if (bodyIsString) {
 		return { wireBody: requestBody, digestBytes: requestBody };
 	}
+
+	const bodyIsBytes = requestBody instanceof Uint8Array;
+
+	if (bodyIsBytes) {
+		return { wireBody: requestBody, digestBytes: requestBody };
+	}
+
 	if (requestBody instanceof ArrayBuffer) {
 		return { wireBody: requestBody, digestBytes: new Uint8Array(requestBody) };
 	}
+
 	if (requestBody instanceof URLSearchParams) {
 		const encoded = requestBody.toString();
 		return { wireBody: requestBody, digestBytes: encoded };
 	}
-	const json = JSON.stringify(requestBody);
-	return { wireBody: json, digestBytes: json };
+
+	const wireText = JSON.stringify(requestBody);
+	return { wireBody: wireText, digestBytes: wireText };
 }
 
 // A proxy forwards eBay's Host header and path, so the signature covers the eBay URL.
@@ -104,16 +150,32 @@ function ebayFacingUrl(
 	ebayBaseUrl: string,
 	apiBaseUrl: string | undefined,
 ): string {
-	return apiBaseUrl !== undefined && url.startsWith(apiBaseUrl)
-		? `${ebayBaseUrl}${url.slice(apiBaseUrl.length)}`
-		: url;
+	const isApiBaseMissing = apiBaseUrl === undefined;
+
+	if (isApiBaseMissing) {
+		return url;
+	}
+
+	const urlStartsWithApiBase = url.startsWith(apiBaseUrl);
+
+	if (urlStartsWithApiBase) {
+		return `${ebayBaseUrl}${url.slice(apiBaseUrl.length)}`;
+	}
+
+	return url;
 }
 
 const SIGNATURE_ERROR_PATTERN = /signature/i;
 const TRAILING_PERIOD_PATTERN = /\.?$/;
 
 function isSignatureFailure(detail: string | undefined): boolean {
-	return detail !== undefined && SIGNATURE_ERROR_PATTERN.test(detail);
+	const detailIsMissing = detail === undefined;
+
+	if (detailIsMissing) {
+		return false;
+	}
+
+	return SIGNATURE_ERROR_PATTERN.test(detail);
 }
 
 function isPresent<Present>(present: Present | undefined): present is Present {
@@ -179,6 +241,22 @@ function isServerStatus(status: number | undefined): boolean {
 	}
 
 	return status >= 500;
+}
+
+function isHttpSuccessStatus(status: number): boolean {
+	const statusIsBelow200 = status < 200;
+
+	if (statusIsBelow200) {
+		return false;
+	}
+
+	const statusIsAbove299 = status > 299;
+
+	if (statusIsAbove299) {
+		return false;
+	}
+
+	return true;
 }
 
 function retryWaitMilliseconds(retryAfter: string | undefined): number {
@@ -303,10 +381,19 @@ export class EbayApiClient {
 	};
 
 	private accessTokenValidationError = (): Error | undefined => {
-		if (!(this.config.clientId && this.config.clientSecret)) {
-			return new Error(
-				"Missing required eBay credentials. Please set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in your .env file.",
-			);
+		const missingCredentialsMessage =
+			"Missing required eBay credentials. Please set EBAY_CLIENT_ID and EBAY_CLIENT_SECRET in your .env file.";
+
+		const isClientIdMissing = !this.config.clientId;
+
+		if (isClientIdMissing) {
+			return new Error(missingCredentialsMessage);
+		}
+
+		const isClientSecretMissing = !this.config.clientSecret;
+
+		if (isClientSecretMissing) {
+			return new Error(missingCredentialsMessage);
 		}
 
 		return undefined;
@@ -461,7 +548,7 @@ export class EbayApiClient {
 		}
 
 		const status = httpResponse.status;
-		const isSuccess = status >= 200 && status <= 299;
+		const isSuccess = isHttpSuccessStatus(status);
 
 		if (isSuccess) {
 			logResponse(

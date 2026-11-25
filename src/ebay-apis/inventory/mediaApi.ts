@@ -116,9 +116,14 @@ function apiFailure(method: "GET" | "POST", path: string) {
 }
 
 function videoStatusFinal(video: Video): boolean {
-	return (
-		video.status !== undefined && TERMINAL_VIDEO_STATUSES.has(video.status)
-	);
+	const status = video.status;
+	const isStatusMissing = status === undefined;
+
+	if (isStatusMissing) {
+		return false;
+	}
+
+	return TERMINAL_VIDEO_STATUSES.has(status);
 }
 
 function requireDurationMs(

@@ -142,11 +142,51 @@ export interface ToolGatingController {
 }
 
 function parseCursor(cursor: string | undefined): number {
-	if (!cursor) {
-		return 0;
-	}
+	const isCursorMissing = !cursor;
+
+	if (isCursorMissing) return 0;
+
 	const offset = Number.parseInt(cursor, 10);
-	return Number.isInteger(offset) && offset > 0 ? offset : 0;
+	const isNotWholeNumber = Number.isInteger(offset) == false;
+
+	if (isNotWholeNumber) return 0;
+
+	const isPositive = offset > 0;
+
+	if (isPositive) return offset;
+
+	return 0;
+}
+
+function isFamilyOverview(
+	familyKey: string | undefined,
+	searchQuery: string | undefined,
+): boolean {
+	const hasFamily = Boolean(familyKey);
+
+	if (hasFamily) return false;
+
+	const hasQuery = Boolean(searchQuery);
+
+	if (hasQuery) return false;
+
+	return true;
+}
+
+function isUnknownFamily(familyKey: string | undefined): boolean {
+	const isFamilyMissing = !familyKey;
+
+	if (isFamilyMissing) return false;
+
+	function hasFamilyKey(familyOverview: FamilyOverviewRow): boolean {
+		return familyOverview.key == familyKey;
+	}
+
+	const isKnownFamily = CATALOG.families.some(hasFamilyKey);
+
+	if (isKnownFamily) return false;
+
+	return true;
 }
 
 export function createToolGatingController(
@@ -182,20 +222,41 @@ export function createToolGatingController(
 
 	return {
 		list({ family, query, cursor, limit }) {
-			if (!(family || query)) {
+			function countEnabledTools(familyKey: string): number {
+				function isEnabledInFamily(
+					nameAndHandle: [string, RegisteredTool],
+				): boolean {
+					const [toolName, handle] = nameAndHandle;
+					const toolFamily = CATALOG.familyByToolName.get(toolName);
+					const isOtherFamily = toolFamily != familyKey;
+
+					if (isOtherFamily) return false;
+
+					return handle.enabled;
+				}
+
+				return [...handles.entries()].filter(isEnabledInFamily).length;
+			}
+
+			function toFamilyOverview(familyOverview: FamilyOverviewRow) {
 				return {
-					families: CATALOG.families.map((row) => ({
-						...row,
-						enabledCount: [...handles.entries()].filter(
-							([name, handle]) =>
-								CATALOG.familyByToolName.get(name) == row.key && handle.enabled,
-						).length,
-					})),
+					...familyOverview,
+					enabledCount: countEnabledTools(familyOverview.key),
+				};
+			}
+
+			const showFamilyOverview = isFamilyOverview(family, query);
+
+			if (showFamilyOverview) {
+				return {
+					families: CATALOG.families.map(toFamilyOverview),
 					hint: "Call list_ebay_tools with { family } or { query } to list tools, then enable_ebay_tools.",
 				};
 			}
 
-			if (family && !CATALOG.families.some((row) => row.key == family)) {
+			const familyIsUnknown = isUnknownFamily(family);
+
+			if (familyIsUnknown) {
 				return {
 					error: `Unknown tool family "${family}".`,
 					validFamilies: TOOL_FAMILY_KEYS,
@@ -203,19 +264,52 @@ export function createToolGatingController(
 			}
 
 			const needle = query?.toLowerCase();
-			const matches = CATALOG.rows.filter((row) => {
-				if (family && row.family != family) {
-					return false;
-				}
-				if (needle) {
-					return (
-						row.name.toLowerCase().includes(needle) ||
-						row.summary.toLowerCase().includes(needle) ||
-						row.family.includes(needle)
-					);
-				}
-				return true;
-			});
+
+			function isExcludedByFamily(catalogTool: ToolCatalogRow): boolean {
+				const isFamilyMissing = !family;
+
+				if (isFamilyMissing) return false;
+
+				const isDifferentFamily = catalogTool.family != family;
+
+				if (isDifferentFamily) return true;
+
+				return false;
+			}
+
+			function matchesSearchNeedle(catalogTool: ToolCatalogRow): boolean {
+				const isNeedleMissing = !needle;
+
+				if (isNeedleMissing) return true;
+
+				const nameIncludesNeedle = catalogTool.name
+					.toLowerCase()
+					.includes(needle);
+
+				if (nameIncludesNeedle) return true;
+
+				const summaryIncludesNeedle = catalogTool.summary
+					.toLowerCase()
+					.includes(needle);
+
+				if (summaryIncludesNeedle) return true;
+
+				const familyIncludesNeedle = catalogTool.family.includes(needle);
+
+				if (familyIncludesNeedle) return true;
+
+				return false;
+			}
+
+			function matchesListedTool(catalogTool: ToolCatalogRow): boolean {
+				const isExcluded = isExcludedByFamily(catalogTool);
+
+				if (isExcluded) return false;
+
+				return matchesSearchNeedle(catalogTool);
+			}
+
+			const matches = CATALOG.rows.filter(matchesListedTool);
 
 			const offset = parseCursor(cursor);
 			const size = Math.min(limit ?? DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT);

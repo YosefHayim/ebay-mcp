@@ -386,21 +386,43 @@ export function createInventoryOffersMethods(client: EbayApiClient) {
 				throw new Error("skus must be an array");
 			}
 
-			if (
-				validatedInput.skus.length == 0 ||
-				validatedInput.skus.length > MAX_BATCH_GET_OFFERS_SKUS
-			) {
+			const isSkuListEmpty = validatedInput.skus.length == 0;
+
+			if (isSkuListEmpty) {
+				throw new Error(
+					`skus must contain between 1 and ${MAX_BATCH_GET_OFFERS_SKUS} entries`,
+				);
+			}
+
+			const isSkuListTooLong =
+				validatedInput.skus.length > MAX_BATCH_GET_OFFERS_SKUS;
+
+			if (isSkuListTooLong) {
 				throw new Error(
 					`skus must contain between 1 and ${MAX_BATCH_GET_OFFERS_SKUS} entries`,
 				);
 			}
 
 			for (const sku of validatedInput.skus) {
-				if (
-					typeof sku != "string" ||
-					sku.trim().length == 0 ||
-					sku.length > 50
-				) {
+				const isNotString = typeof sku != "string";
+
+				if (isNotString) {
+					throw new Error(
+						"each SKU must be a non-empty string of at most 50 characters",
+					);
+				}
+
+				const isBlankSku = sku.trim().length == 0;
+
+				if (isBlankSku) {
+					throw new Error(
+						"each SKU must be a non-empty string of at most 50 characters",
+					);
+				}
+
+				const isSkuTooLong = sku.length > 50;
+
+				if (isSkuTooLong) {
 					throw new Error(
 						"each SKU must be a non-empty string of at most 50 characters",
 					);

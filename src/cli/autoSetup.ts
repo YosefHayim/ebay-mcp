@@ -79,12 +79,89 @@ function readRecord(value: unknown): Record<string, unknown> {
 }
 
 function isMCPServerConfig(value: unknown): value is MCPServerConfig {
-	return (
-		typeof value == "object" &&
-		value !== null &&
-		!Array.isArray(value) &&
-		typeof Reflect.get(value, "command") == "string"
-	);
+	const isNotObject = typeof value != "object";
+
+	if (isNotObject) return false;
+
+	const isNull = value == null;
+
+	if (isNull) return false;
+
+	const isArray = Array.isArray(value);
+
+	if (isArray) return false;
+
+	const command = Reflect.get(value, "command");
+	const commandIsMissing = typeof command != "string";
+
+	if (commandIsMissing) return false;
+
+	return true;
+}
+
+function isClientInstalled(configPath: string): boolean {
+	const hasConfigFile = existsSync(configPath);
+
+	if (hasConfigFile) return true;
+
+	const hasConfigDirectory = existsSync(dirname(configPath));
+
+	if (hasConfigDirectory) return true;
+
+	return false;
+}
+
+function needsFreshObject(field: unknown): boolean {
+	const isMissing = !field;
+
+	if (isMissing) return true;
+
+	const isObject = typeof field == "object";
+
+	if (isObject) return false;
+
+	return true;
+}
+
+function isServerList(field: unknown): boolean {
+	const isMissing = !field;
+
+	if (isMissing) return false;
+
+	const isList = Array.isArray(field);
+
+	if (isList) return true;
+
+	return false;
+}
+
+function isEbayNodeServer(server: MCPServerConfig): boolean {
+	const isOtherCommand = server.command != "node";
+
+	if (isOtherCommand) return false;
+
+	const firstArgument = server.args?.[0];
+	const mentionsEbayMcp = firstArgument?.includes("ebay-mcp") == true;
+
+	if (mentionsEbayMcp) return true;
+
+	return false;
+}
+
+function isRejectedEnvironment(environmentName: string | undefined): boolean {
+	const isUnset = !environmentName;
+
+	if (isUnset) return false;
+
+	const isProduction = environmentName == "production";
+
+	if (isProduction) return false;
+
+	const isSandbox = environmentName == "sandbox";
+
+	if (isSandbox) return false;
+
+	return true;
 }
 
 function readMcpServerConfigArray(value: unknown): MCPServerConfig[] {
@@ -201,7 +278,7 @@ function detectMCPClients(): MCPClient[] {
 	const clients: MCPClient[] = [];
 
 	for (const [name, configPath] of Object.entries(configPaths)) {
-		const detected = existsSync(configPath) || existsSync(dirname(configPath));
+		const detected = isClientInstalled(configPath);
 		clients.push({
 			name,
 			configPath,
@@ -274,10 +351,10 @@ function updateClientConfig(
 		switch (client.name) {
 			case "zed": {
 				// Zed uses context_servers with a different structure
-				if (
-					!config["context_servers"] ||
-					typeof config["context_servers"] != "object"
-				) {
+				const contextServersField = config["context_servers"];
+				const needsContextServers = needsFreshObject(contextServersField);
+
+				if (needsContextServers) {
 					config["context_servers"] = {};
 				}
 				const contextServers = readRecord(config["context_servers"]);
@@ -295,19 +372,18 @@ function updateClientConfig(
 
 			case "continue": {
 				// Continue.dev uses experimental.modelContextProtocolServers as an array
-				if (
-					!config["experimental"] ||
-					typeof config["experimental"] != "object"
-				) {
+				const experimentalField = config["experimental"];
+				const needsExperimental = needsFreshObject(experimentalField);
+
+				if (needsExperimental) {
 					config["experimental"] = {};
 				}
 				const experimental = readRecord(config["experimental"]);
-				if (
-					!(
-						experimental["modelContextProtocolServers"] &&
-						Array.isArray(experimental["modelContextProtocolServers"])
-					)
-				) {
+				const serversField = experimental["modelContextProtocolServers"];
+				const hasServerList = isServerList(serversField);
+				const needsServerList = hasServerList == false;
+
+				if (needsServerList) {
 					experimental["modelContextProtocolServers"] = [];
 				}
 				const mcpServers = readMcpServerConfigArray(
@@ -315,10 +391,7 @@ function updateClientConfig(
 				);
 
 				// Check if eBay server already exists and update/add
-				const existingIndex = mcpServers.findIndex(
-					(server) =>
-						server.command == "node" && server.args?.[0]?.includes("ebay-mcp"),
-				);
+				const existingIndex = mcpServers.findIndex(isEbayNodeServer);
 				if (existingIndex >= 0) {
 					mcpServers[existingIndex] = serverConfig;
 				} else {
@@ -331,7 +404,10 @@ function updateClientConfig(
 
 			default: {
 				// Standard mcpServers format for Claude Desktop, Cline, Cursor, Windsurf, Roo Code, Claude Code CLI, Amazon Q
-				if (!config["mcpServers"] || typeof config["mcpServers"] != "object") {
+				const mcpServersField = config["mcpServers"];
+				const needsMcpServers = needsFreshObject(mcpServersField);
+
+				if (needsMcpServers) {
 					config["mcpServers"] = {};
 				}
 				const mcpServers = readRecord(config["mcpServers"]);
@@ -406,7 +482,9 @@ function validateAutoSetupEnvironment(): {
 	}
 
 	const environment = process.env["EBAY_ENVIRONMENT"];
-	if (environment && environment != "production" && environment != "sandbox") {
+	const environmentIsInvalid = isRejectedEnvironment(environment);
+
+	if (environmentIsInvalid) {
 		errors.push(
 			`EBAY_ENVIRONMENT must be "production" or "sandbox", got: "${environment}"`,
 		);

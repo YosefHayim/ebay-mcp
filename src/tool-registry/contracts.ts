@@ -24,7 +24,19 @@ export interface ToolContractValidation {
 }
 
 function isJsonObject(value: unknown): value is Record<string, unknown> {
-	return typeof value == "object" && value !== null && !Array.isArray(value);
+	const isNotObject = typeof value != "object";
+
+	if (isNotObject) return false;
+
+	const isNull = value == null;
+
+	if (isNull) return false;
+
+	const isArray = Array.isArray(value);
+
+	if (isArray) return false;
+
+	return true;
 }
 
 function isObjectOutputSchema(outputSchema: unknown): boolean {
@@ -81,21 +93,40 @@ export function validateToolContracts(
 	const missingDescriptions: string[] = [];
 	const missingInputSchemas: string[] = [];
 
+	function recordInvalidInputFields(
+		toolName: string,
+		inputSchema: unknown,
+	): void {
+		const isMissing = !inputSchema;
+
+		if (isMissing) {
+			missingInputSchemas.push(toolName);
+			return;
+		}
+
+		const isNotObject = typeof inputSchema != "object";
+
+		if (isNotObject) {
+			missingInputSchemas.push(toolName);
+			return;
+		}
+
+		for (const [fieldName, schema] of Object.entries(inputSchema)) {
+			const isZodField = schema instanceof z.ZodType;
+
+			if (isZodField) continue;
+
+			invalidInputSchemaFields.push(`${toolName}.${fieldName}`);
+		}
+	}
+
 	for (const contract of contracts) {
 		if (seenNames.has(contract.name)) {
 			duplicateContracts.add(contract.name);
 		}
 		seenNames.add(contract.name);
 
-		if (!contract.inputSchema || typeof contract.inputSchema != "object") {
-			missingInputSchemas.push(contract.name);
-		} else {
-			for (const [fieldName, schema] of Object.entries(contract.inputSchema)) {
-				if (!(schema instanceof z.ZodType)) {
-					invalidInputSchemaFields.push(`${contract.name}.${fieldName}`);
-				}
-			}
-		}
+		recordInvalidInputFields(contract.name, contract.inputSchema);
 
 		if (!contract.description.trim()) {
 			missingDescriptions.push(contract.name);

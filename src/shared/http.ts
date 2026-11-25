@@ -71,16 +71,30 @@ export function describeHttpError(
 }
 
 function stringifyParam(param: unknown): string {
-	if (typeof param == "string") {
+	const isString = typeof param == "string";
+
+	if (isString) {
 		return param;
 	}
-	if (
-		typeof param == "number" ||
-		typeof param == "boolean" ||
-		typeof param == "bigint"
-	) {
+
+	const isNumber = typeof param == "number";
+
+	if (isNumber) {
 		return String(param);
 	}
+
+	const isBoolean = typeof param == "boolean";
+
+	if (isBoolean) {
+		return String(param);
+	}
+
+	const isBigint = typeof param == "bigint";
+
+	if (isBigint) {
+		return String(param);
+	}
+
 	return JSON.stringify(param);
 }
 
@@ -131,13 +145,32 @@ function prepareBody(requestBody: unknown): PreparedBody {
 			contentType: "application/x-www-form-urlencoded",
 		};
 	}
-	if (requestBody instanceof Uint8Array || requestBody instanceof ArrayBuffer) {
+
+	const isBytes = requestBody instanceof Uint8Array;
+
+	if (isBytes) {
 		return { body: requestBody as BodyInit };
 	}
-	if (requestBody instanceof FormData || requestBody instanceof Blob) {
-		// fetch derives the content-type itself (multipart boundary / blob type).
+
+	const isArrayBuffer = requestBody instanceof ArrayBuffer;
+
+	if (isArrayBuffer) {
+		return { body: requestBody as BodyInit };
+	}
+
+	// fetch derives the content-type itself (multipart boundary / blob type).
+	const isFormData = requestBody instanceof FormData;
+
+	if (isFormData) {
 		return { body: requestBody };
 	}
+
+	const isBlob = requestBody instanceof Blob;
+
+	if (isBlob) {
+		return { body: requestBody };
+	}
+
 	return { body: JSON.stringify(requestBody), contentType: "application/json" };
 }
 
@@ -227,6 +260,47 @@ function startDeadline(timeoutMs?: number): RequestDeadline {
 	};
 }
 
+function pickContentType(
+	contentType: string | undefined,
+	hasContentType: boolean,
+): string | undefined {
+	const isMissing = contentType == null;
+
+	if (isMissing) {
+		return undefined;
+	}
+
+	const isEmpty = contentType == "";
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	const isAlreadySet = hasContentType;
+
+	if (isAlreadySet) {
+		return undefined;
+	}
+
+	return contentType;
+}
+
+function isSuccessStatus(status: number): boolean {
+	const isBelowSuccess = status < 200;
+
+	if (isBelowSuccess) {
+		return false;
+	}
+
+	const isAboveSuccess = status > 299;
+
+	if (isAboveSuccess) {
+		return false;
+	}
+
+	return true;
+}
+
 export async function httpRequestEffect<T = unknown>(
 	options: HttpRequestOptions,
 ): Promise<HttpResponse<T>> {
@@ -239,8 +313,11 @@ export async function httpRequestEffect<T = unknown>(
 		(key) => key.toLowerCase() == "content-type",
 	);
 
-	if (contentType && !hasContentType) {
-		headers["Content-Type"] = contentType;
+	const preparedType = pickContentType(contentType, hasContentType);
+	const shouldAddType = preparedType != null;
+
+	if (shouldAddType) {
+		headers["Content-Type"] = preparedType;
 	}
 
 	const deadline = startDeadline(timeoutMs);
@@ -324,7 +401,7 @@ export async function httpRequest<T = unknown>(
 ): Promise<HttpResponse<T>> {
 	const response = await httpRequestEffect<T>(options);
 	const status = response.status;
-	const isSuccess = status >= 200 && status <= 299;
+	const isSuccess = isSuccessStatus(status);
 
 	if (isSuccess) {
 		return response;

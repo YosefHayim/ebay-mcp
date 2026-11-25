@@ -6,6 +6,28 @@ import { optionalStringEffect } from "@/ebay-client/request.js";
 
 const MAX_LIMIT = 200;
 
+function isNonEmptyString(entry: unknown): entry is string {
+	const isNotString = typeof entry != "string";
+
+	if (isNotString) {
+		return false;
+	}
+
+	const isEmpty = entry.length == 0;
+
+	if (isEmpty) {
+		return false;
+	}
+
+	return true;
+}
+
+function isArrayOfNonEmptyStrings(
+	entries: readonly unknown[],
+): entries is readonly string[] {
+	return entries.every(isNonEmptyString);
+}
+
 const MAX_OFFSET = 10_000;
 
 function requireIntegerInRange(
@@ -14,9 +36,25 @@ function requireIntegerInRange(
 	min: number,
 	max: number,
 ): number {
-	const isOutsideRange = !Number.isInteger(value) || value < min || value > max;
+	const isNotWholeNumber = !Number.isInteger(value);
 
-	if (isOutsideRange) {
+	if (isNotWholeNumber) {
+		throw new Error(
+			`${parameter} must be an integer between ${min} and ${max}`,
+		);
+	}
+
+	const isBelowMin = value < min;
+
+	if (isBelowMin) {
+		throw new Error(
+			`${parameter} must be an integer between ${min} and ${max}`,
+		);
+	}
+
+	const isAboveMax = value > max;
+
+	if (isAboveMax) {
 		throw new Error(
 			`${parameter} must be an integer between ${min} and ${max}`,
 		);
@@ -29,7 +67,15 @@ function nonFinitePriceError(
 	priceBound: number | undefined,
 	parameter: string,
 ): Error | undefined {
-	if (priceBound === undefined || Number.isFinite(priceBound)) {
+	const isPriceOmitted = priceBound === undefined;
+
+	if (isPriceOmitted) {
+		return;
+	}
+
+	const isFinitePrice = Number.isFinite(priceBound);
+
+	if (isFinitePrice) {
 		return;
 	}
 
@@ -38,23 +84,36 @@ function nonFinitePriceError(
 
 export const DEFAULT_LIMIT = 20;
 
+function requireStringEntries(
+	entries: readonly unknown[],
+	parameter: string,
+): readonly string[] {
+	const isStringArray = isArrayOfNonEmptyStrings(entries);
+
+	if (isStringArray) {
+		return entries;
+	}
+
+	throw new Error(`${parameter} must be an array of non-empty strings`);
+}
+
 export function optionalStringArrayEffect(
 	value: unknown,
 	parameter: string,
 ): readonly string[] | undefined {
-	if (value === undefined) {
+	const isOmitted = value === undefined;
+
+	if (isOmitted) {
 		return undefined;
 	}
 
-	const isStringArray =
-		Array.isArray(value) &&
-		value.every((entry) => typeof entry == "string" && entry.length > 0);
+	const isArray = Array.isArray(value);
 
-	if (!isStringArray) {
-		throw new Error(`${parameter} must be an array of non-empty strings`);
+	if (isArray) {
+		return requireStringEntries(value, parameter);
 	}
 
-	return value;
+	throw new Error(`${parameter} must be an array of non-empty strings`);
 }
 
 export function optionalNonBlankStringEffect(
@@ -104,10 +163,21 @@ export function requireCoherentPriceRange(
 		throw nonFinite;
 	}
 
-	const isInverted =
-		priceMin !== undefined && priceMax !== undefined && priceMin > priceMax;
+	const isMinMissing = priceMin === undefined;
 
-	if (isInverted) {
+	if (isMinMissing) {
+		return;
+	}
+
+	const isMaxMissing = priceMax === undefined;
+
+	if (isMaxMissing) {
+		return;
+	}
+
+	const isMinAboveMax = priceMin > priceMax;
+
+	if (isMinAboveMax) {
 		throw new Error(
 			`priceMin (${priceMin}) must not exceed priceMax (${priceMax})`,
 		);

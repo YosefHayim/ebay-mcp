@@ -3,17 +3,101 @@ import { dirname } from "node:path";
 import { getErrorMessage } from "@/shared/errors.js";
 import { httpRequestEffect, readHttpFailureMessage } from "@/shared/http.js";
 
+function isNonNullObject(candidate: unknown): candidate is object {
+	const isNull = candidate == null;
+
+	if (isNull) {
+		return false;
+	}
+
+	const isObject = typeof candidate == "object";
+	const isNotObject = !isObject;
+
+	if (isNotObject) {
+		return false;
+	}
+
+	return true;
+}
+
 function isVersionText(version: unknown): boolean {
-	return typeof version == "string" && version.trim() != "";
+	const isString = typeof version == "string";
+	const isNotString = !isString;
+
+	if (isNotString) {
+		return false;
+	}
+
+	const isBlank = version.trim() == "";
+
+	if (isBlank) {
+		return false;
+	}
+
+	return true;
+}
+
+function isOpenApiDocument(spec: object): spec is { openapi: unknown } {
+	return "openapi" in spec;
+}
+
+function isSwaggerDocument(spec: object): spec is { swagger: unknown } {
+	return "swagger" in spec;
+}
+
+function hasOpenApiVersion(spec: object): boolean {
+	const hasOpenApiField = isOpenApiDocument(spec);
+
+	if (hasOpenApiField) {
+		return isVersionText(spec.openapi);
+	}
+
+	return false;
+}
+
+function hasSwaggerVersion(spec: object): boolean {
+	const hasSwaggerField = isSwaggerDocument(spec);
+
+	if (hasSwaggerField) {
+		return isVersionText(spec.swagger);
+	}
+
+	return false;
 }
 
 function hasSpecVersion(spec: unknown): boolean {
-	return (
-		spec !== null &&
-		typeof spec == "object" &&
-		(("openapi" in spec && isVersionText(spec.openapi)) ||
-			("swagger" in spec && isVersionText(spec.swagger)))
-	);
+	const isObject = isNonNullObject(spec);
+	const isNotObject = !isObject;
+
+	if (isNotObject) {
+		return false;
+	}
+
+	const hasOpenApi = hasOpenApiVersion(spec);
+
+	if (hasOpenApi) {
+		return true;
+	}
+
+	return hasSwaggerVersion(spec);
+}
+
+function isOutsideSuccessStatus(status: number): boolean {
+	const minimumSuccessStatus = 200;
+	const isBelowSuccess = status < minimumSuccessStatus;
+
+	if (isBelowSuccess) {
+		return true;
+	}
+
+	const maximumSuccessStatus = 299;
+	const isAboveSuccess = status > maximumSuccessStatus;
+
+	if (isAboveSuccess) {
+		return true;
+	}
+
+	return false;
 }
 
 export function checkSpecDownload(specBytes: Buffer): Buffer {
@@ -51,7 +135,7 @@ export async function refreshCachedSpec(
 		timeoutMs: 20_000,
 	});
 	const status = specResponse.status;
-	const isFailedStatus = status < 200 || status > 299;
+	const isFailedStatus = isOutsideSuccessStatus(status);
 
 	if (isFailedStatus) {
 		throw new Error(

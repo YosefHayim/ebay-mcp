@@ -40,6 +40,21 @@ const ITEM_PATH = "/buy/browse/v1/item";
 
 const BROWSE_REQUEST_CONFIG: EbayRequestConfig = { tokenType: "application" };
 
+function hasEitherPriceBound(
+	priceMin: number | undefined,
+	priceMax: number | undefined,
+): boolean {
+	const hasMin = priceMin !== undefined;
+
+	if (hasMin) {
+		return true;
+	}
+
+	const hasMax = priceMax !== undefined;
+
+	return hasMax;
+}
+
 export class BrowseApi {
 	readonly #client: EbayApiClient;
 
@@ -95,7 +110,7 @@ export class BrowseApi {
 		const limit = requireLimitInRange(limitRaw ?? DEFAULT_LIMIT);
 		const offset = requireOffsetInRange(offsetRaw ?? 0, limit);
 		requireCoherentPriceRange(priceMin, priceMax);
-		const hasPriceBounds = priceMin !== undefined || priceMax !== undefined;
+		const hasPriceBounds = hasEitherPriceBound(priceMin, priceMax);
 		requireNoPriceFilterConflict(rawFilter, hasPriceBounds);
 
 		// Built from the validated values, never the raw input, so the public

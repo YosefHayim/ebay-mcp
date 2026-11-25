@@ -1,6 +1,12 @@
 # Agent notes
 
-Exceptions to the personal code rules:
+Follow the personal code rules in `~/.claude/rules/` (`code-style.md`, `repo-layout.md`, `stack-choices.md`).
+
+Readable over clever. Name each check, then return early. Do not join checks with `&&` or `||`. A repeated decision that owns data is a class with arrow methods. A parent class that only holds a client is not that.
+
+Token expiry is `AccessTokenLifetime` in `src/auth/credentialSession.ts`. `isTokenExpired` calls it.
+
+## Exceptions
 
 - `src/ebay-openapi-types` is generated. Do not edit it by hand.
 - eBay JSON and XML field names, MCP tool names, and Zod or SDK names stay as the outside API spells them.

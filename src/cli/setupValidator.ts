@@ -22,6 +22,63 @@ export interface ValidationSummary {
 	results: ValidationResult[];
 }
 
+function isCredentialMissing(
+	envVars: Record<string, string>,
+	key: string,
+): boolean {
+	const credential = envVars[key];
+	const isMissing = !credential;
+
+	if (isMissing) return true;
+
+	const isBlank = credential.trim() == "";
+
+	if (isBlank) return true;
+
+	return false;
+}
+
+function isSandboxOrProduction(environmentName: string): boolean {
+	const isSandbox = environmentName == "sandbox";
+
+	if (isSandbox) return true;
+
+	const isProduction = environmentName == "production";
+
+	if (isProduction) return true;
+
+	return false;
+}
+
+function hasConfiguredRefreshToken(envVars: Record<string, string>): boolean {
+	const refreshToken = envVars["EBAY_USER_REFRESH_TOKEN"];
+	const isMissing = !refreshToken;
+
+	if (isMissing) return false;
+
+	const isBlank = refreshToken.trim() == "";
+
+	if (isBlank) return false;
+
+	return true;
+}
+
+function isConfiguredUserToken(validation: ValidationResult): boolean {
+	const isOtherTest = validation.test != "User Tokens";
+
+	if (isOtherTest) return false;
+
+	const isFailed = validation.passed == false;
+
+	if (isFailed) return false;
+
+	const hasErrorNote = Boolean(validation.error);
+
+	if (hasErrorNote) return false;
+
+	return true;
+}
+
 function validateEnvFile(projectRoot: string): ValidationResult {
 	const envPath = join(projectRoot, ".env");
 
@@ -63,7 +120,9 @@ function validateAppCredentials(
 	const missing: string[] = [];
 
 	for (const key of required) {
-		if (!envVars[key] || envVars[key].trim() == "") {
+		const credentialIsMissing = isCredentialMissing(envVars, key);
+
+		if (credentialIsMissing) {
 			missing.push(key);
 		}
 	}
@@ -89,7 +148,10 @@ function validateEnvironment(
 ): ValidationResult {
 	const env = envVars["EBAY_ENVIRONMENT"] || "sandbox";
 
-	if (env != "sandbox" && env != "production") {
+	const isKnownEnvironment = isSandboxOrProduction(env);
+	const isUnknownEnvironment = isKnownEnvironment == false;
+
+	if (isUnknownEnvironment) {
 		return {
 			test: "Environment Setting",
 			passed: false,
@@ -106,11 +168,10 @@ function validateEnvironment(
 }
 
 function validateUserTokens(envVars: Record<string, string>): ValidationResult {
-	const hasRefreshToken =
-		envVars["EBAY_USER_REFRESH_TOKEN"] &&
-		envVars["EBAY_USER_REFRESH_TOKEN"].trim() != "";
+	const hasRefreshToken = hasConfiguredRefreshToken(envVars);
+	const isRefreshTokenMissing = hasRefreshToken == false;
 
-	if (!hasRefreshToken) {
+	if (isRefreshTokenMissing) {
 		return {
 			test: "User Tokens (Optional)",
 			passed: true,
@@ -328,12 +389,7 @@ function printResult(validation: ValidationResult): void {
 }
 
 export function displayRecommendations(summary: ValidationSummary): void {
-	const hasUserTokens = summary.results.some(
-		(validation) =>
-			validation.test == "User Tokens" &&
-			validation.passed &&
-			!validation.error,
-	);
+	const hasUserTokens = summary.results.some(isConfiguredUserToken);
 
 	writeCliLine(paint.bold.cyan("💡 Recommendations:\n"));
 

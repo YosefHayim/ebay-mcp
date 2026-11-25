@@ -162,6 +162,22 @@ function readTradingPayload(
 	);
 }
 
+function isTradingErrorText(message: unknown): message is string {
+	const messageIsNotText = typeof message != "string";
+
+	if (messageIsNotText) {
+		return false;
+	}
+
+	const messageIsEmpty = message == "";
+
+	if (messageIsEmpty) {
+		return false;
+	}
+
+	return true;
+}
+
 function extractTradingErrorMessage(errors: unknown): string {
 	const firstError = Array.isArray(errors) ? errors[0] : errors;
 
@@ -170,12 +186,18 @@ function extractTradingErrorMessage(errors: unknown): string {
 	}
 
 	const shortMessage = firstError["ShortMessage"];
-	if (typeof shortMessage == "string" && shortMessage != "") {
+
+	const hasShortMessage = isTradingErrorText(shortMessage);
+
+	if (hasShortMessage) {
 		return shortMessage;
 	}
 
 	const longMessage = firstError["LongMessage"];
-	if (typeof longMessage == "string" && longMessage != "") {
+
+	const hasLongMessage = isTradingErrorText(longMessage);
+
+	if (hasLongMessage) {
 		return longMessage;
 	}
 

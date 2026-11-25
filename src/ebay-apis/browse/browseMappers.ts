@@ -12,20 +12,37 @@ function parseBrowseMoney(rawMoney: unknown): BrowseMoney | undefined {
 		return;
 	}
 
-	if (
-		typeof rawMoney["value"] == "string" &&
-		typeof rawMoney["currency"] == "string"
-	) {
-		return { currency: rawMoney["currency"], value: rawMoney["value"] };
+	const moneyAmount = rawMoney["value"];
+	const moneyCurrency = rawMoney["currency"];
+	const isNotAmountString = typeof moneyAmount != "string";
+
+	if (isNotAmountString) {
+		return;
 	}
 
-	return undefined;
+	const isNotCurrencyString = typeof moneyCurrency != "string";
+
+	if (isNotCurrencyString) {
+		return;
+	}
+
+	return { currency: moneyCurrency, value: moneyAmount };
 }
 
 function optionalString(rawField: unknown): string | undefined {
-	return typeof rawField == "string" && rawField.length > 0
-		? rawField
-		: undefined;
+	const isNotString = typeof rawField != "string";
+
+	if (isNotString) {
+		return undefined;
+	}
+
+	const isEmpty = rawField.length == 0;
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	return rawField;
 }
 
 function pickAvailabilityContainer(
@@ -35,22 +52,119 @@ function pickAvailabilityContainer(
 		return estimatedAvailabilities;
 	}
 
-	if (
-		Array.isArray(estimatedAvailabilities) &&
-		isRecord(estimatedAvailabilities[0])
-	) {
-		return estimatedAvailabilities[0];
+	const isList = Array.isArray(estimatedAvailabilities);
+
+	if (isList) {
+		return readListedAvailability(estimatedAvailabilities);
+	}
+
+	return undefined;
+}
+
+function readListedAvailability(
+	availabilities: readonly unknown[],
+): Record<string, unknown> | undefined {
+	const firstAvailability = availabilities[0];
+	const isFirstRecord = isRecord(firstAvailability);
+
+	if (isFirstRecord) {
+		return firstAvailability;
+	}
+
+	return undefined;
+}
+
+function isStringEntry(entry: unknown): entry is string {
+	const isString = typeof entry == "string";
+
+	return isString;
+}
+
+function isNonEmptyStringList(
+	entries: readonly unknown[],
+): entries is readonly string[] {
+	const hasNonString = !entries.every(isStringEntry);
+
+	if (hasNonString) {
+		return false;
+	}
+
+	const isEmpty = entries.length == 0;
+
+	if (isEmpty) {
+		return false;
+	}
+
+	return true;
+}
+
+function readNonEmptyStringList(
+	entries: readonly unknown[],
+): readonly string[] | undefined {
+	const isNonEmpty = isNonEmptyStringList(entries);
+
+	if (isNonEmpty) {
+		return entries;
 	}
 
 	return undefined;
 }
 
 function optionalStringArray(rawField: unknown): readonly string[] | undefined {
-	return Array.isArray(rawField) &&
-		rawField.every((entry) => typeof entry == "string") &&
-		rawField.length > 0
-		? rawField
-		: undefined;
+	const isList = Array.isArray(rawField);
+
+	if (isList) {
+		return readNonEmptyStringList(rawField);
+	}
+
+	return undefined;
+}
+
+function readItemIdentity(raw: Record<string, unknown>):
+	| {
+			readonly itemId: string;
+			readonly title: string;
+	  }
+	| undefined {
+	const itemId = optionalString(raw["itemId"]);
+	const isItemIdMissing = itemId == null;
+
+	if (isItemIdMissing) {
+		return undefined;
+	}
+
+	const isItemIdEmpty = itemId.length == 0;
+
+	if (isItemIdEmpty) {
+		return undefined;
+	}
+
+	const title = optionalString(raw["title"]);
+	const isTitleMissing = title == null;
+
+	if (isTitleMissing) {
+		return undefined;
+	}
+
+	const isTitleEmpty = title.length == 0;
+
+	if (isTitleEmpty) {
+		return undefined;
+	}
+
+	return { itemId, title };
+}
+
+function hasAnotherPage(nextLink: unknown): boolean {
+	const isNotString = typeof nextLink != "string";
+
+	if (isNotString) {
+		return false;
+	}
+
+	const hasLink = nextLink.length > 0;
+
+	return hasLink;
 }
 
 function pickSeller(raw: Record<string, unknown>): {
@@ -117,17 +231,18 @@ export function mapItemSummary(raw: unknown): ActiveItemSummary | undefined {
 		return;
 	}
 
-	const itemId = optionalString(raw["itemId"]);
-	const title = optionalString(raw["title"]);
-	if (!(itemId && title)) {
+	const identity = readItemIdentity(raw);
+	const isIdentityMissing = identity == null;
+
+	if (isIdentityMissing) {
 		return;
 	}
 
 	const seller = pickSeller(raw);
 
 	return {
-		itemId,
-		title,
+		itemId: identity.itemId,
+		title: identity.title,
 		...defined({
 			// Auction-only listings carry no `price`; their live figure is
 			// currentBidPrice. buyingOptions still discloses which one this is.
@@ -187,7 +302,7 @@ export function mapSearchActiveItemsResponse(
 	// "another page exists" signal. The link itself is an authenticated API URL
 	// the caller cannot follow without our credentials, so only its presence is
 	// surfaced.
-	const hasNext = typeof raw["next"] == "string" && raw["next"].length > 0;
+	const hasNext = hasAnotherPage(raw["next"]);
 
 	// eBay may clamp the requested window (e.g. an offset past the result set),
 	// so the response values win when present; the request values are only a
@@ -211,17 +326,18 @@ export function mapItemDetailsResponse(raw: unknown): ItemDetails | undefined {
 		return;
 	}
 
-	const itemId = optionalString(raw["itemId"]);
-	const title = optionalString(raw["title"]);
-	if (!(itemId && title)) {
+	const identity = readItemIdentity(raw);
+	const isIdentityMissing = identity == null;
+
+	if (isIdentityMissing) {
 		return;
 	}
 
 	const seller = pickSeller(raw);
 
 	return {
-		itemId,
-		title,
+		itemId: identity.itemId,
+		title: identity.title,
 		...defined({
 			price:
 				parseBrowseMoney(raw["price"]) ??

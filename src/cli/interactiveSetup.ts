@@ -78,14 +78,26 @@ function readOptionalEnvironment(
 	return readEnvironment(rawEnvironment);
 }
 
+function hasFlag(args: string[], longFlag: string, shortFlag: string): boolean {
+	const hasLongFlag = args.includes(longFlag);
+
+	if (hasLongFlag) return true;
+
+	const hasShortFlag = args.includes(shortFlag);
+
+	if (hasShortFlag) return true;
+
+	return false;
+}
+
 function parseInteractiveArgs(): CLIArgs {
 	const args = process.argv.slice(2);
 	const envArg = args.find((arg) => arg.startsWith("--env="));
 
 	return {
-		help: args.includes("--help") || args.includes("-h"),
-		diagnose: args.includes("--diagnose") || args.includes("-d"),
-		firstTime: args.includes("--first-time") || args.includes("-f"),
+		help: hasFlag(args, "--help", "-h"),
+		diagnose: hasFlag(args, "--diagnose", "-d"),
+		firstTime: hasFlag(args, "--first-time", "-f"),
 		skipChecks: args.includes("--skip-checks"),
 		environment: readOptionalEnvironment(envArg?.split("=")[1]),
 	};
@@ -172,7 +184,11 @@ function displayLogo() {
 }
 
 function validateRequired(input: string): boolean | string {
-	return input.trim().length > 0 || "This field is required";
+	const isFilled = input.trim().length > 0;
+
+	if (isFilled) return true;
+
+	return "This field is required";
 }
 
 // Drops one pair of wrapping quotes around a pasted token.
@@ -466,7 +482,21 @@ async function validateAndGenerateTokens(
 		console.log(paint.red("\n✗ Validation failed\n"));
 		console.log(paint.yellow(`  Error: ${message}\n`));
 
-		if (message.includes("401") || message.includes("Unauthorized")) {
+		function mentionsAuthFailure(failureMessage: string): boolean {
+			const isUnauthorizedStatus = failureMessage.includes("401");
+
+			if (isUnauthorizedStatus) return true;
+
+			const isUnauthorizedWord = failureMessage.includes("Unauthorized");
+
+			if (isUnauthorizedWord) return true;
+
+			return false;
+		}
+
+		const isAuthFailure = mentionsAuthFailure(message);
+
+		if (isAuthFailure) {
 			console.log(paint.gray("  Possible causes:"));
 			console.log(paint.gray("    • Invalid or expired refresh token"));
 			console.log(

@@ -23,7 +23,13 @@ export function isReadOnlyTool(definition: ReadOnlyToolDefinition): boolean {
 	if (WRITE_NAME_PATTERN.test(name)) return false;
 	if (READ_NAME_PATTERN.test(name)) return true;
 	// Connector tools without the ebay_ prefix
-	if (name == "search" || name == "fetch") return true;
+	const isSearch = name == "search";
+
+	if (isSearch) return true;
+
+	const isFetch = name == "fetch";
+
+	if (isFetch) return true;
 
 	// Default: exclude from read-only mode (safer)
 	return false;
@@ -33,5 +39,17 @@ export function isReadOnlyModeEnabled(
 	env: NodeJS.ProcessEnv = process.env,
 ): boolean {
 	const raw = env["EBAY_READ_ONLY"]?.trim().toLowerCase();
-	return raw == "true" || raw == "1" || raw == "yes";
+	const isTrueWord = raw == "true";
+
+	if (isTrueWord) return true;
+
+	const isOne = raw == "1";
+
+	if (isOne) return true;
+
+	const isYes = raw == "yes";
+
+	if (isYes) return true;
+
+	return false;
 }

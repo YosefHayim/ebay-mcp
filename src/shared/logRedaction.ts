@@ -2,12 +2,29 @@ const REDACTED = "[REDACTED]";
 const URL_CREDENTIALS = /\/\/[^\s/@]+@/g;
 const SECRET_KEY = /secret|password|token|authorization|cookie|api.?key/i;
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-	return (
-		typeof value == "object" &&
-		value !== null &&
-		Object.getPrototypeOf(value) === Object.prototype
-	);
+function isPlainObject(
+	candidate: unknown,
+): candidate is Record<string, unknown> {
+	const isNotObject = typeof candidate != "object";
+
+	if (isNotObject) {
+		return false;
+	}
+
+	const isNull = candidate == null;
+
+	if (isNull) {
+		return false;
+	}
+
+	const prototype = Object.getPrototypeOf(candidate);
+	const isObjectPrototype = prototype == Object.prototype;
+
+	if (isObjectPrototype) {
+		return true;
+	}
+
+	return false;
 }
 
 export function redactSecrets(text: string): string {

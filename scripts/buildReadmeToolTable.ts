@@ -23,17 +23,43 @@ export function createReadmeToolTable(catalog: ToolCatalog): string {
 	].join("\n");
 }
 
+function hasBrokenToolFamilyMarkers(start: number, end: number): boolean {
+	const missingIndex = -1;
+	const isStartMissing = start == missingIndex;
+
+	if (isStartMissing) {
+		return true;
+	}
+
+	const isEndMissing = end == missingIndex;
+
+	if (isEndMissing) {
+		return true;
+	}
+
+	const isEndBeforeStart = end < start;
+
+	if (isEndBeforeStart) {
+		return true;
+	}
+
+	return false;
+}
+
 export function replaceToolFamilyBlock(
 	document: string,
 	block: string,
 ): string {
 	const start = document.indexOf(TOOL_FAMILIES_START_MARKER);
 	const end = document.indexOf(TOOL_FAMILIES_END_MARKER);
-	if (start == -1 || end == -1 || end < start) {
+	const hasBrokenMarkers = hasBrokenToolFamilyMarkers(start, end);
+
+	if (hasBrokenMarkers) {
 		throw new Error(
 			`Missing ${TOOL_FAMILIES_START_MARKER} / ${TOOL_FAMILIES_END_MARKER} markers`,
 		);
 	}
+
 	const before = document.slice(0, start + TOOL_FAMILIES_START_MARKER.length);
 	const after = document.slice(end);
 	return `${before}\n${block}\n${after}`;
@@ -49,6 +75,44 @@ export function createToolFamilyBlock(
 	return createReadmeToolTable(catalog);
 }
 
+function isStaleReportNeeded(
+	isDocumentStale: boolean,
+	checkOnly: boolean,
+): boolean {
+	const isFresh = !isDocumentStale;
+
+	if (isFresh) {
+		return false;
+	}
+
+	const isCheckOnly = checkOnly;
+
+	if (isCheckOnly) {
+		return true;
+	}
+
+	return false;
+}
+
+function isStaleWriteNeeded(
+	isDocumentStale: boolean,
+	checkOnly: boolean,
+): boolean {
+	const isFresh = !isDocumentStale;
+
+	if (isFresh) {
+		return false;
+	}
+
+	const writesDocument = !checkOnly;
+
+	if (writesDocument) {
+		return true;
+	}
+
+	return false;
+}
+
 if (process.argv[1] == fileURLToPath(import.meta.url)) {
 	const checkOnly = process.argv.includes("--check");
 	const catalog = createToolCatalog();
@@ -61,15 +125,18 @@ if (process.argv[1] == fileURLToPath(import.meta.url)) {
 			createToolFamilyBlock(documentName, catalog),
 		);
 		const isDocumentStale = updated != current;
+		const shouldReportStale = isStaleReportNeeded(isDocumentStale, checkOnly);
 
-		if (isDocumentStale && checkOnly) {
+		if (shouldReportStale) {
 			console.error(
 				`${documentName} tool family block is stale. Run: pnpm readme:tools`,
 			);
 			stale = true;
 		}
 
-		if (isDocumentStale && !checkOnly) {
+		const shouldWriteDocument = isStaleWriteNeeded(isDocumentStale, checkOnly);
+
+		if (shouldWriteDocument) {
 			writeFileSync(documentPath, updated);
 			console.log(`Updated ${documentName}`);
 		}

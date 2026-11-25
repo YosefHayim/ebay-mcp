@@ -23,6 +23,31 @@ function parseAbsoluteDir(
 	return path.resolve(raw);
 }
 
+function pickNewAllowedDir(
+	dir: string | undefined,
+	allowedDirs: readonly string[],
+): string | undefined {
+	const isMissing = dir == null;
+
+	if (isMissing) {
+		return undefined;
+	}
+
+	const isEmpty = dir == "";
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	const isAlreadyListed = allowedDirs.includes(dir);
+
+	if (isAlreadyListed) {
+		return undefined;
+	}
+
+	return dir;
+}
+
 export function getMediaAccessConfig(
 	env: NodeJS.ProcessEnv = process.env,
 ): MediaAccessConfig {
@@ -33,10 +58,13 @@ export function getMediaAccessConfig(
 		.split(path.delimiter)
 		.map((entry) => entry.trim())
 		.filter((entry) => entry.length > 0);
-	for (const raw of rawDirs) {
-		const dir = parseAbsoluteDir(raw, MEDIA_DIRS_ENV, errors);
-		if (dir && !allowedDirs.includes(dir)) {
-			allowedDirs.push(dir);
+	for (const rawDir of rawDirs) {
+		const parsedDir = parseAbsoluteDir(rawDir, MEDIA_DIRS_ENV, errors);
+		const allowedDir = pickNewAllowedDir(parsedDir, allowedDirs);
+		const isNewDir = allowedDir != null;
+
+		if (isNewDir) {
+			allowedDirs.push(allowedDir);
 		}
 	}
 
@@ -44,8 +72,11 @@ export function getMediaAccessConfig(
 	const mediaRoot = rawRoot
 		? parseAbsoluteDir(rawRoot, MEDIA_ROOT_ENV, errors)
 		: undefined;
-	if (mediaRoot && !allowedDirs.includes(mediaRoot)) {
-		allowedDirs.push(mediaRoot);
+	const allowedRoot = pickNewAllowedDir(mediaRoot, allowedDirs);
+	const isNewRoot = allowedRoot != null;
+
+	if (isNewRoot) {
+		allowedDirs.push(allowedRoot);
 	}
 
 	return { allowedDirs, mediaRoot, errors };

@@ -52,16 +52,43 @@ export function feedListParams(query: FeedListQuery): QueryParams | undefined {
 	});
 }
 
+function rejectFeedTypeWithSchedule(query: FeedListQuery): void {
+	const isFeedTypeMissing = query.feedType === undefined;
+
+	if (isFeedTypeMissing) {
+		return;
+	}
+
+	const isScheduleIdMissing = query.scheduleId === undefined;
+
+	if (isScheduleIdMissing) {
+		return;
+	}
+
+	throw new Error("Pass feedType or scheduleId, not both");
+}
+
+function rejectDateRangeWithLookBack(query: FeedListQuery): void {
+	const isDateRangeMissing = query.dateRange === undefined;
+
+	if (isDateRangeMissing) {
+		return;
+	}
+
+	const isLookBackMissing = query.lookBackDays === undefined;
+
+	if (isLookBackMissing) {
+		return;
+	}
+
+	throw new Error("Pass dateRange or lookBackDays, not both");
+}
+
 export function exclusiveFeedFilters<TQuery extends FeedListQuery>(
 	query: TQuery,
 ): TQuery {
-	if (query.feedType !== undefined && query.scheduleId !== undefined) {
-		throw new Error("Pass feedType or scheduleId, not both");
-	}
-
-	if (query.dateRange !== undefined && query.lookBackDays !== undefined) {
-		throw new Error("Pass dateRange or lookBackDays, not both");
-	}
+	rejectFeedTypeWithSchedule(query);
+	rejectDateRangeWithLookBack(query);
 
 	return query;
 }

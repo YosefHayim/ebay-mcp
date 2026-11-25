@@ -101,13 +101,39 @@ function printWizardBanner(): void {
 
 // ─── Business-logic helpers (preserved from original) ─────────────────────────
 
+function looksLikeAuthorizationRedirect(trimmed: string): boolean {
+	const hasCodeParameter = trimmed.includes("code=");
+
+	if (hasCodeParameter) return true;
+
+	const hasQueryMark = trimmed.includes("?");
+
+	if (hasQueryMark) return true;
+
+	const hasAmpersand = trimmed.includes("&");
+
+	if (hasAmpersand) return true;
+
+	return false;
+}
+
+function isRefreshTokenText(trimmed: string): boolean {
+	const isPlainToken = trimmed.startsWith("v^1.1#");
+
+	if (isPlainToken) return true;
+
+	const isEncodedToken = trimmed.startsWith("v%5E1.1");
+
+	if (isEncodedToken) return true;
+
+	return false;
+}
+
 function parseAuthorizationCode(input: string): string | null {
 	const trimmed = input.trim();
-	if (
-		trimmed.includes("code=") ||
-		trimmed.includes("?") ||
-		trimmed.includes("&")
-	) {
+	const looksLikeRedirect = looksLikeAuthorizationRedirect(trimmed);
+
+	if (looksLikeRedirect) {
 		try {
 			const searchParams = trimmed.startsWith("http")
 				? new URL(trimmed).searchParams
@@ -123,7 +149,9 @@ function parseAuthorizationCode(input: string): string | null {
 			// A malformed redirect still falls through to the raw-token check.
 		}
 	}
-	if (trimmed.startsWith("v^1.1#") || trimmed.startsWith("v%5E1.1")) {
+	const isTokenText = isRefreshTokenText(trimmed);
+
+	if (isTokenText) {
 		try {
 			return decodeURIComponent(trimmed);
 		} catch {
@@ -324,8 +352,24 @@ function updateClaudeDesktopConfig(
 
 			existing = parsed;
 		}
-		if (!existing["mcpServers"] || typeof existing["mcpServers"] != "object")
+		function needsFreshObject(field: unknown): boolean {
+			const isMissing = !field;
+
+			if (isMissing) return true;
+
+			const isObject = typeof field == "object";
+
+			if (isObject) return false;
+
+			return true;
+		}
+
+		const mcpServersField = existing["mcpServers"];
+		const needsMcpServers = needsFreshObject(mcpServersField);
+
+		if (needsMcpServers) {
 			existing["mcpServers"] = {};
+		}
 		const mcpServers = existing["mcpServers"] as Record<string, unknown>;
 		const envVars: Record<string, string> = {
 			EBAY_ENVIRONMENT: environment,
@@ -458,12 +502,33 @@ function showSetupProgress(message: string): () => void {
 	return () => undefined;
 }
 
+function readIndividualName(userInfo: EbayUserInfo): string | null {
+	const firstName = userInfo.individualAccount?.firstName;
+	const isFirstNameMissing = firstName == null;
+
+	if (isFirstNameMissing) return null;
+
+	const isFirstNameBlank = firstName == "";
+
+	if (isFirstNameBlank) return null;
+
+	const lastName = userInfo.individualAccount?.lastName;
+	const isLastNameMissing = lastName == null;
+
+	if (isLastNameMissing) return null;
+
+	const isLastNameBlank = lastName == "";
+
+	if (isLastNameBlank) return null;
+
+	return `${firstName} ${lastName}`;
+}
+
 function displayUserInfo(userInfo: EbayUserInfo): void {
-	const name =
-		userInfo.individualAccount?.firstName &&
-		userInfo.individualAccount?.lastName
-			? `${userInfo.individualAccount.firstName} ${userInfo.individualAccount.lastName}`
-			: userInfo.businessAccount?.name || "No account name";
+	const individualName = readIndividualName(userInfo);
+	const hasIndividualName = individualName != null;
+	const businessName = userInfo.businessAccount?.name || "No account name";
+	const name = hasIndividualName ? individualName : businessName;
 	const email =
 		userInfo.individualAccount?.email ||
 		userInfo.businessAccount?.email ||
@@ -502,10 +567,25 @@ const DEFAULT_CALLBACK_PORT = 3000;
 
 function getCallbackPort(): number {
 	const raw = process.env["EBAY_OAUTH_CALLBACK_PORT"];
-	const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
-	return Number.isInteger(parsed) && parsed > 0 && parsed < 65_536
-		? parsed
-		: DEFAULT_CALLBACK_PORT;
+	const isPortUnset = !raw;
+
+	if (isPortUnset) return DEFAULT_CALLBACK_PORT;
+
+	const parsed = Number.parseInt(raw, 10);
+	const isNotWholeNumber = Number.isInteger(parsed) == false;
+
+	if (isNotWholeNumber) return DEFAULT_CALLBACK_PORT;
+
+	const isPositive = parsed > 0;
+	const isNotPositive = isPositive == false;
+
+	if (isNotPositive) return DEFAULT_CALLBACK_PORT;
+
+	const isInPortRange = parsed < 65_536;
+
+	if (isInPortRange) return parsed;
+
+	return DEFAULT_CALLBACK_PORT;
 }
 
 async function completeOAuthWithCode(
@@ -882,7 +962,24 @@ export async function runSetup(): Promise<void> {
 				existingConfig["EBAY_REDIRECT_URI"] ||
 				"";
 
-			if (stepId == "environment" && args.quick) {
+			function shouldSkipMarketplace(
+				stepId: string,
+				isQuick: boolean,
+			): boolean {
+				const isOtherStep = stepId != "environment";
+
+				if (isOtherStep) return false;
+
+				const isFullSetup = isQuick == false;
+
+				if (isFullSetup) return false;
+
+				return true;
+			}
+
+			const skipMarketplace = shouldSkipMarketplace(stepId, args.quick);
+
+			if (skipMarketplace) {
 				showInfo(
 					"Quick setup enabled — skipping optional marketplace configuration.",
 				);
@@ -1342,12 +1439,24 @@ export async function runSetup(): Promise<void> {
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
+function hasFlag(args: string[], longFlag: string, shortFlag: string): boolean {
+	const hasLongFlag = args.includes(longFlag);
+
+	if (hasLongFlag) return true;
+
+	const hasShortFlag = args.includes(shortFlag);
+
+	if (hasShortFlag) return true;
+
+	return false;
+}
+
 function parseArgs(): { help: boolean; quick: boolean; diagnose: boolean } {
 	const args = process.argv.slice(2);
 	return {
-		help: args.includes("--help") || args.includes("-h"),
-		quick: args.includes("--quick") || args.includes("-q"),
-		diagnose: args.includes("--diagnose") || args.includes("-d"),
+		help: hasFlag(args, "--help", "-h"),
+		quick: hasFlag(args, "--quick", "-q"),
+		diagnose: hasFlag(args, "--diagnose", "-d"),
 	};
 }
 

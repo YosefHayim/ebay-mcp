@@ -73,15 +73,77 @@ function contentLanguageOf(locale: string | undefined): string | undefined {
 	return locale?.replace("_", "-");
 }
 
+function isReplacingImages(input: AttachMediaInput): boolean {
+	const isKeepingExisting = input.replaceExisting != true;
+
+	if (isKeepingExisting) {
+		return false;
+	}
+
+	const hasImages = input.images.length > 0;
+
+	return hasImages;
+}
+
+function isReplacingVideos(input: AttachMediaInput): boolean {
+	const isKeepingExisting = input.replaceExisting != true;
+
+	if (isKeepingExisting) {
+		return false;
+	}
+
+	const hasVideos = input.videos.length > 0;
+
+	return hasVideos;
+}
+
+function pickUploadedImageUrl(outcome: MediaUploadOutcome): string[] {
+	const imageUrl = outcome.imageUrl;
+	const isImageUrlMissing = !imageUrl;
+
+	if (isImageUrlMissing) {
+		return [];
+	}
+
+	return [imageUrl];
+}
+
+function pickUploadedVideoId(outcome: MediaUploadOutcome): string[] {
+	const isFailed = outcome.status == "failed";
+
+	if (isFailed) {
+		return [];
+	}
+
+	const videoId = outcome.videoId;
+	const isVideoIdMissing = !videoId;
+
+	if (isVideoIdMissing) {
+		return [];
+	}
+
+	return [videoId];
+}
+
+function isFailedVideoStatus(status: string | undefined): boolean {
+	const isBlocked = status == "BLOCKED";
+
+	if (isBlocked) {
+		return true;
+	}
+
+	const isProcessingFailed = status == "PROCESSING_FAILED";
+
+	return isProcessingFailed;
+}
+
 function mergeMedia(
 	product: Product,
 	input: AttachMediaInput,
 	uploaded: ProductMedia,
 ): ProductMedia {
-	const replaceImages =
-		input.replaceExisting == true && input.images.length > 0;
-	const replaceVideos =
-		input.replaceExisting == true && input.videos.length > 0;
+	const replaceImages = isReplacingImages(input);
+	const replaceVideos = isReplacingVideos(input);
 	return {
 		imageUrls: dedupe(
 			replaceImages
@@ -101,12 +163,8 @@ function uploadedMedia(
 	videos: readonly MediaUploadOutcome[],
 ): ProductMedia {
 	return {
-		imageUrls: images.flatMap((outcome) =>
-			outcome.imageUrl ? [outcome.imageUrl] : [],
-		),
-		videoIds: videos.flatMap((outcome) =>
-			outcome.status != "failed" && outcome.videoId ? [outcome.videoId] : [],
-		),
+		imageUrls: images.flatMap(pickUploadedImageUrl),
+		videoIds: videos.flatMap(pickUploadedVideoId),
 	};
 }
 
@@ -128,10 +186,15 @@ function videoOutcome(source: string, video: Video): MediaUploadOutcome {
 		videoId: video.videoId,
 		videoStatus: video.status,
 	};
-	if (video.status == "LIVE") {
+	const isLive = video.status == "LIVE";
+
+	if (isLive) {
 		return { ...base, status: "uploaded" };
 	}
-	if (video.status == "BLOCKED" || video.status == "PROCESSING_FAILED") {
+
+	const isFailed = isFailedVideoStatus(video.status);
+
+	if (isFailed) {
 		const reasons = video.moderation?.rejectReasons?.join(", ");
 		return {
 			...base,
@@ -139,6 +202,7 @@ function videoOutcome(source: string, video: Video): MediaUploadOutcome {
 			error: video.statusMessage ?? reasons ?? `eBay reported ${video.status}`,
 		};
 	}
+
 	return { ...base, status: "processing" };
 }
 

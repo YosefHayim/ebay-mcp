@@ -133,6 +133,25 @@ export interface TokenExpiryValidation {
 	recommendations: string[];
 }
 
+function isEitherTokenExpired(
+	accessExpired: boolean,
+	refreshExpired: boolean,
+): boolean {
+	const isAccessExpired = accessExpired;
+
+	if (isAccessExpired) {
+		return true;
+	}
+
+	const isRefreshExpired = refreshExpired;
+
+	if (isRefreshExpired) {
+		return true;
+	}
+
+	return false;
+}
+
 export function validateTokenExpiry(
 	accessTokenExpiry: number,
 	refreshTokenExpiry: number,
@@ -175,8 +194,11 @@ export function validateTokenExpiry(
 		);
 	}
 
+	const tokenPairExpired = isEitherTokenExpired(accessExpired, refreshExpired);
+	const isTokenPairValid = tokenPairExpired == false;
+
 	return {
-		valid: !(accessExpired || refreshExpired),
+		valid: isTokenPairValid,
 		accessTokenStatus,
 		refreshTokenStatus,
 		accessTokenRemaining: getTimeRemaining(accessTokenExpiry),

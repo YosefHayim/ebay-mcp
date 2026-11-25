@@ -18,15 +18,28 @@ function mergeManagedBlock(
 
 	const startIdx = existing.indexOf(start);
 	const endIdx = existing.indexOf(end);
-	if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
-		return (
-			existing.slice(0, startIdx) + block + existing.slice(endIdx + end.length)
-		);
+
+	function appendBlock(): string {
+		const prefix =
+			existing.trim().length > 0 ? `${existing.replace(/\s+$/, "")}\n\n` : "";
+		return `${prefix}${block}\n`;
 	}
 
-	const prefix =
-		existing.trim().length > 0 ? `${existing.replace(/\s+$/, "")}\n\n` : "";
-	return `${prefix}${block}\n`;
+	const isStartMissing = startIdx == -1;
+
+	if (isStartMissing) return appendBlock();
+
+	const isEndMissing = endIdx == -1;
+
+	if (isEndMissing) return appendBlock();
+
+	const endIsBeforeStart = endIdx <= startIdx;
+
+	if (endIsBeforeStart) return appendBlock();
+
+	return (
+		existing.slice(0, startIdx) + block + existing.slice(endIdx + end.length)
+	);
 }
 
 function attachPreviousContents(
@@ -94,14 +107,43 @@ export interface ApplyResult {
 	written: boolean;
 }
 
+function isBlockedForeignWrite(
+	action: WritePlan["action"],
+	force: boolean | undefined,
+): boolean {
+	const isOwnFile = action != "skip-foreign";
+
+	if (isOwnFile) return false;
+
+	const isForced = force == true;
+
+	if (isForced) return false;
+
+	return true;
+}
+
+function shouldSkipWrite(
+	plan: WritePlan,
+	writeOptions: { dryRun?: boolean; force?: boolean },
+): boolean {
+	const isDryRun = writeOptions.dryRun == true;
+
+	if (isDryRun) return true;
+
+	const isUnchanged = plan.action == "unchanged";
+
+	if (isUnchanged) return true;
+
+	return isBlockedForeignWrite(plan.action, writeOptions.force);
+}
+
 export function applyWrite(
 	plan: WritePlan,
 	options: { dryRun?: boolean; force?: boolean } = {},
 ): ApplyResult {
-	const isNoop = plan.action == "unchanged";
-	const isBlockedForeign = plan.action == "skip-foreign" && !options.force;
+	const skipWrite = shouldSkipWrite(plan, options);
 
-	if (options.dryRun || isNoop || isBlockedForeign) {
+	if (skipWrite) {
 		return { target: plan.target, action: plan.action, written: false };
 	}
 

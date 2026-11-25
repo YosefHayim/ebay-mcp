@@ -11,6 +11,30 @@ const connectorFetchInputSchema = z.object({
 	id: z.string().describe("Item SKU"),
 });
 
+function readSearchLimit(requestedLimit: unknown): number {
+	const isNotNumber = typeof requestedLimit != "number";
+
+	if (isNotNumber) return 10;
+
+	const isNotFinite = Number.isFinite(requestedLimit) == false;
+
+	if (isNotFinite) return 10;
+
+	return Math.max(Math.floor(requestedLimit), 1);
+}
+
+function isPastListedTotal(total: unknown, nextOffset: number): boolean {
+	const isNotNumber = typeof total != "number";
+
+	if (isNotNumber) return false;
+
+	const isPastEnd = nextOffset >= total;
+
+	if (isPastEnd) return true;
+
+	return false;
+}
+
 export const connectorEntries: ToolEntry[] = [
 	defineTool({
 		name: "search",
@@ -33,11 +57,7 @@ export const connectorEntries: ToolEntry[] = [
 			version: "1.0.0",
 		},
 		handler: async (api, args) => {
-			const requestedLimit = args.limit;
-			const limit =
-				typeof requestedLimit == "number" && Number.isFinite(requestedLimit)
-					? Math.max(Math.floor(requestedLimit), 1)
-					: 10;
+			const limit = readSearchLimit(args.limit);
 			const query = args.query.toLowerCase().trim();
 			const pageSize = query ? Math.min(Math.max(limit, 50), 200) : limit;
 			const matches: {
@@ -57,13 +77,22 @@ export const connectorEntries: ToolEntry[] = [
 				}
 
 				// Only items with valid SKUs can be passed to getInventoryItem later.
-				const itemsWithSku = pageItems.filter(
-					(
-						inventoryItem,
-					): inventoryItem is typeof inventoryItem & { sku: string } =>
-						typeof inventoryItem.sku == "string" &&
-						inventoryItem.sku.trim() != "",
-				);
+				function hasSku(
+					inventoryItem: (typeof pageItems)[number],
+				): inventoryItem is (typeof pageItems)[number] & { sku: string } {
+					const sku = inventoryItem.sku;
+					const isNotSkuText = typeof sku != "string";
+
+					if (isNotSkuText) return false;
+
+					const isBlankSku = sku.trim() == "";
+
+					if (isBlankSku) return false;
+
+					return true;
+				}
+
+				const itemsWithSku = pageItems.filter(hasSku);
 
 				const filtered = query
 					? itemsWithSku.filter((inventoryItem) =>
@@ -77,13 +106,17 @@ export const connectorEntries: ToolEntry[] = [
 				offset += pageSize;
 
 				const total = (inventoryPage as { total?: number }).total;
-				if (typeof total == "number" && offset >= total) {
-					break;
-				}
+				const isPastEnd = isPastListedTotal(total, offset);
 
-				if (!query || pageItems.length < pageSize) {
-					break;
-				}
+				if (isPastEnd) break;
+
+				const hasNoQuery = query == "";
+
+				if (hasNoQuery) break;
+
+				const isShortPage = pageItems.length < pageSize;
+
+				if (isShortPage) break;
 			}
 
 			const results = matches.slice(0, limit).map((match) => ({

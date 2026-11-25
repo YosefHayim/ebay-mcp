@@ -62,12 +62,25 @@ export function checkGitignore(projectRoot: string): SecurityCheckResult {
 	}
 
 	const gitignoreContent = readFileSync(gitignorePath, "utf-8");
-	const hasEnv = gitignoreContent.split("\n").some((line) => {
+
+	function ignoresEnvLine(line: string): boolean {
 		const trimmed = line.trim();
-		return (
-			trimmed == ".env" || trimmed == "*.env" || trimmed.startsWith(".env")
-		);
-	});
+		const isDotEnv = trimmed == ".env";
+
+		if (isDotEnv) return true;
+
+		const isEnvGlob = trimmed == "*.env";
+
+		if (isEnvGlob) return true;
+
+		const startsWithEnv = trimmed.startsWith(".env");
+
+		if (startsWithEnv) return true;
+
+		return false;
+	}
+
+	const hasEnv = gitignoreContent.split("\n").some(ignoresEnvLine);
 
 	if (hasEnv) {
 		return {
@@ -85,6 +98,18 @@ export function checkGitignore(projectRoot: string): SecurityCheckResult {
 		severity: "critical",
 		fix: 'Add ".env" to your .gitignore file immediately',
 	};
+}
+
+function reachedEbayApi(healthResponse: Response): boolean {
+	const isHealthy = healthResponse.ok;
+
+	if (isHealthy) return true;
+
+	const isMissingRoute = healthResponse.status == 404;
+
+	if (isMissingRoute) return true;
+
+	return false;
 }
 
 export async function checkNetworkConnectivity(): Promise<SecurityCheckResult> {
@@ -109,7 +134,9 @@ export async function checkNetworkConnectivity(): Promise<SecurityCheckResult> {
 		clearTimeout(timeout);
 	}
 
-	if (healthResponse.ok || healthResponse.status == 404) {
+	const reachedEbay = reachedEbayApi(healthResponse);
+
+	if (reachedEbay) {
 		// 404 is fine, means we can reach eBay servers
 		return {
 			check: "Network Connectivity",
@@ -265,12 +292,8 @@ export function displaySecurityResults(results: SecurityCheckResult[]): void {
 		writeCliLine("");
 	}
 
-	const critical = results.filter(
-		(checkResult) => !checkResult.passed && checkResult.severity == "critical",
-	);
-	const warnings = results.filter(
-		(checkResult) => !checkResult.passed && checkResult.severity == "warning",
-	);
+	const critical = results.filter(isCriticalFailure);
+	const warnings = results.filter(isWarningFailure);
 
 	if (critical.length > 0) {
 		writeCliLine(
@@ -289,6 +312,30 @@ export function displaySecurityResults(results: SecurityCheckResult[]): void {
 	}
 }
 
+function isCriticalFailure(checkResult: SecurityCheckResult): boolean {
+	const isPassed = checkResult.passed;
+
+	if (isPassed) return false;
+
+	const isCritical = checkResult.severity == "critical";
+
+	if (isCritical) return true;
+
+	return false;
+}
+
+function isWarningFailure(checkResult: SecurityCheckResult): boolean {
+	const isPassed = checkResult.passed;
+
+	if (isPassed) return false;
+
+	const isWarning = checkResult.severity == "warning";
+
+	if (isWarning) return true;
+
+	return false;
+}
+
 export function hasCriticalFailures(results: SecurityCheckResult[]): boolean {
-	return results.some((check) => !check.passed && check.severity == "critical");
+	return results.some(isCriticalFailure);
 }

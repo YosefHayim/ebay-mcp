@@ -138,13 +138,35 @@ export function createUiBridge(server: McpServer, moduleUrl: string): UiBridge {
 
 	return {
 		register(entry, registered) {
-			if (entry.ui && available.has(entry.ui.archetype)) {
-				uiTools.push({ registered, resourceUri: entry.ui.resourceUri });
-			}
+			const toolUi = entry.ui;
+			const hasNoUi = toolUi == null;
+
+			if (hasNoUi) return;
+
+			const isAvailable = available.has(toolUi.archetype);
+			const isUnavailable = isAvailable == false;
+
+			if (isUnavailable) return;
+
+			uiTools.push({ registered, resourceUri: toolUi.resourceUri });
 		},
 
 		shouldRender(entry): entry is ToolEntry & { ui: ResolvedToolUi } {
-			return uiEnabled && entry.ui != null && available.has(entry.ui.archetype);
+			const isUiOff = uiEnabled == false;
+
+			if (isUiOff) return false;
+
+			const toolUi = entry.ui;
+			const hasNoUi = toolUi == null;
+
+			if (hasNoUi) return false;
+
+			const isAvailable = available.has(toolUi.archetype);
+			const isUnavailable = isAvailable == false;
+
+			if (isUnavailable) return false;
+
+			return true;
 		},
 
 		installCapabilityGate() {

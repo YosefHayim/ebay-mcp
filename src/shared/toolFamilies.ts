@@ -40,14 +40,33 @@ function parseFamilyTokens(raw: string): string[] {
 export function resolveToolGatingMode(
 	env: NodeJS.ProcessEnv = process.env,
 ): ToolGatingMode {
-	const raw = env["EBAY_MCP_TOOLS"]?.trim();
-	if (!raw || raw.toLowerCase() == "all") {
+	const configuredTools = env["EBAY_MCP_TOOLS"]?.trim();
+	const isMissing = configuredTools == null;
+
+	if (isMissing) {
 		return { kind: "all" };
 	}
-	if (raw.toLowerCase() == "dynamic") {
+
+	const isEmpty = configuredTools == "";
+
+	if (isEmpty) {
+		return { kind: "all" };
+	}
+
+	const normalizedTools = configuredTools.toLowerCase();
+	const isAll = normalizedTools == "all";
+
+	if (isAll) {
+		return { kind: "all" };
+	}
+
+	const isDynamic = normalizedTools == "dynamic";
+
+	if (isDynamic) {
 		return { kind: "dynamic" };
 	}
-	return { kind: "static", families: parseFamilyTokens(raw) };
+
+	return { kind: "static", families: parseFamilyTokens(configuredTools) };
 }
 
 export function getToolGatingConfigError(

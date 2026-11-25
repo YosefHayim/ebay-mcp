@@ -18,9 +18,19 @@ interface EbayErrorAccumulator {
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
-	return typeof value == "object" && value !== null
-		? (value as Record<string, unknown>)
-		: undefined;
+	const isNotObject = typeof value != "object";
+
+	if (isNotObject) {
+		return undefined;
+	}
+
+	const isNull = value == null;
+
+	if (isNull) {
+		return undefined;
+	}
+
+	return value as Record<string, unknown>;
 }
 
 const noTaggedCause = Symbol("noTaggedCause");
@@ -105,38 +115,131 @@ function firstEbayErrorMessage(errors: unknown[]): string | undefined {
 	return typeof detail == "string" ? detail : undefined;
 }
 
+function readErrorMessage(node: Record<string, unknown>): string | undefined {
+	const message = node["message"];
+	const isNotString = typeof message != "string";
+
+	if (isNotString) {
+		return undefined;
+	}
+
+	const isEmpty = message.length == 0;
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	return message;
+}
+
+function readListedErrors(
+	node: Record<string, unknown>,
+): unknown[] | undefined {
+	const errorBody = asRecord(node["data"]);
+	const isMissingBody = errorBody == null;
+
+	if (isMissingBody) {
+		return undefined;
+	}
+
+	const listedErrors = errorBody["errors"];
+	const isList = Array.isArray(listedErrors);
+
+	if (isList) {
+		return listedErrors;
+	}
+
+	return undefined;
+}
+
+function arrayCause(cause: unknown): unknown[] | undefined {
+	const isList = Array.isArray(cause);
+
+	if (isList) {
+		return cause;
+	}
+
+	return undefined;
+}
+
+function readCauseErrors(
+	node: Record<string, unknown>,
+	knownErrors: unknown[] | undefined,
+): unknown[] | undefined {
+	const hasKnownErrors = knownErrors != null;
+
+	if (hasKnownErrors) {
+		return undefined;
+	}
+
+	const cause = node["cause"];
+	const causeList = arrayCause(cause);
+	const isMissingList = causeList == null;
+
+	if (isMissingList) {
+		return undefined;
+	}
+
+	const isEmpty = causeList.length == 0;
+
+	if (isEmpty) {
+		return undefined;
+	}
+
+	return causeList;
+}
+
+function shouldWalkCause(current: unknown, seen: Set<unknown>): boolean {
+	const isMissing = current == null;
+
+	if (isMissing) {
+		return false;
+	}
+
+	const wasSeen = seen.has(current);
+
+	if (wasSeen) {
+		return false;
+	}
+
+	return true;
+}
+
 function collectEbayErrorNode(
 	node: Record<string, unknown>,
 	acc: EbayErrorAccumulator,
 ): void {
-	const message =
-		typeof node["message"] == "string" && node["message"].length > 0
-			? node["message"]
-			: undefined;
-	if (message !== undefined) {
+	const message = readErrorMessage(node);
+	const hasMessage = message != null;
+
+	if (hasMessage) {
 		acc.message = message;
 	}
+
 	if (typeof node["status"] == "number") {
 		acc.status = node["status"];
 	}
 
-	const errorBody = asRecord(node["data"]);
-	if (errorBody && Array.isArray(errorBody["errors"])) {
-		acc.errors = errorBody["errors"];
-		const detail = firstEbayErrorMessage(errorBody["errors"]);
+	const listedErrors = readListedErrors(node);
+	const hasListedErrors = listedErrors != null;
+
+	if (hasListedErrors) {
+		acc.errors = listedErrors;
+		const detail = firstEbayErrorMessage(listedErrors);
+
 		if (detail) {
 			acc.message = detail;
 		}
+
 		return;
 	}
 
 	// Trading XML failures store their structured entries directly on `cause`.
-	if (
-		acc.errors === undefined &&
-		Array.isArray(node["cause"]) &&
-		node["cause"].length > 0
-	) {
-		acc.errors = node["cause"];
+	const causeErrors = readCauseErrors(node, acc.errors);
+	const hasCauseErrors = causeErrors != null;
+
+	if (hasCauseErrors) {
+		acc.errors = causeErrors;
 	}
 }
 
@@ -145,7 +248,7 @@ export function getEbayErrorDetails(error: unknown): EbayErrorDetails {
 	const seen = new Set<unknown>();
 	let current: unknown = error;
 
-	while (current !== undefined && current !== null && !seen.has(current)) {
+	while (shouldWalkCause(current, seen)) {
 		seen.add(current);
 		const node = asRecord(current);
 		if (!node) {

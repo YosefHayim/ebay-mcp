@@ -750,10 +750,33 @@ export class TokenVerifier {
 			"Content-Type": "application/x-www-form-urlencoded",
 		};
 
-		if (this.config.clientId && this.config.clientSecret) {
-			headers["Authorization"] = `Basic ${Buffer.from(
-				`${this.config.clientId}:${this.config.clientSecret}`,
-			).toString("base64")}`;
+		const clientId = this.config.clientId;
+		const clientSecret = this.config.clientSecret;
+
+		function readBasicAuthorization(): string | null {
+			const hasNoClientId = !clientId;
+
+			if (hasNoClientId) {
+				return null;
+			}
+
+			const hasNoClientSecret = !clientSecret;
+
+			if (hasNoClientSecret) {
+				return null;
+			}
+
+			const credentials = `${clientId}:${clientSecret}`;
+			const encodedCredentials = Buffer.from(credentials).toString("base64");
+
+			return `Basic ${encodedCredentials}`;
+		}
+
+		const basicAuthorization = readBasicAuthorization();
+		const hasBasicAuthorization = basicAuthorization != null;
+
+		if (hasBasicAuthorization) {
+			headers["Authorization"] = basicAuthorization;
 		}
 
 		const params = new URLSearchParams({
@@ -873,13 +896,32 @@ export class TokenVerifier {
 		const audiences = Array.isArray(audience) ? audience : [audience];
 		const normalizedExpected = this.config.expectedAudience.replace(/\/$/, "");
 
-		return audiences.some((aud) => {
-			const normalizedAud = aud.replace(/\/$/, "");
-			return (
-				normalizedAud == normalizedExpected ||
-				normalizedAud == normalizedExpected + "/" ||
-				normalizedExpected == normalizedAud + "/"
-			);
-		});
+		function isExpectedAudience(candidateAudience: string): boolean {
+			const normalizedAud = candidateAudience.replace(/\/$/, "");
+
+			const audienceIsExpected = normalizedAud == normalizedExpected;
+
+			if (audienceIsExpected) {
+				return true;
+			}
+
+			const audienceIsExpectedWithSlash =
+				normalizedAud == normalizedExpected + "/";
+
+			if (audienceIsExpectedWithSlash) {
+				return true;
+			}
+
+			const expectedIsAudienceWithSlash =
+				normalizedExpected == normalizedAud + "/";
+
+			if (expectedIsAudienceWithSlash) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return audiences.some(isExpectedAudience);
 	};
 }

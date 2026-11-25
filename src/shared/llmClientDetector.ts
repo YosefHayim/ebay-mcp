@@ -320,11 +320,25 @@ function runClientConfigurator(
 function ensureMcpServersConfig(
 	config: Record<string, unknown>,
 ): Record<string, MCPServerConfig> {
-	if (!config["mcpServers"] || typeof config["mcpServers"] != "object") {
-		config["mcpServers"] = {};
+	const storedMcpServers = config["mcpServers"];
+
+	const isMissingMcpServers = !storedMcpServers;
+
+	if (isMissingMcpServers) {
+		const emptyServers: Record<string, MCPServerConfig> = {};
+		config["mcpServers"] = emptyServers;
+		return emptyServers;
 	}
 
-	return config["mcpServers"] as Record<string, MCPServerConfig>;
+	const isMcpServersNotObject = typeof storedMcpServers != "object";
+
+	if (isMcpServersNotObject) {
+		const emptyServers: Record<string, MCPServerConfig> = {};
+		config["mcpServers"] = emptyServers;
+		return emptyServers;
+	}
+
+	return storedMcpServers as Record<string, MCPServerConfig>;
 }
 
 function hasMcpServerConfig(configPath: string): boolean {
@@ -379,31 +393,75 @@ export function configureContinue(projectRoot: string): boolean {
 		const configPath = getContinueConfigPath();
 		const config = readJSONConfig(configPath);
 
+		function ensureExperimentalSettings(): Record<string, unknown> {
+			const storedExperimental = config["experimental"];
+
+			const isMissingExperimental = !storedExperimental;
+
+			if (isMissingExperimental) {
+				const emptySettings: Record<string, unknown> = {};
+				config["experimental"] = emptySettings;
+				return emptySettings;
+			}
+
+			const isExperimentalNotObject = typeof storedExperimental != "object";
+
+			if (isExperimentalNotObject) {
+				const emptySettings: Record<string, unknown> = {};
+				config["experimental"] = emptySettings;
+				return emptySettings;
+			}
+
+			return storedExperimental as Record<string, unknown>;
+		}
+
+		function ensureProtocolServers(
+			experimentalSettings: Record<string, unknown>,
+		): MCPServerConfig[] {
+			const storedProtocolServers =
+				experimentalSettings["modelContextProtocolServers"];
+
+			const isMissingProtocolServers = !storedProtocolServers;
+
+			if (isMissingProtocolServers) {
+				const emptyServers: MCPServerConfig[] = [];
+				experimentalSettings["modelContextProtocolServers"] = emptyServers;
+				return emptyServers;
+			}
+
+			const isProtocolServerList = Array.isArray(storedProtocolServers);
+
+			if (isProtocolServerList) {
+				return storedProtocolServers as MCPServerConfig[];
+			}
+
+			const emptyServers: MCPServerConfig[] = [];
+			experimentalSettings["modelContextProtocolServers"] = emptyServers;
+			return emptyServers;
+		}
+
+		function isConfiguredEbayServer(server: MCPServerConfig): boolean {
+			const isNotNodeCommand = server.command != "node";
+
+			if (isNotNodeCommand) {
+				return false;
+			}
+
+			const isNotEbayMcpArgument = !server.args?.[0]?.includes("ebay-mcp");
+
+			if (isNotEbayMcpArgument) {
+				return false;
+			}
+
+			return true;
+		}
+
 		// Initialize experimental.modelContextProtocolServers if it doesn't exist
-		if (!config["experimental"] || typeof config["experimental"] != "object") {
-			config["experimental"] = {};
-		}
-
-		const experimental = config["experimental"] as Record<string, unknown>;
-
-		if (
-			!(
-				experimental["modelContextProtocolServers"] &&
-				Array.isArray(experimental["modelContextProtocolServers"])
-			)
-		) {
-			experimental["modelContextProtocolServers"] = [];
-		}
-
-		const mcpServers = experimental[
-			"modelContextProtocolServers"
-		] as MCPServerConfig[];
+		const experimental = ensureExperimentalSettings();
+		const mcpServers = ensureProtocolServers(experimental);
 
 		// Check if eBay server already exists
-		const existingIndex = mcpServers.findIndex(
-			(server) =>
-				server.command == "node" && server.args?.[0]?.includes("ebay-mcp"),
-		);
+		const existingIndex = mcpServers.findIndex(isConfiguredEbayServer);
 
 		const serverConfig: MCPServerConfig = {
 			command: "node",
@@ -427,15 +485,30 @@ export function configureZed(projectRoot: string): boolean {
 		const configPath = getZedConfigPath();
 		const config = readJSONConfig(configPath);
 
-		// Initialize context_servers if it doesn't exist
-		if (
-			!config["context_servers"] ||
-			typeof config["context_servers"] != "object"
-		) {
-			config["context_servers"] = {};
+		function ensureZedServerMap(): Record<string, unknown> {
+			const storedServerMap = config["context_servers"];
+
+			const isMissingServerMap = !storedServerMap;
+
+			if (isMissingServerMap) {
+				const emptyServerMap: Record<string, unknown> = {};
+				config["context_servers"] = emptyServerMap;
+				return emptyServerMap;
+			}
+
+			const isServerMapNotObject = typeof storedServerMap != "object";
+
+			if (isServerMapNotObject) {
+				const emptyServerMap: Record<string, unknown> = {};
+				config["context_servers"] = emptyServerMap;
+				return emptyServerMap;
+			}
+
+			return storedServerMap as Record<string, unknown>;
 		}
 
-		const contextServers = config["context_servers"] as Record<string, unknown>;
+		// Initialize context_servers if it doesn't exist
+		const contextServers = ensureZedServerMap();
 
 		// Add or update eBay MCP server configuration
 		contextServers["ebay-mcp-server"] = {

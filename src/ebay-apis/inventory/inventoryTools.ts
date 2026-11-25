@@ -54,15 +54,33 @@ const emptyOutputSchema = {
 	description: "No content returned on success",
 } as OutputArgs;
 
+function isPlainRecord(candidate: unknown): boolean {
+	const isNull = candidate === null;
+
+	if (isNull) {
+		return false;
+	}
+
+	const isNotObject = typeof candidate != "object";
+
+	if (isNotObject) {
+		return false;
+	}
+
+	const isArray = Array.isArray(candidate);
+
+	if (isArray) {
+		return false;
+	}
+
+	return true;
+}
+
 function generatedBodySchema<Body>(description: string) {
 	return z
-		.custom<Body>(
-			(value) =>
-				value !== null && typeof value == "object" && !Array.isArray(value),
-			{
-				message: description,
-			},
-		)
+		.custom<Body>(isPlainRecord, {
+			message: description,
+		})
 		.describe(description);
 }
 

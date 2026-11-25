@@ -118,7 +118,25 @@ export async function startCallbackServer(
 			const errorDescription =
 				url.searchParams.get("error_description") ?? undefined;
 
-			if (expectedState && state != expectedState) {
+			function hasStateMismatch(): boolean {
+				const hasNoExpectedState = !expectedState;
+
+				if (hasNoExpectedState) {
+					return false;
+				}
+
+				const isExpectedState = state == expectedState;
+
+				if (isExpectedState) {
+					return false;
+				}
+
+				return true;
+			}
+
+			const isStateMismatch = hasStateMismatch();
+
+			if (isStateMismatch) {
 				response.writeHead(400, { "Content-Type": "text/html" });
 				response.end(
 					renderCallbackPage(
@@ -132,6 +150,7 @@ export async function startCallbackServer(
 				});
 				return;
 			}
+
 			if (code) {
 				response.writeHead(200, { "Content-Type": "text/html" });
 				response.end(renderCallbackPage(true));
@@ -176,13 +195,29 @@ export async function interactiveOAuthFlow(
 ): Promise<string | null> {
 	writeCliLine(paint.bold.cyan("\n🔐 Interactive OAuth Flow\n"));
 
-	// Check if redirect URI is localhost
 	const redirectUri =
 		config.redirectUri || "http://localhost:3000/oauth/callback";
-	const isLocalhost =
-		redirectUri.includes("localhost") || redirectUri.includes("127.0.0.1");
 
-	if (!isLocalhost) {
+	function isLocalRedirect(): boolean {
+		const isLocalhostName = redirectUri.includes("localhost");
+
+		if (isLocalhostName) {
+			return true;
+		}
+
+		const isLoopbackAddress = redirectUri.includes("127.0.0.1");
+
+		if (isLoopbackAddress) {
+			return true;
+		}
+
+		return false;
+	}
+
+	const isLocalhost = isLocalRedirect();
+	const isRemoteRedirect = !isLocalhost;
+
+	if (isRemoteRedirect) {
 		writeCliLine(
 			paint.yellow(
 				"⚠️  Your redirect URI is not localhost. Interactive flow requires localhost callback.\n",

@@ -16,6 +16,36 @@ import type { components } from "@/ebay-openapi-types/commerceCharityV1Oas3.js";
 
 const BASE_PATH = "/commerce/charity/v1";
 
+const charityQueryMessage =
+	"Supply either q or registrationIds to search charities, but not both";
+
+function assertOneCharityQuery(search: GetCharityOrgsInput): void {
+	const isQueryMissing = search.q === undefined;
+
+	if (isQueryMissing) {
+		assertRegistrationIdsPresent(search);
+		return;
+	}
+
+	assertRegistrationIdsAbsent(search);
+}
+
+function assertRegistrationIdsPresent(search: GetCharityOrgsInput): void {
+	const areRegistrationIdsMissing = search.registrationIds === undefined;
+
+	if (areRegistrationIdsMissing) {
+		throw new Error(charityQueryMessage);
+	}
+}
+
+function assertRegistrationIdsAbsent(search: GetCharityOrgsInput): void {
+	const hasRegistrationIds = search.registrationIds !== undefined;
+
+	if (hasRegistrationIds) {
+		throw new Error(charityQueryMessage);
+	}
+}
+
 function charityRequestConfig(marketplaceId: string): EbayRequestConfig {
 	return {
 		headers: { "X-EBAY-C-MARKETPLACE-ID": marketplaceId },
@@ -59,22 +89,7 @@ export class CharityApi {
 		input: GetCharityOrgsInput,
 	): Promise<CharitySearchResponse> => {
 		const search = decodeEndpointInputEffect(getCharityOrgsInputSchema, input);
-		const hasNeitherQuery =
-			search.q === undefined && search.registrationIds === undefined;
-		const hasBothQueries =
-			search.q !== undefined && search.registrationIds !== undefined;
-
-		if (hasNeitherQuery) {
-			throw new Error(
-				"Supply either q or registrationIds to search charities, but not both",
-			);
-		}
-
-		if (hasBothQueries) {
-			throw new Error(
-				"Supply either q or registrationIds to search charities, but not both",
-			);
-		}
+		assertOneCharityQuery(search);
 
 		const params = buildEndpointParams({
 			q: { wireName: "q", value: search.q },

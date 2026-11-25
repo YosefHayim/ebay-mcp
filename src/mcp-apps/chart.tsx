@@ -150,18 +150,32 @@ function Chart({ view }: { view: ChartViewModel }): ReactNode {
 	);
 }
 
+function seriesHasPoints(series: ChartSeries): boolean {
+	return series.points.length > 0;
+}
+
+function chartBody(view: ChartViewModel | null): ReactNode {
+	const hasNoView = view == null;
+
+	if (hasNoView) {
+		return <EmptyState label="No chart data" />;
+	}
+
+	const hasData = view.series.some(seriesHasPoints);
+
+	if (hasData) {
+		return <Chart view={view} />;
+	}
+
+	return <EmptyState label="No chart data" />;
+}
+
 function ChartApp(): ReactNode {
 	const { view, isConnected, error } = useViewModel("chart");
-	const hasData = view
-		? view.series.some((series) => series.points.length > 0)
-		: false;
+
 	return (
 		<AppShell isConnected={isConnected} error={error}>
-			{view && hasData ? (
-				<Chart view={view} />
-			) : (
-				<EmptyState label="No chart data" />
-			)}
+			{chartBody(view)}
 		</AppShell>
 	);
 }

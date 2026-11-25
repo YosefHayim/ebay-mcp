@@ -12,8 +12,15 @@ function toRealPath(filePath: string): string {
 }
 
 export function isEntryModule(moduleUrl: string): boolean {
-	return (
-		process.argv[1] !== undefined &&
-		toRealPath(process.argv[1]) == toRealPath(fileURLToPath(moduleUrl))
-	);
+	const launchedPath = process.argv[1];
+	const isMissingLaunch = launchedPath == null;
+
+	if (isMissingLaunch) {
+		return false;
+	}
+
+	const launchedRealPath = toRealPath(launchedPath);
+	const moduleRealPath = toRealPath(fileURLToPath(moduleUrl));
+
+	return launchedRealPath == moduleRealPath;
 }

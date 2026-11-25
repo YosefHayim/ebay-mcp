@@ -39,11 +39,32 @@ export interface DownloadedFile {
 	readonly fileName: string | undefined;
 }
 
+function readContentLengthOrZero(
+	contentLengthHeader: string | undefined,
+): number {
+	const parsedLength = Number(contentLengthHeader);
+
+	const lengthIsZero = parsedLength == 0;
+
+	if (lengthIsZero) {
+		return 0;
+	}
+
+	const lengthIsNotANumber = Number.isNaN(parsedLength);
+
+	if (lengthIsNotANumber) {
+		return 0;
+	}
+
+	return parsedLength;
+}
+
 function downloadSize(fileResponse: EbayResponse<Buffer>): number {
-	return Math.max(
-		fileResponse.data.length,
-		Number(fileResponse.headers["content-length"]) || 0,
+	const declaredLength = readContentLengthOrZero(
+		fileResponse.headers["content-length"],
 	);
+
+	return Math.max(fileResponse.data.length, declaredLength);
 }
 
 function contentTypeFrom(fileResponse: EbayResponse<Buffer>): string {

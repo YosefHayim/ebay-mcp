@@ -42,6 +42,18 @@ type GetSigningKeysInput = z.infer<typeof getSigningKeysInputSchema>;
 type CreateSigningKeyInput = z.infer<typeof createSigningKeyInputSchema>;
 type GetSigningKeyInput = z.infer<typeof getSigningKeyInputSchema>;
 
+function readSigningKeyBody(
+	request: CreateSigningKeyRequest | undefined,
+): CreateSigningKeyRequest {
+	const isRequestMissing = !request;
+
+	if (isRequestMissing) {
+		return {};
+	}
+
+	return request;
+}
+
 export class DeveloperApi {
 	private readonly analyticsBasePath = "/developer/analytics/v1_beta";
 	private readonly clientBasePath = "/developer/registration/v1";
@@ -147,8 +159,8 @@ export class DeveloperApi {
 		input: CreateSigningKeyInput = {},
 	): Promise<SigningKey> => {
 		const path = `${this.keyBasePath}/signing_key`;
-		const signingKeyRequest =
-			(input.request as CreateSigningKeyRequest | undefined) || {};
+		const request = input.request as CreateSigningKeyRequest | undefined;
+		const signingKeyRequest = readSigningKeyBody(request);
 		const url = this.keyUrl(path);
 
 		try {

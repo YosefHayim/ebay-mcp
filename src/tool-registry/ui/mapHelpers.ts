@@ -60,13 +60,27 @@ export function toNumber(leaf: unknown): number | null {
 	return null;
 }
 
+function isNumberOrBoolean(leaf: unknown): leaf is number | boolean {
+	const isNumber = typeof leaf == "number";
+
+	if (isNumber) return true;
+
+	const isBoolean = typeof leaf == "boolean";
+
+	if (isBoolean) return true;
+
+	return false;
+}
+
 export function toLabel(leaf: unknown): string {
 	if (typeof leaf == "string") {
 		return leaf;
 	}
-	if (typeof leaf == "number" || typeof leaf == "boolean") {
-		return String(leaf);
-	}
+
+	const isScalar = isNumberOrBoolean(leaf);
+
+	if (isScalar) return String(leaf);
+
 	return "";
 }
 

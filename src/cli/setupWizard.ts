@@ -1024,6 +1024,22 @@ export async function runWizard(
 		},
 	};
 
+	async function readValidationMessage(
+		stepId: string,
+		stepAnswer: PromptValue,
+	): Promise<string | null> {
+		const validateAnswer = runOptions.asyncValidate;
+		const hasNoValidator = validateAnswer == null;
+
+		if (hasNoValidator) return null;
+
+		const isAnswerMissing = stepAnswer == null;
+
+		if (isAnswerMissing) return null;
+
+		return validateAnswer(stepId, stepAnswer);
+	}
+
 	while (currentIndex < config.steps.length) {
 		const step = config.steps[currentIndex];
 		const isStepMissing = step == null;
@@ -1054,10 +1070,7 @@ export async function runWizard(
 		}
 
 		if (step.type != "note") {
-			let validationError =
-				runOptions.asyncValidate && attempt.value !== undefined
-					? await runOptions.asyncValidate(step.id, attempt.value)
-					: null;
+			let validationError = await readValidationMessage(step.id, attempt.value);
 
 			while (validationError) {
 				writeCliLine(`\n  ${validationError}\n`);
@@ -1067,10 +1080,7 @@ export async function runWizard(
 					runOptions.onCancel,
 				);
 				if (retry.cancelled) return answers;
-				validationError =
-					runOptions.asyncValidate && retry.value !== undefined
-						? await runOptions.asyncValidate(step.id, retry.value)
-						: null;
+				validationError = await readValidationMessage(step.id, retry.value);
 				answers[step.id] = retry.value;
 			}
 

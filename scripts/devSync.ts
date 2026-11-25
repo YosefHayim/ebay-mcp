@@ -109,6 +109,26 @@ interface SyncReport {
 	missingEndpoints: EndpointInfo[];
 }
 
+function isEveryDownloadFailed(
+	unavailableCount: number,
+	downloadedCount: number,
+): boolean {
+	const hasUnavailable = unavailableCount > 0;
+	const hasNoUnavailable = !hasUnavailable;
+
+	if (hasNoUnavailable) {
+		return false;
+	}
+
+	const downloadedNone = downloadedCount == 0;
+
+	if (downloadedNone) {
+		return true;
+	}
+
+	return false;
+}
+
 async function downloadSpecs(): Promise<{
 	downloaded: number;
 	unavailable: UnavailableSpec[];
@@ -143,7 +163,12 @@ async function downloadSpecs(): Promise<{
 		}
 	}
 
-	if (unavailable.length > 0 && downloaded == 0) {
+	const failedEveryDownload = isEveryDownloadFailed(
+		unavailable.length,
+		downloaded,
+	);
+
+	if (failedEveryDownload) {
 		console.log(
 			ui.error(
 				`\n  ✗ All ${unavailable.length} spec downloads failed — eBay is likely blocking automated requests (HTTP 403).`,
@@ -152,6 +177,22 @@ async function downloadSpecs(): Promise<{
 	}
 
 	return { downloaded, unavailable };
+}
+
+function isOpenApiSpecText(specDocument: string): boolean {
+	const hasOpenApiMarker = specDocument.includes('"openapi"');
+
+	if (hasOpenApiMarker) {
+		return true;
+	}
+
+	const hasSwaggerMarker = specDocument.includes('"swagger"');
+
+	if (hasSwaggerMarker) {
+		return true;
+	}
+
+	return false;
 }
 
 function generateTypes(): number {
@@ -180,7 +221,10 @@ function generateTypes(): number {
 					continue;
 				}
 
-				if (!(content.includes('"openapi"') || content.includes('"swagger"'))) {
+				const isSpecDocument = isOpenApiSpecText(content);
+				const skipsSpec = !isSpecDocument;
+
+				if (skipsSpec) {
 					skipped++;
 					continue;
 				}
@@ -301,18 +345,44 @@ function extractEndpointsFromSpecs(): EndpointInfo[] {
 	return endpoints;
 }
 
+function isToolNameFile(fileName: string, fileIsRegular: boolean): boolean {
+	const isNotFile = !fileIsRegular;
+
+	if (isNotFile) {
+		return false;
+	}
+
+	const isToolsFile = fileName.endsWith("Tools.ts");
+
+	if (isToolsFile) {
+		return true;
+	}
+
+	const isCategoryFile = fileName == "toolCategories.ts";
+
+	if (isCategoryFile) {
+		return true;
+	}
+
+	return false;
+}
+
 function collectToolNames(dir: string, tools: Set<string>): void {
 	if (!existsSync(dir)) return;
 
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
 		const fullPath = join(dir, entry.name);
 
-		if (entry.isDirectory()) {
+		const isDirectory = entry.isDirectory();
+
+		if (isDirectory) {
 			collectToolNames(fullPath, tools);
-		} else if (
-			entry.isFile() &&
-			(entry.name.endsWith("Tools.ts") || entry.name == "toolCategories.ts")
-		) {
+			continue;
+		}
+
+		const readsToolNames = isToolNameFile(entry.name, entry.isFile());
+
+		if (readsToolNames) {
 			const content = readFileSync(fullPath, "utf-8");
 			const nameMatches = content.matchAll(/name:\s*['"`]([^'"`]+)['"`]/g);
 			for (const match of nameMatches) {
@@ -332,6 +402,59 @@ function getImplementedTools(): Set<string> {
 	return tools;
 }
 
+function isApiMethodFile(fileName: string): boolean {
+	const isTypeScript = fileName.endsWith(".ts");
+	const isNotTypeScript = !isTypeScript;
+
+	if (isNotTypeScript) {
+		return false;
+	}
+
+	const isToolsFile = fileName.endsWith("Tools.ts");
+
+	if (isToolsFile) {
+		return false;
+	}
+
+	const isSchemasFile = fileName.endsWith("Schemas.ts");
+
+	if (isSchemasFile) {
+		return false;
+	}
+
+	return true;
+}
+
+function isKeptBindingName(
+	bindingName: string | undefined,
+): bindingName is string {
+	const isMissing = !bindingName;
+
+	if (isMissing) {
+		return false;
+	}
+
+	const isConstBinding = bindingName == "const";
+
+	if (isConstBinding) {
+		return false;
+	}
+
+	const isLetBinding = bindingName == "let";
+
+	if (isLetBinding) {
+		return false;
+	}
+
+	const isVarBinding = bindingName == "var";
+
+	if (isVarBinding) {
+		return false;
+	}
+
+	return true;
+}
+
 function getImplementedApiMethods(): Set<string> {
 	const methods = new Set<string>();
 	const apiDirs = [
@@ -347,13 +470,16 @@ function getImplementedApiMethods(): Set<string> {
 		for (const entry of entries) {
 			const fullPath = join(dir, entry.name);
 
-			if (entry.isDirectory()) {
+			const isDirectory = entry.isDirectory();
+
+			if (isDirectory) {
 				processDirectory(fullPath);
-			} else if (
-				entry.name.endsWith(".ts") &&
-				!entry.name.endsWith("Tools.ts") &&
-				!entry.name.endsWith("Schemas.ts")
-			) {
+				continue;
+			}
+
+			const readsApiMethods = isApiMethodFile(entry.name);
+
+			if (readsApiMethods) {
 				let apiFileText: string;
 
 				try {
@@ -367,12 +493,14 @@ function getImplementedApiMethods(): Set<string> {
 				const methodMatches = apiFileText.matchAll(
 					/(?:async\s+(\w+)\s*\(|(?:public\s+)?(\w+)\s*=\s*(?:async\s*)?\()/g,
 				);
-				for (const match of methodMatches) {
-					const name = match[1] || match[2];
+				for (const nameMatch of methodMatches) {
+					const name = nameMatch[1] || nameMatch[2];
 					// Skip common non-method bindings that the broader regex can catch.
-					if (!name || name == "const" || name == "let" || name == "var")
-						continue;
-					methods.add(name);
+					const keepsBinding = isKeptBindingName(name);
+
+					if (keepsBinding) {
+						methods.add(name);
+					}
 				}
 			}
 		}
@@ -523,6 +651,88 @@ function generateReport(report: SyncReport): void {
 	console.log(ui.dim(`\n  Report saved to: ${reportPath}\n`));
 }
 
+function isHelpRequest(cliFlags: readonly string[]): boolean {
+	const hasHelpFlag = cliFlags.includes("--help");
+
+	if (hasHelpFlag) {
+		return true;
+	}
+
+	const hasShortHelpFlag = cliFlags.includes("-h");
+
+	if (hasShortHelpFlag) {
+		return true;
+	}
+
+	return false;
+}
+
+function isSpecDownloadEnabled(
+	reportOnly: boolean,
+	skipDownload: boolean,
+): boolean {
+	const isReportOnly = reportOnly;
+
+	if (isReportOnly) {
+		return false;
+	}
+
+	const skipsDownload = skipDownload;
+
+	if (skipsDownload) {
+		return false;
+	}
+
+	return true;
+}
+
+function isUsingStaleSpecs(
+	reportOnly: boolean,
+	skipDownload: boolean,
+	specsDownloaded: number,
+): boolean {
+	const downloadsSpecs = isSpecDownloadEnabled(reportOnly, skipDownload);
+	const skippedDownload = !downloadsSpecs;
+
+	if (skippedDownload) {
+		return false;
+	}
+
+	const downloadedNone = specsDownloaded == 0;
+
+	if (downloadedNone) {
+		return true;
+	}
+
+	return false;
+}
+
+function isTypeGenerationEnabled(
+	reportOnly: boolean,
+	skipTypes: boolean,
+	usingStaleSpecs: boolean,
+): boolean {
+	const isReportOnly = reportOnly;
+
+	if (isReportOnly) {
+		return false;
+	}
+
+	const skipsTypes = skipTypes;
+
+	if (skipsTypes) {
+		return false;
+	}
+
+	const hasStaleSpecs = usingStaleSpecs;
+
+	if (hasStaleSpecs) {
+		return false;
+	}
+
+	return true;
+}
+
 async function main(): Promise<void> {
 	console.clear();
 	console.log(
@@ -538,7 +748,9 @@ async function main(): Promise<void> {
 	const skipTypes = args.includes("--skip-types");
 	const reportOnly = args.includes("--report");
 
-	if (args.includes("--help") || args.includes("-h")) {
+	const showsHelp = isHelpRequest(args);
+
+	if (showsHelp) {
 		console.log(`
 ${ui.bold("Usage:")}
   npm run sync [options]
@@ -569,7 +781,9 @@ ${ui.bold("What this does:")}
 		missingEndpoints: [],
 	};
 
-	if (!(reportOnly || skipDownload)) {
+	const downloadsSpecs = isSpecDownloadEnabled(reportOnly, skipDownload);
+
+	if (downloadsSpecs) {
 		const downloads = await downloadSpecs();
 		report.specsDownloaded = downloads.downloaded;
 		report.unavailableSpecs = downloads.unavailable;
@@ -579,14 +793,23 @@ ${ui.bold("What this does:")}
 	// requests), the coverage numbers below describe the cached specs on disk —
 	// not eBay's current API. Flag it loudly so a stale run is never mistaken for
 	// a clean "100% coverage, 0 missing" result.
-	const usingStaleSpecs =
-		!(reportOnly || skipDownload) && report.specsDownloaded == 0;
+	const usingStaleSpecs = isUsingStaleSpecs(
+		reportOnly,
+		skipDownload,
+		report.specsDownloaded,
+	);
 
 	// Don't regenerate types when nothing was downloaded: the inputs on disk are
 	// unchanged, so a regen only risks churn (and can break the build if the
 	// generator's interface naming drifts from what the code imports). Use
 	// --skip-download to deliberately regenerate from on-disk specs.
-	if (!(reportOnly || skipTypes || usingStaleSpecs)) {
+	const generatesTypes = isTypeGenerationEnabled(
+		reportOnly,
+		skipTypes,
+		usingStaleSpecs,
+	);
+
+	if (generatesTypes) {
 		report.typesGenerated = generateTypes();
 	}
 

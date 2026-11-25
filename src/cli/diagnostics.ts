@@ -46,6 +46,64 @@ interface DiagnosticReport {
 	};
 }
 
+function reachedEbayApi(healthResponse: Response): boolean {
+	const isHealthy = healthResponse.ok;
+
+	if (isHealthy) return true;
+
+	const isMissingRoute = healthResponse.status == 404;
+
+	if (isMissingRoute) return true;
+
+	return false;
+}
+
+function isConfiguredEnvValue(
+	envValue: string | undefined,
+): envValue is string {
+	const isMissing = !envValue;
+
+	if (isMissing) return false;
+
+	const isBlank = envValue.trim() == "";
+
+	if (isBlank) return false;
+
+	const isPlaceholder = envValue.includes("_here");
+
+	if (isPlaceholder) return false;
+
+	return true;
+}
+
+function readAppCredentials(
+	envVars: Record<string, string>,
+): { clientId: string; clientSecret: string } | null {
+	const clientId = envVars["EBAY_CLIENT_ID"];
+	const isClientIdMissing = !clientId;
+
+	if (isClientIdMissing) return null;
+
+	const clientSecret = envVars["EBAY_CLIENT_SECRET"];
+	const isClientSecretMissing = !clientSecret;
+
+	if (isClientSecretMissing) return null;
+
+	return { clientId, clientSecret };
+}
+
+function hasFlag(args: string[], longFlag: string, shortFlag: string): boolean {
+	const hasLongFlag = args.includes(longFlag);
+
+	if (hasLongFlag) return true;
+
+	const hasShortFlag = args.includes(shortFlag);
+
+	if (hasShortFlag) return true;
+
+	return false;
+}
+
 async function checkApiConnectivity(): Promise<{
 	canReachEbay: boolean;
 	error?: string;
@@ -59,7 +117,7 @@ async function checkApiConnectivity(): Promise<{
 		});
 
 		return {
-			canReachEbay: healthResponse.ok || healthResponse.status == 404,
+			canReachEbay: reachedEbayApi(healthResponse),
 		};
 	} catch (error) {
 		return {
@@ -141,7 +199,9 @@ function displayConfigurationStatus(envVars: Record<string, string>): void {
 		let status: string;
 		let displayValue: string;
 
-		if (envValue && envValue.trim() && !envValue.includes("_here")) {
+		const isConfigured = isConfiguredEnvValue(envValue);
+
+		if (isConfigured) {
 			status = paint.green("✓ Set");
 			displayValue = check.redact
 				? `${envValue.substring(0, 10)}...`
@@ -232,10 +292,13 @@ async function generateDiagnosticReport(
 	};
 
 	// If we have credentials, test authentication
-	if (envVars["EBAY_CLIENT_ID"] && envVars["EBAY_CLIENT_SECRET"]) {
+	const appCredentials = readAppCredentials(envVars);
+	const hasAppCredentials = appCredentials != null;
+
+	if (hasAppCredentials) {
 		const config: EbayConfig = {
-			clientId: envVars["EBAY_CLIENT_ID"],
-			clientSecret: envVars["EBAY_CLIENT_SECRET"],
+			clientId: appCredentials.clientId,
+			clientSecret: appCredentials.clientSecret,
 			redirectUri: envVars["EBAY_REDIRECT_URI"],
 			environment: readEnvironment(envVars["EBAY_ENVIRONMENT"]),
 		};
@@ -299,10 +362,13 @@ export async function runDiagnostics(exportReport = false): Promise<void> {
 	displayRecommendations(validationSummary);
 
 	// If we have credentials, test authentication
-	if (envVars["EBAY_CLIENT_ID"] && envVars["EBAY_CLIENT_SECRET"]) {
+	const appCredentials = readAppCredentials(envVars);
+	const hasAppCredentials = appCredentials != null;
+
+	if (hasAppCredentials) {
 		const config: EbayConfig = {
-			clientId: envVars["EBAY_CLIENT_ID"],
-			clientSecret: envVars["EBAY_CLIENT_SECRET"],
+			clientId: appCredentials.clientId,
+			clientSecret: appCredentials.clientSecret,
 			redirectUri: envVars["EBAY_REDIRECT_URI"],
 			environment: readEnvironment(envVars["EBAY_ENVIRONMENT"]),
 		};
@@ -348,7 +414,7 @@ export async function runDiagnostics(exportReport = false): Promise<void> {
 // Guarded so importing from the bin does not auto-run diagnostics.
 if (isEntryModule(import.meta.url)) {
 	const cliArgs = process.argv.slice(2);
-	const exportReport = cliArgs.includes("--export") || cliArgs.includes("-e");
+	const exportReport = hasFlag(cliArgs, "--export", "-e");
 
 	try {
 		await runDiagnostics(exportReport);

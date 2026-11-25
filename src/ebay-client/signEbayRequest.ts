@@ -45,12 +45,21 @@ export function parseSigningPrivateKey(privateKey: string): KeyObject {
 		);
 	}
 
-	if (key.asymmetricKeyType != "ed25519" && key.asymmetricKeyType != "rsa") {
-		throw new Error(
-			`EBAY_SIGNING_PRIVATE_KEY is a ${key.asymmetricKeyType ?? "unknown"} key; eBay digital signatures accept only ED25519 or RSA keys.`,
-		);
+	const isEd25519Key = key.asymmetricKeyType == "ed25519";
+
+	if (isEd25519Key) {
+		return key;
 	}
-	return key;
+
+	const isRsaKey = key.asymmetricKeyType == "rsa";
+
+	if (isRsaKey) {
+		return key;
+	}
+
+	throw new Error(
+		`EBAY_SIGNING_PRIVATE_KEY is a ${key.asymmetricKeyType ?? "unknown"} key; eBay digital signatures accept only ED25519 or RSA keys.`,
+	);
 }
 
 export function computeContentDigest(bodyBytes: string | Uint8Array): string {

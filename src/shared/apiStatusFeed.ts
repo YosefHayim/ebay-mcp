@@ -33,10 +33,30 @@ function stripHtml(html: string): string {
 }
 
 function normalizeString(field: unknown): string {
-	if (field == null) return "";
-	if (typeof field == "string") return field.trim();
-	if (typeof field == "number" || typeof field == "boolean")
+	const isMissing = field == null;
+
+	if (isMissing) {
+		return "";
+	}
+
+	const isString = typeof field == "string";
+
+	if (isString) {
+		return field.trim();
+	}
+
+	const isNumber = typeof field == "number";
+
+	if (isNumber) {
 		return String(field).trim();
+	}
+
+	const isBoolean = typeof field == "boolean";
+
+	if (isBoolean) {
+		return String(field).trim();
+	}
+
 	return "";
 }
 
@@ -71,6 +91,22 @@ export interface ApiStatusFeedResult {
 	error?: string;
 }
 
+function isFailedHttpStatus(httpStatus: number): boolean {
+	const isBelowSuccess = httpStatus < 200;
+
+	if (isBelowSuccess) {
+		return true;
+	}
+
+	const isAboveSuccess = httpStatus > 299;
+
+	if (isAboveSuccess) {
+		return true;
+	}
+
+	return false;
+}
+
 export async function getApiStatusFeed(
 	options: GetApiStatusFeedOptions = {},
 ): Promise<ApiStatusFeedResult> {
@@ -84,7 +120,7 @@ export async function getApiStatusFeed(
 			headers: { Accept: "application/rss+xml, application/xml, text/xml" },
 		});
 		const httpStatus = feedResponse.status;
-		const isFailedStatus = httpStatus < 200 || httpStatus > 299;
+		const isFailedStatus = isFailedHttpStatus(httpStatus);
 
 		if (isFailedStatus) {
 			return { items: [], error: `Feed unavailable (HTTP ${httpStatus})` };

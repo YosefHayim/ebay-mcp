@@ -1,7 +1,16 @@
 export function quoteEnvValue(envValue: string): string {
-	if (envValue == "" || !/[#\s"'`]/.test(envValue)) {
+	const isEmpty = envValue == "";
+
+	if (isEmpty) {
 		return envValue;
 	}
+
+	const staysBare = /[#\s"'`]/.test(envValue) == false;
+
+	if (staysBare) {
+		return envValue;
+	}
+
 	const quoteMark = ['"', "'", "`"].find((candidate) =>
 		candidate == '"' ? !/["\\]/.test(envValue) : !envValue.includes(candidate),
 	);

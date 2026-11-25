@@ -11,7 +11,20 @@ function opensWithMarkup(bytes: Buffer): boolean {
 		? bytes.subarray(UTF8_BOM.length)
 		: bytes;
 	const first = withoutBom.findIndex((byte) => !XML_WHITESPACE.has(byte));
-	return first != -1 && withoutBom[first] == LESS_THAN;
+
+	const isAllWhitespace = first == -1;
+
+	if (isAllWhitespace) {
+		return false;
+	}
+
+	const isNotMarkupStart = withoutBom[first] != LESS_THAN;
+
+	if (isNotMarkupStart) {
+		return false;
+	}
+
+	return true;
 }
 
 export const MAX_FEED_FILE_BYTES = 15 * 1024 * 1024;
@@ -37,12 +50,30 @@ export function feedFileProblem(
 			? undefined
 			: "content is not a gzip file";
 	}
-	if (bytes.includes(0) || !isUtf8(bytes)) {
+
+	const hasNulByte = bytes.includes(0);
+
+	if (hasNulByte) {
 		return `content is not UTF-8 text without NUL bytes, as ${mimeType} requires`;
 	}
-	if (mimeType == "application/xml" && !opensWithMarkup(bytes)) {
-		return "content does not start with XML markup";
+
+	const isNotUtf8 = !isUtf8(bytes);
+
+	if (isNotUtf8) {
+		return `content is not UTF-8 text without NUL bytes, as ${mimeType} requires`;
 	}
 
-	return undefined;
+	const isNotXml = mimeType != "application/xml";
+
+	if (isNotXml) {
+		return undefined;
+	}
+
+	const isXmlMarkup = opensWithMarkup(bytes);
+
+	if (isXmlMarkup) {
+		return undefined;
+	}
+
+	return "content does not start with XML markup";
 }

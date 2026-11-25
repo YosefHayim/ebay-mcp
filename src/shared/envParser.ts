@@ -1,5 +1,33 @@
 import { existsSync, readFileSync } from "fs";
 
+function isWrappedInQuotes(envValue: string, quote: string): boolean {
+	const isMissingOpenQuote = envValue.startsWith(quote) == false;
+
+	if (isMissingOpenQuote) {
+		return false;
+	}
+
+	const hasCloseQuote = envValue.endsWith(quote);
+
+	return hasCloseQuote;
+}
+
+function stripMatchingQuotes(envValue: string): string {
+	const isDoubleQuoted = isWrappedInQuotes(envValue, '"');
+
+	if (isDoubleQuoted) {
+		return envValue.slice(1, -1);
+	}
+
+	const isSingleQuoted = isWrappedInQuotes(envValue, "'");
+
+	if (isSingleQuoted) {
+		return envValue.slice(1, -1);
+	}
+
+	return envValue;
+}
+
 export function parseEnvFile(filePath: string): Record<string, string> {
 	const env: Record<string, string> = {};
 
@@ -12,7 +40,15 @@ export function parseEnvFile(filePath: string): Record<string, string> {
 
 	for (const line of lines) {
 		const trimmed = line.trim();
-		if (!trimmed || trimmed.startsWith("#")) {
+		const isBlank = trimmed == "";
+
+		if (isBlank) {
+			continue;
+		}
+
+		const isComment = trimmed.startsWith("#");
+
+		if (isComment) {
 			continue;
 		}
 
@@ -36,16 +72,10 @@ export function parseEnvFile(filePath: string): Record<string, string> {
 		}
 
 		const key = keyText.trim();
-		let envValue = valueText.trim();
+		const envValue = valueText.trim();
+		const unquoted = stripMatchingQuotes(envValue);
 
-		if (
-			(envValue.startsWith('"') && envValue.endsWith('"')) ||
-			(envValue.startsWith("'") && envValue.endsWith("'"))
-		) {
-			envValue = envValue.slice(1, -1);
-		}
-
-		env[key] = envValue;
+		env[key] = unquoted;
 	}
 
 	return env;

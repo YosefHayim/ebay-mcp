@@ -96,17 +96,29 @@ export function getRequiredScopesForTool(
 		"ebay_get_document",
 		"ebay_upload_document",
 	];
-	if (postOrderTools.includes(toolName) || documentTools.includes(toolName)) {
-		const scope = postOrderTools.includes(toolName)
-			? POST_ORDER_DOCUMENT_SCOPE
-			: "https://api.ebay.com/oauth/api_scope/sell.inventory";
+	const mediaConsentDescription =
+		"Requires user consent for the Media API scope; post-order access also requires an eligible keyset";
+
+	const isPostOrderTool = postOrderTools.includes(toolName);
+
+	if (isPostOrderTool) {
 		return {
-			requiredScopes: [scope],
-			minimumScope: scope,
-			description:
-				"Requires user consent for the Media API scope; post-order access also requires an eligible keyset",
+			requiredScopes: [POST_ORDER_DOCUMENT_SCOPE],
+			minimumScope: POST_ORDER_DOCUMENT_SCOPE,
+			description: mediaConsentDescription,
 		};
 	}
+
+	const isDocumentTool = documentTools.includes(toolName);
+
+	if (isDocumentTool) {
+		return {
+			requiredScopes: ["https://api.ebay.com/oauth/api_scope/sell.inventory"],
+			minimumScope: "https://api.ebay.com/oauth/api_scope/sell.inventory",
+			description: mediaConsentDescription,
+		};
+	}
+
 	// Scope requirements mapping based on eBay API documentation
 	const scopeMap: Record<string, ScopeRequirement> = {
 		...optionalConsent(
@@ -377,11 +389,20 @@ export function getReadonlyScope(writeScope: string): string | null {
 		"commerce.feedback",
 	];
 
-	const scopeType = writeScope.split("/").pop();
-	if (
-		scopeType &&
-		hasReadonly.some((readonlyMarker) => scopeType.includes(readonlyMarker))
-	) {
+	const scopeType = writeScope.split("/").pop() ?? "";
+	const hasNoScopeType = scopeType == "";
+
+	if (hasNoScopeType) {
+		return null;
+	}
+
+	function includesReadonlyMarker(readonlyMarker: string): boolean {
+		return scopeType.includes(readonlyMarker);
+	}
+
+	const hasReadonlyMarker = hasReadonly.some(includesReadonlyMarker);
+
+	if (hasReadonlyMarker) {
 		return `${writeScope}.readonly`;
 	}
 

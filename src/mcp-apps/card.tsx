@@ -6,7 +6,47 @@ import type {
 import { AppShell, EmptyState, mount, useViewModel } from "./host.js";
 
 function badgeClass(tone: CardBadge["tone"]): string {
-	return tone && tone != "neutral" ? `badge badge--${tone}` : "badge";
+	const hasNoTone = tone == null;
+
+	if (hasNoTone) {
+		return "badge";
+	}
+
+	const isNeutral = tone == "neutral";
+
+	if (isNeutral) {
+		return "badge";
+	}
+
+	return `badge badge--${tone}`;
+}
+
+function BadgeList({ badges }: { badges: CardBadge[] | undefined }): ReactNode {
+	const hasNoBadges = badges == null;
+
+	if (hasNoBadges) {
+		return null;
+	}
+
+	const hasNoBadge = badges.length == 0;
+
+	if (hasNoBadge) {
+		return null;
+	}
+
+	return (
+		<div className="badges">
+			{badges.map((badge, index) => (
+				<span
+					// biome-ignore lint/suspicious/noArrayIndexKey: badge labels can repeat
+					key={`${badge.label}-${index}`}
+					className={badgeClass(badge.tone)}
+				>
+					{badge.label}
+				</span>
+			))}
+		</div>
+	);
 }
 
 function Card({ view }: { view: CardViewModel }): ReactNode {
@@ -18,19 +58,7 @@ function Card({ view }: { view: CardViewModel }): ReactNode {
 					<span className="card-subtitle">{view.subtitle}</span>
 				) : null}
 			</div>
-			{view.badges && view.badges.length > 0 ? (
-				<div className="badges">
-					{view.badges.map((badge, index) => (
-						<span
-							// biome-ignore lint/suspicious/noArrayIndexKey: badge labels can repeat
-							key={`${badge.label}-${index}`}
-							className={badgeClass(badge.tone)}
-						>
-							{badge.label}
-						</span>
-					))}
-				</div>
-			) : null}
+			<BadgeList badges={view.badges} />
 			{view.sections.map((section, sectionIndex) => (
 				<div key={section.heading ?? sectionIndex} className="card-section">
 					{section.heading ? <h2>{section.heading}</h2> : null}

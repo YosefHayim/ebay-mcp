@@ -1,4 +1,5 @@
 import {
+	AccessTokenLifetime,
 	type CredentialStore,
 	createAppAccessTokenExpiry,
 	createStoredUserTokens,
@@ -53,6 +54,22 @@ function hasCredentialWriteFailure(error: unknown): boolean {
 	return hasCredentialWriteFailure(error.cause);
 }
 
+function isHttpSuccessStatus(status: number): boolean {
+	const statusIsBelow200 = status < 200;
+
+	if (statusIsBelow200) {
+		return false;
+	}
+
+	const statusIsAbove299 = status > 299;
+
+	if (statusIsAbove299) {
+		return false;
+	}
+
+	return true;
+}
+
 async function persistCredentialUpdates(
 	message: string,
 	writeUpdates: Promise<void>,
@@ -96,7 +113,7 @@ export class EbayOAuthClient {
 		}
 
 		const status = tokenResponse.status;
-		const isSuccess = status >= 200 && status <= 299;
+		const isSuccess = isHttpSuccessStatus(status);
 
 		if (isSuccess) {
 			return tokenResponse.data;
@@ -177,14 +194,6 @@ export class EbayOAuthClient {
 		return this.userTokens !== null;
 	};
 
-	private isUserAccessTokenExpired = (tokens: StoredTokenData): boolean => {
-		return isTokenExpired(tokens.userAccessTokenExpiry);
-	};
-
-	private isUserRefreshTokenExpired = (tokens: StoredTokenData): boolean => {
-		return isTokenExpired(tokens.userRefreshTokenExpiry);
-	};
-
 	getAccessToken = async (): Promise<string> => {
 		const loadedUserTokens = this.userTokens;
 
@@ -198,17 +207,20 @@ export class EbayOAuthClient {
 	private readUserAccessToken = async (
 		loadedUserTokens: StoredTokenData,
 	): Promise<string> => {
-		const accessTokenIsCurrent =
-			!this.isUserAccessTokenExpired(loadedUserTokens);
+		const accessTokenHasExpired = isTokenExpired(
+			loadedUserTokens.userAccessTokenExpiry,
+		);
+		const accessTokenIsCurrent = accessTokenHasExpired == false;
 
 		if (accessTokenIsCurrent) {
 			return loadedUserTokens.userAccessToken;
 		}
 
-		const refreshTokenIsExpired =
-			this.isUserRefreshTokenExpired(loadedUserTokens);
+		const refreshTokenHasExpired = isTokenExpired(
+			loadedUserTokens.userRefreshTokenExpiry,
+		);
 
-		if (refreshTokenIsExpired) {
+		if (refreshTokenHasExpired) {
 			authLogger.error(
 				"User refresh token expired. User needs to re-authorize.",
 			);
@@ -263,9 +275,11 @@ export class EbayOAuthClient {
 			return null;
 		}
 
-		const accessTokenIsUsable = !this.isUserAccessTokenExpired(keptTokens);
+		const accessTokenHasExpired = isTokenExpired(
+			keptTokens.userAccessTokenExpiry,
+		);
 
-		if (!accessTokenIsUsable) {
+		if (accessTokenHasExpired) {
 			return null;
 		}
 
@@ -313,13 +327,24 @@ export class EbayOAuthClient {
 
 	getOrRefreshAppAccessToken = async (): Promise<string> => {
 		const cachedAppToken = this.appAccessToken;
-		const appTokenIsCurrent =
-			cachedAppToken !== null && !isTokenExpired(this.appAccessTokenExpiry);
+		const hasNoCachedAppToken = cachedAppToken == null;
 
-		if (cachedAppToken !== null && appTokenIsCurrent) {
-			return cachedAppToken;
+		if (hasNoCachedAppToken) {
+			return await this.requestAppAccessToken();
 		}
 
+		const appAccessTokenHasExpired = isTokenExpired(
+			this.appAccessTokenExpiry,
+		);
+
+		if (appAccessTokenHasExpired) {
+			return await this.requestAppAccessToken();
+		}
+
+		return cachedAppToken;
+	};
+
+	private requestAppAccessToken = async (): Promise<string> => {
 		const tokenRequest = this.createTokenRequest({
 			grant_type: "client_credentials",
 			scope: "https://api.ebay.com/oauth/api_scope",
@@ -454,13 +479,59 @@ export class EbayOAuthClient {
 		};
 	};
 
+	private hasCurrentUserAccessToken = (): boolean => {
+		const storedUserTokens = this.userTokens;
+		const hasNoUserTokens = storedUserTokens == null;
+
+		if (hasNoUserTokens) {
+			return false;
+		}
+
+		const userAccessToken = new AccessTokenLifetime(
+			storedUserTokens.userAccessTokenExpiry,
+		);
+		const userAccessTokenHasExpired = userAccessToken.hasExpired();
+
+		if (userAccessTokenHasExpired) {
+			return false;
+		}
+
+		return true;
+	};
+
+	private hasCurrentAppAccessToken = (): boolean => {
+		const hasNoAppAccessToken = this.appAccessToken == null;
+
+		if (hasNoAppAccessToken) {
+			return false;
+		}
+
+		const appAccessToken = new AccessTokenLifetime(
+			this.appAccessTokenExpiry,
+		);
+		const appAccessTokenHasExpired = appAccessToken.hasExpired();
+
+		if (appAccessTokenHasExpired) {
+			return false;
+		}
+
+		return true;
+	};
+
 	isAuthenticated = (): boolean => {
-		if (this.userTokens && !this.isUserAccessTokenExpired(this.userTokens)) {
+		const hasUserAccessToken = this.hasCurrentUserAccessToken();
+
+		if (hasUserAccessToken) {
 			return true;
 		}
-		return (
-			this.appAccessToken !== null && !isTokenExpired(this.appAccessTokenExpiry)
-		);
+
+		const hasAppAccessToken = this.hasCurrentAppAccessToken();
+
+		if (hasAppAccessToken) {
+			return true;
+		}
+
+		return false;
 	};
 
 	clearAllTokens = (): void => {
@@ -470,33 +541,44 @@ export class EbayOAuthClient {
 	};
 
 	getTokenInfo = (): OAuthTokenInfo => {
-		const tokenInfo: OAuthTokenInfo = {
-			hasUserToken:
-				this.userTokens !== null &&
-				!this.isUserAccessTokenExpired(this.userTokens),
-			hasAppAccessToken:
-				this.appAccessToken !== null && Date.now() < this.appAccessTokenExpiry,
-		};
+		const hasUserToken = this.hasCurrentUserAccessToken();
+		const hasAppAccessToken = this.hasCurrentAppAccessToken();
+		const storedUserTokens = this.userTokens;
+		const hasNoStoredUserTokens = storedUserTokens == null;
 
-		if (this.userTokens?.scope) {
-			const tokenScopes = this.userTokens.scope.split(" ");
-			const environmentScopes = getDefaultScopes(this.config.environment);
-			const tokenScopeSet = new Set(tokenScopes);
-			const missingScopes = environmentScopes.filter(
-				(scope) => !tokenScopeSet.has(scope),
-			);
-
-			return {
-				...tokenInfo,
-				scopeInfo: {
-					tokenScopes,
-					environmentScopes,
-					missingScopes,
-				},
-			};
+		if (hasNoStoredUserTokens) {
+			return { hasUserToken, hasAppAccessToken };
 		}
 
-		return tokenInfo;
+		const scopeText = storedUserTokens.scope ?? "";
+		const hasNoScopeText = scopeText == "";
+
+		if (hasNoScopeText) {
+			return { hasUserToken, hasAppAccessToken };
+		}
+
+		const tokenScopes = scopeText.split(" ");
+		const environmentScopes = getDefaultScopes(this.config.environment);
+		const tokenScopeSet = new Set(tokenScopes);
+
+		function isScopeMissing(scope: string): boolean {
+			const scopeIsGranted = tokenScopeSet.has(scope);
+			const scopeIsMissing = scopeIsGranted == false;
+
+			return scopeIsMissing;
+		}
+
+		const missingScopes = environmentScopes.filter(isScopeMissing);
+
+		return {
+			hasUserToken,
+			hasAppAccessToken,
+			scopeInfo: {
+				tokenScopes,
+				environmentScopes,
+				missingScopes,
+			},
+		};
 	};
 
 	getUserTokens = (): StoredTokenData | null => {

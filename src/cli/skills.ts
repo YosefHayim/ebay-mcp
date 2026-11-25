@@ -57,12 +57,63 @@ function parseList(rawList: string | undefined): string[] {
 		.filter(Boolean);
 }
 
+function hasFlag(args: string[], longFlag: string, shortFlag: string): boolean {
+	const hasLongFlag = args.includes(longFlag);
+
+	if (hasLongFlag) return true;
+
+	const hasShortFlag = args.includes(shortFlag);
+
+	if (hasShortFlag) return true;
+
+	return false;
+}
+
 function readFlagValue(argv: string[], flag: string): string | undefined {
 	const inline = argv.find((arg) => arg.startsWith(`${flag}=`));
 	if (inline) return inline.slice(flag.length + 1);
 	const index = argv.indexOf(flag);
-	if (index != -1 && index + 1 < argv.length) return argv[index + 1];
-	return undefined;
+	const isFlagMissing = index == -1;
+
+	if (isFlagMissing) return undefined;
+
+	const valueIndex = index + 1;
+	const hasFollowingArg = valueIndex < argv.length;
+	const isValueMissing = hasFollowingArg == false;
+
+	if (isValueMissing) return undefined;
+
+	return argv[valueIndex];
+}
+
+function runsWithoutPrompts(
+	acceptedDefaults: boolean,
+	isTerminal: boolean | undefined,
+): boolean {
+	const accepted = acceptedDefaults == true;
+
+	if (accepted) return true;
+
+	const hasTerminal = isTerminal == true;
+
+	if (hasTerminal) return false;
+
+	return true;
+}
+
+function isSelectionEmpty(
+	selectedProviders: readonly SkillProvider[],
+	selectedLayers: readonly SkillLayer[],
+): boolean {
+	const hasNoProviders = selectedProviders.length == 0;
+
+	if (hasNoProviders) return true;
+
+	const hasNoLayers = selectedLayers.length == 0;
+
+	if (hasNoLayers) return true;
+
+	return false;
 }
 
 function parseFlags(argv: string[]): SkillsFlags {
@@ -77,8 +128,8 @@ function parseFlags(argv: string[]): SkillsFlags {
 		(ALL_LAYERS as readonly string[]).includes(token),
 	);
 	return {
-		help: args.includes("--help") || args.includes("-h"),
-		yes: args.includes("--yes") || args.includes("-y"),
+		help: hasFlag(args, "--help", "-h"),
+		yes: hasFlag(args, "--yes", "-y"),
 		dryRun: args.includes("--dry-run"),
 		force: args.includes("--force"),
 		global: args.includes("--global"),
@@ -159,7 +210,7 @@ export async function runSkillsWizard(
 	const cwd = process.cwd();
 	const home = process.env["HOME"] ?? process.env["USERPROFILE"] ?? cwd;
 	const snapshot = buildRegistrySnapshot();
-	const nonInteractive = flags.yes || !process.stdin.isTTY;
+	const nonInteractive = runsWithoutPrompts(flags.yes, process.stdin.isTTY);
 
 	if (!options.fromSetup) {
 		console.log(
@@ -270,7 +321,9 @@ export async function runSkillsWizard(
 		layers = layerAnswer.value ?? [];
 		scope = scopeAnswer.value ?? "project";
 
-		if (providers.length == 0 || layers.length == 0) {
+		const selectionIsEmpty = isSelectionEmpty(providers, layers);
+
+		if (selectionIsEmpty) {
 			printWarning("Nothing selected — nothing written.");
 			return;
 		}
@@ -295,18 +348,45 @@ export async function runSkillsWizard(
 	}
 
 	const foreign = plans.filter((plan) => plan.action == "skip-foreign");
-	if (foreign.length > 0 && !flags.force) {
+
+	function shouldWarnAboutForeignFiles(): boolean {
+		const foundNoForeignFiles = foreign.length == 0;
+
+		if (foundNoForeignFiles) return false;
+
+		const isForced = flags.force == true;
+
+		if (isForced) return false;
+
+		return true;
+	}
+
+	function isWritablePlan(plan: WritePlan): boolean {
+		const isUnchanged = plan.action == "unchanged";
+
+		if (isUnchanged) return false;
+
+		const isOwnFile = plan.action != "skip-foreign";
+
+		if (isOwnFile) return true;
+
+		const isForced = flags.force == true;
+
+		if (isForced) return true;
+
+		return false;
+	}
+
+	const warnAboutForeignFiles = shouldWarnAboutForeignFiles();
+
+	if (warnAboutForeignFiles) {
 		printWarning(
 			`${foreign.length} file(s) exist that this tool did not generate and will be skipped. Re-run with --force to overwrite.`,
 		);
 	}
 
 	if (!nonInteractive) {
-		const writable = plans.filter(
-			(plan) =>
-				plan.action != "unchanged" &&
-				!(plan.action == "skip-foreign" && !flags.force),
-		).length;
+		const writable = plans.filter(isWritablePlan).length;
 		if (writable == 0) {
 			printInfo("Everything is already up to date.");
 			return;

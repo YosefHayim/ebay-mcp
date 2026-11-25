@@ -39,13 +39,18 @@ export interface EbayMcpRuntime {
 	initializeApi(): Promise<void>;
 }
 
+// JSON.stringify(undefined) returns undefined (not a string), which produces an
+// invalid MCP content block and triggers client -32602 on empty-body 201/204s.
+function readSuccessDocument(handlerOutput: unknown): unknown {
+	const isEmptyOutput = handlerOutput == null;
+
+	if (isEmptyOutput) return { status: "success" };
+
+	return handlerOutput;
+}
+
 function formatToolSuccess(handlerOutput: unknown) {
-	// JSON.stringify(undefined) returns undefined (not a string), which produces an
-	// invalid MCP content block and triggers client -32602 on empty-body 201/204s.
-	const successDocument =
-		handlerOutput === undefined || handlerOutput === null
-			? { status: "success" }
-			: handlerOutput;
+	const successDocument = readSuccessDocument(handlerOutput);
 
 	return {
 		content: [

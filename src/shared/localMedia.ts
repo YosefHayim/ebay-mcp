@@ -93,6 +93,38 @@ function asciiAt(bytes: Buffer, offset: number, length: number): string {
 	return bytes.subarray(offset, offset + length).toString("latin1");
 }
 
+function isTiff(bytes: Buffer): boolean {
+	const isLittleEndianTiff = startsWith(bytes, [0x49, 0x49, 0x2a, 0x00]);
+
+	if (isLittleEndianTiff) {
+		return true;
+	}
+
+	const isBigEndianTiff = startsWith(bytes, [0x4d, 0x4d, 0x00, 0x2a]);
+
+	if (isBigEndianTiff) {
+		return true;
+	}
+
+	return false;
+}
+
+function isWebp(bytes: Buffer): boolean {
+	const isNotRiffContainer = asciiAt(bytes, 0, 4) != "RIFF";
+
+	if (isNotRiffContainer) {
+		return false;
+	}
+
+	const isNotWebpBrand = asciiAt(bytes, 8, 4) != "WEBP";
+
+	if (isNotWebpBrand) {
+		return false;
+	}
+
+	return true;
+}
+
 export function sniffMediaType(bytes: Buffer): string | undefined {
 	if (asciiAt(bytes, 0, 5) == "%PDF-") return "application/pdf";
 	if (startsWith(bytes, [0xff, 0xd8, 0xff])) {
@@ -107,13 +139,10 @@ export function sniffMediaType(bytes: Buffer): string | undefined {
 	if (asciiAt(bytes, 0, 2) == "BM") {
 		return "image/bmp";
 	}
-	if (
-		startsWith(bytes, [0x49, 0x49, 0x2a, 0x00]) ||
-		startsWith(bytes, [0x4d, 0x4d, 0x00, 0x2a])
-	) {
+	if (isTiff(bytes)) {
 		return "image/tiff";
 	}
-	if (asciiAt(bytes, 0, 4) == "RIFF" && asciiAt(bytes, 8, 4) == "WEBP") {
+	if (isWebp(bytes)) {
 		return "image/webp";
 	}
 	if (asciiAt(bytes, 4, 4) == "ftyp") {
@@ -139,10 +168,21 @@ function fail(message: string): Error {
 }
 
 function isWithin(target: string, dir: string): boolean {
-	return (
-		target == dir ||
-		target.startsWith(dir.endsWith(path.sep) ? dir : `${dir}${path.sep}`)
-	);
+	const isSamePath = target == dir;
+
+	if (isSamePath) {
+		return true;
+	}
+
+	const directoryPrefix = dir.endsWith(path.sep) ? dir : `${dir}${path.sep}`;
+
+	const isNestedPath = target.startsWith(directoryPrefix);
+
+	if (isNestedPath) {
+		return true;
+	}
+
+	return false;
 }
 
 function resolveReference(source: string, access: MediaAccessConfig): string {
@@ -193,23 +233,85 @@ function expectedMimeType(filePath: string, kind: LocalMediaKind): string {
 
 const HEIF_FAMILY: ReadonlySet<string> = new Set(["image/heic", "image/avif"]);
 
+function isSameVideoKind(expected: string, sniffed: string): boolean {
+	const isExpectedNotVideo = kindOf(expected) != "video";
+
+	if (isExpectedNotVideo) {
+		return false;
+	}
+
+	const isSniffedNotVideo = kindOf(sniffed) != "video";
+
+	if (isSniffedNotVideo) {
+		return false;
+	}
+
+	return true;
+}
+
+function isSameHeifFamily(expected: string, sniffed: string): boolean {
+	const isExpectedOutsideHeif = !HEIF_FAMILY.has(expected);
+
+	if (isExpectedOutsideHeif) {
+		return false;
+	}
+
+	const isSniffedOutsideHeif = !HEIF_FAMILY.has(sniffed);
+
+	if (isSniffedOutsideHeif) {
+		return false;
+	}
+
+	return true;
+}
+
 function sameFamily(expected: string, sniffed: string): boolean {
-	return (
-		expected == sniffed ||
-		(kindOf(expected) == "video" && kindOf(sniffed) == "video") ||
-		(HEIF_FAMILY.has(expected) && HEIF_FAMILY.has(sniffed))
-	);
+	const isSameMimeType = expected == sniffed;
+
+	if (isSameMimeType) {
+		return true;
+	}
+
+	const isVideoFamily = isSameVideoKind(expected, sniffed);
+
+	if (isVideoFamily) {
+		return true;
+	}
+
+	const isHeifFamily = isSameHeifFamily(expected, sniffed);
+
+	if (isHeifFamily) {
+		return true;
+	}
+
+	return false;
 }
 
 function mediaSignatureProblem(
 	bytes: Buffer,
 	mimeType: string,
 ): string | undefined {
-	const sniffed = sniffMediaType(bytes);
-	if (sniffed && sameFamily(mimeType, sniffed)) {
+	const detectedType = sniffMediaType(bytes);
+
+	const isMissingDetection = detectedType == null;
+
+	if (isMissingDetection) {
+		return `content does not look like ${mimeType}`;
+	}
+
+	const isEmptyDetection = detectedType == "";
+
+	if (isEmptyDetection) {
+		return `content does not look like ${mimeType}`;
+	}
+
+	const isRecognizedFamily = sameFamily(mimeType, detectedType);
+
+	if (isRecognizedFamily) {
 		return;
 	}
-	return `content does not look like ${mimeType}${sniffed ? ` (detected ${sniffed})` : ""}`;
+
+	return `content does not look like ${mimeType} (detected ${detectedType})`;
 }
 
 export async function loadLocalMedia(
@@ -262,9 +364,19 @@ export async function loadLocalMedia(
 	} catch {
 		throw fail(`cannot read ${realFilePath}`);
 	}
-	if (bytes.length == 0 || bytes.length > limit) {
+
+	const hasNoBytes = bytes.length == 0;
+
+	if (hasNoBytes) {
 		throw fail(`file must contain 1 to ${limit} bytes`);
 	}
+
+	const isOverByteLimit = bytes.length > limit;
+
+	if (isOverByteLimit) {
+		throw fail(`file must contain 1 to ${limit} bytes`);
+	}
+
 	const contentProblem =
 		kind == "feedFile"
 			? feedFileProblem(bytes, mimeType)
